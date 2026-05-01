@@ -1988,56 +1988,8 @@ function sortServicesForStudyContext(services, filter, currentExamLabel) {
   });
 }
 
-function servicesForStage(stage, services) {
-  const byName = new Map(services.map((service) => [service.name, service]));
-  return [
-    ...(stage.tools || []).map((name) => ({ name, role: "core" })),
-    ...(stage.optionalTools || []).map((name) => ({ name, role: "optional" }))
-  ]
-    .map((entry) => {
-      const service = byName.get(entry.name);
-      if (!service) return null;
-      const usageRole = agenticUsageRole(stage, entry.role);
-      return { ...entry, service, roleId: usageRole.id, roleLabel: usageRole.label, roleClass: usageRole.className };
-    })
-    .filter(Boolean);
-}
-
 function lifecycleStageKey(stage) {
   return stage.id || stage.name;
-}
-
-function SelectedLifecycleStageSummary({ stage, entries, selectedServiceName, onSelectService }) {
-  const groups = [
-    { id: "study-first", label: "Core" },
-    { id: "good-to-know", label: "Support" },
-    { id: "reference", label: "Reference" }
-  ]
-    .map((group) => ({ ...group, entries: entries.filter((entry) => entry.roleId === group.id) }))
-    .filter((group) => group.entries.length || group.id === "study-first");
-
-  function renderServiceChips(items) {
-    if (!items.length) return h("span", { className: "muted" }, "No mapped services for this stage yet.");
-    return items.map((entry) => h("button", {
-      key: `${entry.roleId}-${entry.service.name}`,
-      className: `selected-service-chip ${entry.roleClass} ${serviceGroupClass(entry.service)} ${entry.service.name === selectedServiceName ? "active" : ""}`,
-      onClick: () => onSelectService(entry.service.name, entry)
-    }, entry.service.name));
-  }
-
-  return h("div", { className: "lifecycle-selected-summary" },
-    h("div", { className: "lifecycle-selected-copy" },
-      h("span", null, "Selected lifecycle stage"),
-      h("h3", null, stage.name),
-      h("p", null, stage.note)
-    ),
-    h("div", { className: "lifecycle-selected-groups" },
-      groups.map((group) => h("div", { key: group.id, className: `selected-service-group ${group.id}` },
-        h("strong", null, group.label),
-        h("div", { className: "selected-service-chips" }, renderServiceChips(group.entries))
-      ))
-    )
-  );
 }
 
 function agenticContextForStage(stage) {
@@ -2069,12 +2021,9 @@ function firstServiceForGroup(examServices, serviceGroup) {
   return examServices.find((service) => serviceGroup === "All" || serviceGroupName(service) === serviceGroup);
 }
 
-function agenticUsageBadgeText(usage, activeServiceFilter = "All") {
+function agenticUsageBadgeText(usage) {
   if (!usage) return "";
-  if (activeServiceFilter === "All") {
-    return `${usage.contextShort}: ${usage.roleLabel}`;
-  }
-  return `${usage.roleLabel} in ${usage.contextShort}`;
+  return `${usage.contextShort}: ${usage.roleLabel}`;
 }
 
 function uniqueAgenticUsages(usages) {
@@ -2108,19 +2057,18 @@ function compactAgenticUsageSummary(service, activeServiceFilter = "All") {
   return [...byContextRole.values()].sort((a, b) => a.roleRank - b.roleRank || a.stageIndex - b.stageIndex || a.toolIndex - b.toolIndex);
 }
 
-function agenticUsageLead(service) {
-  const usages = agenticUsageSummary(service);
-  if (!usages.length) return "No Agentic AI lifecycle usage is mapped for this service yet.";
-  const primary = usages.find((usage) => usage.roleId === "study-first") || usages[0];
-  const related = usages
-    .filter((usage) => usage !== primary)
-    .slice(0, 3)
-    .map((usage) => `${usage.contextShort} -> ${usage.stageName}`);
-  const also = related.length ? ` Also used in: ${related.join("; ")}.` : "";
-  return `Lifecycle use: ${primary.contextLabel} -> ${primary.stageName}.${also}`;
+function allAgenticUsageBadges(service, activeServiceFilter = "All") {
+  const all = compactAgenticUsageSummary(service, "All");
+  if (activeServiceFilter === "All") return all;
+  const active = new Set(compactAgenticUsageSummary(service, activeServiceFilter).map((usage) => `${usage.lane}-${usage.roleId}`));
+  return [...all].sort((a, b) => {
+    const ai = active.has(`${a.lane}-${a.roleId}`) ? 0 : 1;
+    const bi = active.has(`${b.lane}-${b.roleId}`) ? 0 : 1;
+    return ai - bi || a.roleRank - b.roleRank || a.stageIndex - b.stageIndex || a.toolIndex - b.toolIndex;
+  });
 }
 
-function LifecycleFlow({ examLabel: label, selectedStageId, onSelectStage, onSelectService, branding, selectedStageDetail = null }) {
+function LifecycleFlow({ examLabel: label, selectedStageId, onSelectStage, onSelectService, branding }) {
   const flow = LIFECYCLE_FLOWS[label];
   if (!flow) return null;
   const services = nvidiaServices.filter((service) => service.exams.includes(label));
@@ -2186,20 +2134,14 @@ function LifecycleFlow({ examLabel: label, selectedStageId, onSelectStage, onSel
       h("p", { className: "muted" }, `Click a stage for context, or click a ${cardLabel.toLowerCase()} pill to open it directly.`)
     ),
     label === "Agentic AI"
-      ? h("div", { className: "lifecycle-priority-note" },
-          h("strong", null, "Stage role:"),
-          h("span", { className: "priority-swatch required" }, "Core"),
-          h("p", null, "main service to learn for that stage."),
-          h("span", { className: "priority-swatch optional" }, "Support"),
-          h("p", null, "useful when the scenario adds that need."),
-          h("span", { className: "priority-swatch reference" }, "Reference"),
-          h("p", null, "background anchor, not the main path.")
+      ? h("div", { className: "lifecycle-pill-note" },
+          h("span", { className: "lifecycle-tool note-example data" }, "Solid = core"),
+          h("span", { className: "lifecycle-tool note-example optional data" }, "Dotted = support/reference")
         )
       : null,
     h("div", { className: "lifecycle-legend" },
       visibleGroups.map((group) => h("span", { key: group.name, className: `legend-chip ${group.className}` }, group.name))
     ),
-    selectedStageDetail,
     hasLanes
       ? h("div", { className: "lifecycle-lanes" },
           laneGroups.map((group) => h("section", { key: group.lane, className: `lifecycle-lane lifecycle-lane-${topicSlug(group.lane)}` },
@@ -2263,7 +2205,6 @@ function StudyModePanel({
   const selectedSection = studySections.find((section) => section.name === selectedSectionName) || filteredSections[0] || studySections[0];
   const lifecycleFlow = LIFECYCLE_FLOWS[currentExamLabel];
   const activeLifecycleStage = lifecycleFlow?.stages.find((stage) => lifecycleStageKey(stage) === selectedLifecycleStage) || lifecycleFlow?.stages[0] || null;
-  const activeStageServices = activeLifecycleStage ? servicesForStage(activeLifecycleStage, examServices) : [];
   const studyChatTopic = effectiveStudyView === "sections"
     ? selectedSection.name
     : effectiveStudyView === "services"
@@ -2402,15 +2343,7 @@ function StudyModePanel({
             selectedStageId: activeLifecycleStage ? lifecycleStageKey(activeLifecycleStage) : "",
             onSelectStage: setSelectedLifecycleStage,
             onSelectService: openServiceFromLifecycle,
-            branding,
-            selectedStageDetail: activeLifecycleStage
-              ? h(SelectedLifecycleStageSummary, {
-                  stage: activeLifecycleStage,
-                  entries: activeStageServices,
-                  selectedServiceName: selectedService.name,
-                  onSelectService: openServiceFromLifecycle
-                })
-              : null
+            branding
           })
         )
       : effectiveStudyView === "services"
@@ -2482,7 +2415,8 @@ function StudyModePanel({
 }
 
 function ServiceCard({ service, selected, onClick, priorityRole = "", showAgenticPriority = false, activeServiceFilter = "All" }) {
-  const usageSummary = showAgenticPriority ? compactAgenticUsageSummary(service, activeServiceFilter) : [];
+  const usageSummary = showAgenticPriority ? allAgenticUsageBadges(service, activeServiceFilter) : [];
+  const activeUsage = showAgenticPriority ? bestAgenticUsage(service, activeServiceFilter) || usageSummary[0] : null;
   const priorityLabel = priorityRole === "core"
     ? "Core"
     : priorityRole === "optional"
@@ -2496,13 +2430,13 @@ function ServiceCard({ service, selected, onClick, priorityRole = "", showAgenti
       usageSummary.slice(0, 4).map((usage) => h("span", {
         key: `${usage.lane}-${usage.stageId}-${usage.roleId}`,
         className: `service-context-chip ${usage.roleClass}`
-      }, agenticUsageBadgeText(usage, activeServiceFilter))),
+      }, agenticUsageBadgeText(usage))),
       usageSummary.length > 4 ? h("span", { className: "service-context-chip more" }, `+${usageSummary.length - 4} more`) : null
     ) : null,
     h("span", null, service.lifecycle),
     h("strong", null, service.name),
     h("p", null, service.description),
-    showAgenticPriority && usageSummary[0] ? h("small", { className: "service-priority-note" }, `${usageSummary[0].stageName}: ${usageSummary[0].stageNote}`) : null,
+    showAgenticPriority && activeUsage ? h("small", { className: "service-priority-note" }, `${activeUsage.stageName}: ${activeUsage.stageNote}`) : null,
     h("em", null, service.exams.join(" + "))
   );
 }
@@ -2603,11 +2537,19 @@ function SuiteKnowledgeCard({ title, items }) {
 
 function ImplementationCards({ impl }) {
   if (!impl) return null;
+  const codePanel = impl.codeBlocks.length ? h("div", { className: "impl-code" },
+    h("span", null, "Minimal conceptual usage"),
+    ...impl.codeBlocks.map(function(cb) {
+      return h("pre", { key: cb.code.slice(0, 20) }, h("code", null, cb.code));
+    })
+  ) : null;
+
   return h("div", { className: "implementation-cards service-section" },
     h("div", { className: "service-section-heading" },
       h("span", null, "Start here"),
       h("h4", null, "Actual implementation / How you use it")
     ),
+    codePanel,
     h("div", { className: "impl-grid" },
       h("section", { className: "impl-what" },
         h("span", null, "What it is technically"),
@@ -2627,13 +2569,7 @@ function ImplementationCards({ impl }) {
         h("span", null, "One-line mental model"),
         h("p", null, renderInline(impl.mentalModel))
       )
-    ),
-    impl.codeBlocks.length ? h("div", { className: "impl-code" },
-      h("span", null, "Minimal conceptual usage"),
-      ...impl.codeBlocks.map(function(cb) {
-        return h("pre", { key: cb.code.slice(0, 20) }, h("code", null, cb.code));
-      })
-    ) : null
+    )
   );
 }
 
@@ -2758,12 +2694,10 @@ function ServiceDetail({ service, certSlug, quickQuiz, generateStudyQuiz, quizDi
     h("div", { className: "service-detail-title" },
       h("span", null, branding.serviceLabel),
       h("h3", null, service.name),
-      showAgenticPriority ? h("p", { className: "service-mental-model" }, agenticUsageLead(service)) : null,
-      h("p", null, renderInline(implementation?.whatItIs || study.description)),
-      implementation?.mentalModel ? h("p", { className: "service-mental-model" }, renderInline(implementation.mentalModel)) : null
+      implementation ? null : h("p", null, renderInline(study.description))
     ),
-    showAgenticPriority ? h(AgenticLifecycleUsagePanel, { service, activeServiceFilter }) : null,
     h(ImplementationCards, { impl: implementation }),
+    showAgenticPriority ? h(AgenticLifecycleUsagePanel, { service, activeServiceFilter }) : null,
     h(ExamDecisionCards, { study }),
     h(RelatedVendorServiceCards, { service }),
     h(StudyDeepDive, { item: study }),

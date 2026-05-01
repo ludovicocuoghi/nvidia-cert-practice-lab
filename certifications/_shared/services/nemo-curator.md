@@ -16,6 +16,22 @@ status: populated
 | **Output** | Deduplicated, quality-filtered, blended, and PII-redacted datasets ready for training or customization |
 | **Inside** | NVIDIA implementation of common curation methods: exact/fuzzy dedup, quality filtering, PII handling, data blending, and scalable GPU processing |
 
+```python
+# Conceptual NeMo Curator flow: load raw documents, normalize, filter, then export.
+from nemo_curator.datasets import DocumentDataset
+from nemo_curator.modifiers import UnicodeReformatter
+from nemo_curator import Sequential
+
+dataset = DocumentDataset.read_json("raw_corpus/*.jsonl")
+pipeline = Sequential([
+    UnicodeReformatter(),
+    # add quality filters, PII handling, dedupe, and blending steps here
+])
+
+curated = pipeline(dataset)
+curated.to_json("curated_training_corpus/")
+```
+
 **Mental model**: NeMo Curator is the NVIDIA product answer for **training-data curation before model training or customization**.
 
 ## Study card data
@@ -83,4 +99,3 @@ The NVIDIA-specific knowledge is:
 ## Concept boundary
 
 This page should stay product-specific: what the NVIDIA component is, where it sits in the NVIDIA stack, how to choose it on an NVIDIA exam, and which neighboring NVIDIA services are common distractors. Portable algorithms, lifecycle patterns, and vendor-neutral architecture belong in the Agentic AI General Study pages, with this NVIDIA service referenced as one implementation example.
-

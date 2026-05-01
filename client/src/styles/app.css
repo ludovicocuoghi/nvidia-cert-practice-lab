@@ -1854,6 +1854,28 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 .lifecycle-head h3 { margin: 4px 0 2px; }
 .lifecycle-head .muted { margin: 0; font-size: 12px; }
 
+.lifecycle-pill-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 10px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.lifecycle-pill-note .note-example {
+  cursor: default;
+  font-size: 11px;
+  padding: 3px 8px;
+}
+
+.lifecycle-pill-note .note-example:hover {
+  outline: 0;
+  transform: none;
+}
+
 .lifecycle-priority-note {
   display: flex;
   flex-wrap: wrap;
@@ -3416,8 +3438,8 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 
 .study-deep-dive-grid {
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: 10px;
+  grid-template-columns: 1fr;
+  gap: 12px;
 }
 
 .study-deep-dive-grid section {
@@ -3437,7 +3459,6 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 }
 
 .study-deep-dive-grid .must-know {
-  grid-column: 1 / -1;
   border-left: 4px solid #2a6e9e;
   background: #f5f9fc;
 }
@@ -3447,15 +3468,15 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   font-size: 0.75rem;
 }
 
-.study-deep-dive-grid .must-know ul {
+.study-deep-dive-grid .study-group ul {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 6px 10px;
   padding-left: 0;
   list-style: none;
 }
 
-.study-deep-dive-grid .must-know li {
+.study-deep-dive-grid .study-group li {
   border: 1px solid #d4e4f0;
   border-radius: 6px;
   background: #ffffff;
@@ -3469,13 +3490,21 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   background: #f9fdf2;
 }
 
+.study-deep-dive-grid .study-notes li,
+.study-deep-dive-grid .hands-on-checks li {
+  border-color: #dbe8c8;
+}
+
 .study-deep-dive-grid .exam-signals {
   border-left: 4px solid #4a9e4a;
   background: #f7fbf7;
 }
 
+.study-deep-dive-grid .exam-signals li {
+  border-color: #cfe3cf;
+}
+
 .study-deep-dive-grid .hands-on-checks {
-  grid-column: 1 / -1;
   border-left: 4px solid #76b900;
   background: #f9fdf2;
 }
@@ -3485,15 +3514,18 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   background: #fbfaff;
 }
 
+.study-deep-dive-grid .related-nvidia-services li {
+  border-color: #ddd7ef;
+}
+
 .study-deep-dive ul {
   margin: 0;
-  padding-left: 18px;
   color: var(--ink);
   line-height: 1.5;
 }
 
 .study-deep-dive li + li {
-  margin-top: 5px;
+  margin-top: 0;
 }
 
 /* ---- Structured exam section cards ---- */
