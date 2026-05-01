@@ -53,6 +53,8 @@ const studyFocus = {
 const ADAPTIVE_PRACTICE_TARGET = 20;
 const QUICK_PRACTICE_TARGET = 20;
 const SECTION_QUIZ_TARGET = 10;
+const DRILL_COUNTS = [10, 20, 30, 50];
+const DRILL_DIFFICULTIES = ["any", "easier", "medium", "hard", "advanced", "expert"];
 
 function loadJson(key, fallback) {
   try {
@@ -123,6 +125,37 @@ function selectFromBank(questions, { keyword, limit = 20 } = {}) {
     return hay.includes(kw);
   });
   return shuffledQuestions(matches, limit);
+}
+
+function questionSearchText(question) {
+  return [
+    question.question,
+    question.topic,
+    question.domain,
+    question.explanation,
+    ...(question.choices || []),
+    ...(question.whyWrong || [])
+  ].filter(Boolean).join(" ").toLowerCase();
+}
+
+function questionMatchesAnyKeyword(question, keywords) {
+  const cleaned = (keywords || [])
+    .map((keyword) => String(keyword || "").trim().toLowerCase())
+    .filter(Boolean);
+  if (!cleaned.length) return true;
+  const hay = questionSearchText(question);
+  return cleaned.some((keyword) => hay.includes(keyword));
+}
+
+function questionMatchesDifficulty(question, difficulty) {
+  const target = String(difficulty || "any").toLowerCase();
+  if (target === "any") return true;
+  const actual = String(question.difficulty || "medium").toLowerCase();
+  return target === "easier" ? actual === "easier" || actual === "easy" : actual === target;
+}
+
+function questionsForDifficulty(questions, difficulty) {
+  return questions.filter((question) => questionMatchesDifficulty(question, difficulty));
 }
 
 function domainPercent(score) {
@@ -321,12 +354,12 @@ function brandingForExam(exam) {
       chooserLabel: "Study track",
       resourceLabel: "Reference page",
       suiteLabel: "Lifecycle map",
-      serviceLabel: "Capability cards",
-      studyDescription: "Study the vendor-neutral agentic AI lifecycle by real build paths, then use capability cards to understand what each layer owns.",
+      serviceLabel: "Study Playbooks",
+      studyDescription: "Study the vendor-neutral AI lifecycle by real build paths, then open playbooks that explain what to build, which concepts matter, and where products fit as examples.",
       studyCardCopy: {
-        study: "Study the agentic AI lifecycle map and vendor-neutral capability cards as an architecture reference.",
+        study: "Study the agentic AI lifecycle map and vendor-neutral playbooks as an architecture reference.",
         lifecycle: "Lifecycle map",
-        services: "Capability cards",
+        services: "Study Playbooks",
         suite: "Cross-vendor patterns",
         quiz: "Banked quick quizzes from local questions"
       }
@@ -409,6 +442,7 @@ function App() {
   const genAbortRef = useRef(null);
   const coachAbortRef = useRef(null);
   const finalizingRef = useRef(false);
+  const guidedCandidateIdsRef = useRef(null);
 
   useEffect(() => {
     localStorage.setItem("study-appearance", appearance);
@@ -786,6 +820,7 @@ function App() {
     if (!keepGeneration && genAbortRef.current) { genAbortRef.current.abort(); genAbortRef.current = null; }
     if (coachAbortRef.current) { coachAbortRef.current.abort(); coachAbortRef.current = null; }
     finalizingRef.current = false;
+    guidedCandidateIdsRef.current = null;
     setAnswers({});
     setFlagged({});
     setRevealed({});
@@ -904,6 +939,44 @@ function App() {
     }
   }
 
+  function startTargetedGuidedPractice({ questions, label = "selected focus" } = {}) {
+    if (!exam) return;
+    const pool = Array.isArray(questions) ? questions : [];
+    if (!pool.length) {
+      setError(`No banked questions found for ${label}. Generate new questions for this focus first.`);
+      return;
+    }
+    resetSessionState();
+    guidedCandidateIdsRef.current = pool.map((q) => q.id);
+    setFlow("practice-coach-bank");
+    setSessionKind("practice");
+    setExamStartedAt(Date.now());
+    const adaptiveExam = { ...exam, questions: pool };
+    const seed = buildAdaptiveSet(adaptiveExam, dashboard, questionRatings, 1, loadRecentMockSeen(selectedCertSlug));
+    setSessionQuestions([shuffleQuestionChoices(seed[0] || pool[0])]);
+    setSecondsLeft(0);
+    setMode("exam");
+    scrollToTop();
+  }
+
+  function startQuestionDrill({ questions, label = "selected focus", count = QUICK_PRACTICE_TARGET, difficulty = "any", flowName = "practice-section" } = {}) {
+    if (!exam) return;
+    const pool = questionsForDifficulty(Array.isArray(questions) ? questions : [], difficulty);
+    if (!pool.length) {
+      const qualifier = difficulty === "any" ? "" : ` ${difficulty}`;
+      setError(`No${qualifier} questions found for ${label}. Try another difficulty or source.`);
+      return;
+    }
+    resetSessionState();
+    setFlow(flowName);
+    setSessionKind("practice");
+    setExamStartedAt(Date.now());
+    setSessionQuestions(shuffleSet(pool, count));
+    setSecondsLeft(0);
+    setMode("exam");
+    scrollToTop();
+  }
+
   function startSectionPractice(sectionName) {
     if (!exam) return;
     const pool = practiceQuestions.filter((item) => item.domain === sectionName);
@@ -987,7 +1060,8 @@ function App() {
           seenIds,
           history: recentHistory,
           practiceOnly: true,
-          candidateSource: flow === "practice-coach-generated" ? "generated" : flow === "practice-coach-bank" ? "bank" : "all"
+          candidateSource: guidedCandidateIdsRef.current ? "all" : flow === "practice-coach-generated" ? "generated" : flow === "practice-coach-bank" ? "bank" : "all",
+          candidateIds: guidedCandidateIdsRef.current || undefined
         })
       });
       if (aborted()) return;
@@ -1235,7 +1309,7 @@ function App() {
       activeSectionExam, setActiveSectionExam, selectedSectionName, setSelectedSectionName,
       studyStatus, setStudyStatus,
       drillRecentMistakes, setExam,
-      updateConfidence, startFlow, startSectionPractice, startKeywordPractice, generateQuestions, generateStudyQuiz, generationStatus, cancelGeneration
+      updateConfidence, startFlow, startTargetedGuidedPractice, startQuestionDrill, startSectionPractice, startKeywordPractice, generateQuestions, generateStudyQuiz, generationStatus, cancelGeneration
     }) : null,
     mode === "exam"
       ? h(ExamScreen, {
@@ -1322,7 +1396,7 @@ function StartScreen(props) {
     activeSectionExam, setActiveSectionExam, selectedSectionName, setSelectedSectionName,
     studyStatus, setStudyStatus,
     drillRecentMistakes, setExam,
-    updateConfidence, startFlow, startSectionPractice, startKeywordPractice, generateQuestions, generateStudyQuiz, generationStatus, cancelGeneration } = props;
+    updateConfidence, startFlow, startTargetedGuidedPractice, startQuestionDrill, startSectionPractice, startKeywordPractice, generateQuestions, generateStudyQuiz, generationStatus, cancelGeneration } = props;
   const isGenericStudy = exam.certification.code === "AAI-GEN";
 
   return h(
@@ -1333,7 +1407,7 @@ function StartScreen(props) {
     track === "practice"
       ? h(PracticePanel, {
           exam, domainStats, dashboard, confidence, questionRatings, learnerProfile,
-          updateConfidence, startFlow, generateQuestions, generationStatus, cancelGeneration,
+          updateConfidence, startFlow, startTargetedGuidedPractice, startQuestionDrill, generateQuestions, generationStatus, cancelGeneration,
           availableMocks, selectedMockId, setSelectedMockId, selectedMockSource, setSelectedMockSource,
           selectedCertSlug, drillRecentMistakes,
           refreshExam: () => api(certPath("/api/exam", selectedCertSlug)).then(setExam)
@@ -1485,21 +1559,30 @@ const LIFECYCLE_FLOWS = {
   "GenAI LLMs": {
     title: "NVIDIA GenAI LLM mental model",
     lanes: {
-      "Data for learning": "Prepare corpora only when the model must learn from data.",
-      "Choose or change the model": "Use an existing model first; tune or train only when behavior must change.",
-      "Inference and serving": "Turn approved models into fast, reliable production APIs.",
-      "Grounding, safety, and feedback": "Add runtime knowledge, evaluate quality, enforce policy, and diagnose bottlenecks."
+      "Core: Deploy optimized LLM endpoint": "Main NCP-GENL path: choose an approved model, optimize generation, expose it as an endpoint, then profile bottlenecks.",
+      "Core: Build grounded LLM application": "Use when the model needs private or fresh knowledge, prompt/context control, guardrails, and answer-quality evaluation.",
+      "Secondary: Fine-tune existing model": "Use when durable behavior, style, rubric-following, or preference alignment must change. Tune only after data and evals are ready.",
+      "Reference: Train model from zero": "Background lifecycle anchor for this cert. Know the steps, but full pretraining is not the default professional LLM application path."
     },
     stages: [
-      { lane: "Data for learning", context: "Training data", name: "Curate training corpus", tools: ["NeMo Curator", "RAPIDS"], note: "Clean, dedupe, filter, redact, split; feeds tuning or training" },
-      { lane: "Choose or change the model", context: "Existing model", name: "Select model or artifact", tools: ["Nemotron models", "NGC"], note: "Pick a base model, checkpoint, container, or approved artifact" },
-      { lane: "Choose or change the model", context: "Low-code adaptation", name: "Customize with adapters", tools: ["NeMo Customizer"], note: "API-driven PEFT/LoRA when behavior needs light durable change" },
-      { lane: "Choose or change the model", context: "Code-heavy training", name: "Fine-tune or train recipes", tools: ["NeMo Framework", "NCCL"], note: "SFT, alignment, distributed training, checkpoints" },
-      { lane: "Inference and serving", context: "Runtime optimization", name: "Optimize inference engine", tools: ["TensorRT-LLM"], note: "Batching, KV cache, quantization, prefill/decode speed" },
-      { lane: "Inference and serving", context: "Production API", name: "Serve model endpoints", tools: ["NIM", "Triton Inference Server", "Dynamo (Triton Dynamo)", "NIM Operator"], note: "Microservices, routing, rollout, K8s lifecycle, distributed serving" },
-      { lane: "Grounding, safety, and feedback", context: "Runtime knowledge", name: "Ground with RAG", tools: ["NeMo Retriever"], note: "Extraction, embeddings, indexing, rerank, citations; no weight change" },
-      { lane: "Grounding, safety, and feedback", context: "Quality and policy", name: "Evaluate and guard outputs", tools: ["NeMo Evaluator", "NeMo Guardrails"], note: "Benchmarks, judge workflows, dialog/tool/output policy" },
-      { lane: "Grounding, safety, and feedback", context: "Performance diagnosis", name: "Profile bottlenecks", tools: ["Nsight Systems", "Nsight Compute"], note: "System timelines first; kernel metrics after narrowing" }
+      { id: "genl-infer-model", lane: "Core: Deploy optimized LLM endpoint", context: "Choose model", name: "Choose model or artifact", tools: ["Nemotron models"], optionalTools: ["NGC"], note: "Pick an approved model family, checkpoint, container, or catalog artifact before optimizing or serving it" },
+      { id: "genl-infer-optimize", lane: "Core: Deploy optimized LLM endpoint", context: "Optimize", name: "Optimize generation runtime", tools: ["TensorRT-LLM"], optionalTools: ["Nsight Systems", "Nsight Compute"], note: "Tune batching, KV cache, quantization, prefill/decode speed, and verify the real bottleneck before changing hardware" },
+      { id: "genl-infer-serve", lane: "Core: Deploy optimized LLM endpoint", context: "Deploy", name: "Serve production endpoint", tools: ["NIM"], optionalTools: ["Triton Inference Server", "NIM Operator", "Dynamo (Triton Dynamo)"], note: "Expose the model as an API; add multi-framework serving, K8s lifecycle, or distributed LLM serving when scale demands it" },
+      { id: "genl-infer-operate", lane: "Core: Deploy optimized LLM endpoint", context: "Operate", name: "Profile and improve endpoint", tools: ["Nsight Systems"], optionalTools: ["Nsight Compute", "TensorRT-LLM"], note: "Start with system timelines, then drill into kernels or runtime settings after a specific bottleneck is visible" },
+
+      { id: "genl-rag-ingest", lane: "Core: Build grounded LLM application", context: "Runtime knowledge", name: "Prepare private knowledge", tools: ["NeMo Retriever"], optionalTools: ["NeMo Curator", "RAPIDS"], note: "Extract, clean, chunk, embed, index, rerank, preserve permissions, and keep citations outside model weights" },
+      { id: "genl-rag-prompt", lane: "Core: Build grounded LLM application", context: "Prompt and context", name: "Bind answers to evidence", tools: ["NIM"], optionalTools: ["NeMo Retriever", "NeMo Guardrails"], note: "Use prompts, context packing, abstention rules, and policy checks when the base model should not learn new facts" },
+      { id: "genl-rag-eval", lane: "Core: Build grounded LLM application", context: "Quality and policy", name: "Evaluate and guard outputs", tools: ["NeMo Evaluator", "NeMo Guardrails"], optionalTools: ["NeMo Retriever"], note: "Measure groundedness, answer quality, safety, regressions, and retrieval failures before release" },
+
+      { id: "genl-tune-data", lane: "Secondary: Fine-tune existing model", context: "Data processing", name: "Process tuning data", tools: ["NeMo Curator"], optionalTools: ["RAPIDS"], note: "Prepare SFT examples, labels, preference data, PII cleanup, split hygiene, and validation holdouts" },
+      { id: "genl-tune-model", lane: "Secondary: Fine-tune existing model", context: "Fine-tune", name: "Fine-tune behavior", tools: ["NeMo Customizer"], optionalTools: ["NeMo Framework", "NGC"], note: "Use PEFT/LoRA first when possible; heavier SFT, alignment, or distributed recipes are more scenario-specific" },
+      { id: "genl-tune-eval", lane: "Secondary: Fine-tune existing model", context: "Evaluation", name: "Evaluate tuned model", tools: ["NeMo Evaluator"], optionalTools: ["NeMo Guardrails"], note: "Compare against baseline for task quality, safety, overfitting, and regressions before serving the tuned artifact" },
+      { id: "genl-tune-deploy", lane: "Secondary: Fine-tune existing model", context: "Deploy", name: "Deploy tuned endpoint", tools: ["NIM"], optionalTools: ["NIM Operator", "Triton Inference Server"], note: "Serve the tuned model or adapter-backed endpoint with rollout, rollback, and monitoring controls" },
+
+      { id: "genl-train-data", lane: "Reference: Train model from zero", context: "Data processing", name: "Process foundation corpus", tools: [], optionalTools: ["NeMo Curator", "RAPIDS"], note: "Reference-only: dedupe, filter, redact PII, check licenses, manage contamination, tokenize, and split holdouts" },
+      { id: "genl-train-run", lane: "Reference: Train model from zero", context: "Training", name: "Train foundation model", tools: [], optionalTools: ["NeMo Framework", "NCCL", "NGC"], note: "Reference-only: distributed recipes, collectives, checkpoints, mixed precision, and artifact tracking" },
+      { id: "genl-train-eval", lane: "Reference: Train model from zero", context: "Evaluation", name: "Evaluate trained model", tools: [], optionalTools: ["NeMo Evaluator"], note: "Reference-only: quality, safety, capability, bias, and readiness checks before publishing" },
+      { id: "genl-train-deploy", lane: "Reference: Train model from zero", context: "Publish", name: "Publish and serve artifact", tools: [], optionalTools: ["NGC", "NIM", "NIM Operator"], note: "Reference-only: register the approved artifact, package it, expose an inference API, and keep rollback evidence" }
     ]
   },
   "Agentic AI": {
@@ -1598,44 +1681,53 @@ const SERVICE_ORDER = [
   "NeMo Evaluator", "Nsight Systems", "Nsight Compute"
 ];
 
-const AGENTIC_CONTEXT_FILTERS = [
-  { label: "All", lane: "All", short: "All" },
-  { label: "Build agent application", lane: "Core: Build agent application", short: "Agent build" },
-  { label: "Use existing model for inference", lane: "Core: Use existing model for inference", short: "Inference" },
-  { label: "Fine-tune existing model", lane: "Secondary: Fine-tune existing model", short: "Fine-tune" },
-  { label: "Train model from zero reference", lane: "Reference: Train model from zero", short: "Train zero" }
-];
+const LIFECYCLE_CONTEXT_FILTERS = {
+  "GenAI LLMs": [
+    { label: "All", lane: "All", short: "All" },
+    { label: "Deploy optimized LLM endpoint", lane: "Core: Deploy optimized LLM endpoint", short: "LLM endpoint" },
+    { label: "Build grounded LLM application", lane: "Core: Build grounded LLM application", short: "Grounded app" },
+    { label: "Fine-tune existing model", lane: "Secondary: Fine-tune existing model", short: "Fine-tune" },
+    { label: "Train model from zero reference", lane: "Reference: Train model from zero", short: "Train zero" }
+  ],
+  "Agentic AI": [
+    { label: "All", lane: "All", short: "All" },
+    { label: "Build agent application", lane: "Core: Build agent application", short: "Agent build" },
+    { label: "Use existing model for inference", lane: "Core: Use existing model for inference", short: "Inference" },
+    { label: "Fine-tune existing model", lane: "Secondary: Fine-tune existing model", short: "Fine-tune" },
+    { label: "Train model from zero reference", lane: "Reference: Train model from zero", short: "Train zero" }
+  ]
+};
 
 const NVIDIA_SUITE_TOPICS = [
   {
     id: "platform-map",
     category: "Foundation",
-    title: "NVIDIA AI Platform Map",
-    summary: "The big picture: NVIDIA is not one product. It is hardware, systems software, model/tooling layers, optimized inference, deployment services, safety/evaluation, and profiling.",
-    examSignal: "When a question names many NVIDIA tools, first identify the lifecycle phase: data, train/customize, optimize, serve, retrieve, guard/evaluate, or profile.",
+    title: "NVIDIA GenAI and Agentic Platform Map",
+    summary: "The shared suite across the NVIDIA certs: data curation, model selection/customization, RAG and agent tooling, optimized inference, production serving, evaluation, guardrails, and profiling.",
+    examSignal: "When a question names many NVIDIA tools, first identify the lifecycle path: existing-model inference, grounded application, fine-tuning, train-from-zero reference, agent workflow, or operations.",
     keyIdeas: [
       "**GPU hardware** provides accelerated math and memory bandwidth.",
       "**CUDA, NCCL, and libraries** expose the GPU and scale work across devices.",
-      "**NeMo family** covers data curation, training/customization, retrieval, guardrails, agents, and evaluation.",
+      "**NeMo family** covers data curation, training/customization, retrieval, agent workflows, guardrails, and evaluation.",
       "**TensorRT-LLM, Triton, NIM, and Dynamo** are serving/inference-side tools, but at different abstraction levels.",
-      "**Nsight Systems and Nsight Compute** diagnose performance; they do not train, serve, or guardrail models.",
-      "**Jetson SDK / JetPack** is for embedded/edge robotics and vision-style deployments; it is not the usual answer for data-center LLM serving or agent orchestration."
+      "**NGC and Nemotron** sit near model/artifact selection: model family, containers, Helm charts, and approved assets.",
+      "**Nsight Systems and Nsight Compute** diagnose performance; they do not train, serve, retrieve, or guardrail models."
     ],
     mustKnow: [
       "NeMo Framework builds/customizes models; NIM packages optimized model inference behind production APIs.",
       "TensorRT-LLM optimizes LLM inference engines and runtime behavior; Triton serves models from multiple frameworks.",
       "NIM Operator manages NIM lifecycle on Kubernetes; it is not an inference engine by itself.",
       "NeMo Retriever is RAG/retrieval; NeMo Guardrails is policy/safety; NeMo Evaluator is quality evaluation.",
-      "Nsight Systems is timeline/system-level; Nsight Compute is CUDA kernel-level.",
-      "Jetson/JetPack belongs to edge devices; choose TensorRT/TensorRT-LLM, Triton, NIM, or Dynamo for server-side inference scenarios."
+      "NeMo Agent Toolkit is agent workflow orchestration and observability; it is not the model endpoint.",
+      "Nsight Systems is timeline/system-level; Nsight Compute is CUDA kernel-level."
     ],
     traps: [
       "Do not answer with a deployment tool when the bottleneck is training, curation, or model customization.",
       "Do not answer with NeMo Framework when the question asks for a packaged inference microservice.",
       "Do not answer with Nsight Compute for an end-to-end latency timeline unless the issue has already been narrowed to one CUDA kernel.",
-      "Do not choose Jetson SDK when the scenario is optimizing an LLM endpoint on server GPUs."
+      "Do not answer with a model family when the question asks for retrieval, serving, guardrails, or evaluation."
     ],
-    related: ["NeMo Framework", "NIM", "TensorRT-LLM", "Triton Inference Server", "Nsight Systems", "Nsight Compute", "Jetson SDK"]
+    related: ["NeMo Curator", "NeMo Framework", "NeMo Retriever", "NeMo Guardrails", "NIM", "TensorRT-LLM", "Nsight Systems"]
   },
   {
     id: "nemo-family",
@@ -1648,21 +1740,23 @@ const NVIDIA_SUITE_TOPICS = [
       "**NeMo Curator** prepares high-quality datasets through filtering, dedupe, classification, and synthetic-data workflows.",
       "**NeMo Customizer** focuses on managed parameter-efficient customization such as LoRA/PEFT.",
       "**NeMo Retriever** supports enterprise retrieval pipelines for RAG.",
+      "**NeMo Agent Toolkit** supports agent workflow composition, tracing, and evaluation patterns.",
       "**NeMo Guardrails** constrains dialog, tool use, and safety behavior.",
       "**NeMo Evaluator** measures model or agent quality with benchmarks and judge workflows."
     ],
     mustKnow: [
       "Training/customization questions usually contrast NeMo Framework or NeMo Customizer with NIM.",
       "RAG questions usually point to NeMo Retriever, not NeMo Framework.",
+      "Agent workflow questions point to NeMo Agent Toolkit, then pair it with Retriever, Guardrails, Evaluator, and NIM as needed.",
       "Policy/tool-control questions point to NeMo Guardrails.",
       "Quality or LLM-as-judge questions point to NeMo Evaluator."
     ],
     traps: [
       "NeMo is not a single runtime. The family has several products with different lifecycle jobs.",
       "NeMo Framework can support deployment workflows, but exam questions usually separate it from NIM/Triton serving.",
-      "Retriever does not create safety policy; Guardrails does not build vector indexes."
+      "Retriever does not create safety policy; Guardrails does not build vector indexes; Agent Toolkit does not replace the model endpoint."
     ],
-    related: ["NeMo Curator", "NeMo Framework", "NeMo Customizer", "NeMo Retriever", "NeMo Guardrails", "NeMo Evaluator"]
+    related: ["NeMo Curator", "NeMo Framework", "NeMo Customizer", "NeMo Retriever", "NeMo Agent Toolkit", "NeMo Guardrails", "NeMo Evaluator"]
   },
   {
     id: "serving-stack",
@@ -1902,19 +1996,25 @@ function sortServices(services) {
   });
 }
 
-function agenticContextForFilter(label) {
-  return AGENTIC_CONTEXT_FILTERS.find((filter) => filter.label === label) || AGENTIC_CONTEXT_FILTERS[0];
+function lifecycleContextFiltersForExam(label) {
+  return LIFECYCLE_CONTEXT_FILTERS[label] || null;
 }
 
-function agenticContextForLane(lane) {
-  return AGENTIC_CONTEXT_FILTERS.find((filter) => filter.lane === lane) || {
-    label: lane || "Agentic AI",
+function lifecycleContextForFilter(examLabel, label) {
+  const filters = lifecycleContextFiltersForExam(examLabel);
+  return filters?.find((filter) => filter.label === label) || filters?.[0] || null;
+}
+
+function lifecycleContextForLane(examLabel, lane) {
+  const filters = lifecycleContextFiltersForExam(examLabel);
+  return filters?.find((filter) => filter.lane === lane) || {
+    label: lane || examLabel,
     lane,
-    short: (lane || "Agentic AI").replace(/^(Core|Secondary|Reference):\s*/, "")
+    short: (lane || examLabel).replace(/^(Core|Secondary|Reference):\s*/, "")
   };
 }
 
-function agenticUsageRole(stage, role) {
+function lifecycleUsageRole(stage, role) {
   if ((stage.lane || "").startsWith("Reference:")) {
     return { id: "reference", label: "Reference only", className: "reference", rank: 2 };
   }
@@ -1924,9 +2024,9 @@ function agenticUsageRole(stage, role) {
   return { id: "good-to-know", label: "Support use", className: "good-to-know", rank: 1 };
 }
 
-function agenticUsagesForService(serviceOrName) {
+function lifecycleUsagesForService(serviceOrName, examLabel) {
   const name = typeof serviceOrName === "string" ? serviceOrName : serviceOrName?.name;
-  const flow = LIFECYCLE_FLOWS["Agentic AI"];
+  const flow = LIFECYCLE_FLOWS[examLabel];
   if (!name || !flow) return [];
   return flow.stages.flatMap((stage, stageIndex) => {
     const entries = [
@@ -1934,8 +2034,8 @@ function agenticUsagesForService(serviceOrName) {
       ...(stage.optionalTools || []).map((tool, toolIndex) => ({ tool, rawRole: "optional", toolIndex: (stage.tools || []).length + toolIndex }))
     ].filter((entry) => entry.tool === name);
     return entries.map((entry) => {
-      const role = agenticUsageRole(stage, entry.rawRole);
-      const context = agenticContextForLane(stage.lane);
+      const role = lifecycleUsageRole(stage, entry.rawRole);
+      const context = lifecycleContextForLane(examLabel, stage.lane);
       return {
         serviceName: name,
         lane: stage.lane,
@@ -1957,31 +2057,32 @@ function agenticUsagesForService(serviceOrName) {
   }).sort((a, b) => a.stageIndex - b.stageIndex || a.toolIndex - b.toolIndex || a.roleRank - b.roleRank);
 }
 
-function agenticUsagesForFilter(service, filter) {
-  const context = agenticContextForFilter(filter);
-  const usages = agenticUsagesForService(service);
+function lifecycleUsagesForFilter(service, filter, examLabel) {
+  const context = lifecycleContextForFilter(examLabel, filter);
+  const usages = lifecycleUsagesForService(service, examLabel);
+  if (!context) return [];
   return context.lane === "All" ? usages : usages.filter((usage) => usage.lane === context.lane);
 }
 
-function bestAgenticUsage(service, filter = "All") {
-  const usages = agenticUsagesForFilter(service, filter);
+function bestLifecycleUsage(service, filter = "All", examLabel) {
+  const usages = lifecycleUsagesForFilter(service, filter, examLabel);
   return [...usages].sort((a, b) => a.roleRank - b.roleRank || a.stageIndex - b.stageIndex || a.toolIndex - b.toolIndex)[0] || null;
 }
 
 function serviceMatchesStudyFilter(service, filter, currentExamLabel) {
   if (filter === "All") return true;
-  if (currentExamLabel === "Agentic AI") {
-    return agenticUsagesForFilter(service, filter).length > 0;
+  if (lifecycleContextFiltersForExam(currentExamLabel)) {
+    return lifecycleUsagesForFilter(service, filter, currentExamLabel).length > 0;
   }
   return service.filters.includes(filter);
 }
 
 function sortServicesForStudyContext(services, filter, currentExamLabel) {
   const sorted = sortServices(services);
-  if (currentExamLabel !== "Agentic AI" || filter === "All") return sorted;
+  if (!lifecycleContextFiltersForExam(currentExamLabel)) return sorted;
   return [...sorted].sort((a, b) => {
-    const au = bestAgenticUsage(a, filter);
-    const bu = bestAgenticUsage(b, filter);
+    const au = bestLifecycleUsage(a, filter, currentExamLabel);
+    const bu = bestLifecycleUsage(b, filter, currentExamLabel);
     const ai = au ? au.stageIndex * 100 + au.roleRank * 10 + au.toolIndex : 9999;
     const bi = bu ? bu.stageIndex * 100 + bu.roleRank * 10 + bu.toolIndex : 9999;
     return ai - bi || a.name.localeCompare(b.name);
@@ -1992,17 +2093,14 @@ function lifecycleStageKey(stage) {
   return stage.id || stage.name;
 }
 
-function agenticContextForStage(stage) {
-  return agenticContextForLane(stage?.lane);
-}
-
 function lifecycleStageToServiceFilter(stage, currentExamLabel) {
-  if (currentExamLabel !== "Agentic AI") return null;
-  return agenticContextForStage(stage).label;
+  if (!lifecycleContextFiltersForExam(currentExamLabel)) return null;
+  return lifecycleContextForLane(currentExamLabel, stage?.lane).label;
 }
 
 function serviceFilterLabelsForExam(currentExamLabel, examServices, topicFilters) {
-  if (currentExamLabel === "Agentic AI") return AGENTIC_CONTEXT_FILTERS.map((filter) => filter.label);
+  const lifecycleFilters = lifecycleContextFiltersForExam(currentExamLabel);
+  if (lifecycleFilters) return lifecycleFilters.map((filter) => filter.label);
   return ["All", ...topicFilters].filter((filter) => filter === "All" || examServices.some((service) => service.filters.includes(filter)));
 }
 
@@ -2026,7 +2124,7 @@ function agenticUsageBadgeText(usage) {
   return `${usage.contextShort}: ${usage.roleLabel}`;
 }
 
-function uniqueAgenticUsages(usages) {
+function uniqueLifecycleUsages(usages) {
   const seen = new Set();
   return usages.filter((usage) => {
     const key = `${usage.lane}-${usage.stageId}-${usage.roleId}`;
@@ -2036,17 +2134,17 @@ function uniqueAgenticUsages(usages) {
   });
 }
 
-function agenticUsageSummary(service, activeServiceFilter = "All") {
+function lifecycleUsageSummary(service, activeServiceFilter = "All", examLabel) {
   const usages = activeServiceFilter === "All"
-    ? uniqueAgenticUsages(agenticUsagesForService(service))
-    : uniqueAgenticUsages(agenticUsagesForFilter(service, activeServiceFilter));
+    ? uniqueLifecycleUsages(lifecycleUsagesForService(service, examLabel))
+    : uniqueLifecycleUsages(lifecycleUsagesForFilter(service, activeServiceFilter, examLabel));
   return usages.sort((a, b) => a.roleRank - b.roleRank || a.stageIndex - b.stageIndex || a.toolIndex - b.toolIndex);
 }
 
-function compactAgenticUsageSummary(service, activeServiceFilter = "All") {
+function compactLifecycleUsageSummary(service, activeServiceFilter = "All", examLabel) {
   const usages = activeServiceFilter === "All"
-    ? agenticUsagesForService(service)
-    : agenticUsagesForFilter(service, activeServiceFilter);
+    ? lifecycleUsagesForService(service, examLabel)
+    : lifecycleUsagesForFilter(service, activeServiceFilter, examLabel);
   const byContextRole = new Map();
   usages
     .sort((a, b) => a.roleRank - b.roleRank || a.stageIndex - b.stageIndex || a.toolIndex - b.toolIndex)
@@ -2057,10 +2155,10 @@ function compactAgenticUsageSummary(service, activeServiceFilter = "All") {
   return [...byContextRole.values()].sort((a, b) => a.roleRank - b.roleRank || a.stageIndex - b.stageIndex || a.toolIndex - b.toolIndex);
 }
 
-function allAgenticUsageBadges(service, activeServiceFilter = "All") {
-  const all = compactAgenticUsageSummary(service, "All");
+function allLifecycleUsageBadges(service, activeServiceFilter = "All", examLabel) {
+  const all = compactLifecycleUsageSummary(service, "All", examLabel);
   if (activeServiceFilter === "All") return all;
-  const active = new Set(compactAgenticUsageSummary(service, activeServiceFilter).map((usage) => `${usage.lane}-${usage.roleId}`));
+  const active = new Set(compactLifecycleUsageSummary(service, activeServiceFilter, examLabel).map((usage) => `${usage.lane}-${usage.roleId}`));
   return [...all].sort((a, b) => {
     const ai = active.has(`${a.lane}-${a.roleId}`) ? 0 : 1;
     const bi = active.has(`${b.lane}-${b.roleId}`) ? 0 : 1;
@@ -2073,7 +2171,7 @@ function LifecycleFlow({ examLabel: label, selectedStageId, onSelectStage, onSel
   if (!flow) return null;
   const services = nvidiaServices.filter((service) => service.exams.includes(label));
   const visibleGroups = SERVICE_GROUPS.filter((group) => services.some((service) => serviceGroupName(service) === group.name));
-  const cardLabel = branding.serviceLabel || "service";
+  const cardLabel = branding.serviceLabel === "Study Playbooks" ? "study playbook" : (branding.serviceLabel || "service").toLowerCase();
   const hasLanes = flow.stages.some((stage) => stage.lane);
   const laneGroups = hasLanes
     ? [...new Set(flow.stages.map((stage) => stage.lane || "Shared"))].map((lane) => ({
@@ -2131,9 +2229,9 @@ function LifecycleFlow({ examLabel: label, selectedStageId, onSelectStage, onSel
     h("div", { className: "lifecycle-head" },
       h("span", null, "Lifecycle map"),
       h("h3", null, flow.title),
-      h("p", { className: "muted" }, `Click a stage for context, or click a ${cardLabel.toLowerCase()} pill to open it directly.`)
+      h("p", { className: "muted" }, `Click a stage for context, or click a ${cardLabel} pill to open it directly.`)
     ),
-    label === "Agentic AI"
+    lifecycleContextFiltersForExam(label)
       ? h("div", { className: "lifecycle-pill-note" },
           h("span", { className: "lifecycle-tool note-example data" }, "Solid = core"),
           h("span", { className: "lifecycle-tool note-example optional data" }, "Dotted = support/reference")
@@ -2185,7 +2283,7 @@ function StudyModePanel({
   const [quizDifficulty, setQuizDifficulty] = useState("hard");
   const currentExamLabel = examLabel(exam);
   const isGenericStudy = exam.certification.code === "AAI-GEN";
-  const isAgenticNvidia = currentExamLabel === "Agentic AI";
+  const isLifecycleAwareNvidia = Boolean(lifecycleContextFiltersForExam(currentExamLabel));
   const effectiveStudyView = isGenericStudy && !["lifecycle", "services"].includes(studyView) ? "lifecycle" : studyView;
   useEffect(() => {
     if (isGenericStudy && !["lifecycle", "services"].includes(studyView)) setStudyView("lifecycle");
@@ -2217,6 +2315,10 @@ function StudyModePanel({
     .filter((group) => group.services.length);
   const otherServices = filteredServices.filter((service) => !SERVICE_GROUPS.some((group) => group.name === serviceGroupName(service)));
   const serviceFilterLabels = serviceFilterLabelsForExam(currentExamLabel, examServices, topicFilters);
+
+  useEffect(() => {
+    if (!serviceFilterLabels.includes(activeServiceFilter)) setActiveServiceFilter("All");
+  }, [activeServiceFilter, serviceFilterLabels, setActiveServiceFilter]);
 
   useEffect(() => {
     if (effectiveStudyView !== "services" || !examServices.length || filteredServices.length) return;
@@ -2293,7 +2395,7 @@ function StudyModePanel({
   );
 
   const lifecycleContextFilterGroup = isGenericStudy ? null : h("div", { key: "context", className: "filter-group filter-group-context" },
-    h("span", null, isAgenticNvidia ? "Filter by Agentic AI lifecycle context" : "Filter by lifecycle topic"),
+    h("span", null, isLifecycleAwareNvidia ? `Filter by ${currentExamLabel} lifecycle context` : "Filter by lifecycle topic"),
     h(
       "div",
       { className: "filter-pills" },
@@ -2322,7 +2424,7 @@ function StudyModePanel({
       isGenericStudy
         ? [
             h("button", { key: "lifecycle", className: effectiveStudyView === "lifecycle" ? "active" : "", onClick: () => setStudyView("lifecycle") }, "Lifecycle map"),
-            h("button", { key: "services", className: effectiveStudyView === "services" ? "active" : "", onClick: () => setStudyView("services") }, "Capability cards")
+            h("button", { key: "services", className: effectiveStudyView === "services" ? "active" : "", onClick: () => setStudyView("services") }, "Study Playbooks")
           ]
         : [
             h("button", { key: "suite", className: effectiveStudyView === "suite" ? "active" : "", onClick: () => setStudyView("suite") }, branding.suiteLabel),
@@ -2349,7 +2451,7 @@ function StudyModePanel({
       : effectiveStudyView === "services"
       ? h(React.Fragment, null,
           h("div", { className: "service-filter-panel" },
-            isAgenticNvidia ? [lifecycleContextFilterGroup, familyFilterGroup] : [familyFilterGroup, lifecycleContextFilterGroup]
+            isLifecycleAwareNvidia ? [lifecycleContextFilterGroup, familyFilterGroup] : [familyFilterGroup, lifecycleContextFilterGroup]
           ),
           h(
             "div",
@@ -2363,8 +2465,9 @@ function StudyModePanel({
                   key: service.name,
                   service,
                   selected: service.name === selectedService.name,
-                  showAgenticPriority: isAgenticNvidia,
+                  showLifecyclePriority: isLifecycleAwareNvidia,
                   activeServiceFilter,
+                  currentExamLabel,
                   onClick: () => setSelectedServiceName(service.name)
                 }))
               )),
@@ -2375,14 +2478,15 @@ function StudyModePanel({
                       key: service.name,
                       service,
                       selected: service.name === selectedService.name,
-                      showAgenticPriority: isAgenticNvidia,
+                      showLifecyclePriority: isLifecycleAwareNvidia,
                       activeServiceFilter,
+                      currentExamLabel,
                       onClick: () => setSelectedServiceName(service.name)
                     }))
                   )
                 : null
             ),
-            h(ServiceDetail, { service: selectedService, certSlug: exam.slug || "genai_llms_professional", quickQuiz: quickServiceQuiz, generateStudyQuiz, quizDifficulty, setQuizDifficulty, studyStatus, generationStatus, cancelGeneration, branding, showAgenticPriority: isAgenticNvidia, activeServiceFilter })
+            h(ServiceDetail, { service: selectedService, certSlug: exam.slug || "genai_llms_professional", quickQuiz: quickServiceQuiz, generateStudyQuiz, quizDifficulty, setQuizDifficulty, studyStatus, generationStatus, cancelGeneration, branding, showLifecyclePriority: isLifecycleAwareNvidia, activeServiceFilter, currentExamLabel })
           )
         )
       : effectiveStudyView === "suite"
@@ -2414,9 +2518,9 @@ function StudyModePanel({
   );
 }
 
-function ServiceCard({ service, selected, onClick, priorityRole = "", showAgenticPriority = false, activeServiceFilter = "All" }) {
-  const usageSummary = showAgenticPriority ? allAgenticUsageBadges(service, activeServiceFilter) : [];
-  const activeUsage = showAgenticPriority ? bestAgenticUsage(service, activeServiceFilter) || usageSummary[0] : null;
+function ServiceCard({ service, selected, onClick, priorityRole = "", showLifecyclePriority = false, activeServiceFilter = "All", currentExamLabel = "Agentic AI" }) {
+  const usageSummary = showLifecyclePriority ? allLifecycleUsageBadges(service, activeServiceFilter, currentExamLabel) : [];
+  const activeUsage = showLifecyclePriority ? bestLifecycleUsage(service, activeServiceFilter, currentExamLabel) || usageSummary[0] : null;
   const priorityLabel = priorityRole === "core"
     ? "Core"
     : priorityRole === "optional"
@@ -2426,7 +2530,7 @@ function ServiceCard({ service, selected, onClick, priorityRole = "", showAgenti
     "button",
     { className: `service-card ${serviceGroupClass(service)} ${priorityRole ? `stage-${priorityRole}` : ""} ${selected ? "active" : ""}`, onClick },
     priorityLabel ? h("span", { className: `service-priority ${priorityRole || topicSlug(priority.tier)}` }, priorityLabel) : null,
-    showAgenticPriority && usageSummary.length ? h("div", { className: "service-context-chips" },
+    showLifecyclePriority && usageSummary.length ? h("div", { className: "service-context-chips" },
       usageSummary.slice(0, 4).map((usage) => h("span", {
         key: `${usage.lane}-${usage.stageId}-${usage.roleId}`,
         className: `service-context-chip ${usage.roleClass}`
@@ -2436,7 +2540,7 @@ function ServiceCard({ service, selected, onClick, priorityRole = "", showAgenti
     h("span", null, service.lifecycle),
     h("strong", null, service.name),
     h("p", null, service.description),
-    showAgenticPriority && activeUsage ? h("small", { className: "service-priority-note" }, `${activeUsage.stageName}: ${activeUsage.stageNote}`) : null,
+    showLifecyclePriority && activeUsage ? h("small", { className: "service-priority-note" }, `${activeUsage.stageName}: ${activeUsage.stageNote}`) : null,
     h("em", null, service.exams.join(" + "))
   );
 }
@@ -2605,42 +2709,10 @@ function ExamDecisionCards({ study }) {
   );
 }
 
-function CapabilityRecapCards({ study }) {
-  return h("div", { className: "capability-recap service-section" },
-    h("div", { className: "service-section-heading" },
-      h("span", null, "Quick study"),
-      h("h4", null, "What this capability owns")
-    ),
-    h("div", { className: "study-map generic-study-map" },
-      h("section", { className: "identity" },
-        h("span", null, "Where it fits"),
-        h("strong", null, renderInline(study.lifecycle)),
-        h("p", null, renderInline(study.where))
-      ),
-      h("section", { className: "use" },
-        h("span", null, "Use for"),
-        h("p", null, renderInline(study.use))
-      ),
-      h("section", { className: "avoid" },
-        h("span", null, "Not the answer for"),
-        h("p", null, renderInline(study.avoid))
-      ),
-      h("section", { className: "trap" },
-        h("span", null, "Common confusion"),
-        h("p", null, renderInline(study.traps))
-      ),
-      h("section", { className: "scenario" },
-        h("span", null, "Concrete signal"),
-        h("p", null, renderInline(study.scenario))
-      )
-    )
-  );
-}
-
-function AgenticLifecycleUsagePanel({ service, activeServiceFilter = "All" }) {
-  const allUsages = agenticUsageSummary(service);
+function LifecycleUsagePanel({ service, activeServiceFilter = "All", currentExamLabel = "Agentic AI" }) {
+  const allUsages = lifecycleUsageSummary(service, "All", currentExamLabel);
   if (!allUsages.length) return null;
-  const activeUsages = activeServiceFilter === "All" ? [] : agenticUsageSummary(service, activeServiceFilter);
+  const activeUsages = activeServiceFilter === "All" ? [] : lifecycleUsageSummary(service, activeServiceFilter, currentExamLabel);
   const activeKeys = new Set(activeUsages.map((usage) => `${usage.lane}-${usage.stageId}-${usage.roleId}`));
   const orderedUsages = [
     ...activeUsages,
@@ -2666,25 +2738,29 @@ function AgenticLifecycleUsagePanel({ service, activeServiceFilter = "All" }) {
   );
 }
 
-function ServiceDetail({ service, certSlug, quickQuiz, generateStudyQuiz, quizDifficulty, setQuizDifficulty, studyStatus, generationStatus, cancelGeneration, branding = { serviceLabel: "Service" }, showAgenticPriority = false, activeServiceFilter = "All" }) {
-  const markdownState = useServiceMarkdown(service.name);
+function ServiceDetail({ service, certSlug, quickQuiz, generateStudyQuiz, quizDifficulty, setQuizDifficulty, studyStatus, generationStatus, cancelGeneration, branding = { serviceLabel: "Service" }, showLifecyclePriority = false, activeServiceFilter = "All", currentExamLabel = "Agentic AI" }) {
+  const isGenericStudy = service.exams?.includes("Agentic AI General");
+  const markdownState = useServiceMarkdown(service.name, !isGenericStudy);
+  const capabilityState = useCapabilityMarkdown(service.name, isGenericStudy);
   const study = parseStudyContent(markdownState.markdown, service, "service");
   const implementation = extractImplementationDetails(markdownState.markdown);
-  const isGenericStudy = service.exams?.includes("Agentic AI General");
 
   if (isGenericStudy) {
     return h(
       "article",
       { className: "service-detail generic-capability-detail" },
       h("div", { className: "service-detail-title" },
-        h("span", null, "Capability card"),
+        h("span", null, "Study playbook"),
         h("h3", null, service.name),
-        h("p", null, renderInline(study.description)),
-        h("p", { className: "service-mental-model" }, "Use this as an architecture card: what the layer owns, what it produces, what it should not be confused with, and which build path depends on it.")
+        h("p", null, renderInline(service.description || study.description))
       ),
-      h(RelatedVendorServiceCards, { service }),
-      h(CapabilityRecapCards, { study }),
-      h(StudyDeepDive, { item: study, generic: true })
+      h(CapabilityPlaybook, {
+        state: capabilityState,
+        title: service.name,
+        missingPath: `certifications/agentic_ai_general_study/capabilities/${topicSlug(service.name)}.md`,
+        afterSectionTitle: "Pipeline",
+        afterSection: h(RelatedVendorServiceCards, { service, compact: true })
+      })
     );
   }
 
@@ -2697,7 +2773,7 @@ function ServiceDetail({ service, certSlug, quickQuiz, generateStudyQuiz, quizDi
       implementation ? null : h("p", null, renderInline(study.description))
     ),
     h(ImplementationCards, { impl: implementation }),
-    showAgenticPriority ? h(AgenticLifecycleUsagePanel, { service, activeServiceFilter }) : null,
+    showLifecyclePriority ? h(LifecycleUsagePanel, { service, activeServiceFilter, currentExamLabel }) : null,
     h(ExamDecisionCards, { study }),
     h(RelatedVendorServiceCards, { service }),
     h(StudyDeepDive, { item: study }),
@@ -2711,13 +2787,13 @@ function ServiceDetail({ service, certSlug, quickQuiz, generateStudyQuiz, quizDi
   );
 }
 
-function RelatedVendorServiceCards({ service }) {
+function RelatedVendorServiceCards({ service, compact = false }) {
   const related = service.relatedVendorServices || [];
   if (!related.length) return null;
-  return h("section", { className: "vendor-map service-section" },
+  return h("section", { className: `vendor-map service-section${compact ? " vendor-map-compact" : ""}` },
     h("div", { className: "service-section-heading" },
-      h("span", null, "Related services"),
-      h("h4", null, "How platforms implement this capability")
+      h("span", null, "Platform map"),
+      h("h4", null, "Implementation examples")
     ),
     h("div", { className: "vendor-card-grid" },
       related.map((item) => h("article", { key: `${item.vendor}-${item.service}`, className: `vendor-card vendor-${topicSlug(item.vendor)}` },
@@ -2845,10 +2921,14 @@ function topicSlug(name) {
   return String(name).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
-function useServiceMarkdown(serviceName) {
+function useServiceMarkdown(serviceName, enabled = true) {
   const [state, setState] = useState({ status: "idle", markdown: "" });
   const slug = topicSlug(serviceName);
   useEffect(() => {
+    if (!enabled) {
+      setState({ status: "idle", markdown: "" });
+      return undefined;
+    }
     let cancelled = false;
     setState({ status: "loading", markdown: "" });
     fetch(`/api/service?slug=${encodeURIComponent(slug)}`)
@@ -2856,7 +2936,26 @@ function useServiceMarkdown(serviceName) {
       .then((data) => { if (!cancelled) setState({ status: "ok", markdown: data.markdown || "" }); })
       .catch(() => { if (!cancelled) setState({ status: "missing", markdown: "" }); });
     return () => { cancelled = true; };
-  }, [slug]);
+  }, [slug, enabled]);
+  return state;
+}
+
+function useCapabilityMarkdown(serviceName, enabled = true) {
+  const [state, setState] = useState({ status: "idle", markdown: "" });
+  const slug = topicSlug(serviceName);
+  useEffect(() => {
+    if (!enabled) {
+      setState({ status: "idle", markdown: "" });
+      return undefined;
+    }
+    let cancelled = false;
+    setState({ status: "loading", markdown: "" });
+    fetch(`/api/capability?slug=${encodeURIComponent(slug)}`)
+      .then((r) => r.ok ? r.json() : Promise.reject(r.status))
+      .then((data) => { if (!cancelled) setState({ status: "ok", markdown: data.markdown || "" }); })
+      .catch(() => { if (!cancelled) setState({ status: "missing", markdown: "" }); });
+    return () => { cancelled = true; };
+  }, [slug, enabled]);
   return state;
 }
 
@@ -3165,6 +3264,57 @@ function StudyMarkdown({ state, title, missingPath, templatePath, summary, remov
   );
 }
 
+const CAPABILITY_PLAYBOOK_SECTIONS = [
+  "What You Are Building",
+  "Pipeline",
+  "Platform Examples",
+  "Core Concepts",
+  "Decision Guide",
+  "Common Traps",
+  "Deep Dive",
+  "Exam Signals",
+  "Hands-on Checks"
+];
+
+function CapabilityPlaybook({ state, title, missingPath, afterSectionTitle, afterSection }) {
+  if (state.status === "loading" || state.status === "idle") {
+    return h("div", { className: "capability-playbook loading" },
+      h("p", { className: "muted" }, "Loading study playbook...")
+    );
+  }
+  if (state.status === "missing") {
+    return h("div", { className: "topic-md missing" },
+      h("p", { className: "muted" },
+        `No study playbook yet for "${title}". Create `,
+        h("code", null, missingPath),
+        ".")
+    );
+  }
+  const body = stripFrontmatter(state.markdown).replace(/^#\s+.+\n+/, "").trim();
+  const sections = markdownSections(state.markdown);
+  const renderedSections = CAPABILITY_PLAYBOOK_SECTIONS.flatMap((sectionTitle) => {
+    const section = sections[normalizeHeadingName(sectionTitle)];
+    if (!section?.content) return [];
+    const rendered = h("section", {
+      key: sectionTitle,
+      className: `playbook-section playbook-${topicSlug(sectionTitle)}`
+    },
+      h("h4", null, sectionTitle),
+      h("div", { className: "playbook-section-body" }, renderMarkdown(section.content, { autoHighlight: true }))
+    );
+    if (afterSection && normalizeHeadingName(sectionTitle) === normalizeHeadingName(afterSectionTitle)) {
+      return [rendered, h("div", { key: `${sectionTitle}-insert`, className: "playbook-inline-map" }, afterSection)];
+    }
+    return [rendered];
+  }).filter(Boolean);
+  if (!renderedSections.length) {
+    return h("div", { className: "capability-playbook" },
+      h("div", { className: "playbook-section-body" }, renderMarkdown(body, { autoHighlight: true }))
+    );
+  }
+  return h("div", { className: "capability-playbook" }, renderedSections);
+}
+
 function MarkdownOutline({ markdown }) {
   const headings = String(markdown || "")
     .split("\n")
@@ -3185,8 +3335,16 @@ function MarkdownOutline({ markdown }) {
 // Tiny markdown renderer (no deps). Handles: # h1-h4, paragraphs, bullet/numbered
 // lists, blockquote, fenced code, inline `code`, **bold**, *italic*, [text](url), and
 // pipe tables. Output is a tree of React elements — no innerHTML.
-function renderMarkdown(text) {
+function renderMarkdown(text, options = {}) {
   const lines = String(text || "").replace(/\r\n/g, "\n").split("\n");
+  const renderOptions = options.autoHighlight
+    ? {
+        ...options,
+        highlightSeen: options.highlightSeen || new Set(),
+        highlightCount: options.highlightCount || { value: 0 },
+        maxHighlights: options.maxHighlights ?? 6
+      }
+    : options;
   const blocks = [];
   let i = 0;
   while (i < lines.length) {
@@ -3287,24 +3445,108 @@ function renderMarkdown(text) {
   return blocks.map((b, idx) => {
     const key = `b${idx}`;
     switch (b.type) {
-      case "h": return h(`h${Math.min(6, b.level + 2)}`, { key, className: "md-h" }, renderInline(b.text));
-      case "p": return h("p", { key, className: "md-p" }, renderInline(b.text));
-      case "quote": return h("blockquote", { key, className: "md-quote" }, renderInline(b.text));
+      case "h": return h(`h${Math.min(6, b.level + 2)}`, { key, className: "md-h" }, renderInline(b.text, renderOptions));
+      case "p": return h("p", { key, className: "md-p" }, renderInline(b.text, renderOptions));
+      case "quote": return h("blockquote", { key, className: "md-quote" }, renderInline(b.text, renderOptions));
       case "code": return h("pre", { key, className: "md-code" }, b.text);
-      case "details": return h("details", { key, className: "md-details" }, h("summary", null, renderInline(b.summary)), h("div", { className: "md-details-body" }, renderMarkdown(b.text)));
-      case "ul": return h("ul", { key, className: "md-ul" }, b.items.map((it, j) => h("li", { key: j }, renderInline(it))));
-      case "ol": return h("ol", { key, className: "md-ol" }, b.items.map((it, j) => h("li", { key: j }, renderInline(it))));
+      case "details": return h("details", { key, className: "md-details" }, h("summary", null, renderInline(b.summary, renderOptions)), h("div", { className: "md-details-body" }, renderMarkdown(b.text, renderOptions)));
+      case "ul": return h("ul", { key, className: "md-ul" }, b.items.map((it, j) => h("li", { key: j }, renderListItemInline(it, renderOptions))));
+      case "ol": return h("ol", { key, className: "md-ol" }, b.items.map((it, j) => h("li", { key: j }, renderListItemInline(it, renderOptions))));
       case "table":
         return h("table", { key, className: "md-table" },
-          h("thead", null, h("tr", null, b.header.map((cell, j) => h("th", { key: j }, renderInline(cell))))),
-          h("tbody", null, b.rows.map((row, j) => h("tr", { key: j }, row.map((cell, k) => h("td", { key: k }, renderInline(cell))))))
+          h("thead", null, h("tr", null, b.header.map((cell, j) => h("th", { key: j }, renderInline(cell, renderOptions))))),
+          h("tbody", null, b.rows.map((row, j) => h("tr", { key: j }, row.map((cell, k) => h("td", { key: k }, renderInline(cell, renderOptions))))))
         );
       default: return null;
     }
   });
 }
 
-function renderInline(text) {
+const PLAYBOOK_RISK_TERMS = [
+  "benchmark leakage", "train/test overlap", "prompt injection", "jailbreak", "data leakage",
+  "contamination", "PII", "secrets", "toxicity", "unsafe", "license", "licenses",
+  "hallucination", "overfitting", "forgetting", "high-risk", "privacy"
+];
+
+const PLAYBOOK_KEY_TERMS = [
+  "RAG ingestion", "tool gateway", "model registry", "human review", "dataset card",
+  "dataset cards", "model card", "model cards", "source lineage", "evaluation holdout",
+  "continued pretraining", "pretraining", "fine-tuning", "preference tuning",
+  "SFT", "PEFT", "LoRA", "DPO", "GRPO", "RAG", "ACL", "MinHash", "LSH", "SHA-256",
+  "MD5", "deduplication", "fuzzy dedupe", "exact dedupe", "redaction",
+  "holdout", "lineage", "provenance", "structured outputs", "output schema",
+  "instruction hierarchy", "few-shot examples", "idempotency", "permissions",
+  "approval gate", "approval gates", "rollback", "canary", "routing", "batching",
+  "p95", "p99", "guardrails", "policy", "observability", "tool calls",
+  "hosted API", "open-weight model", "open-weight", "self-hosted endpoint",
+  "base checkpoint", "tuned adapter", "tuned adapters", "embedding model",
+  "reasoning model", "multimodal model", "model artifact", "model artifacts",
+  "base model", "base models", "data residency", "deployment environment",
+  "auditability", "failure modes", "eval report", "eval reports",
+  "evals", "risk approval", "FP16", "BF16",
+  "FP8", "INT8", "INT4", "quantized", "distilled", "adapter-backed",
+  "tool-specialized", "MoE", "rollback-ready"
+];
+
+const PLAYBOOK_HIGHLIGHT_PATTERN = new RegExp(
+  `(${[...PLAYBOOK_RISK_TERMS, ...PLAYBOOK_KEY_TERMS]
+    .sort((a, b) => b.length - a.length)
+    .map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .join("|")})`,
+  "gi"
+);
+
+function playbookHighlightClass(value) {
+  const normalized = String(value || "").toLowerCase();
+  return PLAYBOOK_RISK_TERMS.some((term) => term.toLowerCase() === normalized)
+    ? "md-riskterm"
+    : "md-keyterm";
+}
+
+function isHighlightBoundary(source, index, length) {
+  const before = index > 0 ? source[index - 1] : "";
+  const after = index + length < source.length ? source[index + length] : "";
+  return !/[A-Za-z0-9]/.test(before) && !/[A-Za-z0-9]/.test(after);
+}
+
+function renderHighlightedPlain(text, options = {}) {
+  const source = String(text || "");
+  const out = [];
+  let lastIdx = 0;
+  let key = 0;
+  let match;
+  PLAYBOOK_HIGHLIGHT_PATTERN.lastIndex = 0;
+  while ((match = PLAYBOOK_HIGHLIGHT_PATTERN.exec(source)) !== null) {
+    const normalized = match[0].toLowerCase();
+    if (!isHighlightBoundary(source, match.index, match[0].length)) continue;
+    if (options.highlightSeen?.has(normalized)) continue;
+    if (options.highlightCount && options.highlightCount.value >= (options.maxHighlights ?? 6)) continue;
+    if (match.index > lastIdx) out.push(source.slice(lastIdx, match.index));
+    out.push(h("mark", { key: `hl${key++}`, className: playbookHighlightClass(match[0]) }, match[0]));
+    options.highlightSeen?.add(normalized);
+    if (options.highlightCount) options.highlightCount.value += 1;
+    lastIdx = match.index + match[0].length;
+  }
+  if (lastIdx < source.length) out.push(source.slice(lastIdx));
+  return out;
+}
+
+function renderListItemInline(text, options = {}) {
+  const source = String(text || "");
+  if (options.autoHighlight) {
+    const leadMatch = source.match(/^([^:]{2,72}):\s+(.+)$/);
+    if (leadMatch && !/^https?:\/\//i.test(leadMatch[1])) {
+      return [
+        h("strong", { key: "lead", className: "md-lead" }, leadMatch[1]),
+        ": ",
+        ...renderInline(leadMatch[2], options)
+      ];
+    }
+  }
+  return renderInline(source, options);
+}
+
+function renderInline(text, options = {}) {
   const out = [];
   const re = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|\[[^\]]+\]\([^)]+\))/g;
   let lastIdx = 0;
@@ -3312,7 +3554,10 @@ function renderInline(text) {
   let m;
   const source = String(text || "");
   while ((m = re.exec(source)) !== null) {
-    if (m.index > lastIdx) out.push(source.slice(lastIdx, m.index));
+    if (m.index > lastIdx) {
+      const plain = source.slice(lastIdx, m.index);
+      out.push(...(options.autoHighlight ? renderHighlightedPlain(plain, options) : [plain]));
+    }
     const tok = m[0];
     if (tok.startsWith("**")) out.push(h("strong", { key: `i${key++}` }, tok.slice(2, -2)));
     else if (tok.startsWith("`")) out.push(h("code", { key: `i${key++}` }, tok.slice(1, -1)));
@@ -3323,7 +3568,10 @@ function renderInline(text) {
     else if (tok.startsWith("*")) out.push(h("em", { key: `i${key++}` }, tok.slice(1, -1)));
     lastIdx = m.index + tok.length;
   }
-  if (lastIdx < source.length) out.push(source.slice(lastIdx));
+  if (lastIdx < source.length) {
+    const plain = source.slice(lastIdx);
+    out.push(...(options.autoHighlight ? renderHighlightedPlain(plain, options) : [plain]));
+  }
   return out;
 }
 
@@ -3410,10 +3658,10 @@ function TopicMarkdown({ certSlug, sectionName }) {
 
 function StudyDeepDive({ item, generic = false }) {
   const groups = [
-      [generic ? "Quick notes" : "Study notes", item.studyNotes],
+      [generic ? "Mental model notes" : "Study notes", item.studyNotes],
       ["Must know", item.mustKnow],
       [generic ? "Recognition signals" : "Exam signals", item.examSignals],
-      ["Hands-on checks", item.handsOn],
+      [generic ? "Practice checks" : "Hands-on checks", item.handsOn],
       ["Related capabilities", item.relatedServices]
   ].filter(([, values]) => Array.isArray(values) && values.length);
 
@@ -3422,8 +3670,8 @@ function StudyDeepDive({ item, generic = false }) {
     "div",
     { className: "study-deep-dive service-section" },
     h("div", { className: "service-section-heading" },
-      h("span", null, generic ? "Deepen" : "Memory layer"),
-      h("h4", null, generic ? "Recap, signals, and practice checks" : "Study notes and exam signals")
+      h("span", null, generic ? "Deep knowledge" : "Memory layer"),
+      h("h4", null, generic ? "What to internalize" : "Study notes and exam signals")
     ),
     h("div", { className: "study-deep-dive-grid" },
       groups.map(([label, values]) => h(
@@ -3438,6 +3686,80 @@ function StudyDeepDive({ item, generic = false }) {
 
 const GENERATE_COUNTS = [1, 5, 10];
 const GENERATE_DIFFICULTIES = ["easier", "medium", "hard", "advanced", "expert"];
+function practiceStudyByOptions(isGenericStudy, currentExamLabel = "Agentic AI") {
+  return [
+    { value: "recommended", label: "Recommended" },
+    { value: "service", label: isGenericStudy ? "Study playbook" : "NVIDIA service" },
+    { value: "lifecycle", label: currentExamLabel === "GenAI LLMs" ? "GenAI LLM lifecycle" : "Agentic AI lifecycle" },
+    { value: "keyword", label: "Keyword" }
+  ];
+}
+
+function cleanLifecycleLabel(label) {
+  return String(label || "").replace(/^(Core|Secondary|Reference):\s*/, "");
+}
+
+function agenticLifecycleOptions(label = "Agentic AI") {
+  const flow = LIFECYCLE_FLOWS[label] || LIFECYCLE_FLOWS["Agentic AI"];
+  return Object.keys(flow?.lanes || {}).map((lane) => ({
+    lane,
+    label: cleanLifecycleLabel(lane),
+    stages: flow.stages.filter((stage) => stage.lane === lane)
+  }));
+}
+
+function buildPracticeTarget({ studyBy, serviceName, lifecycleLane, keyword, lifecycleLabel = "Agentic AI" }) {
+  if (studyBy === "service") {
+    const service = serviceByName(serviceName);
+    if (!service) return { label: "selected service", keywords: [], topic: "", service: null };
+    return {
+      label: service.name,
+      keywords: [service.name, service.lifecycle, ...(service.keywords || [])],
+      topic: service.quizPrompt || service.scenario || service.name,
+      service
+    };
+  }
+  if (studyBy === "lifecycle") {
+    const options = agenticLifecycleOptions(lifecycleLabel);
+    const option = options.find((item) => item.lane === lifecycleLane) || options[0];
+    const stages = option?.stages || [];
+    const tools = stages.flatMap((stage) => [...(stage.tools || []), ...(stage.optionalTools || [])]);
+    const stageNames = stages.flatMap((stage) => [stage.name, stage.context, stage.note]);
+    const label = option?.label || `${lifecycleLabel} lifecycle`;
+    return {
+      label,
+      keywords: [label, lifecycleLane, ...stageNames, ...tools],
+      topic: `${lifecycleLabel} lifecycle: ${label}. Stages: ${stages.map((stage) => `${stage.name} (${stage.context})`).join("; ")}. Tools: ${[...new Set(tools)].join(", ")}.`,
+      service: null
+    };
+  }
+  if (studyBy === "keyword") {
+    const clean = String(keyword || "").trim();
+    return {
+      label: clean || "keyword focus",
+      keywords: clean ? [clean] : [],
+      topic: clean,
+      service: null
+    };
+  }
+  return {
+    label: "recommended weak domains",
+    keywords: [],
+    topic: "",
+    service: null
+  };
+}
+
+function filteredPracticeQuestions(questions, target, studyBy) {
+  if (studyBy === "recommended") return questions;
+  if (!target?.keywords?.length) return [];
+  return questions.filter((question) => questionMatchesAnyKeyword(question, target.keywords));
+}
+
+function mergePracticeTopic(target, extraTopic) {
+  const extra = String(extraTopic || "").trim();
+  return [target?.topic, extra].filter(Boolean).join(" | ");
+}
 
 function ContextualDrillBar({ topic, certSlug, quickQuiz, onGenerate, quizDifficulty, setQuizDifficulty, generationStatus, cancelGeneration, studyStatus }) {
   const [count, setCount] = useState(1);
@@ -3492,15 +3814,107 @@ function ContextualDrillBar({ topic, certSlug, quickQuiz, onGenerate, quizDiffic
   );
 }
 
-function DrillInlineForm({ exam, generateQuestions, generationStatus, cancelGeneration, drillRecentMistakes, approvedGenerated, startFlow }) {
+function PracticeDrillSetup({
+  count,
+  setCount,
+  difficulty,
+  setDifficulty,
+  bankCount,
+  generatedCount,
+  target,
+  running = false,
+  generationStatus = null,
+  onGenerateNew,
+  onCancelGenerate,
+  onStartBank,
+  onStartGenerated
+}) {
+  const bankStartCount = Math.min(count, bankCount);
+  const generatedStartCount = Math.min(count, generatedCount);
+  const generateCount = Math.min(count, 10);
+  const targetLabel = target?.label || "selected focus";
+  return h("div", { className: "practice-drill-setup" },
+    h("div", { className: "drill-selectors" },
+      h("div", { className: "drill-group" },
+        h("span", { className: "drill-label" }, "Count"),
+        h("div", { className: "drill-chip-group" },
+          DRILL_COUNTS.map((n) =>
+            h("button", { key: n, type: "button", className: `drill-chip ${count === n ? "active" : ""}`, onClick: () => setCount(n) }, `${n}Q`)
+          )
+        )
+      ),
+      h("div", { className: "drill-group drill-group-diff" },
+        h("span", { className: "drill-label" }, "Difficulty"),
+        h("div", { className: "drill-chip-group" },
+          DRILL_DIFFICULTIES.map((d) =>
+            h("button", { key: d, type: "button", className: `drill-chip ${difficulty === d ? "active" : ""}`, onClick: () => setDifficulty(d) }, d)
+          )
+        )
+      )
+    ),
+    h("div", { className: "practice-drill-summary" },
+      h("strong", null, targetLabel),
+      h("span", null, `${bankCount} matching bank question${bankCount === 1 ? "" : "s"} · ${generatedCount} matching generated question${generatedCount === 1 ? "" : "s"} for this focus and difficulty`)
+    ),
+    h("div", { className: "practice-drill-actions" },
+      h("button", { type: "button", className: "pp-btn pp-btn-primary", disabled: !bankCount, onClick: onStartBank },
+        bankStartCount ? `Start ${bankStartCount} from bank` : "No bank match"
+      ),
+      h("button", { type: "button", className: "pp-btn", disabled: !generatedCount, onClick: onStartGenerated },
+        generatedStartCount ? `Start ${generatedStartCount} generated` : "No generated match"
+      ),
+      onGenerateNew
+        ? h("button", { type: "button", className: "pp-btn pp-btn-generate", disabled: running, onClick: onGenerateNew },
+            running ? "Generating..." : `Generate ${generateCount} new`
+          )
+        : null
+    ),
+    generationStatus?.message ? h("p", { className: `generation-status ${generationStatus.state}` }, generationStatus.message) : null,
+    running && onCancelGenerate ? h("button", { type: "button", className: "ghost small", onClick: onCancelGenerate }, "Cancel generation") : null
+  );
+}
+
+function DrillInlineForm({
+  exam,
+  generateQuestions,
+  generationStatus,
+  cancelGeneration,
+  drillRecentMistakes,
+  approvedGenerated,
+  startFlow,
+  target,
+  studyBy,
+  allowBank,
+  allowGenerate,
+  bankMatches,
+  startTargetedGuidedPractice
+}) {
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState("hard");
   const [count, setCount] = useState(1);
   const running = generationStatus.state === "running";
+  const targetLabel = target?.label || "recommended weak domains";
+  const bankCount = bankMatches?.length || 0;
 
   function doGenerate(e) {
     e.preventDefault();
-    generateQuestions({ count, difficulty, topic: topic.trim(), weakOnly: !topic.trim() });
+    if (!allowGenerate) return;
+    generateQuestions({
+      count,
+      difficulty,
+      topic: mergePracticeTopic(target, topic),
+      weakOnly: studyBy === "recommended" && !topic.trim(),
+      service: target?.service || null
+    });
+  }
+
+  function startBankDrill() {
+    if (!allowBank) return;
+    if (studyBy === "recommended") {
+      startFlow("practice-coach-bank");
+      return;
+    }
+    startTargetedGuidedPractice({ questions: bankMatches, label: targetLabel });
   }
 
   return h("div", { className: "pp-card-foot drill-inline" },
@@ -3524,8 +3938,8 @@ function DrillInlineForm({ exam, generateQuestions, generationStatus, cancelGene
         )
       ),
       h("div", { className: "drill-generate-row" },
-        h("input", { type: "text", className: "drill-topic", placeholder: "Topic focus (optional)", value: topic, onChange: (e) => setTopic(e.target.value), disabled: running, maxLength: 200 }),
-        h("button", { type: "submit", className: "pp-btn pp-btn-generate", disabled: running },
+        h("input", { type: "text", className: "drill-topic", placeholder: "Extra keyword or topic (optional)", value: topic, onChange: (e) => setTopic(e.target.value), disabled: running, maxLength: 200 }),
+        h("button", { type: "submit", className: "pp-btn pp-btn-generate", disabled: running || !allowGenerate },
           running ? "Generating…" : `Generate ${count}`
         ),
         running ? h("button", { type: "button", className: "ghost small", onClick: cancelGeneration }, "Cancel") : null
@@ -3533,6 +3947,9 @@ function DrillInlineForm({ exam, generateQuestions, generationStatus, cancelGene
     ),
     generationStatus?.message ? h("p", { className: `generation-status ${generationStatus.state}` }, generationStatus.message) : null,
     h("div", { className: "drill-shortcuts" },
+      h("button", { type: "button", className: "drill-shortcut-btn", disabled: running || !allowBank || !bankCount, onClick: startBankDrill },
+        studyBy === "recommended" ? "Start bank guided" : `Start bank (${bankCount}Q)`
+      ),
       h("button", { type: "button", className: "drill-shortcut-btn", disabled: running, onClick: () => drillRecentMistakes(5) }, "Drill 5 recent mistakes"),
       approvedGenerated
         ? h("button", { type: "button", className: "drill-shortcut-btn", onClick: () => startFlow("practice-generated") }, `Drill pool (${approvedGenerated}Q)`)
@@ -3802,15 +4219,222 @@ function MockPicker({ availableMocks = [], selectedMockId = "mock_1", setSelecte
 }
 
 function PracticePanel(props) {
-  const { exam, dashboard, learnerProfile, startFlow, generateQuestions, generationStatus, cancelGeneration,
+  const { exam, dashboard, learnerProfile, startFlow, startQuestionDrill, generateQuestions, generationStatus, cancelGeneration,
     availableMocks = [], selectedMockId, setSelectedMockId, selectedMockSource, setSelectedMockSource,
-    selectedCertSlug, drillRecentMistakes, refreshExam } = props;
+    selectedCertSlug, refreshExam } = props;
   const hasBank = exam.questions.length > 0;
   const approvedGenerated = exam.approvedGeneratedIds?.length || 0;
   const pendingCount = exam.pendingGeneratedIds?.length || 0;
   const mockGroups = groupMocksBySource(availableMocks);
   const bankCount = Array.isArray(exam.practicePoolIds) && exam.practicePoolIds.length ? exam.practicePoolIds.length : exam.questions.length;
   const isGenericStudy = exam.certification.code === "AAI-GEN";
+  const currentExamLabel = examLabel(exam);
+  const practiceServices = sortServices(nvidiaServices.filter((service) => service.exams.includes(currentExamLabel)));
+  const lifecycleOptions = agenticLifecycleOptions(currentExamLabel);
+  const studyByOptions = practiceStudyByOptions(isGenericStudy, currentExamLabel).filter((option) => option.value !== "recommended");
+  const defaultStudyBy = studyByOptions[0]?.value || "keyword";
+  const [studyBy, setStudyBy] = useState(defaultStudyBy);
+  const [serviceName, setServiceName] = useState(practiceServices[0]?.name || "");
+  const [lifecycleLane, setLifecycleLane] = useState(lifecycleOptions[0]?.lane || "");
+  const [keyword, setKeyword] = useState("");
+  const [drillCount, setDrillCount] = useState(20);
+  const [drillDifficulty, setDrillDifficulty] = useState("hard");
+  useEffect(() => {
+    if (!studyByOptions.some((option) => option.value === studyBy)) {
+      setStudyBy(defaultStudyBy);
+    }
+    if (practiceServices.length && !practiceServices.some((service) => service.name === serviceName)) {
+      setServiceName(practiceServices[0].name);
+    }
+    if (lifecycleOptions.length && !lifecycleOptions.some((option) => option.lane === lifecycleLane)) {
+      setLifecycleLane(lifecycleOptions[0].lane);
+    }
+  }, [studyByOptions, studyBy, defaultStudyBy, practiceServices, serviceName, lifecycleOptions, lifecycleLane]);
+  const practiceIdSet = new Set(Array.isArray(exam.practicePoolIds) && exam.practicePoolIds.length ? exam.practicePoolIds : exam.questions.map((q) => q.id));
+  const practicePool = exam.questions.filter((q) => practiceIdSet.has(q.id));
+  const approvedSet = new Set(exam.approvedGeneratedIds || []);
+  const bankOnlyPool = practicePool.filter((q) => !approvedSet.has(q.id));
+  const generatedPool = exam.questions.filter((q) => approvedSet.has(q.id));
+  const target = buildPracticeTarget({ studyBy, serviceName, lifecycleLane, keyword, lifecycleLabel: currentExamLabel });
+  const bankMatches = filteredPracticeQuestions(bankOnlyPool, target, studyBy);
+  const generatedMatches = filteredPracticeQuestions(generatedPool, target, studyBy);
+  const canUseStudyFilters = ["Agentic AI", "Agentic AI General", "GenAI LLMs"].includes(currentExamLabel);
+  const bankDifficultyMatches = questionsForDifficulty(bankMatches, drillDifficulty);
+  const generatedDifficultyMatches = questionsForDifficulty(generatedMatches, drillDifficulty);
+  const profileRecommendations = h(ProfileRecommendations, { dashboard, learnerProfile, isGenericStudy });
+
+  const recommendedReviewGrid = h("div", { className: `practice-overview-grid ${canUseStudyFilters ? "practice-overview-secondary" : ""}` },
+    h("div", { className: "pp-card pp-card-guided pp-card-feature" },
+      h("div", { className: "pp-card-body" },
+        h("span", { className: "pp-badge pp-badge-guided" }, "Recommended"),
+        h("h3", null, "Weak-domain guided practice"),
+        h("p", null, `${ADAPTIVE_PRACTICE_TARGET} untimed questions selected from your weakest blueprint domains. Separate from the Study By filter below.`)
+      ),
+      h("div", { className: "pp-card-foot pp-card-actions" },
+        h("button", {
+          className: "pp-btn pp-btn-primary pp-btn-full",
+          disabled: !hasBank || !bankOnlyPool.length,
+          onClick: () => startFlow("practice-coach-bank")
+        }, `Start weak-domain bank (${Math.min(ADAPTIVE_PRACTICE_TARGET, bankOnlyPool.length)}Q)`),
+        approvedGenerated
+          ? h("button", {
+              className: "pp-btn pp-btn-full",
+              onClick: () => startFlow("practice-coach-generated")
+            }, `Start weak-domain generated (${Math.min(ADAPTIVE_PRACTICE_TARGET, approvedGenerated)}Q)`)
+          : h("span", { className: "pp-card-hint" }, "No approved generated drafts yet")
+      )
+    ),
+    h("div", { className: "pp-side-panel practice-review-panel" },
+      h("div", { className: "pp-side-head" },
+        h("span", { className: "pp-badge pp-badge-review" }, "Review"),
+        h("h3", null, isGenericStudy ? "Generated drill review" : "Mock test review")
+      ),
+      h("p", { className: "muted" }, isGenericStudy
+        ? "Review fixed generated study sets. Separate from the Study By filter below."
+        : "Review fixed mock tests. Separate from the Study By filter below."),
+      h(MockPicker, {
+        availableMocks,
+        selectedMockId,
+        setSelectedMockId,
+        selectedMockSource,
+        setSelectedMockSource,
+        actionLabel: "Review",
+        variant: isGenericStudy ? "drill" : "mock",
+        disabled: !hasBank,
+        onAction: () => startFlow("practice-mock")
+      })
+    )
+  );
+
+  const focusedPracticeControls = canUseStudyFilters ? h("section", { className: "practice-focus-section" },
+    h("div", { className: "pp-card pp-card-drill pp-card-feature practice-focus-card practice-focus-unified" },
+      h("div", { className: "pp-card-body" },
+        h("span", { className: "pp-badge pp-badge-drill" }, "Study by"),
+        h("h3", null, `Practice ${target.label}`),
+        h("p", null, "Choose a focus, then start from the bank, approved generated questions, or create new questions for this topic."),
+        h(PracticeScopePanel, {
+          studyBy,
+          setStudyBy,
+          studyByOptions,
+          serviceLabel: isGenericStudy ? "Study playbook" : "NVIDIA service",
+          keywordPlaceholder: isGenericStudy
+            ? "RAG, policy controls, model routing..."
+            : currentExamLabel === "GenAI LLMs"
+              ? "TensorRT-LLM, NIM, Retriever, LoRA..."
+              : "NeMo Curator, fine-tune, Retriever...",
+          agenticServices: practiceServices,
+          serviceName,
+          setServiceName,
+          lifecycleOptions,
+          lifecycleLane,
+          setLifecycleLane,
+          keyword,
+          setKeyword,
+          bankMatches,
+          target,
+          embedded: true
+        })
+      ),
+      h("div", { className: "pp-card-foot" },
+        h(PracticeDrillSetup, {
+          count: drillCount,
+          setCount: setDrillCount,
+          difficulty: drillDifficulty,
+          setDifficulty: setDrillDifficulty,
+          bankCount: bankDifficultyMatches.length,
+          generatedCount: generatedDifficultyMatches.length,
+          target,
+          running: generationStatus?.state === "running",
+          generationStatus,
+          onCancelGenerate: cancelGeneration,
+          onGenerateNew: () => generateQuestions({
+            count: Math.min(drillCount, 10),
+            difficulty: drillDifficulty === "any" ? "hard" : drillDifficulty,
+            topic: target.topic,
+            weakOnly: false,
+            service: target.service || null
+          }),
+          onStartBank: () => startQuestionDrill({
+            questions: bankMatches,
+            label: target.label,
+            count: drillCount,
+            difficulty: drillDifficulty,
+            flowName: "practice-section"
+          }),
+          onStartGenerated: () => startQuestionDrill({
+            questions: generatedMatches,
+            label: `${target.label} generated pool`,
+            count: drillCount,
+            difficulty: drillDifficulty,
+            flowName: "practice-generated"
+          })
+        })
+      )
+    )
+  ) : h("div", { className: "practice-main-grid" },
+    h("div", { className: "practice-primary" },
+      h("div", { className: "pp-card pp-card-guided pp-card-feature" },
+        h("div", { className: "pp-card-body" },
+          h("span", { className: "pp-badge pp-badge-guided" }, "Guided"),
+          h("h3", null, "Recommended guided practice"),
+          h("p", null, `${ADAPTIVE_PRACTICE_TARGET} untimed questions selected from your weakest blueprint domains, with coach explanations after each answer.`)
+        ),
+        h("div", { className: "pp-card-foot pp-card-actions" },
+          h("button", {
+            className: "pp-btn pp-btn-primary pp-btn-full",
+            disabled: !hasBank || !bankMatches.length,
+            onClick: () => studyBy === "recommended"
+              ? startFlow("practice-coach-bank")
+              : startTargetedGuidedPractice({ questions: bankMatches, label: target.label })
+          },
+            studyBy === "recommended" ? `Start ${ADAPTIVE_PRACTICE_TARGET}Q guided` : `Guided ${target.label}`
+          ),
+          approvedGenerated
+            ? h("button", {
+                className: "pp-btn pp-btn-full",
+                disabled: !generatedMatches.length,
+                onClick: () => studyBy === "recommended"
+                  ? startFlow("practice-coach-generated")
+                  : startTargetedGuidedPractice({ questions: generatedMatches, label: `${target.label} generated pool` })
+              }, generatedMatches.length ? `Guided generated (${Math.min(ADAPTIVE_PRACTICE_TARGET, generatedMatches.length)}Q)` : "No generated match")
+            : h("span", { className: "pp-card-hint" }, "No approved generated drafts yet")
+        )
+      ),
+
+      h("div", { className: "pp-card pp-card-drill pp-card-feature" },
+        h("div", { className: "pp-card-body" },
+          h("span", { className: "pp-badge pp-badge-drill" }, "Drill"),
+          h("h3", null, "Question drill setup"),
+          h("p", null, "Choose count and difficulty, then start from the selected bank scope or approved generated drafts.")
+        ),
+        h("div", { className: "pp-card-foot" },
+          h(PracticeDrillSetup, {
+            count: drillCount,
+            setCount: setDrillCount,
+            difficulty: drillDifficulty,
+            setDifficulty: setDrillDifficulty,
+            bankCount: bankDifficultyMatches.length,
+            generatedCount: generatedDifficultyMatches.length,
+            target,
+            onStartBank: () => startQuestionDrill({
+              questions: bankMatches,
+              label: target.label,
+              count: drillCount,
+              difficulty: drillDifficulty,
+              flowName: "practice-section"
+            }),
+            onStartGenerated: () => startQuestionDrill({
+              questions: generatedMatches,
+              label: `${target.label} generated pool`,
+              count: drillCount,
+              difficulty: drillDifficulty,
+              flowName: "practice-generated"
+            })
+          })
+        )
+      )
+    )
+  );
 
   return h("div", { className: `practice-panel practice-workspace ${isGenericStudy ? "generic-practice" : ""}` },
     h("div", { className: "pp-head" },
@@ -3833,8 +4457,8 @@ function PracticePanel(props) {
         h("strong", null, `${bankCount}/${exam.questions.length}`),
         h("em", null, "active / total")
       ),
-      h("div", { className: "practice-stat" },
-        h("span", null, "Generated pool"),
+      isGenericStudy ? null : h("div", { className: "practice-stat" },
+        h("span", null, "Approved drafts"),
         h("strong", null, `${approvedGenerated}Q`),
         h("em", null, pendingCount ? `${pendingCount} pending review` : "all reviewed")
       ),
@@ -3849,67 +4473,15 @@ function PracticePanel(props) {
         h("em", null, mockGroups.generated.map((m) => `${m.questionCount}Q`).join(" · ") || "none")
       ),
       isGenericStudy ? h("div", { className: "practice-stat" },
-        h("span", null, "Generated drills"),
+        h("span", null, "Saved drill sets"),
         h("strong", null, `${mockGroups.generated.length}`),
         h("em", null, mockGroups.generated.map((m) => `${m.questionCount}Q`).join(" · ") || "none")
       ) : null
     ),
 
-    h(ProfileRecommendations, { dashboard, learnerProfile, isGenericStudy }),
-
-    h("div", { className: "practice-main-grid" },
-      h("div", { className: "practice-primary" },
-        h("div", { className: "pp-card pp-card-guided pp-card-feature" },
-          h("div", { className: "pp-card-body" },
-            h("span", { className: "pp-badge pp-badge-guided" }, "Guided"),
-            h("h3", null, "Recommended guided practice"),
-            h("p", null, `${ADAPTIVE_PRACTICE_TARGET} untimed questions selected from your weakest blueprint domains, with coach explanations after each answer.`)
-          ),
-          h("div", { className: "pp-card-foot pp-card-actions" },
-            h("button", { className: "pp-btn pp-btn-primary pp-btn-full", disabled: !hasBank, onClick: () => startFlow("practice-coach-bank") },
-              `Start ${ADAPTIVE_PRACTICE_TARGET}Q guided`
-            ),
-            approvedGenerated
-              ? h("button", { className: "pp-btn pp-btn-full", onClick: () => startFlow("practice-coach-generated") }, `Use generated pool (${approvedGenerated}Q)`)
-              : h("span", { className: "pp-card-hint" }, "Generate questions with AI Drill to build a custom pool")
-          )
-        ),
-
-        h("div", { className: "pp-card pp-card-drill pp-card-feature" },
-          h("div", { className: "pp-card-body" },
-            h("span", { className: "pp-badge pp-badge-drill" }, "AI Drill"),
-            h("h3", null, "Targeted question generator"),
-            h("p", null, "Create fresh scenario questions for weak domains, recent mistakes, or one focused topic.")
-          ),
-          h("div", { className: "pp-card-foot" },
-            h(DrillInlineForm, { exam, generateQuestions, generationStatus, cancelGeneration, drillRecentMistakes, approvedGenerated, startFlow })
-          )
-        )
-      ),
-
-      h("aside", { className: "practice-side" },
-        h("div", { className: "pp-side-panel" },
-          h("div", { className: "pp-side-head" },
-            h("span", { className: "pp-badge pp-badge-review" }, "Review"),
-            h("h3", null, isGenericStudy ? "Generated drill review" : "Mock test review")
-          ),
-          h("p", { className: "muted" }, isGenericStudy
-            ? "Untimed review uses AI-generated study sets and shows feedback question by question."
-            : "Untimed review uses the same fixed mock sets as Actual Exam, but shows feedback question by question."),
-          h(MockPicker, {
-            availableMocks,
-            selectedMockId,
-            setSelectedMockId,
-            selectedMockSource,
-            setSelectedMockSource,
-            actionLabel: "Review",
-            variant: isGenericStudy ? "drill" : "mock",
-            disabled: !hasBank,
-            onAction: () => startFlow("practice-mock")
-          })
-        )
-      )
-    ),
+    profileRecommendations,
+    focusedPracticeControls,
+    recommendedReviewGrid,
 
     pendingCount ? h(ReviewQueueCompact, { pendingCount, selectedCertSlug, onChange: refreshExam }) : null,
 
@@ -3921,6 +4493,80 @@ function PracticePanel(props) {
             : ""
         )
       : null
+  );
+}
+
+function PracticeScopePanel({
+  studyBy,
+  setStudyBy,
+  studyByOptions,
+  serviceLabel,
+  keywordPlaceholder,
+  agenticServices,
+  serviceName,
+  setServiceName,
+  lifecycleOptions,
+  lifecycleLane,
+  setLifecycleLane,
+  keyword,
+  setKeyword,
+  bankMatches,
+  target,
+  embedded = false
+}) {
+  return h("div", { className: `practice-scope-panel ${embedded ? "practice-scope-embedded" : ""}` },
+    h("div", { className: "practice-scope-head" },
+      h("div", null,
+        h("span", { className: "pp-profile-label" }, "Study by"),
+        h("strong", null, target?.label || "recommended weak domains")
+      ),
+      h("span", { className: `scope-bank-count ${bankMatches.length ? "" : "empty"}` },
+        studyBy === "recommended" ? "Adaptive weak-domain bank" : `${bankMatches.length} bank match${bankMatches.length === 1 ? "" : "es"}`
+      )
+    ),
+    h("div", { className: "practice-scope-grid" },
+      h("div", { className: "practice-scope-field practice-filter-buttons" },
+        h("span", null, "Focus"),
+        h("div", { className: "scope-button-row" },
+          studyByOptions.map((option) => h("button", {
+            key: option.value,
+            type: "button",
+            className: studyBy === option.value ? "active" : "",
+            onClick: () => setStudyBy(option.value)
+          }, option.label))
+        )
+      ),
+      studyBy === "service"
+        ? h("label", { className: "practice-scope-field" },
+            h("span", null, serviceLabel),
+            h("select", {
+              value: serviceName,
+              onChange: (e) => setServiceName(e.target.value)
+            }, agenticServices.map((service) => h("option", { key: service.name, value: service.name }, service.name)))
+          )
+        : null,
+      studyBy === "lifecycle"
+        ? h("label", { className: "practice-scope-field" },
+            h("span", null, "Lifecycle"),
+            h("select", {
+              value: lifecycleLane,
+              onChange: (e) => setLifecycleLane(e.target.value)
+            }, lifecycleOptions.map((option) => h("option", { key: option.lane, value: option.lane }, option.label)))
+          )
+        : null,
+      studyBy === "keyword"
+        ? h("label", { className: "practice-scope-field" },
+            h("span", null, "Keyword"),
+            h("input", {
+              type: "text",
+              value: keyword,
+              onChange: (e) => setKeyword(e.target.value),
+              placeholder: keywordPlaceholder,
+              maxLength: 80
+            })
+          )
+        : null
+    )
   );
 }
 
@@ -4362,7 +5008,10 @@ function ExamScreen(props) {
         ? h(
             "div",
             { className: correct ? "explanation correct" : "explanation wrong" },
-            h("strong", null, correct ? "Correct" : "Missed"),
+            h("div", { className: "explanation-head" },
+              h("strong", null, correct ? "Correct" : "Missed"),
+              h(QuestionDifficultyBadge, { difficulty: question.difficulty })
+            ),
             h("p", null, question.explanation),
             !correct && question.whyWrong[selected]
               ? h("p", { className: "why-wrong" }, h("strong", null, `Why your choice (${String.fromCharCode(65 + selected)}) is wrong: `), question.whyWrong[selected])
@@ -4643,7 +5292,13 @@ function ReviewScreen(props) {
           return h("div", { key: choice, className }, h("span", null, String.fromCharCode(65 + index)), h("p", null, choice));
         })
       ),
-      h("div", { className: correct ? "explanation correct" : "explanation wrong" }, h("strong", null, correct ? "Correct" : "Missed"), h("p", null, question.explanation)),
+      h("div", { className: correct ? "explanation correct" : "explanation wrong" },
+        h("div", { className: "explanation-head" },
+          h("strong", null, correct ? "Correct" : "Missed"),
+          h(QuestionDifficultyBadge, { difficulty: question.difficulty })
+        ),
+        h("p", null, question.explanation)
+      ),
       coachNotes[question.id]
         ? h("div", { className: "coach-note" },
             h("strong", null, "Coach said"),
@@ -4664,6 +5319,12 @@ function ReviewScreen(props) {
       h("details", { className: "mistake-log" }, h("summary", null, "Mistake markdown log"), h("pre", null, mistakes))
     )
   );
+}
+
+function QuestionDifficultyBadge({ difficulty }) {
+  const value = String(difficulty || "medium").toLowerCase();
+  const label = value === "easier" ? "easy" : value;
+  return h("span", { className: `question-difficulty-badge diff-${label}` }, `Difficulty: ${label}`);
 }
 
 function QuestionRatingPanel({ question, rating, onRate, learnerNote, onNoteChange }) {

@@ -26,6 +26,7 @@ import {
 const root = fileURLToPath(new URL(".", import.meta.url));
 const publicDir = join(root, "public");
 const certsDir = join(root, "certifications");
+const generalCapabilityDir = join(certsDir, "agentic_ai_general_study", "capabilities");
 
 function loadDotenv(filePath) {
   if (!existsSync(filePath)) return;
@@ -314,6 +315,27 @@ const server = createServer(async (req, res) => {
         send(res, 200, { slug, markdown });
       } catch (err) {
         if (err.code === "ENOENT") { send(res, 404, { slug, error: "No service file" }); return; }
+        throw err;
+      }
+      return;
+    }
+
+    if (req.method === "GET" && url.pathname === "/api/capability") {
+      const slug = url.searchParams.get("slug") || "";
+      if (!/^[a-z0-9-]+$/.test(slug)) {
+        send(res, 400, { error: "Invalid capability slug" });
+        return;
+      }
+      const capabilityPath = normalize(join(generalCapabilityDir, `${slug}.md`));
+      if (!capabilityPath.startsWith(generalCapabilityDir)) {
+        send(res, 403, { error: "Invalid capability path" });
+        return;
+      }
+      try {
+        const markdown = await readFile(capabilityPath, "utf8");
+        send(res, 200, { slug, markdown });
+      } catch (err) {
+        if (err.code === "ENOENT") { send(res, 404, { slug, error: "No capability file" }); return; }
         throw err;
       }
       return;

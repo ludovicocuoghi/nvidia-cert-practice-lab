@@ -241,27 +241,28 @@ export const nvidiaServices = [
 const vendorNeutralCapabilities = [
   {
     name: "Training Data Curation Pipeline",
-    description: "Offline data-quality pipeline for pretraining, SFT, PEFT, preference tuning, and evaluation sets: clean, dedupe, redact, license-check, label, split, and document lineage.",
+    description: "Fit-for-purpose data curation for model learning and evaluation: corpus cleanup for training from zero, high-precision examples for tuning, protected holdouts for evaluation, and clear boundaries from RAG ingestion.",
     exams: ["Agentic AI General"],
-    lifecycle: "Training data preparation",
+    lifecycle: "Training-time data curation",
     group: "Data and knowledge",
     filters: ["Agentic AI General", "Data preparation", "Foundation training", "Training and customization", "Evaluation"],
-    use: "Use when raw corpora or examples will change model behavior or become evaluation evidence: pretraining text, SFT instructions, preference pairs, tool-use traces, synthetic examples, and holdout sets.",
-    avoid: "Do not use this as the live RAG retriever or the agent memory store. It prepares learning/evaluation artifacts before training or release.",
-    traps: "Training curation and RAG ingestion look similar but optimize for different outputs: training curation creates datasets the model learns from; RAG ingestion creates permissioned runtime knowledge the model reads.",
-    scenario: "A team wants to fine-tune a model on support-ticket resolutions and must dedupe near-duplicates, remove PII, check licenses, label examples, and keep a clean validation holdout.",
+    use: "Use when data will change model behavior or validate a release: pretraining corpora, continued-pretraining corpora, SFT examples, preference pairs, tool-use traces, synthetic examples, validation sets, and benchmark holdouts.",
+    avoid: "Do not use this as the live RAG retriever, memory store, or permissioned document index. Those prepare runtime knowledge; this prepares learning and evaluation artifacts.",
+    traps: "The word curation is overloaded. Pretraining curation, fine-tuning curation, RAG ingestion, and eval-set construction share cleanup tools, but they optimize for different outputs.",
+    scenario: "A team wants to train or tune a model and must decide which curation recipe applies: web-corpus dedupe for pretraining, labeled examples for SFT, preference pairs for alignment, or protected holdouts for evaluation.",
     quizPrompt: "Which lifecycle component turns raw corpora or examples into safe learning data?",
     keywords: ["training data", "curation", "dedupe", "MinHash", "LSH", "PII", "NER", "holdout", "quality filtering"],
     studyNotes: [
-      "This maps to tools such as NVIDIA NeMo Curator, Spark/Ray data jobs, PII/NER redaction, datasketch/MinHash-LSH dedupe, and internal dataset QA pipelines.",
-      "For pretraining, the focus is corpus quality, deduplication, contamination control, license safety, data mixture, and scale.",
-      "For tuning, the focus is example quality, labels, preference pairs, tool-call traces, task coverage, and clean validation/test splits.",
-      "For evaluation, preserve holdouts and data lineage so you can detect leakage, regressions, and overfitting."
+      "First classify the destination: train-from-zero corpus, continued-pretraining corpus, SFT/PEFT examples, preference data, RAG knowledge, or evaluation holdout. The curation recipe changes with the destination.",
+      "For training from zero or continued pretraining, optimize corpus quality at scale: source mixture, language balance, exact dedupe, MinHash/LSH near-dedupe, license safety, PII handling, contamination checks, tokenizer impact, and lineage.",
+      "For fine-tuning, optimize example quality more than volume: task coverage, labels, rubrics, tool-call traces, answer format, preference pairs, duplicate prompts, split hygiene, and regression holdouts.",
+      "For RAG, use the related knowledge-ingestion/RAG capabilities instead: parse, chunk, embed, tag permissions, refresh indexes, and retrieve at query time without changing weights.",
+      "For evaluation, protect holdouts aggressively. Eval data is evidence, not training material; leakage through duplicates, paraphrases, or synthetic examples invalidates the measurement."
     ],
-    mustKnow: ["near-duplicate detection", "PII/NER redaction", "license checks", "data contamination", "train/validation/test splits", "data cards"],
-    examSignals: ["raw corpus", "training examples", "preference pairs", "contamination", "duplicates", "synthetic examples", "validation holdout"],
-    handsOn: ["Write separate acceptance checklists for pretraining data, SFT examples, preference data, and eval holdouts."],
-    relatedServices: ["Foundation Model Training Stack", "Model Customization Toolkit", "Evaluation and Regression Harness"]
+    mustKnow: ["exact hash dedupe before fuzzy dedupe", "MinHash estimates Jaccard similarity", "LSH avoids all-pairs comparison", "PII detection uses regex plus NER/classifiers", "contamination checks compare train data against validation/test/benchmarks", "fine-tuning data curation is smaller and label/rubric-heavy", "RAG ingestion is runtime knowledge preparation, not weight-changing training data"],
+    examSignals: ["train from zero", "continued pretraining", "raw web corpus", "near duplicates", "MinHash/LSH", "preference pairs", "tool traces", "benchmark leakage", "validation holdout", "PII in corpus"],
+    handsOn: ["Write four separate checklists: pretraining corpus, SFT/PEFT examples, RAG knowledge ingestion, and evaluation holdout. Mark which steps are shared and which are unique."],
+    relatedServices: ["Foundation Model Training Stack", "Model Customization Toolkit", "Knowledge Ingestion and Permission Pipeline", "Knowledge and RAG Pipeline", "Evaluation and Regression Harness"]
   },
   {
     name: "Knowledge Ingestion and Permission Pipeline",
