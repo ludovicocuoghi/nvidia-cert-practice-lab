@@ -27,7 +27,7 @@
 - Section: GPU Acceleration and Optimization
 - Topic: distributed training parallelism
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. The communication-computation overlap: NCCL all-reduce may not be overlapping with the next compute kernel, causing serialized execution
 - B. The NVLink bandwidth being insufficient for 8-way tensor parallelism on H100 hardware
 - C. The model being too small — tensor parallelism at scale 8 only benefits models above 175B parameters
@@ -44,7 +44,7 @@
 - Section: Model Optimization
 - Topic: quantization
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. The INT8 activation quantization is clipping outlier channel values, distorting the model's internal representation of rare API names
 - B. The H100 GPU does not natively support INT8 activation quantization, so the operations fall back to FP16 with truncation errors
 - C. AWQ should have been used instead of SmoothQuant because AWQ handles weight-only quantization more gracefully for code models

@@ -5156,9 +5156,65 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   white-space: nowrap;
 }
 
+.drill-chip-difficulty.diff-any {
+  background: #f8fbf7;
+  border-color: #cdd8ca;
+  color: #40503b;
+}
+
+.drill-chip-difficulty.diff-easier {
+  background: #edf8df;
+  border-color: #9fc95a;
+  color: #41670f;
+}
+
+.drill-chip-difficulty.diff-medium {
+  background: #e4f5ef;
+  border-color: #64b98f;
+  color: #146340;
+}
+
+.drill-chip-difficulty.diff-hard {
+  background: #eef4ff;
+  border-color: #78a6d8;
+  color: #1d5f99;
+}
+
+.drill-chip-difficulty.diff-advanced {
+  background: #f2edff;
+  border-color: #9a83d6;
+  color: #563a99;
+}
+
+.drill-chip-difficulty.diff-expert {
+  background: #f4e8ff;
+  border-color: #a963cf;
+  color: #6a2788;
+}
+
 .drill-chip.active {
   background: var(--ink);
   border-color: var(--ink);
+  color: #fff;
+}
+
+.drill-chip-difficulty.active.diff-easier,
+.drill-chip-difficulty.active.diff-medium {
+  background: #2f7b2f;
+  border-color: #2f7b2f;
+  color: #fff;
+}
+
+.drill-chip-difficulty.active.diff-hard {
+  background: #236da3;
+  border-color: #236da3;
+  color: #fff;
+}
+
+.drill-chip-difficulty.active.diff-advanced,
+.drill-chip-difficulty.active.diff-expert {
+  background: #6d3aa0;
+  border-color: #6d3aa0;
   color: #fff;
 }
 

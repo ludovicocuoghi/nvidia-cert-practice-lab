@@ -49,7 +49,7 @@
 - Section: Model Optimization
 - Topic: TensorRT-LLM inference optimization
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. Static batching with max batch size 32 and padding to longest sequence
 - B. Static batching with max batch size 1 to guarantee TTFT
 - C. Disable batching and rely on tensor parallelism alone
@@ -142,7 +142,7 @@
 - Section: Model Optimization
 - Topic: TensorRT-LLM inference optimization
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. A 7B model from a different family, never trained on the target's data
 - B. A 175B teacher model
 - C. The 70B target itself with temperature 0
@@ -188,7 +188,7 @@
 - Section: Model Optimization
 - Topic: quantization
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. Doubling beam width
 - B. CUDA graphs for the decoder loop combined with FlashAttention-2 fused kernel
 - C. Switching to a 70B model
@@ -231,7 +231,7 @@
 - Section: Model Optimization
 - Topic: Model Optimization
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. Sharp degradation on multi-step reasoning benchmarks while simple recall tasks remain stable
 - B. Memory savings without latency improvement
 - C. Lower GPU utilization at idle
@@ -274,7 +274,7 @@
 - Section: Model Optimization
 - Topic: deployment architecture
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. CUDA is not installed
 - B. ONNX is corrupt
 - C. TensorRT applied layer fusion and FP16 precision flags that change numerical ordering — small numerical drift is expected and often acceptable if validated
@@ -360,7 +360,7 @@
 - Section: GPU Acceleration and Optimization
 - Topic: distributed training parallelism
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. Bubble overhead is independent of pipeline depth
 - B. When the model has fewer parameters than the GPU memory
 - C. When training data is small
@@ -402,7 +402,7 @@
 - Section: GPU Acceleration and Optimization
 - Topic: LLM architecture
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. Insufficient batch size
 - B. Tensor cores are off
 - C. PCIe is the bottleneck
@@ -444,7 +444,7 @@
 - Section: GPU Acceleration and Optimization
 - Topic: GPU Acceleration and Optimization
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. KV cache
 - B. Tokenizer memory
 - C. Activation memory only
@@ -486,7 +486,7 @@
 - Section: Prompt Engineering
 - Topic: reasoning prompts
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. CoT always degrades accuracy
 - B. The prompt is too short
 - C. Small models often produce unfaithful CoT — the reasoning text doesn't track the actual computation, which compounds errors
@@ -571,7 +571,7 @@
 - Section: Prompt Engineering
 - Topic: prompt grounding and RAG prompting
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. Include passages without numbering and ask for a paragraph answer
 - B. Number each retrieved passage, instruct the model to cite [n] inline for every factual claim, and add a refusal clause for unsupported claims
 - C. Ask for citations only after the answer in a postscript
@@ -613,7 +613,7 @@
 - Section: Prompt Engineering
 - Topic: Prompt Engineering
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. The retrieved RAG context (changes every call)
 - B. The system prompt, persona, and stable few-shot examples — anything that is identical across requests
 - C. The user's current question
@@ -655,7 +655,7 @@
 - Section: Prompt Engineering
 - Topic: Prompt Engineering
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. Hide the system prompt with whitespace
 - B. A single sentence in the user prompt: "do not answer off-topic"
 - C. A separate, model-side policy enforcement layer (e.g., NeMo Guardrails or a classifier) plus a refusal section in the system prompt
@@ -697,7 +697,7 @@
 - Section: Fine-Tuning
 - Topic: NCCL and multi-node communication
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. GPU memory is unused
 - B. Training loss plateaus well above the loss reached by full FT and validation accuracy is also stuck
 - C. Training loss is already at zero
@@ -781,7 +781,7 @@
 - Section: Fine-Tuning
 - Topic: fine-tuning strategy
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. The base model breaks
 - B. Merging always helps
 - C. LoRA adapters cannot be merged
@@ -823,7 +823,7 @@
 - Section: Fine-Tuning
 - Topic: preference optimization and RLHF
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. Increase learning rate
 - B. Remove the value head
 - C. Disable the reference model
@@ -865,7 +865,7 @@
 - Section: Data Preparation
 - Topic: data preparation and tokenization
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. No deduplication
 - B. MinHash + LSH (or equivalent) for near-duplicate detection at sub-document level, with a similarity threshold tuned to hold-out leakage
 - C. Exact MD5 hashing of full documents only
@@ -907,7 +907,7 @@
 - Section: Data Preparation
 - Topic: data preparation and tokenization
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. Train and hope no PII is memorized
 - B. Encrypt every document
 - C. PII detection + redaction pipeline (regex + NER ensemble), with audited samples and tracking of false-positive/false-negative rates
@@ -991,7 +991,7 @@
 - Section: Model Deployment
 - Topic: deployment architecture
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. A vector database
 - B. A training framework
 - C. Just a tokenizer
@@ -1033,7 +1033,7 @@
 - Section: Model Deployment
 - Topic: preference optimization and RLHF
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. Maintain a small minimum-replica pool (warm pool) and pre-load model weights/engine at container start (model_warmup), with predictive scaling on traffic patterns
 - B. Disable warmup
 - C. Reduce model size by 90%
@@ -1075,7 +1075,7 @@
 - Section: Model Deployment
 - Topic: Triton serving and batching
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. Convert to CPU inference
 - B. Replace the GPU
 - C. Inspect Triton metrics (queue time, batch size distribution, instance group occupancy) and the engine's preferred batch sizes; this often points to a batching mismatch starving the GPU
@@ -1117,7 +1117,7 @@
 - Section: Evaluation
 - Topic: data preparation and tokenization
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. Perplexity is bounded between 0 and 1
 - B. Perplexity always increases with model size
 - C. Perplexity is per-token; different tokenizers split text into different token counts, so the same text yields different perplexity values that aren't directly comparable
@@ -1201,7 +1201,7 @@
 - Section: Production Monitoring and Reliability
 - Topic: production monitoring
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. Disk free space
 - B. CPU usage alarms
 - C. Monitoring tokenizer load time
@@ -1243,7 +1243,7 @@
 - Section: Production Monitoring and Reliability
 - Topic: prompt grounding and RAG prompting
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. CPU utilization
 - B. Retrieval-side metrics — recall@k on a labeled held-out set, plus distribution of retrieval scores over time and faithfulness on canary queries
 - C. GPU temperature
@@ -1285,7 +1285,7 @@
 - Section: Production Monitoring and Reliability
 - Topic: prompt grounding and RAG prompting
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. Disable monitoring
 - B. Restart all servers
 - C. Increase temperature
@@ -1327,7 +1327,7 @@
 - Section: LLM Architecture
 - Topic: LLM Architecture
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. The same as a dense model
 - B. 8x the dense model
 - C. Zero
@@ -1411,7 +1411,7 @@
 - Section: Safety, Ethics, and Compliance
 - Topic: safety and guardrails
 - Exam: NCP-GENL
-- Difficulty: advanced
+- Difficulty: hard
 - A. Manage GPU memory
 - B. Train a new model
 - C. Replace the tokenizer

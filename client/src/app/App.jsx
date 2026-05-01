@@ -3701,15 +3701,30 @@ function cleanLifecycleLabel(label) {
 
 function agenticLifecycleOptions(label = "Agentic AI") {
   const flow = LIFECYCLE_FLOWS[label] || LIFECYCLE_FLOWS["Agentic AI"];
-  return Object.keys(flow?.lanes || {}).map((lane) => ({
+  const stages = flow?.stages || [];
+  return [
+    { lane: "__all__", label: "All lifecycles", stages },
+    ...Object.keys(flow?.lanes || {}).map((lane) => ({
     lane,
     label: cleanLifecycleLabel(lane),
-    stages: flow.stages.filter((stage) => stage.lane === lane)
-  }));
+    stages: stages.filter((stage) => stage.lane === lane)
+    }))
+  ];
 }
 
 function buildPracticeTarget({ studyBy, serviceName, lifecycleLane, keyword, lifecycleLabel = "Agentic AI" }) {
   if (studyBy === "service") {
+    if (serviceName === "__all__") {
+      return {
+        label: lifecycleLabel === "Agentic AI General" ? "All study playbooks" : "All NVIDIA services",
+        keywords: [],
+        all: true,
+        topic: lifecycleLabel === "Agentic AI General"
+          ? "All general study playbooks and capability questions."
+          : `All ${lifecycleLabel} NVIDIA services and lifecycle questions.`,
+        service: null
+      };
+    }
     const service = serviceByName(serviceName);
     if (!service) return { label: "selected service", keywords: [], topic: "", service: null };
     return {
@@ -3723,6 +3738,15 @@ function buildPracticeTarget({ studyBy, serviceName, lifecycleLane, keyword, lif
     const options = agenticLifecycleOptions(lifecycleLabel);
     const option = options.find((item) => item.lane === lifecycleLane) || options[0];
     const stages = option?.stages || [];
+    if (option?.lane === "__all__") {
+      return {
+        label: "All lifecycles",
+        keywords: [],
+        all: true,
+        topic: `All ${lifecycleLabel} lifecycle paths.`,
+        service: null
+      };
+    }
     const tools = stages.flatMap((stage) => [...(stage.tools || []), ...(stage.optionalTools || [])]);
     const stageNames = stages.flatMap((stage) => [stage.name, stage.context, stage.note]);
     const label = option?.label || `${lifecycleLabel} lifecycle`;
@@ -3736,9 +3760,10 @@ function buildPracticeTarget({ studyBy, serviceName, lifecycleLane, keyword, lif
   if (studyBy === "keyword") {
     const clean = String(keyword || "").trim();
     return {
-      label: clean || "keyword focus",
+      label: clean || "All keywords",
       keywords: clean ? [clean] : [],
-      topic: clean,
+      all: !clean,
+      topic: clean || "All keyword topics in the current question bank.",
       service: null
     };
   }
@@ -3752,6 +3777,7 @@ function buildPracticeTarget({ studyBy, serviceName, lifecycleLane, keyword, lif
 
 function filteredPracticeQuestions(questions, target, studyBy) {
   if (studyBy === "recommended") return questions;
+  if (target?.all) return questions;
   if (!target?.keywords?.length) return [];
   return questions.filter((question) => questionMatchesAnyKeyword(question, target.keywords));
 }
@@ -3847,7 +3873,7 @@ function PracticeDrillSetup({
         h("span", { className: "drill-label" }, "Difficulty"),
         h("div", { className: "drill-chip-group" },
           DRILL_DIFFICULTIES.map((d) =>
-            h("button", { key: d, type: "button", className: `drill-chip ${difficulty === d ? "active" : ""}`, onClick: () => setDifficulty(d) }, d)
+            h("button", { key: d, type: "button", className: `drill-chip drill-chip-difficulty diff-${d} ${difficulty === d ? "active" : ""}`, onClick: () => setDifficulty(d) }, d)
           )
         )
       )
@@ -3932,7 +3958,7 @@ function DrillInlineForm({
           h("span", { className: "drill-label" }, "Difficulty"),
           h("div", { className: "drill-chip-group" },
             GENERATE_DIFFICULTIES.map((d) =>
-              h("button", { key: d, type: "button", className: `drill-chip ${difficulty === d ? "active" : ""}`, onClick: () => setDifficulty(d), disabled: running }, d)
+              h("button", { key: d, type: "button", className: `drill-chip drill-chip-difficulty diff-${d} ${difficulty === d ? "active" : ""}`, onClick: () => setDifficulty(d), disabled: running }, d)
             )
           )
         )
@@ -4234,7 +4260,7 @@ function PracticePanel(props) {
   const studyByOptions = practiceStudyByOptions(isGenericStudy, currentExamLabel).filter((option) => option.value !== "recommended");
   const defaultStudyBy = studyByOptions[0]?.value || "keyword";
   const [studyBy, setStudyBy] = useState(defaultStudyBy);
-  const [serviceName, setServiceName] = useState(practiceServices[0]?.name || "");
+  const [serviceName, setServiceName] = useState("__all__");
   const [lifecycleLane, setLifecycleLane] = useState(lifecycleOptions[0]?.lane || "");
   const [keyword, setKeyword] = useState("");
   const [drillCount, setDrillCount] = useState(20);
@@ -4243,8 +4269,8 @@ function PracticePanel(props) {
     if (!studyByOptions.some((option) => option.value === studyBy)) {
       setStudyBy(defaultStudyBy);
     }
-    if (practiceServices.length && !practiceServices.some((service) => service.name === serviceName)) {
-      setServiceName(practiceServices[0].name);
+    if (serviceName !== "__all__" && practiceServices.length && !practiceServices.some((service) => service.name === serviceName)) {
+      setServiceName("__all__");
     }
     if (lifecycleOptions.length && !lifecycleOptions.some((option) => option.lane === lifecycleLane)) {
       setLifecycleLane(lifecycleOptions[0].lane);
@@ -4542,7 +4568,10 @@ function PracticeScopePanel({
             h("select", {
               value: serviceName,
               onChange: (e) => setServiceName(e.target.value)
-            }, agenticServices.map((service) => h("option", { key: service.name, value: service.name }, service.name)))
+            },
+              h("option", { value: "__all__" }, serviceLabel === "Study playbook" ? "All study playbooks" : "All NVIDIA services"),
+              agenticServices.map((service) => h("option", { key: service.name, value: service.name }, service.name))
+            )
           )
         : null,
       studyBy === "lifecycle"
