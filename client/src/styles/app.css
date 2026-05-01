@@ -1866,9 +1866,18 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 }
 
 .lifecycle-pill-note .note-example {
+  border-color: #151a15;
+  background: #151a15;
+  color: #ffffff;
   cursor: default;
   font-size: 11px;
   padding: 3px 8px;
+}
+
+.lifecycle-pill-note .note-example.optional {
+  border-color: #151a15;
+  background: #ffffff;
+  color: #151a15;
 }
 
 .lifecycle-pill-note .note-example:hover {
