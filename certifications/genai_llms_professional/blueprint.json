@@ -1,0 +1,36 @@
+{
+  "slug": "genai_llms_professional",
+  "name": "NVIDIA Certified Professional — Generative AI LLMs",
+  "code": "NCP-GENL",
+  "level": "Professional",
+  "homepage": "https://www.nvidia.com/en-us/learn/certification/generative-ai-llm-professional/",
+  "format": {
+    "questionCount": { "min": 60, "max": 70 },
+    "durationMinutes": 120,
+    "passingScorePercent": 70,
+    "deliveryPlatform": "Certiverse",
+    "validityYears": 2,
+    "retakeWaitDays": 14,
+    "maxAttemptsPerYear": 5,
+    "feeUSD": 200,
+    "languages": ["English", "Mandarin (partial)"]
+  },
+  "domains": [
+    { "name": "Model Optimization", "weight": 17, "focus": "Quantization (INT8/FP16/FP8/INT4), pruning, distillation, TensorRT-LLM, dynamic batching, KV cache, latency/throughput trade-offs." },
+    { "name": "GPU Acceleration and Optimization", "weight": 14, "focus": "Data/tensor/pipeline/expert parallelism, FSDP, NCCL, gradient checkpointing, Nsight profiling, multi-GPU memory layout." },
+    { "name": "Prompt Engineering", "weight": 13, "focus": "Zero/few-shot, chain-of-thought, RAG prompt structuring, instruction tuning, hallucination control, system-prompt design." },
+    { "name": "Fine-Tuning", "weight": 13, "focus": "SFT vs PEFT (LoRA, QLoRA, adapters), RLHF/DPO/GRPO, KL-divergence in PPO, catastrophic forgetting, rank/alpha tuning." },
+    { "name": "Data Preparation", "weight": 9, "focus": "Tokenizer training, vocabulary, deduplication, quality filtering, bias mitigation, data mixing ratios." },
+    { "name": "Model Deployment", "weight": 9, "focus": "NIM microservices, Triton, dynamic batching, canary/A-B, autoscaling, batch vs streaming, ONNX." },
+    { "name": "Evaluation", "weight": 7, "focus": "Perplexity, BLEU, ROUGE, BERTScore, RAG faithfulness, LLM-as-judge bias, human eval design." },
+    { "name": "Production Monitoring and Reliability", "weight": 7, "focus": "Drift detection, observability, SLA, cost optimization, failover, quality regression alarms." },
+    { "name": "LLM Architecture", "weight": 6, "focus": "Multi-head/multi-query/grouped-query attention, RoPE/ALiBi, MoE, scaling laws, decoder-only vs encoder-decoder." },
+    { "name": "Safety, Ethics, and Compliance", "weight": 5, "focus": "Bias detection, NeMo Guardrails, content filtering, prompt-injection defense, red-teaming, PII handling." }
+  ],
+  "references": [
+    "reference/study-guide-r1.pdf",
+    "reference/report.md",
+    "reference/research-notes.md"
+  ],
+  "targetQuestionCount": 100
+}

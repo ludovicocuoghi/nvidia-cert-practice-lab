@@ -1,0 +1,14 @@
+{
+  "approved": [
+    "monitor-004",
+    "arch-011",
+    "dev-011",
+    "eval-009",
+    "deploy-009",
+    "cog-008",
+    "deploy-012",
+    "arch-012",
+    "deploy-013"
+  ],
+  "rejected": []
+}

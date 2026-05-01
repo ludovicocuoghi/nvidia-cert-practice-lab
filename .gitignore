@@ -1,0 +1,26 @@
+__pycache__/
+*.pyc
+.DS_Store
+
+# Dependencies and build output
+node_modules/
+client/dist/
+dist/
+coverage/
+
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# Local assistant/tool state
+.claude/
+
+# Mock exams and generated mock-derived study data
+certifications/**/archive/
+certifications/**/mocks/
+certifications/**/mock_results.md
+certifications/**/mistakes.md
+certifications/**/sessions.md
+certifications/**/learner_profile.md
+knowledge extracted from mock exams/

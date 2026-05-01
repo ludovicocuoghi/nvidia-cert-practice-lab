@@ -1,0 +1,26 @@
+{
+  "slug": "agentic_ai_general_study",
+  "name": "Agentic AI General Study",
+  "code": "AAI-GEN",
+  "level": "Vendor-neutral",
+  "homepage": "https://www.nist.gov/itl/ai-risk-management-framework",
+  "format": {
+    "questionCount": { "min": 24, "max": 32 },
+    "durationMinutes": 60,
+    "passingScorePercent": 70,
+    "deliveryPlatform": "Local practice",
+    "validityYears": null
+  },
+  "domains": [
+    { "name": "Agent Lifecycle and Architecture", "weight": 14, "focus": "End-to-end agent lifecycle, deterministic workflows, autonomous loops, multi-agent roles, and control boundaries." },
+    { "name": "Data Curation and Knowledge Grounding", "weight": 12, "focus": "Training data curation, document ingestion, retrieval, chunking, permissions, freshness, and grounding." },
+    { "name": "Model Selection and Customization", "weight": 12, "focus": "Choosing base models, adapting behavior with prompts, RAG, PEFT/SFT, preference tuning, and model registries." },
+    { "name": "Tooling, Orchestration, and Memory", "weight": 16, "focus": "Tool schemas, function calling, workflow orchestration, memory scopes, state management, and recovery patterns." },
+    { "name": "Inference Serving and Deployment", "weight": 14, "focus": "Inference microservices, serving gateways, containers, scaling, batching, rollout controls, and API operations." },
+    { "name": "Evaluation and Safety", "weight": 14, "focus": "Agent trajectory evaluation, task success, groundedness, red teaming, guardrails, policy checks, and regression suites." },
+    { "name": "Observability, Operations, and Cost", "weight": 10, "focus": "Tracing, monitoring, tool-call health, p95/p99 latency, token cost, drift, incidents, and optimization loops." },
+    { "name": "Human Oversight and Governance", "weight": 8, "focus": "Human-in-the-loop approval, escalation, auditability, risk tiering, compliance, and operating model design." }
+  ],
+  "targetQuestionCount": 80,
+  "status": "study-mode-ready"
+}

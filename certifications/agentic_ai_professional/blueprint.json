@@ -1,0 +1,28 @@
+{
+  "slug": "agentic_ai_professional",
+  "name": "NVIDIA Certified Professional — Agentic AI",
+  "code": "NCP-AAI",
+  "level": "Professional",
+  "homepage": "https://www.nvidia.com/en-us/learn/certification/",
+  "format": {
+    "questionCount": { "min": 60, "max": 70 },
+    "durationMinutes": 120,
+    "passingScorePercent": 70,
+    "deliveryPlatform": "Certiverse",
+    "validityYears": 2
+  },
+  "domains": [
+    { "name": "Agent Architecture and Design", "weight": 15, "focus": "Foundational structuring and design of agentic AI systems, including how agents interact, reason, and communicate." },
+    { "name": "Agent Development", "weight": 15, "focus": "Practical building, integration, tool use, structured outputs, orchestration frameworks, and reliability patterns." },
+    { "name": "Evaluation and Tuning", "weight": 13, "focus": "Measuring, comparing, and optimizing agent performance across answers, trajectories, tool calls, latency, cost, and safety." },
+    { "name": "Deployment and Scaling", "weight": 13, "focus": "Operationalizing and scaling agentic systems with services, queues, rollouts, reliability, and fallback patterns." },
+    { "name": "Cognition, Planning, and Memory", "weight": 10, "focus": "Reasoning strategies, planning, task decomposition, short-term memory, long-term memory, and reflection." },
+    { "name": "Knowledge Integration and Data Handling", "weight": 10, "focus": "External knowledge, retrieval pipelines, vector search, structured data, access control, freshness, and grounding." },
+    { "name": "NVIDIA Platform Implementation", "weight": 7, "focus": "NIM, NeMo Agent Toolkit, NeMo Guardrails, NeMo Retriever, Nemotron, Triton, and TensorRT-LLM for agentic systems." },
+    { "name": "Run, Monitor, and Maintain", "weight": 5, "focus": "Ongoing operation, tracing, tool-call monitoring, drift detection, cost dashboards, and incident response." },
+    { "name": "Safety, Ethics, and Compliance", "weight": 5, "focus": "Prompt injection defense, tool security, guardrails, privacy, auditability, responsible AI, and compliance." },
+    { "name": "Human-AI Interaction and Oversight", "weight": 5, "focus": "Human-in-the-loop approvals, escalation, UI feedback, review queues, and human-on-the-loop monitoring." }
+  ],
+  "targetQuestionCount": 100,
+  "status": "study-mode-ready"
+}

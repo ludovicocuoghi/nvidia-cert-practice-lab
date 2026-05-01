@@ -1,0 +1,176 @@
+{
+  "updated": "2026-04-29",
+  "note": "Public-source learning summary. This app is not affiliated with NVIDIA and does not run real NVIDIA NIM, NeMo, or Nemotron models.",
+  "sources": [
+    {
+      "title": "NVIDIA NIM Microservices",
+      "url": "https://www.nvidia.com/en-us/ai-data-science/products/nim-microservices/",
+      "points": [
+        "NIM packages optimized inference microservices for deployment on NVIDIA-accelerated infrastructure.",
+        "NIM emphasizes OpenAI-compatible APIs, container deployment, portability, throughput, latency, and enterprise support."
+      ]
+    },
+    {
+      "title": "NVIDIA NIM for Large Language Models API Reference",
+      "url": "https://docs.nvidia.com/nim/large-language-models/latest/reference/api-reference.html",
+      "points": [
+        "NIM LLM exposes OpenAI-compatible endpoints such as /v1/chat/completions, /v1/completions, /v1/responses, /v1/models, tokenize, and detokenize.",
+        "Recent documentation also references streaming, tool calling, response retrieval, cancellation, and Anthropic-compatible messages endpoints."
+      ]
+    },
+    {
+      "title": "NVIDIA NIM Model Profiles",
+      "url": "https://docs.nvidia.com/nim/large-language-models/1.15.0/profiles.html",
+      "points": [
+        "Model profiles choose runtime engines and deployment criteria for a specific model and hardware combination.",
+        "Profiles may be optimized for hardware or generic, with backends such as TensorRT-LLM, vLLM, and SGLang."
+      ]
+    },
+    {
+      "title": "Supported Models for NVIDIA NIM for LLMs",
+      "url": "https://docs.nvidia.com/nim/large-language-models/1.12.0/supported-models.html",
+      "points": [
+        "Supported hardware examples include data-center GPUs and professional RTX-class GPUs with different memory limits.",
+        "The app models GPU memory as a practical planning constraint for mock deployment choices."
+      ]
+    },
+    {
+      "title": "NVIDIA NeMo",
+      "url": "https://www.nvidia.com/en-us/ai-data-science/products/nemo/",
+      "points": [
+        "NeMo is described as a toolkit for managing the AI agent lifecycle, including data processing, fine-tuning, evaluation, safety, and observability.",
+        "The simulator treats NeMo as the lifecycle layer around models, data, evaluation, and guardrails."
+      ]
+    },
+    {
+      "title": "NVIDIA NeMo Framework Docs",
+      "url": "https://docs.nvidia.com/nemo-framework/index.html",
+      "points": [
+        "NeMo Framework supports building, customizing, and deploying generative AI models, including LLMs and multimodal models.",
+        "The app includes mock fine-tuning and evaluation planning inspired by this workflow."
+      ]
+    },
+    {
+      "title": "NVIDIA NeMo Guardrails Docs",
+      "url": "https://docs.nvidia.com/nemo/guardrails/latest/about/overview.html",
+      "points": [
+        "NeMo Guardrails adds programmable controls around LLM applications to block unsafe, off-topic, or malicious inputs and responses.",
+        "The simulator scores prompts for safety and flags common guardrail mistakes."
+      ]
+    },
+    {
+      "title": "NVIDIA NeMo Retriever",
+      "url": "https://developer.nvidia.com/nemo-retriever",
+      "points": [
+        "NeMo Retriever focuses on document ingestion, extraction, embedding, reranking, and RAG pipelines.",
+        "The simulator includes a mock retrieval path with embedding and reranking concepts."
+      ]
+    }
+  ],
+  "concepts": [
+    {
+      "name": "NIM",
+      "plain": "A packaged inference service for deploying optimized AI models behind familiar APIs.",
+      "watchFor": "Do not confuse NIM with a model. NIM is the serving/deployment layer."
+    },
+    {
+      "name": "NeMo",
+      "plain": "A broader toolkit for data, training, fine-tuning, evaluation, guardrails, and agent lifecycle work.",
+      "watchFor": "NeMo is not just chat inference; it surrounds the lifecycle."
+    },
+    {
+      "name": "NeMo Guardrails",
+      "plain": "Programmable controls that sit around an LLM app to steer or block behavior.",
+      "watchFor": "Guardrails do not replace evaluation, access control, or secure tool design."
+    },
+    {
+      "name": "NeMo Retriever",
+      "plain": "Retrieval pieces for RAG: ingestion, extraction, embeddings, reranking, and document-grounded context.",
+      "watchFor": "RAG quality depends on data preparation and retrieval, not only the generator model."
+    },
+    {
+      "name": "Model profile",
+      "plain": "A runtime/hardware choice that decides how a model should run efficiently.",
+      "watchFor": "Selecting the biggest model without checking memory, latency, and throughput is a planning error."
+    }
+  ],
+  "mockModels": [
+    {
+      "id": "nemotron-enterprise-49b-sim",
+      "family": "Nemotron-style reasoning",
+      "size": "49B simulated",
+      "bestFor": "Reasoning, enterprise assistant planning, RAG answer synthesis",
+      "minGpuMemoryGb": 80,
+      "latencyMs": 820,
+      "throughputTokensSec": 1150
+    },
+    {
+      "id": "llama-nemotron-super-49b-rag-sim",
+      "family": "RAG generation",
+      "size": "49B simulated",
+      "bestFor": "Grounded enterprise answers using retrieved context",
+      "minGpuMemoryGb": 80,
+      "latencyMs": 760,
+      "throughputTokensSec": 1240
+    },
+    {
+      "id": "nv-embedqa-1b-sim",
+      "family": "Embedding",
+      "size": "1B simulated",
+      "bestFor": "Question-answer retrieval embeddings",
+      "minGpuMemoryGb": 16,
+      "latencyMs": 90,
+      "throughputTokensSec": 6200
+    },
+    {
+      "id": "nv-rerankqa-1b-sim",
+      "family": "Reranking",
+      "size": "1B simulated",
+      "bestFor": "Choosing the most relevant passages after retrieval",
+      "minGpuMemoryGb": 16,
+      "latencyMs": 130,
+      "throughputTokensSec": 4100
+    },
+    {
+      "id": "guardrails-safety-sim",
+      "family": "Guardrail policy",
+      "size": "policy simulated",
+      "bestFor": "Input and response policy checks",
+      "minGpuMemoryGb": 0,
+      "latencyMs": 35,
+      "throughputTokensSec": 12000
+    }
+  ],
+  "mockHardware": [
+    {
+      "id": "rtx-pro-6000-blackwell",
+      "label": "RTX PRO 6000 Blackwell Server Edition",
+      "memoryGb": 96,
+      "persona": "Professional workstation or server prototyping"
+    },
+    {
+      "id": "h100-sxm",
+      "label": "H100 SXM",
+      "memoryGb": 80,
+      "persona": "Data-center inference"
+    },
+    {
+      "id": "l40s",
+      "label": "L40S",
+      "memoryGb": 48,
+      "persona": "Cost-aware enterprise inference"
+    },
+    {
+      "id": "rtx-6000-ada",
+      "label": "RTX 6000 Ada",
+      "memoryGb": 48,
+      "persona": "Professional workstation"
+    },
+    {
+      "id": "rtx-5090",
+      "label": "GeForce RTX 5090",
+      "memoryGb": 32,
+      "persona": "Local enthusiast prototyping"
+    }
+  ]
+}

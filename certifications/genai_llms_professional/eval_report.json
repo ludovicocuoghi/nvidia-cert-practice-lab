@@ -1,0 +1,169 @@
+{
+  "meta": {
+    "evaluatedAt": "2026-04-29T17:18:44.552Z",
+    "sourceFile": "certifications/genai_llms_professional/generated-questions.md",
+    "cert": "NCP-GENL",
+    "totalQuestions": 6,
+    "averageScore": "63.7",
+    "maxScore": 70
+  },
+  "dimensionAverages": {
+    "scenarioQuality": "9.2",
+    "distractorPlausibility": "7.7",
+    "nvidiaToolAccuracy": "9.3",
+    "explanationQuality": "9.3",
+    "difficultyCalibration": "9.2",
+    "formatCompliance": "10.0",
+    "professionalLevel": "9.0"
+  },
+  "verdictCounts": {
+    "ACCEPT": 6,
+    "REVISE": 0,
+    "REJECT": 0
+  },
+  "answerDistribution": {
+    "answerBalance": [
+      {
+        "letter": "A",
+        "count": 5,
+        "pct": "71.4"
+      },
+      {
+        "letter": "B",
+        "count": 1,
+        "pct": "14.3"
+      },
+      {
+        "letter": "C",
+        "count": 0,
+        "pct": "0.0"
+      },
+      {
+        "letter": "D",
+        "count": 0,
+        "pct": "0.0"
+      }
+    ],
+    "domainCounts": {
+      "Model Optimization": 3,
+      "GPU Acceleration and Optimization": 3
+    },
+    "difficultyCounts": {
+      "hard": 2,
+      "advanced": 2,
+      "expert": 2
+    },
+    "answerWarning": "Answer distribution skewed (range 5). Target: each letter 20-30%.",
+    "total": 7
+  },
+  "details": [
+    {
+      "id": "opt-018",
+      "scores": {
+        "scenarioQuality": 10,
+        "distractorPlausibility": 9,
+        "nvidiaToolAccuracy": 10,
+        "explanationQuality": 10,
+        "difficultyCalibration": 10,
+        "formatCompliance": 10,
+        "professionalLevel": 9
+      },
+      "total": 68,
+      "verdict": "ACCEPT",
+      "notes": "Clear scenario with precise constraints; all options are valid but fail on p99 latency or cost; excellent explanation teaches the bottleneck.",
+      "localIssues": [
+        "Missing: ID",
+        "Missing: Domain",
+        "Missing: Section",
+        "Missing: Topic",
+        "Missing: Exam",
+        "Missing: Difficulty",
+        "Missing: Answer",
+        "Missing: Explanation",
+        "Only 0 Why-lines (need 3)",
+        "Found 0/4 choices A-D"
+      ]
+    },
+    {
+      "id": "gpu-015",
+      "scores": {
+        "scenarioQuality": 10,
+        "distractorPlausibility": 9,
+        "nvidiaToolAccuracy": 10,
+        "explanationQuality": 10,
+        "difficultyCalibration": 10,
+        "formatCompliance": 10,
+        "professionalLevel": 10
+      },
+      "total": 69,
+      "verdict": "ACCEPT",
+      "notes": "Real debugging scenario with profiling traces; distracts with plausible but incorrect hardware/algorithm checks; explanation pinpoints overlap issue.",
+      "localIssues": []
+    },
+    {
+      "id": "opt-019",
+      "scores": {
+        "scenarioQuality": 8,
+        "distractorPlausibility": 8,
+        "nvidiaToolAccuracy": 9,
+        "explanationQuality": 9,
+        "difficultyCalibration": 8,
+        "formatCompliance": 10,
+        "professionalLevel": 9
+      },
+      "total": 61,
+      "verdict": "ACCEPT",
+      "notes": "Specific quantization failure scenario with realistic constraints. Distractors mostly plausible, though D is slightly weak. Explanation is clear and instructive.",
+      "localIssues": []
+    },
+    {
+      "id": "gpu-016",
+      "scores": {
+        "scenarioQuality": 9,
+        "distractorPlausibility": 7,
+        "nvidiaToolAccuracy": 9,
+        "explanationQuality": 9,
+        "difficultyCalibration": 10,
+        "formatCompliance": 10,
+        "professionalLevel": 9
+      },
+      "total": 63,
+      "verdict": "ACCEPT",
+      "notes": "Deep distributed training bottleneck scenario. Option C is technically impossible for a 175B model on H100, slightly reducing distractor plausibility, but overall a strong expert-level question.",
+      "localIssues": []
+    },
+    {
+      "id": "opt-020",
+      "scores": {
+        "scenarioQuality": 10,
+        "distractorPlausibility": 9,
+        "nvidiaToolAccuracy": 9,
+        "explanationQuality": 9,
+        "difficultyCalibration": 10,
+        "formatCompliance": 10,
+        "professionalLevel": 9
+      },
+      "total": 66,
+      "verdict": "ACCEPT",
+      "notes": "Excellent RAG optimization problem with precise latency budget, profiling data, and realistic trade-offs. Distractors are all plausible and well-crafted.",
+      "localIssues": []
+    },
+    {
+      "id": "gpu-017",
+      "scores": {
+        "scenarioQuality": 8,
+        "distractorPlausibility": 4,
+        "nvidiaToolAccuracy": 9,
+        "explanationQuality": 9,
+        "difficultyCalibration": 7,
+        "formatCompliance": 10,
+        "professionalLevel": 8
+      },
+      "total": 55,
+      "verdict": "ACCEPT",
+      "notes": "Solid scenario with clear memory constraints, but distractors C and D are not realistic production techniques, reducing their plausibility. Triton-based answer is correct and well-explained.",
+      "localIssues": []
+    }
+  ],
+  "summary": "\n════════════════════════════════════════════════════════════════\n  QUESTION QUALITY EVALUATION REPORT\n════════════════════════════════════════════════════════════════\n  Questions evaluated: 6\n  Average total score: 63.7/70\n\n  Dimension Averages (1–10):\n    Scenario Quality:       9.2\n    Distractor Plausibility: 7.7\n    NVIDIA Tool Accuracy:    9.3\n    Explanation Quality:     9.3\n    Difficulty Calibration:  9.2\n    Format Compliance:       10.0\n    Professional Level:      9.0\n\n  Verdicts: ACCEPT=6  REVISE=0  REJECT=0\n════════════════════════════════════════════════════════════════\n  Overall: STRONG — meets Professional cert quality bar."
+}

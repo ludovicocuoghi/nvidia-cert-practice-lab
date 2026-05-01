@@ -1,0 +1,68 @@
+{
+  "evaluatedAt": "2026-04-29T17:20:19.949Z",
+  "referenceFile": "certifications/genai_llms_professional/questions.md",
+  "sampleSize": 5,
+  "averageScore": "60.3",
+  "evaluations": [
+    {
+      "id": "opt-001",
+      "scores": {
+        "scenarioQuality": 9,
+        "distractorPlausibility": 9,
+        "nvidiaToolAccuracy": 9,
+        "explanationQuality": 9,
+        "difficultyCalibration": 8,
+        "formatCompliance": 10,
+        "professionalLevel": 8
+      },
+      "total": 62,
+      "verdict": "ACCEPT",
+      "notes": "Strong scenario with precise throughput/accuracy constraints and a well-justified answer. All distractors are plausible techniques that fail the specific constraint."
+    },
+    {
+      "id": "opt-002",
+      "scores": {
+        "scenarioQuality": 10,
+        "distractorPlausibility": 9,
+        "nvidiaToolAccuracy": 10,
+        "explanationQuality": 9,
+        "difficultyCalibration": 9,
+        "formatCompliance": 10,
+        "professionalLevel": 10
+      },
+      "total": 67,
+      "verdict": "ACCEPT",
+      "notes": "Excellent advanced scenario with concrete SLA and serving constraints. In-flight batching + paged KV + chunked prefill is the correct TensorRT-LLM combination, and all distractors are realistic but suboptimal choices."
+    },
+    {
+      "id": "opt-003",
+      "scores": {
+        "scenarioQuality": 9,
+        "distractorPlausibility": 8,
+        "nvidiaToolAccuracy": 9,
+        "explanationQuality": 9,
+        "difficultyCalibration": 8,
+        "formatCompliance": 7,
+        "professionalLevel": 8
+      },
+      "total": 58,
+      "verdict": "ACCEPT",
+      "notes": "Good debugging scenario with smooth quantization, but missing a 'Why B is wrong' explanation line for the 'model too large for INT8' distractor, which slightly reduces format compliance."
+    },
+    {
+      "id": "opt-004",
+      "scores": {
+        "scenarioQuality": 9,
+        "distractorPlausibility": 6,
+        "nvidiaToolAccuracy": 10,
+        "explanationQuality": 7,
+        "difficultyCalibration": 8,
+        "formatCompliance": 6,
+        "professionalLevel": 8
+      },
+      "total": 54,
+      "verdict": "ACCEPT",
+      "notes": "Clear long-context KV-cache pressure scenario, but option C (disable RoPE) is not a valid optimization technique, and the explanation lacks a 'Why B is wrong' line. Acceptable but could be improved."
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "approved": [
+    "model-optimization-mokbuf15-11",
+    "gpu-acceleration-mokbuf15-12",
+    "prompt-engineering-mokbuf15-13",
+    "fine-tuning-mokbuf15-14",
+    "data-preparation-mokbuf15-15",
+    "model-deployment-mokbuf15-16",
+    "production-monitoring-mokbuf15-17",
+    "model-deployment-mokbuf15-18",
+    "model-deployment-mokbuf15-19",
+    "model-deployment-mokbuf15-20",
+    "prompt-engineering-mokbuf15-21",
+    "fine-tuning-mokbuf15-22",
+    "data-preparation-mokbuf15-23",
+    "model-optimization-mokbuf15-24",
+    "gpu-acceleration-and-optimization-mokbuf15-25",
+    "opt-027",
+    "gpu-028",
+    "pe-029",
+    "pe-030",
+    "ft-031",
+    "data-032",
+    "eval-033",
+    "prod-034",
+    "gpu-029",
+    "opt-035",
+    "gpu-030",
+    "opt-026",
+    "dep-001"
+  ],
+  "rejected": []
+}

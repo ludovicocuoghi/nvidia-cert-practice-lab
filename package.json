@@ -1,0 +1,36 @@
+{
+  "name": "nvidia-genai-llm-simulator",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A local learning simulator for NVIDIA-style GenAI LLM deployment workflows.",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c green,blue \"npm:dev:server\" \"npm:dev:client\"",
+    "dev:server": "tsx watch server/src/index.ts",
+    "dev:client": "vite --config client/vite.config.ts",
+    "build": "vite build --config client/vite.config.ts",
+    "start": "npm run build && tsx server/src/index.ts",
+    "start:api": "tsx server/src/index.ts",
+    "test": "node --test",
+    "test:ui": "vitest run",
+    "shuffle:bank": "python3 scripts/shuffle_question_bank.py",
+    "normalize:questions": "python3 scripts/normalize_question_bank.py genai_llms_nvidia_questions_1.md -o data/questions.md --backup data/questions.before-import.md"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^6.0.7",
+    "typescript": "^5.7.2",
+    "tsx": "^4.19.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwindcss": "^3.4.17",
+    "postcss": "^8.4.49",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.0",
+    "vitest": "^2.1.8"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=20"
+  }
+}
