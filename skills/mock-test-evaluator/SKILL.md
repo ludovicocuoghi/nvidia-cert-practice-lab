@@ -22,6 +22,8 @@ Use this skill when working on mock exam quality for the NVIDIA certification pr
    - No more than 10% easy questions.
    - Blueprint domain deviation should stay within 3 questions unless the bank lacks enough questions.
    - Avoid many short or recall-style stems.
+   - Generated service questions selected into mocks must have concrete operational situations, not stems that only say "the requirement is X" or expose "common trap" notes.
+   - If a mock shows many service-comparison items, sample them manually for lifecycle clarity: data preparation vs serving, serving endpoint vs Kubernetes operator, retrieval vs training-data curation, and timeline profiling vs kernel profiling.
 
 3. Keep improved mocks separate from originals:
    - Original mocks live in `certifications/<cert>/mocks/*.json`.
@@ -31,6 +33,7 @@ Use this skill when working on mock exam quality for the NVIDIA certification pr
 4. After adding or editing mocks, run:
 
    ```bash
+   node scripts/audit_question_bank.mjs
    node scripts/evaluate_mock_tests.js --json
    npm test
    npm run build

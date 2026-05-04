@@ -46,6 +46,18 @@ const banned = [
   /\.\./,
   /component that it/i,
   /component for the scenario/i,
+  /common trap:/i,
+  /task is described this way: The design must avoid/i,
+  /is deciding between [^.]+\. The requirement is/i,
+  /initially selected [^.]+, but the actual requirement is/i,
+  /has a [^.]+ requirement\. The requirement is/i,
+  /needs a supported NVIDIA path/i,
+  /has a design review question about/i,
+  /is choosing an NVIDIA component\. The team needs/i,
+  /is choosing an NVIDIA component\. The immediate task is/i,
+  /not the layer described here/i,
+  /supports to /i,
+  /packaging or manage/i,
   /nVIDIA/,
   /Use first when/i
 ];

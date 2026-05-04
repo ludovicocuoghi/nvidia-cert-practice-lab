@@ -1,0 +1,31 @@
+{
+  "id": "generated_mock_1",
+  "name": "Generated General Study Drill 1",
+  "source": "high_fidelity_bank",
+  "questionIds": [
+    "ags-hf-agent-lifecycle-and-architecture-034",
+    "ags-hf-agent-lifecycle-and-architecture-041",
+    "ags-hf-agent-lifecycle-and-architecture-021",
+    "ags-hf-svc-knowledge-ingestion-and-permission-pipeline-014",
+    "ags-hf-data-curation-and-knowledge-grounding-001",
+    "ags-hf-data-curation-and-knowledge-grounding-010",
+    "ags-hf-svc-prompt-and-context-design-001",
+    "ags-hf-svc-model-selection-and-registry-030",
+    "ags-hf-model-selection-and-customization-034",
+    "ags-hf-tooling-orchestration-and-memory-034",
+    "ags-hf-svc-tool-gateway-and-function-runtime-021",
+    "ags-hf-svc-agent-orchestration-runtime-024",
+    "ags-hf-svc-agent-orchestration-runtime-021",
+    "ags-hf-inference-serving-and-deployment-021",
+    "ags-hf-svc-model-inference-endpoint-010",
+    "ags-hf-inference-serving-and-deployment-030",
+    "ags-hf-svc-evaluation-and-regression-harness-030",
+    "ags-hf-evaluation-and-safety-001",
+    "ags-hf-svc-evaluation-and-regression-harness-010",
+    "ags-hf-observability-operations-and-cost-014",
+    "ags-hf-observability-operations-and-cost-024",
+    "ags-hf-svc-human-review-and-governance-console-010",
+    "ags-hf-human-oversight-and-governance-034",
+    "ags-hf-agent-lifecycle-and-architecture-030"
+  ]
+}

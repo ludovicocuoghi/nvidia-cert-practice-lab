@@ -20,8 +20,13 @@ Use this skill when creating or repairing practice questions for this project. T
 
 - Never use app/meta stems such as "a study session asks", "during a mock review", "remember for the exam", or "lifecycle drill".
 - A good stem describes a real production situation: architecture review, rollout, profiling trace, RAG failure, training-data issue, safety incident, or governance requirement.
+- Service questions must be scenario-first. Do not write product flashcards such as "The requirement is X", "Which service fits best?" without a concrete workload, or "The design must avoid the common trap". The learner should know what problem is being solved before seeing the answer choices.
+- If a question compares two NVIDIA services, the stem must state the operational signal that separates them: Kubernetes lifecycle, inference endpoint packaging, data curation, retrieval, guardrails, profiling, evaluation, training communication, or model customization.
+- Do not leak source notes into stems or choices. Banned wording includes "common trap", "not the layer described here", "actual requirement is", and generic "supported NVIDIA path" language.
+- Domain must match the lifecycle being tested. RAPIDS/NeMo Curator belong in data preparation, NIM/NIM Operator in serving/deployment, Nsight in monitoring/profiling, NeMo Guardrails in safety, and service-comparison questions for NCP-AAI should generally sit under NVIDIA Platform Implementation.
 - The correct answer must identify the right lifecycle layer, NVIDIA service, bottleneck, or safety boundary.
 - Distractors must be plausible neighboring-layer mistakes, not silly answers.
+- Distractors should all answer the same question. Avoid mixing one product choice with unrelated prompt/context/logging mistakes unless the stem is explicitly about that operational trade-off.
 - Difficulty should skew medium/hard, with easy for fundamentals and a small expert tail.
 - Every generated question must have a stable ID, domain, topic, difficulty, four choices, answer, explanation, and wrong-answer reasons.
 
@@ -39,12 +44,30 @@ Use this skill when creating or repairing practice questions for this project. T
    node scripts/audit_question_bank.mjs
    ```
 
-3. Spot-check generated questions in all three banks:
+   This audit is the deterministic gate for generated-bank quality. It catches thin service stems, leaked trap notes, domain/service coverage gaps, duplicate IDs, missing mock IDs, and grammar artifacts.
+
+3. Run the local evaluator on draft generated-question files when working outside the high-fidelity generated block:
+
+   ```bash
+   node scripts/evaluate_questions.js certifications/genai_llms_professional/generated-questions.md --local-only
+   node scripts/evaluate_questions.js certifications/agentic_ai_professional/generated-questions.md --local-only
+   ```
+
+   Use the LLM-backed mode only when an API key is available and a smaller draft batch needs subjective review.
+
+4. Spot-check generated questions in all three banks:
    - `certifications/agentic_ai_professional/questions.md`
    - `certifications/genai_llms_professional/questions.md`
    - `certifications/agentic_ai_general_study/questions.md`
 
-4. Run app verification:
+   Spot-check at least:
+   - one service-comparison item for RAPIDS vs NIM,
+   - one NIM vs NIM Operator item,
+   - one NeMo Curator vs NeMo Retriever or RAG item,
+   - one Nsight Systems vs Nsight Compute item,
+   - one General Study vendor-neutral capability item.
+
+5. Run app verification:
 
    ```bash
    npm test

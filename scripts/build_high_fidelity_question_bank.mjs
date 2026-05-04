@@ -6,6 +6,7 @@ import { nvidiaServices, studySections } from "../client/src/data/study-services
 const root = process.cwd();
 const bankMarkerStart = "<!-- BEGIN HIGH FIDELITY BANK GENERATED -->";
 const bankMarkerEnd = "<!-- END HIGH FIDELITY BANK GENERATED -->";
+const mockDifficultyRank = { expert: 4, hard: 3, medium: 2, easy: 1 };
 
 const banned = [
   /a study session asks/i,
@@ -22,6 +23,11 @@ const banned = [
   /\.\./,
   /component that it/i,
   /component for the scenario/i,
+  /common trap:/i,
+  /task is described this way: The design must avoid/i,
+  /is choosing an NVIDIA component\. (Accelerating|Building|Choosing|Connecting|Curating|Distributed|For packaged|Live failures|Multi-model|Policy enforcement|Pulling|SFT)/i,
+  /is deciding between [^.]+\. (Accelerating|Building|Choosing|Connecting|Curating|Distributed|For packaged|Live failures|Multi-model|Policy enforcement|Pulling|SFT)/i,
+  / for to /i,
   /nVIDIA/,
   /Use first when/i
 ];
@@ -77,10 +83,10 @@ const domainStemPatterns = [
 const serviceStemPatterns = [
   ({ industry, scenario }) => `${industry} is choosing an NVIDIA component. ${scenario} Which service fits best?`,
   ({ industry, service, wrongService, scenario }) => `${industry} is deciding between ${service.name} and ${wrongService.name}. ${scenario} Which selection is correct?`,
-  ({ industry, service, lifecycleNeed }) => `${industry} has a ${service.lifecycle} requirement: ${lifecycleNeed} Which NVIDIA component is most appropriate?`,
-  ({ industry, wrongService, scenario }) => `${industry} initially selected ${wrongService.name}, but the task is described this way: ${scenario} Which component should replace the mistaken choice?`,
-  ({ industry, service, lifecycleNeed }) => `${industry} needs a supported NVIDIA path for ${service.lifecycle}. The key requirement is to ${lifecycleNeed.charAt(0).toLowerCase()}${lifecycleNeed.slice(1)} Which service matches that requirement?`,
-  ({ industry, service, wrongService }) => `${industry} has a design review question about ${service.lifecycle}. The team is confusing ${wrongService.name} with the NVIDIA component for ${serviceRequirement(service.use)}. Which component resolves the confusion?`
+  ({ industry, scenario }) => `${industry} has narrowed the next implementation step. ${scenario} Which NVIDIA component is most appropriate?`,
+  ({ industry, wrongService, scenario }) => `${industry} initially selected ${wrongService.name}. ${scenario} Which component should replace it?`,
+  ({ industry, scenario }) => `${industry} is reviewing the production design. ${scenario} Which service matches the workload?`,
+  ({ industry, scenario }) => `${industry} is preparing a release decision. ${scenario} Which NVIDIA component should own this step?`
 ];
 
 const lifecycleNeeds = {
@@ -371,7 +377,7 @@ const certificationConfigs = [
     mocksDir: "certifications/agentic_ai_professional/mocks/generated",
     mockPrefix: "balanced_mock",
     generatedMocks: 4,
-    mockSize: 50
+    mockSize: 60
   },
   {
     slug: "genai_llms_professional",
@@ -384,7 +390,7 @@ const certificationConfigs = [
     mocksDir: "certifications/genai_llms_professional/mocks/generated",
     mockPrefix: "balanced_mock",
     generatedMocks: 4,
-    mockSize: 50
+    mockSize: 60
   },
   {
     slug: "agentic_ai_general_study",
@@ -430,10 +436,10 @@ function pick(list, ...keys) {
 
 function difficultyFor(index) {
   return [
-    "easy", "medium", "medium", "hard", "easy",
-    "medium", "hard", "medium", "hard", "medium",
-    "easy", "medium", "hard", "medium", "expert",
-    "medium", "hard", "easy", "medium", "hard"
+    "medium", "hard", "hard", "expert", "medium",
+    "hard", "expert", "medium", "hard", "hard",
+    "easy", "hard", "expert", "medium", "hard",
+    "hard", "expert", "medium", "hard", "hard"
   ][index % 20];
 }
 
@@ -491,22 +497,23 @@ function wrongChoice(...keys) {
 }
 
 function makeServiceQuestion(config, service, index, existingCount, domains) {
-  const domain = pick(domains, config.slug, service.name, index, "domain");
+  const domain = serviceDomain(config, service, domains);
   const industry = pick(industries, config.slug, service.name, index, "industry");
-  const lifecycleNeed = pick(lifecycleNeeds[service.lifecycle] || constraints, config.slug, service.name, index, "need");
+  const lifecycleNeed = actionPhrase(pick(lifecycleNeeds[service.lifecycle] || constraints, config.slug, service.name, index, "need"));
   const wrongName = distractorByLifecycle[service.lifecycle] || pick(config.services, config.slug, service.name, index, "wrong").name;
   const wrongService = config.services.find((candidate) => candidate.name === wrongName && candidate.name !== service.name)
     || config.services.find((candidate) => candidate.name !== service.name)
     || { name: wrongName, lifecycle: "a different lifecycle layer" };
   const difficulty = difficultyFor(existingCount + index + 3);
   const id = `${config.prefix}-svc-${slugify(service.name)}-${String(index + 1).padStart(3, "0")}`;
-  const scenario = serviceScenario(service, index);
-  const question = pick(serviceStemPatterns, config.slug, service.name, index, "stem")({ industry, service, wrongService, scenario, lifecycleNeed });
+  const need = serviceNeed(service);
+  const scenario = serviceScenario(service, index, lifecycleNeed, wrongService);
+  const question = pick(serviceStemPatterns, config.slug, service.name, index, "stem")({ industry, service, wrongService, scenario, lifecycleNeed, need });
   const correct = serviceCorrectChoice(service, index);
   const distractors = [
-    `Choose ${wrongService.name}; it is useful in ${wrongService.lifecycle || "a neighboring layer"}, but that is not the layer described here.`,
-    wrongChoice(config.slug, service.name, index, "wrong1"),
-    `Treat the requirement as generic model selection and postpone the ${service.lifecycle} decision until after deployment.`
+    `Choose ${wrongService.name}; it fits ${lowerFirst(wrongService.lifecycle || "a neighboring lifecycle layer")}, not this ${lowerFirst(service.lifecycle)} requirement.`,
+    serviceWrongChoice(service, index),
+    `Treat the requirement as generic model selection and postpone the ${lowerFirst(service.lifecycle)} decision until after deployment.`
   ];
   return buildQuestion({
     id,
@@ -517,8 +524,47 @@ function makeServiceQuestion(config, service, index, existingCount, domains) {
     correct,
     distractors,
     explanation: `${service.name} is the best fit because it sits in ${service.lifecycle}: ${service.description}`,
-    wrongReason: `${service.avoid || service.traps || "This option addresses a neighboring layer rather than the stated requirement."}`
+    wrongReason: (choice) => serviceWrongReason(choice, service, wrongService)
   });
+}
+
+function serviceDomain(config, service, domains) {
+  if (domains.includes("NVIDIA Platform Implementation")) return "NVIDIA Platform Implementation";
+  const maps = {
+    genai_llms_professional: {
+      "Data preparation": "Data Preparation",
+      "Model selection": "LLM Architecture",
+      "Training and customization": "Fine-Tuning",
+      "Inference optimization": "Model Optimization",
+      "Serving and deployment": "Model Deployment",
+      "RAG and retrieval": "Data Preparation",
+      "Safety and guardrails": "Safety, Ethics, and Compliance",
+      "Monitoring and profiling": "Production Monitoring and Reliability",
+      "Evaluation": "Evaluation"
+    },
+    agentic_ai_general_study: {
+      "Training-time data curation": "Data Curation and Knowledge Grounding",
+      "Runtime knowledge preparation": "Data Curation and Knowledge Grounding",
+      "Data preparation": "Data Curation and Knowledge Grounding",
+      "Model selection": "Model Selection and Customization",
+      "Foundation training": "Model Selection and Customization",
+      "Training and customization": "Model Selection and Customization",
+      "Prompt and context adaptation": "Model Selection and Customization",
+      "Agent orchestration": "Tooling, Orchestration, and Memory",
+      "Tool execution": "Tooling, Orchestration, and Memory",
+      "Memory and state": "Tooling, Orchestration, and Memory",
+      "RAG and retrieval": "Data Curation and Knowledge Grounding",
+      "Safety and guardrails": "Evaluation and Safety",
+      "Serving and deployment": "Inference Serving and Deployment",
+      "Inference optimization": "Observability, Operations, and Cost",
+      "Evaluation": "Evaluation and Safety",
+      "Monitoring and profiling": "Observability, Operations, and Cost",
+      "Human oversight": "Human Oversight and Governance"
+    }
+  };
+  const mapped = maps[config.slug]?.[service.lifecycle];
+  if (mapped && domains.includes(mapped)) return mapped;
+  return domains.find((domain) => service.filters?.includes(domain)) || domains[0];
 }
 
 function serviceCorrectChoice(service, index) {
@@ -526,16 +572,17 @@ function serviceCorrectChoice(service, index) {
     `Choose ${service.name}; ${serviceFit(service.use)}.`,
     `Use ${service.name}; it provides ${descriptionPhrase(service.description)}.`,
     `${service.name} is the best fit; its role is ${descriptionPhrase(service.description)}.`,
-    `Select ${service.name}; the scenario matches ${service.lifecycle}, not a neighboring lifecycle layer.`
+    `Select ${service.name}; it directly supports ${gerundPhrase(serviceNeed(service))}.`
   ];
   return choices[index % choices.length].replace(/\s+/g, " ").replace(/\.\.$/, ".");
 }
 
-function serviceScenario(service, index) {
+function serviceScenario(service, index, lifecycleNeed, wrongService) {
   const rawOptions = [
-    service.scenario,
-    `${capitalize(serviceRequirement(service.use))}.`,
-    service.traps ? `The design must avoid the common trap: ${service.traps}` : ""
+    sentence(service.scenario),
+    `A production rollout calls for ${gerundPhrase(serviceNeed(service))}; ${wrongService.name} was proposed even though it serves a different lifecycle layer.`,
+    `The work item is ${gerundPhrase(lifecycleNeed)} for the deployment, not selecting a model family or adding a generic GPU tool.`,
+    `${wrongService.name} is on the shortlist, but the bottleneck is ${gerundPhrase(serviceNeed(service))}.`
   ].filter(Boolean);
   const raw = String(rawOptions[index % rawOptions.length]).trim();
   return raw
@@ -546,8 +593,11 @@ function serviceScenario(service, index) {
 }
 
 function serviceFit(text) {
-  const requirement = serviceRequirement(text);
-  return /^to\b/i.test(requirement) ? `it is used ${requirement}` : `it is used for ${requirement}`;
+  return `it is used ${actionPhrase(serviceRequirement(text))}`;
+}
+
+function serviceNeed(service) {
+  return actionPhrase(serviceRequirement(service.use));
 }
 
 function serviceRequirement(text) {
@@ -585,6 +635,199 @@ function capitalize(text) {
   return clean ? clean.charAt(0).toUpperCase() + clean.slice(1) : clean;
 }
 
+function lowerFirst(text) {
+  const clean = String(text || "").trim();
+  return clean ? clean.charAt(0).toLowerCase() + clean.slice(1) : clean;
+}
+
+function sentence(text) {
+  const clean = String(text || "").trim().replace(/[.?!]$/, "");
+  return clean ? `${clean}.` : "";
+}
+
+function sentenceFragment(text) {
+  return String(text || "")
+    .trim()
+    .replace(/[.?!]$/, "")
+    .replace(/^to\s+/i, "")
+    .replace(/\s+/g, " ");
+}
+
+function actionPhrase(text) {
+  const clean = sentenceFragment(text);
+  const replacements = [
+    [/^accelerating\b/i, "to accelerate"],
+    [/^adapt\b/i, "to adapt"],
+    [/^an agent or model must read\b/i, "to ground answers in"],
+    [/^an existing model can do the task but needs\b/i, "to adapt an existing model with"],
+    [/^API-driven\b/i, "to run API-driven"],
+    [/^building or coordinating\b/i, "to build or coordinate"],
+    [/^building, composing, testing, profiling, or observing\b/i, "to build, compose, test, profile, or observe"],
+    [/^building optimized\b/i, "to build optimized"],
+    [/^choosing a model family\b/i, "to choose a model family"],
+    [/^connecting proprietary data\b/i, "to connect proprietary data"],
+    [/^curating, deduping, filtering, or synthesizing\b/i, "to curate, dedupe, filter, or synthesize"],
+    [/^data will change model behavior or validate a release:/i, "to prepare model-learning or evaluation data:"],
+    [/^deciding whether\b/i, "to decide whether"],
+    [/^deduplicate\b/i, "to deduplicate"],
+    [/^distributed training communication\b/i, "to handle distributed training communication"],
+    [/^durable behavior\b/i, "to change durable behavior"],
+    [/^extract, embed\b/i, "to extract, embed"],
+    [/^human approval\b/i, "to support human approval"],
+    [/^how to measure\b/i, "to measure"],
+    [/^identifying\b/i, "to identify"],
+    [/^K8s-native\b/i, "to manage K8s-native"],
+    [/^live failures\b/i, "to diagnose live failures"],
+    [/^multi-framework serving\b/i, "to run multi-framework serving"],
+    [/^multi-model routing\b/i, "to manage multi-model routing"],
+    [/^no existing model\b/i, "to create or continue a model when no existing model"],
+    [/^p99 latency\b/i, "to optimize p99 latency"],
+    [/^packaged, supported\b/i, "to package and serve supported, optimized models"],
+    [/^policy enforcement\b/i, "to enforce policy"],
+    [/^policy flows\b/i, "to enforce policy flows"],
+    [/^private or changing documents must become\b/i, "to prepare private or changing documents as"],
+    [/^production model APIs\b/i, "to provide production model APIs"],
+    [/^pulling\b/i, "to pull"],
+    [/^remembering\b/i, "to remember"],
+    [/^run scalable\b/i, "to run scalable"],
+    [/^safe API calls\b/i, "to expose safe API calls"],
+    [/^SFT\b/i, "to run SFT"],
+    [/^standardized\b/i, "to run standardized"],
+    [/^disaggregated\b/i, "to support disaggregated"]
+  ];
+  for (const [pattern, replacement] of replacements) {
+    if (pattern.test(clean)) return clean.replace(pattern, replacement);
+  }
+  if (/^must\b/i.test(clean)) return `to ${clean.replace(/^must\s+/i, "")}`;
+  if (/^(to|for)\b/i.test(clean)) return clean;
+  return `to ${clean}`;
+}
+
+function gerundPhrase(text) {
+  const clean = sentenceFragment(text);
+  const withoutTo = clean.replace(/^to\s+/i, "");
+  const replacements = [
+    [/^add\b/i, "adding"],
+    [/^adapt\b/i, "adapting"],
+    [/^block\b/i, "blocking"],
+    [/^build, compose, test, profile, or observe\b/i, "building, composing, testing, profiling, or observing"],
+    [/^build optimized\b/i, "building optimized"],
+    [/^build\b/i, "building"],
+    [/^choose\b/i, "choosing"],
+    [/^compare\b/i, "comparing"],
+    [/^connect\b/i, "connecting"],
+    [/^coordinate\b/i, "coordinating"],
+    [/^create\b/i, "creating"],
+    [/^curate\b/i, "curating"],
+    [/^deduplicate\b/i, "deduplicating"],
+    [/^diagnose\b/i, "diagnosing"],
+    [/^enforce\b/i, "enforcing"],
+    [/^expose\b/i, "exposing"],
+    [/^extract, embed\b/i, "extracting, embedding"],
+    [/^extract\b/i, "extracting"],
+    [/^ground\b/i, "grounding"],
+    [/^handle\b/i, "handling"],
+    [/^identify\b/i, "identifying"],
+    [/^manage\b/i, "managing"],
+    [/^measure\b/i, "measuring"],
+    [/^optimize\b/i, "optimizing"],
+    [/^package and serve\b/i, "packaging and serving"],
+    [/^package or manage\b/i, "packaging or managing"],
+    [/^package\b/i, "packaging"],
+    [/^prepare\b/i, "preparing"],
+    [/^provide\b/i, "providing"],
+    [/^pull\b/i, "pulling"],
+    [/^remember\b/i, "remembering"],
+    [/^run\b/i, "running"],
+    [/^serve\b/i, "serving"],
+    [/^support\b/i, "supporting"]
+  ];
+  for (const [pattern, replacement] of replacements) {
+    if (pattern.test(withoutTo)) return withoutTo.replace(pattern, replacement);
+  }
+  return withoutTo;
+}
+
+function serviceWrongChoice(service, index) {
+  const byLifecycle = {
+    "Data preparation": [
+      "Use TensorRT-LLM decode optimizations even though the bottleneck is preprocessing before training or indexing.",
+      "Deploy a NIM endpoint and leave the dataframe or corpus-preparation path unchanged.",
+      "Move the data into prompts instead of fixing the preprocessing pipeline."
+    ],
+    "Serving and deployment": [
+      "Fine-tune the model first even though the missing layer is a production API endpoint.",
+      "Only choose a model family and leave packaging, health checks, and rollout unspecified.",
+      "Profile one CUDA kernel before defining the serving endpoint and deployment path."
+    ],
+    "Inference optimization": [
+      "Add a new data-curation step even though the measured issue is token generation latency.",
+      "Change the prompt wording and leave batching, KV cache, and quantization unexamined.",
+      "Treat the endpoint package as sufficient without optimizing the LLM engine behavior."
+    ],
+    "Training and customization": [
+      "Serve the current model unchanged and hope prompt examples create durable behavior.",
+      "Pick a deployment endpoint before deciding how the model should be adapted.",
+      "Use a registry entry as if it trained or customized the model."
+    ],
+    "Safety and guardrails": [
+      "Filter only the final text after unsafe retrieval or tool proposals have already happened.",
+      "Use data-processing acceleration as if it enforced runtime policy.",
+      "Rely on the model prompt alone for tool restrictions and refusal behavior."
+    ],
+    "Monitoring and profiling": [
+      "Tune a random kernel before finding whether the delay is CPU, GPU, queueing, or communication.",
+      "Replace the model before collecting timeline or trace evidence.",
+      "Use average latency alone and ignore p95/p99, queue depth, and failed workflow steps."
+    ],
+    "Evaluation": [
+      "Ship the change and wait for production complaints instead of comparing variants first.",
+      "Monitor only infrastructure metrics even though the release needs quality evidence.",
+      "Use the model's own confidence as the only evaluation signal."
+    ],
+    "RAG and retrieval": [
+      "Fine-tune the model on private documents that change frequently.",
+      "Increase context length without improving extraction, indexing, or reranking.",
+      "Use a serving endpoint as if it managed document retrieval and grounding."
+    ],
+    "Model selection": [
+      "Choose a serving stack before deciding which model family fits the task.",
+      "Treat the registry, endpoint, and model family as the same decision.",
+      "Optimize kernels before selecting the model capability needed by the workflow."
+    ],
+    "Agent orchestration": [
+      "Add another model endpoint and leave workflow state, tools, and handoffs implicit.",
+      "Use low-level kernel profiling as the agent workflow framework.",
+      "Treat a single prompt as the whole orchestration layer."
+    ]
+  };
+  const choices = byLifecycle[service.lifecycle] || [
+    wrongChoice(service.name, index, "service-wrong"),
+    "Change a neighboring lifecycle layer before addressing the stated requirement.",
+    "Use prompt wording alone to solve the operational boundary."
+  ];
+  return choices[index % choices.length];
+}
+
+function serviceWrongReason(choice, service, wrongService) {
+  if (choice.includes(wrongService.name)) {
+    return `${wrongService.name} belongs to ${wrongService.lifecycle || "a neighboring layer"}, while this scenario is about ${service.lifecycle}.`;
+  }
+  if (/generic model selection/i.test(choice)) {
+    return `Model selection does not satisfy the ${service.lifecycle} requirement described in the stem.`;
+  }
+  if (/prompt/i.test(choice)) {
+    return "Prompt wording alone does not provide the NVIDIA service boundary required by the scenario.";
+  }
+  if (/TensorRT-LLM|decode|KV cache|batching|quantization/i.test(choice) && service.lifecycle === "Data preparation") {
+    return "Those are inference-optimization concerns; the stem is about data preparation before training or indexing.";
+  }
+  if (/NIM endpoint|endpoint|serving/i.test(choice) && service.lifecycle !== "Serving and deployment") {
+    return "A serving endpoint does not solve this neighboring lifecycle requirement.";
+  }
+  return `${service.avoid || "It addresses a neighboring layer rather than the stated requirement."}`;
+}
+
 function descriptionPhrase(description) {
   const clean = String(description || "").replace(/\.$/, "").trim();
   if (/^(NVIDIA|NIM|CUDA|GPU|LLM|RAG|Kubernetes|Microservice|Framework-agnostic)\b/.test(clean)) {
@@ -603,7 +846,7 @@ function buildQuestion({ id, domain, topic, difficulty, question, correct, distr
     if (index === answer) return "";
     if (/neighboring NVIDIA component/.test(choice)) return "It names a real component, but the lifecycle layer does not match the requirement.";
     if (/larger model|more GPUs|context length|prompt wording/i.test(choice)) return "It changes capacity or wording before fixing the measured root cause.";
-    return wrongReason;
+    return typeof wrongReason === "function" ? wrongReason(choice) : wrongReason;
   });
   return {
     id,
@@ -644,6 +887,14 @@ function countBy(items, keyFn) {
     counts[key] = (counts[key] || 0) + 1;
     return counts;
   }, {});
+}
+
+function mockQuestionPool(questions, mock, key) {
+  return [...questions].sort((a, b) => {
+    const rankDelta = (mockDifficultyRank[b.difficulty] || 0) - (mockDifficultyRank[a.difficulty] || 0);
+    if (rankDelta) return rankDelta;
+    return hashNumber(a.id, mock, key) - hashNumber(b.id, mock, key);
+  });
 }
 
 function serviceMentions(questions, services) {
@@ -705,15 +956,16 @@ async function rebuildGeneratedMocks(config, markdown) {
   for (let mock = 1; mock <= config.generatedMocks; mock += 1) {
     const selected = [];
     for (const domain of parsed.domains) {
-      const domainQuestions = byDomain.get(domain.name) || [];
+      const domainQuestions = mockQuestionPool(byDomain.get(domain.name) || [], mock, domain.name);
       const quota = Math.max(1, Math.round((domain.weight / 100) * config.mockSize));
       for (let i = 0; i < quota && selected.length < config.mockSize; i += 1) {
         selected.push(domainQuestions[(i + mock * 7) % domainQuestions.length]);
       }
     }
     let cursor = mock * 11;
+    const fillPool = mockQuestionPool(questions, mock, "fill");
     while (selected.length < config.mockSize) {
-      selected.push(questions[cursor % questions.length]);
+      selected.push(fillPool[cursor % fillPool.length]);
       cursor += 13;
     }
     const unique = [];
@@ -724,8 +976,9 @@ async function rebuildGeneratedMocks(config, markdown) {
       seen.add(question.id);
     }
     cursor = mock * 17;
+    const uniqueFillPool = mockQuestionPool(questions, mock, "unique-fill");
     while (unique.length < config.mockSize) {
-      const candidate = questions[cursor % questions.length];
+      const candidate = uniqueFillPool[cursor % uniqueFillPool.length];
       if (!seen.has(candidate.id)) {
         unique.push(candidate);
         seen.add(candidate.id);

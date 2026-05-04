@@ -158,6 +158,28 @@ Also account for exam weight. A weak high-weight domain should appear more often
 7. Explanations should teach the decision rule, not just restate the answer.
 8. Include the reason each wrong option is wrong whenever possible.
 
+## Generated service-question rules
+
+Generated service questions need a concrete workload, not just a product pair. A weak stem says:
+
+```text
+A team is deciding between NIM Operator and NeMo Curator. The requirement is to manage K8s-native NIM lifecycle. Which selection is correct?
+```
+
+A better stem gives the operational signal:
+
+```text
+A team is rolling out several NIM endpoints on Kubernetes and needs autoscaling, version pinning, and zero-downtime upgrades. NeMo Curator is on the shortlist, but the bottleneck is endpoint lifecycle management. Which selection is correct?
+```
+
+Rules:
+
+- Do not leak generator notes such as "common trap", "actual requirement", "not the layer described here", or "supported NVIDIA path".
+- State the lifecycle signal in scenario language: Kubernetes rollout, endpoint packaging, dataframe preprocessing, training-data dedupe, inference-time retrieval, runtime policy, eval regression, timeline profiling, kernel profiling, or distributed training communication.
+- Keep the domain aligned with the tested lifecycle. Do not place service-selection questions in unrelated domains just to satisfy balance.
+- Make every choice answer the same decision. Avoid one real product option plus unrelated generic failures unless the scenario explicitly compares those operational moves.
+- Run `node scripts/audit_question_bank.mjs` after generation; the audit must fail if these weak patterns return.
+
 ## Shuffling rule
 
 After generating a bank:

@@ -7,7 +7,7 @@
  * Also runs fast local format checks (no API calls needed).
  *
  * Usage:
- *   node scripts/evaluate_questions.js <generated-file.md> [reference-file.md] [--cert NCP-GENL|NCP-AAI]
+ *   node scripts/evaluate_questions.js <generated-file.md> [reference-file.md] [--cert NCP-GENL|NCP-AAI] [--local-only]
  *
  * Output:
  *   - Scored report to stdout
@@ -47,6 +47,24 @@ loadDotenvSync(join(root, ".env"));
 const DEEPSEEK_API_URL = "https://api.deepseek.com/anthropic/v1/messages";
 const DEEPSEEK_MODEL = "deepseek-v4-flash";
 const BATCH_SIZE = 3;
+const LOCAL_QUALITY_PATTERNS = [
+  [/a study session asks/i, "Meta/study-session stem"],
+  [/during a mock review/i, "Meta/mock-review stem"],
+  [/remember for the exam/i, "Exam-memory stem"],
+  [/common trap:/i, "Leaked common-trap note"],
+  [/task is described this way: The design must avoid/i, "Leaked generator instruction"],
+  [/is deciding between [^.]+\. The requirement is/i, "Thin product-selection stem"],
+  [/initially selected [^.]+, but the actual requirement is/i, "Thin replacement stem"],
+  [/has a [^.]+ requirement\. The requirement is/i, "Thin requirement-only stem"],
+  [/needs a supported NVIDIA path/i, "Thin service-path stem"],
+  [/has a design review question about/i, "Thin design-review stem"],
+  [/is choosing an NVIDIA component\. The team needs/i, "Thin component-selection stem"],
+  [/is choosing an NVIDIA component\. The immediate task is/i, "Thin immediate-task stem"],
+  [/not the layer described here/i, "Generic layer wording"],
+  [/supports to /i, "Grammar: supports to"],
+  [/packaging or manage/i, "Grammar: mixed gerund/verb"],
+  [/used for to /i, "Grammar: used for to"]
+];
 
 // ── Question parsing ────────────────────────────────────────────────────────
 
@@ -118,6 +136,18 @@ function localFormatCheck(block) {
     if (!new RegExp(`^- ${letter}\\.`, "m").test(block)) {
       issues.push(`Answer says ${letter} but no matching choice`);
     }
+  }
+
+  const title = block.match(/^###\s*Q\d+:\s*(.+)$/m)?.[1]?.trim() || "";
+  const combinedText = block.replace(/\s+/g, " ");
+  for (const [pattern, label] of LOCAL_QUALITY_PATTERNS) {
+    if (pattern.test(combinedText)) issues.push(label);
+  }
+  if (/^(what is|which (of the following )?(tool|service|metric|method)|what should)/i.test(title)) {
+    issues.push("Recall-style stem");
+  }
+  if (title.split(/\s+/).length < 14) {
+    issues.push("Very short stem");
   }
 
   return { id: id || "unknown", issues };
@@ -318,6 +348,7 @@ evaluate_questions.js — LLM-based question quality evaluator
 
 Usage:
   node scripts/evaluate_questions.js <generated-file.md> [reference-file.md] [--cert NCP-GENL|NCP-AAI]
+  node scripts/evaluate_questions.js <generated-file.md> --local-only
 
 Example:
   node scripts/evaluate_questions.js \\
@@ -333,16 +364,11 @@ Example:
   const refPath = rest.find((a) => a.endsWith(".md")) || null;
   const certIdx = args.indexOf("--cert");
   const certName = certIdx >= 0 ? args[certIdx + 1] : "NCP-GENL";
+  const localOnly = args.includes("--local-only");
 
   if (!generatedPath) {
     console.error("ERROR: Provide a generated questions .md file.");
     console.error("Usage: node scripts/evaluate_questions.js <generated-file.md> [reference-file.md] [--cert NCP-GENL|NCP-AAI]");
-    process.exit(1);
-  }
-
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    console.error("ERROR: ANTHROPIC_API_KEY not set in .env.");
     process.exit(1);
   }
 
@@ -372,6 +398,33 @@ Example:
     }
   } else {
     console.log("Local format: all questions pass ✓");
+  }
+
+  if (localOnly) {
+    const distribution = analyzeDistribution(generatedBlocks);
+    const report = {
+      meta: {
+        evaluatedAt: new Date().toISOString(),
+        sourceFile: generatedPath,
+        cert: certName,
+        totalQuestions: generatedBlocks.length,
+        mode: "local-only"
+      },
+      answerDistribution: distribution,
+      localChecks,
+      issueCount: withIssues.length
+    };
+    const reportPath = join(dirname(generatedPath), "eval_report.local.json");
+    await writeFile(reportPath, JSON.stringify(report, null, 2), "utf8");
+    console.log(`\nLocal-only report: ${reportPath}`);
+    if (withIssues.length) process.exit(1);
+    process.exit(0);
+  }
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    console.error("ERROR: ANTHROPIC_API_KEY not set in .env. Use --local-only for deterministic local checks.");
+    process.exit(1);
   }
 
   // LLM evaluation in batches
