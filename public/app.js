@@ -2159,33 +2159,161 @@ function markdownSectionContent(markdown, heading) {
   return markdownSections(markdown)[normalizeHeadingName(heading)]?.content?.trim() || "";
 }
 
-function serviceDecisionCards(markdown) {
+function firstStudyFirstValue(markdown, label) {
+  const content = markdownSectionContent(markdown, "What to study first");
+  if (!content) return "";
+  const escaped = String(label).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = content.match(new RegExp(`^-\\s+\\*\\*${escaped}:\\*\\*\\s*(.+)$`, "im"));
+  return match?.[1]?.trim() || "";
+}
+
+function firstParagraphFromSection(markdown, heading) {
+  const content = markdownSectionContent(markdown, heading);
+  if (!content) return "";
+  return content
+    .split(/\n{2,}/)
+    .find((part) => part.trim() && !/^[-*]\s+/.test(part.trim()) && !/^\|/.test(part.trim()))?.trim() || content.trim();
+}
+
+function markdownSummaryContent(markdown, fallback = {}) {
+  return markdownSectionContent(markdown, "What it is, in one paragraph")
+    || firstParagraphFromSection(markdown, "What You Are Building")
+    || firstStudyFirstValue(markdown, "Core idea")
+    || valueFromCardData(generatedBlock(markdown), "What it is")
+    || valueFromCardData(generatedBlock(markdown), "What it covers")
+    || fallback.description
+    || fallback.summary
+    || "";
+}
+
+function markdownLifecycleContent(markdown, fallback = {}) {
+  const lifecycle = markdownSectionContent(markdown, "Where it sits in the lifecycle");
+  if (lifecycle) return lifecycle;
+  const lane = firstParagraphFromSection(markdown, "Lifecycle Lane Playbooks");
+  if (lane) return lane;
+  const cardLifecycle = valueFromCardData(generatedBlock(markdown), "Lifecycle") || fallback.lifecycle || fallback.exam || "";
+  return cardLifecycle ? `**Lifecycle layer:** ${cardLifecycle}` : "";
+}
+
+function markdownRightAnswerContent(markdown, fallback = {}) {
+  return markdownSectionContent(markdown, "When it is the right answer")
+    || firstStudyFirstValue(markdown, "Use it when")
+    || firstStudyFirstValue(markdown, "Right-answer trigger")
+    || valueFromCardData(generatedBlock(markdown), "Use it when")
+    || valueFromCardData(generatedBlock(markdown), "Use this section when")
+    || fallback.use
+    || "";
+}
+
+function markdownBoundaryContent(markdown, fallback = {}) {
+  return markdownSectionContent(markdown, "Adjacent-service decision boundary")
+    || markdownSectionContent(markdown, "Adjacent-service decision boundaries")
+    || markdownSectionContent(markdown, "Decision Guide")
+    || markdownSectionContent(markdown, "Decision guide")
+    || valueFromCardData(generatedBlock(markdown), "Common trap")
+    || fallback.traps
+    || "";
+}
+
+function serviceDecisionCards(markdown, fallback = {}) {
   return [
     {
       kind: "summary",
       label: "What it is, in one paragraph",
       className: "identity summary",
-      content: markdownSectionContent(markdown, "What it is, in one paragraph")
+      content: markdownSummaryContent(markdown, fallback)
     },
     {
       kind: "detail",
       label: "Where it sits in the lifecycle",
       className: "scenario lifecycle",
-      content: markdownSectionContent(markdown, "Where it sits in the lifecycle")
+      content: markdownLifecycleContent(markdown, fallback)
     },
     {
       kind: "detail",
       label: "When it is the right answer",
       className: "use right-answer",
-      content: markdownSectionContent(markdown, "When it is the right answer")
+      content: markdownRightAnswerContent(markdown, fallback)
     },
     {
       kind: "detail",
       label: "Adjacent-service decision boundaries",
       className: "trap boundary",
-      content: markdownSectionContent(markdown, "Adjacent-service decision boundary")
+      content: markdownBoundaryContent(markdown, fallback)
     }
   ].filter((card) => card.content);
+}
+
+function firstCodeBlocks(markdown, limit = 2) {
+  const blocks = [];
+  const codeRe = /```(\w*)\n([\s\S]*?)```/g;
+  let match;
+  while ((match = codeRe.exec(String(markdown || ""))) !== null && blocks.length < limit) {
+    blocks.push({ lang: match[1] || "text", code: match[2].trim() });
+  }
+  return blocks;
+}
+
+function codeChipFromBlock(block) {
+  const lines = String(block?.code || "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith("#") && !line.startsWith("//"));
+  return lines.find((line) => /(curl|docker|kubectl|POST |GET |from |import |client\.|_type:|model=|nmp )/.test(line)) || lines[0] || "";
+}
+
+function inlineCodeTokens(text, limit = 3) {
+  const tokens = [];
+  const re = /`([^`]+)`/g;
+  let match;
+  while ((match = re.exec(String(text || ""))) !== null && tokens.length < limit) tokens.push(match[1]);
+  return tokens;
+}
+
+function pipelineSteps(markdown) {
+  const content = markdownSectionContent(markdown, "Pipeline") || markdownSectionContent(markdown, "Operating model");
+  if (!content) return [];
+  return content
+    .split("\n")
+    .map((line) => line.match(/^\s*(?:\d+\.|-)\s+(.+)$/)?.[1]?.trim())
+    .filter(Boolean);
+}
+
+function buildStudyFlow({ markdown, title, kind = "Service", impl = null, fallback = {} }) {
+  const summary = markdownSummaryContent(markdown, fallback);
+  const steps = pipelineSteps(markdown);
+  const concrete = firstStudyFirstValue(markdown, "Concrete surface")
+    || firstStudyFirstValue(markdown, "Call surface")
+    || firstStudyFirstValue(markdown, "Study first");
+  const codeBlocks = impl?.codeBlocks?.length ? impl.codeBlocks.slice(0, 2) : firstCodeBlocks(markdown, 2);
+  const codeChips = [
+    ...codeBlocks.map(codeChipFromBlock).filter(Boolean),
+    ...inlineCodeTokens(concrete, 3)
+  ].filter(Boolean).slice(0, 3);
+  const input = impl?.input
+    || steps[0]
+    || firstStudyFirstValue(markdown, "Input")
+    || firstStudyFirstValue(markdown, "Use it when")
+    || summary;
+  const output = impl?.output
+    || impl?.nextStep
+    || steps[steps.length - 1]
+    || firstStudyFirstValue(markdown, "Output")
+    || valueFromCardData(generatedBlock(markdown), "Recognition clues")
+    || "Correct service choice, architecture boundary, or study decision.";
+  if (!summary && !input && !output && !codeChips.length) return null;
+  return {
+    inputTitle: kind === "Topic" ? "What enters the question" : "What you provide",
+    input,
+    middleLabel: kind,
+    title,
+    serviceText: impl?.whatItIs || summary,
+    codeChips,
+    note: impl?.handoff || concrete,
+    outputTitle: kind === "Topic" ? "What you should choose" : "What you get back",
+    output,
+    nextStep: impl?.nextStep || ""
+  };
 }
 
 function CustomizerFlowDiagram() {
@@ -2226,8 +2354,52 @@ function CustomizerFlowDiagram() {
   );
 }
 
-function ServiceDecisionSnapshot({ markdown, mode = "all", serviceSlug = "" }) {
-  const cards = serviceDecisionCards(markdown).filter((card) => {
+function StudyFlowDiagram({ markdown, title, kind = "Service", impl = null, fallback = {}, serviceSlug = "" }) {
+  if (serviceSlug === "nemo-customizer") return h(CustomizerFlowDiagram);
+  const flow = buildStudyFlow({ markdown, title, kind, impl, fallback });
+  if (!flow) return null;
+  return h("div", { className: "service-flow-diagram", "aria-label": `${title} input output flow` },
+    h("section", { className: "flow-node flow-input" },
+      h("span", null, "Input"),
+      h("strong", null, flow.inputTitle),
+      h("p", { className: "flow-kicker" }, renderInline(flow.input))
+    ),
+    h("div", { className: "flow-arrow", "aria-hidden": "true" }, "->"),
+    h("section", { className: "flow-node flow-service" },
+      h("span", null, flow.middleLabel),
+      h("strong", null, flow.title),
+      flow.serviceText ? h("p", { className: "flow-kicker" }, renderInline(flow.serviceText)) : null,
+      flow.codeChips.length ? h("div", { className: "flow-code-stack" },
+        flow.codeChips.map((chip) => h("code", { key: chip }, chip))
+      ) : null,
+      flow.note ? h("p", { className: "flow-note" }, renderInline(flow.note)) : null
+    ),
+    h("div", { className: "flow-arrow", "aria-hidden": "true" }, "->"),
+    h("section", { className: "flow-node flow-output" },
+      h("span", null, "Output"),
+      h("strong", null, flow.outputTitle),
+      h("p", { className: "flow-kicker" }, renderInline(flow.output)),
+      flow.nextStep ? h("p", { className: "flow-note" }, renderInline(flow.nextStep)) : null
+    )
+  );
+}
+
+function MarkdownCodePreview({ markdown, impl = null }) {
+  const codeBlocks = impl?.codeBlocks?.length ? impl.codeBlocks : firstCodeBlocks(markdown, 1);
+  if (!codeBlocks.length) return null;
+  return h("section", { className: "service-section code-preview-section" },
+    h("div", { className: "service-section-heading" },
+      h("span", null, "Start here"),
+      h("h4", null, "Code and calls to recognize")
+    ),
+    h("div", { className: "impl-code" },
+      codeBlocks.slice(0, 2).map((block, index) => h("pre", { key: `${block.lang}-${index}` }, h("code", null, block.code)))
+    )
+  );
+}
+
+function ServiceDecisionSnapshot({ markdown, mode = "all", serviceSlug = "", fallback = {} }) {
+  const cards = serviceDecisionCards(markdown, fallback).filter((card) => {
     if (mode === "summary") return card.kind === "summary";
     if (mode === "details") return card.kind === "detail";
     return true;
@@ -2252,7 +2424,14 @@ function ServiceDecisionSnapshot({ markdown, mode = "all", serviceSlug = "" }) {
         h("div", { className: "decision-card-body" }, renderMarkdown(card.content, renderOptions))
       ))
     ),
-    mode === "summary" && serviceSlug === "nemo-customizer" ? h(CustomizerFlowDiagram) : null
+    mode === "summary" ? h(StudyFlowDiagram, {
+      markdown,
+      title: fallback.name || fallback.title || markdownTitle(markdown),
+      kind: fallback.kind || "Service",
+      impl: fallback.impl,
+      fallback,
+      serviceSlug
+    }) : null
   );
 }
 
@@ -2260,7 +2439,7 @@ function ServiceDetail({ service, certSlug, quickQuiz, generateStudyQuiz, quizDi
   const markdownState = useServiceMarkdown(service.name);
   const study = parseStudyContent(markdownState.markdown, service, "service");
   const implementation = extractImplementationDetails(markdownState.markdown);
-  const isCustomizerPrototype = topicSlug(service.name) === "nemo-customizer";
+  const serviceSlug = topicSlug(service.name);
 
   return h(
     "article",
@@ -2271,11 +2450,11 @@ function ServiceDetail({ service, certSlug, quickQuiz, generateStudyQuiz, quizDi
       h("p", null, renderInline(implementation?.whatItIs || study.description)),
       implementation?.mentalModel ? h("p", { className: "service-mental-model" }, renderInline(implementation.mentalModel)) : null
     ),
-    isCustomizerPrototype ? h(ServiceDecisionSnapshot, { markdown: markdownState.markdown, mode: "summary", serviceSlug: topicSlug(service.name) }) : null,
+    h(ServiceDecisionSnapshot, { markdown: markdownState.markdown, mode: "summary", serviceSlug, fallback: { ...study, impl: implementation, kind: "Service" } }),
     h(ImplementationCards, { impl: implementation }),
-    isCustomizerPrototype ? h(ServiceDecisionSnapshot, { markdown: markdownState.markdown, mode: "details", serviceSlug: topicSlug(service.name) }) : null,
+    h(ServiceDecisionSnapshot, { markdown: markdownState.markdown, mode: "details", serviceSlug, fallback: { ...study, impl: implementation, kind: "Service" } }),
     h(StudyFirstPanel, { markdown: markdownState.markdown }),
-    isCustomizerPrototype ? null : h(ExamDecisionCards, { study }),
+    h(ExamDecisionCards, { study }),
     h(StudyDeepDive, { item: study }),
     h(StudyMarkdown, {
       state: markdownState,
@@ -2299,6 +2478,9 @@ function SectionDetail({ section, certSlug, quickQuiz, generateStudyQuiz, quizDi
       h("h3", null, study.name || section.name),
       h("p", null, renderInline(study.description))
     ),
+    h(ServiceDecisionSnapshot, { markdown: markdownState.markdown, mode: "summary", serviceSlug: topicSlug(section.name), fallback: { ...study, name: study.name || section.name, kind: "Topic" } }),
+    h(MarkdownCodePreview, { markdown: markdownState.markdown }),
+    h(ServiceDecisionSnapshot, { markdown: markdownState.markdown, mode: "details", serviceSlug: topicSlug(section.name), fallback: { ...study, name: study.name || section.name, kind: "Topic" } }),
     h(StudyFirstPanel, { markdown: markdownState.markdown }),
     h("div", { className: "study-map section-map" },
       h("section", { className: "identity" },
