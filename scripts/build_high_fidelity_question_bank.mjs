@@ -25,12 +25,23 @@ const banned = [
   /component for the scenario/i,
   /common trap:/i,
   /task is described this way: The design must avoid/i,
+  /without hiding the root cause/i,
+  /critical design question/i,
+  /initially selected/i,
+  /Which component should replace it/i,
+  /not selecting a model family/i,
+  /generic model selection/i,
+  /for the deployment, not/i,
+  /The work item is/i,
   /is choosing an NVIDIA component\. (Accelerating|Building|Choosing|Connecting|Curating|Distributed|For packaged|Live failures|Multi-model|Policy enforcement|Pulling|SFT)/i,
   /is deciding between [^.]+\. (Accelerating|Building|Choosing|Connecting|Curating|Distributed|For packaged|Live failures|Multi-model|Policy enforcement|Pulling|SFT)/i,
+  /is choosing an NVIDIA component\./i,
   / for to /i,
   /nVIDIA/,
   /Use first when/i
 ];
+
+const serviceSignalPattern = /trace|timeline|kernel|CUDA|Kubernetes|endpoint|API|LoRA|PEFT|RAG|retrieval|embedding|rerank|guardrail|policy|eval|benchmark|judge|dataset|dedup|PII|profile|registry|container|rollout|autoscal|all-reduce|NCCL|GPU|latency|throughput|documents|workflow|tools|memory|state|agent|router|specialist|planner|handoff|retry|preference|session|recall|consent|model artifacts|release|serve|serving|routing|runtime|artifact|microservice|profiler|JSONL|Parquet|corpus|pipeline|ScoreFilter|classifier|curation|prefill|decode|KV-cache|multi-node|H100/i;
 
 const industries = [
   "A bank fraud team",
@@ -72,20 +83,17 @@ const actionVerbs = [
 ];
 
 const domainStemPatterns = [
-  ({ industry, trap, constraint, verb }) => `${industry} is designing a production AI workflow. The initial design relies on ${trap}, and the team ${constraint}. ${verb}`,
-  ({ industry, concept, trap, constraint }) => `${industry} has a working prototype, but the architecture review finds that ${trap} is being used where ${concept} should own the decision. The team ${constraint}. Which change best preserves the lifecycle boundary?`,
-  ({ industry, trap }) => `${industry} sees intermittent failures after rollout. Investigation shows the system depends on ${trap} instead of an explicit control at the failing layer. What should the team change first?`,
-  ({ industry, concept, constraint }) => `${industry} needs to productionize an AI workflow and ${constraint}. The critical design question is how to handle ${concept} without hiding the root cause in prompts or model size. Which option is strongest?`,
-  ({ industry, trap, concept }) => `${industry} is comparing two designs: one centered on ${trap}, and one that adds ${concept} as an explicit boundary. Which design is more appropriate for a governed production system?`,
-  ({ industry, concept, constraint, verb }) => `${industry} is preparing a release where ${concept} is the main risk area. The team ${constraint}. ${verb}`
+  ({ industry, domain, concept, correctIdea, trap, verb }) => `${industry} is preparing ${domainWorkload(domain)} for release. The current design relies on ${trap}, but the release gate needs to ${correctIdea}. ${verb}`,
+  ({ industry, domain, concept, trap }) => `${industry} sees ${domainSignal(domain, concept)}. The team has been using ${trap}; the next change needs to make ${concept} explicit. Which action best addresses the problem?`,
+  ({ industry, domain, concept, correctIdea }) => `${industry} is reviewing ${domainWorkload(domain)} before rollout. The main risk is ${concept}: the system must ${correctIdea}. Which option keeps the decision at the right layer?`,
+  ({ industry, domain, concept, trap }) => `${industry} is comparing two release designs for ${domainWorkload(domain)}. One design centers on ${trap}; the other adds a measurable ${concept} step. Which design is more appropriate for production?`,
+  ({ industry, domain, concept, correctIdea, verb }) => `${industry} has a production-readiness review for ${domainWorkload(domain)}. The review is focused on ${concept}, because the system must ${correctIdea}. ${verb}`
 ];
 
 const serviceStemPatterns = [
-  ({ industry, scenario }) => `${industry} is choosing an NVIDIA component. ${scenario} Which service fits best?`,
-  ({ industry, service, wrongService, scenario }) => `${industry} is deciding between ${service.name} and ${wrongService.name}. ${scenario} Which selection is correct?`,
+  ({ industry, scenario }) => `${industry} is preparing a production rollout. ${scenario} Which NVIDIA component should the team use?`,
+  ({ industry, scenario }) => `${industry} is reviewing the production design. ${scenario} Which NVIDIA service matches this workload?`,
   ({ industry, scenario }) => `${industry} has narrowed the next implementation step. ${scenario} Which NVIDIA component is most appropriate?`,
-  ({ industry, wrongService, scenario }) => `${industry} initially selected ${wrongService.name}. ${scenario} Which component should replace it?`,
-  ({ industry, scenario }) => `${industry} is reviewing the production design. ${scenario} Which service matches the workload?`,
   ({ industry, scenario }) => `${industry} is preparing a release decision. ${scenario} Which NVIDIA component should own this step?`
 ];
 
@@ -449,22 +457,76 @@ function normalizeDifficulty(difficulty) {
   return difficulty;
 }
 
+function domainWorkload(domain) {
+  const workloads = {
+    "Agent Architecture and Design": "an agent workflow with explicit routing and evidence gates",
+    "Agent Development": "a tool-using agent service",
+    "Evaluation and Tuning": "an agent evaluation suite",
+    "Deployment and Scaling": "a scalable agent deployment",
+    "Cognition, Planning, and Memory": "a stateful planning workflow",
+    "Knowledge Integration and Data Handling": "a permissioned RAG workflow",
+    "NVIDIA Platform Implementation": "an NVIDIA-backed AI platform design",
+    "Run, Monitor, and Maintain": "a monitored production agent",
+    "Safety, Ethics, and Compliance": "a governed agent workflow",
+    "Human-AI Interaction and Oversight": "a reviewer-facing agent workflow",
+    "Model Optimization": "an LLM serving performance path",
+    "GPU Acceleration and Optimization": "a GPU performance investigation",
+    "Prompt Engineering": "a prompt-controlled production workflow",
+    "Fine-Tuning": "a model adaptation release",
+    "Data Preparation": "a model-data preparation pipeline",
+    "Model Deployment": "a production model-serving rollout",
+    "Evaluation": "an LLM evaluation release gate",
+    "Production Monitoring and Reliability": "a monitored LLM service",
+    "LLM Architecture": "a model-capability design",
+    "Agent Lifecycle and Architecture": "an agent lifecycle design",
+    "Data Curation and Knowledge Grounding": "a data and grounding pipeline",
+    "Model Selection and Customization": "a model selection and customization path",
+    "Inference Serving and Deployment": "an inference-serving rollout",
+    "Evaluation and Safety": "an evaluation and safety gate",
+    "Tooling, Orchestration, and Memory": "a tool-using agent workflow",
+    "Human Oversight and Governance": "a governance and review workflow",
+    "Observability, Operations, and Cost": "an operational monitoring plan"
+  };
+  return workloads[domain] || "a production AI workflow";
+}
+
+function domainSignal(domain, concept) {
+  const signals = {
+    "Agent Architecture and Design": `handoffs and evidence checks failing around ${concept}`,
+    "Agent Development": `tool calls failing because ${concept} is not enforced before execution`,
+    "Evaluation and Tuning": `release comparisons with no reliable ${concept} evidence`,
+    "Deployment and Scaling": `rollout instability tied to ${concept}`,
+    "Cognition, Planning, and Memory": `state and planning errors tied to ${concept}`,
+    "Knowledge Integration and Data Handling": `answers losing grounding because ${concept} is not controlled`,
+    "NVIDIA Platform Implementation": `a platform decision blocked by the ${concept} lifecycle layer`,
+    "Run, Monitor, and Maintain": `incidents that cannot be explained without ${concept}`,
+    "Safety, Ethics, and Compliance": `policy failures that need ${concept} as an explicit control`,
+    "Human-AI Interaction and Oversight": `reviewers lacking the ${concept} evidence needed for decisions`,
+    "Model Optimization": `latency or memory behavior pointing to ${concept}`,
+    "GPU Acceleration and Optimization": `a performance trace that points to ${concept}`,
+    "Prompt Engineering": `prompt changes causing regressions around ${concept}`,
+    "Fine-Tuning": `model behavior changes that require ${concept}`,
+    "Data Preparation": `data quality failures tied to ${concept}`,
+    "Model Deployment": `release rollback risk tied to ${concept}`,
+    "Evaluation": `quality scores that are unreliable without ${concept}`,
+    "Production Monitoring and Reliability": `operational incidents that require ${concept}`,
+    "LLM Architecture": `capability limits tied to ${concept}`
+  };
+  return signals[domain] || `a production failure tied to ${concept}`;
+}
+
 function makeDomainQuestion(config, domain, index, existingCount) {
   const concepts = config.domainConcepts[domain] || [["lifecycle boundary", "choose the control that acts at the failing layer", "generic tool choice"]];
   const [concept, correctIdea, trap] = concepts[index % concepts.length];
   const industry = pick(industries, config.slug, domain, index, "industry");
-  const constraint = pick(constraints, config.slug, domain, index, "constraint");
   const verb = pick(actionVerbs, config.slug, domain, index, "verb");
   const difficulty = difficultyFor(existingCount + index);
   const id = `${config.prefix}-${slugify(domain)}-${String(index + 1).padStart(3, "0")}`;
-  const question = pick(domainStemPatterns, config.slug, domain, index, "stem")({ industry, concept, correctIdea, trap, constraint, verb });
+  const question = pick(domainStemPatterns, config.slug, domain, index, "stem")({ industry, domain, concept, correctIdea, trap, verb });
   const correct = domainCorrectChoice(concept, correctIdea, index);
-  const distractors = [
-    wrongChoice(config.slug, domain, index, "w1"),
-    wrongChoice(config.slug, domain, index, "w2"),
-    wrongChoice(config.slug, domain, index, "w3")
-  ].filter((value, position, list) => list.indexOf(value) === position && value !== correct);
-  while (distractors.length < 3) distractors.push(pick(wrongPatterns, config.slug, domain, index, `fill-${distractors.length}`));
+  const distractors = domainDistractors(config, domain, concept, trap, index).filter((value, position, list) => (
+    list.indexOf(value) === position && value !== correct
+  ));
   return buildQuestion({
     id,
     domain,
@@ -474,18 +536,48 @@ function makeDomainQuestion(config, domain, index, existingCount) {
     correct,
     distractors: distractors.slice(0, 3),
     explanation: `The scenario is about ${concept}. The strongest answer fixes the failing layer directly: ${correctIdea}.`,
-    wrongReason: `This distractor does not act at the ${concept} boundary or it changes the wrong layer before the root cause is measured.`
+    wrongReason: (choice) => domainWrongReason(choice, concept, trap)
   });
 }
 
 function domainCorrectChoice(concept, correctIdea, index) {
   const choices = [
-    `Add ${article(concept)} ${concept} so the system can ${correctIdea}.`,
     `Make ${concept} explicit in the workflow: ${correctIdea}.`,
     `Use ${concept} as the control boundary and require the system to ${correctIdea}.`,
-    `Move the decision into ${concept}, because the root requirement is to ${correctIdea}.`
+    `Add a release gate for ${concept}: ${correctIdea}.`,
+    `Change the design around ${concept} so the system can ${correctIdea}.`
   ];
   return choices[index % choices.length].replace(/\s+/g, " ");
+}
+
+function domainDistractors(config, domain, concept, trap, index) {
+  const concepts = (config.domainConcepts[domain] || [])
+    .map(([name]) => name)
+    .filter((name) => name && name !== concept);
+  const firstNeighbor = concepts.length ? pick(concepts, config.slug, domain, concept, index, "neighbor-a") : "a neighboring lifecycle control";
+  const secondNeighbor = concepts.length ? pick(concepts, config.slug, domain, concept, index, "neighbor-b") : "another release control";
+  const choices = [
+    `Keep ${trap} as the primary release control and record only final outputs.`,
+    `Prioritize ${firstNeighbor} before validating the failure signal around ${concept}.`,
+    `Bundle ${concept}, ${secondNeighbor}, and prompt changes into one release with one aggregate score.`,
+    `Wait for production incidents before adding a dedicated ${concept} check.`,
+    `Use ${secondNeighbor} as the main gate even though reviewers are asking for ${concept} evidence.`
+  ];
+  const rotated = choices.map((_, position) => choices[(position + index) % choices.length]);
+  return rotated.slice(0, 3);
+}
+
+function domainWrongReason(choice, concept, trap) {
+  if (choice.includes(trap)) {
+    return `It keeps ${trap} in control instead of adding a measurable ${concept} decision point.`;
+  }
+  if (/Bundle /.test(choice)) {
+    return `Bundling multiple changes makes it harder to tell whether ${concept} fixed or caused the failure.`;
+  }
+  if (/production incidents/i.test(choice)) {
+    return `Waiting for incidents postpones the ${concept} gate until after users are exposed.`;
+  }
+  return `It moves attention to a neighboring control instead of making ${concept} testable in the scenario.`;
 }
 
 function article(value) {
@@ -500,21 +592,13 @@ function makeServiceQuestion(config, service, index, existingCount, domains) {
   const domain = serviceDomain(config, service, domains);
   const industry = pick(industries, config.slug, service.name, index, "industry");
   const lifecycleNeed = actionPhrase(pick(lifecycleNeeds[service.lifecycle] || constraints, config.slug, service.name, index, "need"));
-  const wrongName = distractorByLifecycle[service.lifecycle] || pick(config.services, config.slug, service.name, index, "wrong").name;
-  const wrongService = config.services.find((candidate) => candidate.name === wrongName && candidate.name !== service.name)
-    || config.services.find((candidate) => candidate.name !== service.name)
-    || { name: wrongName, lifecycle: "a different lifecycle layer" };
   const difficulty = difficultyFor(existingCount + index + 3);
   const id = `${config.prefix}-svc-${slugify(service.name)}-${String(index + 1).padStart(3, "0")}`;
   const need = serviceNeed(service);
-  const scenario = serviceScenario(service, index, lifecycleNeed, wrongService);
-  const question = pick(serviceStemPatterns, config.slug, service.name, index, "stem")({ industry, service, wrongService, scenario, lifecycleNeed, need });
+  const scenario = serviceScenario(service, index, lifecycleNeed);
+  const question = pick(serviceStemPatterns, config.slug, service.name, index, "stem")({ industry, service, scenario, lifecycleNeed, need });
   const correct = serviceCorrectChoice(service, index);
-  const distractors = [
-    `Choose ${wrongService.name}; it fits ${lowerFirst(wrongService.lifecycle || "a neighboring lifecycle layer")}, not this ${lowerFirst(service.lifecycle)} requirement.`,
-    serviceWrongChoice(service, index),
-    `Treat the requirement as generic model selection and postpone the ${lowerFirst(service.lifecycle)} decision until after deployment.`
-  ];
+  const distractors = serviceDistractors(config, service, index);
   return buildQuestion({
     id,
     domain,
@@ -524,7 +608,7 @@ function makeServiceQuestion(config, service, index, existingCount, domains) {
     correct,
     distractors,
     explanation: `${service.name} is the best fit because it sits in ${service.lifecycle}: ${service.description}`,
-    wrongReason: (choice) => serviceWrongReason(choice, service, wrongService)
+    wrongReason: (choice) => serviceWrongReason(choice, service)
   });
 }
 
@@ -568,21 +652,15 @@ function serviceDomain(config, service, domains) {
 }
 
 function serviceCorrectChoice(service, index) {
-  const choices = [
-    `Choose ${service.name}; ${serviceFit(service.use)}.`,
-    `Use ${service.name}; it provides ${descriptionPhrase(service.description)}.`,
-    `${service.name} is the best fit; its role is ${descriptionPhrase(service.description)}.`,
-    `Select ${service.name}; it directly supports ${gerundPhrase(serviceNeed(service))}.`
-  ];
-  return choices[index % choices.length].replace(/\s+/g, " ").replace(/\.\.$/, ".");
+  return serviceChoiceText(service, index);
 }
 
-function serviceScenario(service, index, lifecycleNeed, wrongService) {
+function serviceScenario(service, index, lifecycleNeed) {
   const rawOptions = [
     sentence(service.scenario),
-    `A production rollout calls for ${gerundPhrase(serviceNeed(service))}; ${wrongService.name} was proposed even though it serves a different lifecycle layer.`,
-    `The work item is ${gerundPhrase(lifecycleNeed)} for the deployment, not selecting a model family or adding a generic GPU tool.`,
-    `${wrongService.name} is on the shortlist, but the bottleneck is ${gerundPhrase(serviceNeed(service))}.`
+    `The rollout is blocked because the team needs ${serviceNeed(service)}.`,
+    `${capitalize(gerundPhrase(lifecycleNeed))} is the next release blocker.`,
+    `${capitalize(gerundPhrase(serviceNeed(service)))} is the work to finish before release.`
   ].filter(Boolean);
   const raw = String(rawOptions[index % rawOptions.length]).trim();
   return raw
@@ -596,6 +674,81 @@ function serviceFit(text) {
   return `it is used ${actionPhrase(serviceRequirement(text))}`;
 }
 
+function serviceChoiceText(service, index) {
+  const choices = [
+    `Choose ${service.name}; it provides ${serviceDescriptionObject(service.description)}.`,
+    `Use ${service.name}; it is used ${serviceNeed(service)}.`,
+    `Select ${service.name}; it owns ${lowerFirst(service.lifecycle)} work such as ${gerundPhrase(serviceNeed(service))}.`,
+    `${service.name} is the best fit; it provides ${serviceDescriptionObject(service.description)}.`
+  ];
+  return choices[index % choices.length].replace(/\s+/g, " ").replace(/\.\.$/, ".");
+}
+
+function serviceDescriptionObject(description) {
+  const clean = String(description || "").replace(/\.$/, "").trim();
+  const replacements = [
+    [/^Framework for\b/i, "a framework for"],
+    [/^Config-driven\b/i, "a config-driven"],
+    [/^Programmable rails\b/i, "programmable rails"],
+    [/^NVIDIA Retriever microservice family\b/i, "the NVIDIA Retriever microservice family"],
+    [/^Inference microservices\b/i, "inference microservices"],
+    [/^NVIDIA model families\b/i, "NVIDIA model families"],
+    [/^Production inference server\b/i, "a production inference server"],
+    [/^Optimized inference stack\b/i, "an optimized inference stack"],
+    [/^Catalog and registry\b/i, "a catalog and registry"],
+    [/^System-wide profiler\b/i, "a system-wide profiler"],
+    [/^CUDA kernel profiler\b/i, "a CUDA kernel profiler"],
+    [/^Collective communication library\b/i, "a collective communication library"],
+    [/^GPU-accelerated\b/i, "GPU-accelerated"],
+    [/^Pipeline\/stage toolkit\b/i, "a pipeline/stage toolkit"],
+    [/^Microservice\b/i, "a microservice"],
+    [/^Kubernetes operator\b/i, "a Kubernetes operator"],
+    [/^Distributed inference serving stack\b/i, "a distributed inference serving stack"]
+  ];
+  for (const [pattern, replacement] of replacements) {
+    if (pattern.test(clean)) return clean.replace(pattern, replacement);
+  }
+  return descriptionPhrase(clean);
+}
+
+function serviceDistractors(config, service, index) {
+  const named = serviceDistractorNames(service.lifecycle)
+    .map((name) => nvidiaServices.find((candidate) => candidate.name === name))
+    .filter(Boolean);
+  const candidates = [...named, ...config.services, ...extraServicePool(config)]
+    .filter((candidate) => candidate.name !== service.name)
+    .filter((candidate, position, list) => list.findIndex((item) => item.name === candidate.name) === position)
+    .sort((a, b) => hashNumber(service.name, index, a.name) - hashNumber(service.name, index, b.name));
+  return candidates.slice(0, 3).map((candidate, position) => serviceChoiceText(candidate, index + position + 1));
+}
+
+function extraServicePool(config) {
+  return nvidiaServices.filter((service) => {
+    const exams = service.exams || [];
+    if (config.slug === "agentic_ai_general_study") return exams.includes("Agentic AI General");
+    return exams.includes("GenAI LLMs") || exams.includes("Agentic AI");
+  });
+}
+
+function serviceDistractorNames(lifecycle) {
+  const names = {
+    "Data preparation": ["NeMo Retriever", "NIM", "TensorRT-LLM", "NeMo Framework"],
+    "Model selection": ["NIM", "NGC", "NeMo Framework", "TensorRT-LLM"],
+    "Training and customization": ["NIM", "NGC", "NeMo Framework", "NeMo Customizer"],
+    "Foundation training": ["NeMo Framework", "NIM", "NGC", "NeMo Guardrails"],
+    "Agent orchestration": ["NeMo Guardrails", "NeMo Retriever", "NIM", "Nsight Systems"],
+    "Inference optimization": ["NIM", "TensorRT-LLM", "Nsight Systems", "Nsight Compute"],
+    "Serving and deployment": ["NIM", "NIM Operator", "Triton Inference Server", "NGC", "Dynamo (Triton Dynamo)"],
+    "RAG and retrieval": ["NeMo Curator", "NeMo Guardrails", "NIM", "NeMo Evaluator"],
+    "Safety and guardrails": ["NeMo Retriever", "NeMo Evaluator", "NIM", "NeMo Agent Toolkit"],
+    "Human oversight": ["NeMo Evaluator", "NeMo Guardrails", "NeMo Agent Toolkit", "NIM"],
+    "Governance": ["NGC", "NeMo Evaluator", "NIM Operator", "NeMo Guardrails"],
+    "Monitoring and profiling": ["Nsight Compute", "Nsight Systems", "NeMo Evaluator", "NIM", "TensorRT-LLM"],
+    "Evaluation": ["NeMo Guardrails", "Nsight Systems", "NIM Operator", "NeMo Curator"]
+  };
+  return names[lifecycle] || ["NIM", "NGC", "NeMo Evaluator", "Nsight Systems"];
+}
+
 function serviceNeed(service) {
   return actionPhrase(serviceRequirement(service.use));
 }
@@ -604,6 +757,9 @@ function serviceRequirement(text) {
   return String(text || "")
     .trim()
     .replace(/\.$/, "")
+    .replace(/^Choose it when\s+/i, "")
+    .replace(/^raw data must become/i, "prepare raw data as")
+    .replace(/^Use after a specific kernel is identified and the question asks why that kernel is/i, "diagnose why a known kernel is")
     .replace(/^Use first when the question asks where time is going across/i, "identifying where time is going across")
     .replace(/^Use when the scenario asks which model family to choose for/i, "choosing a model family for")
     .replace(/^Use when the scenario references/i, "")
@@ -685,6 +841,7 @@ function actionPhrase(text) {
     [/^packaged, supported\b/i, "to package and serve supported, optimized models"],
     [/^policy enforcement\b/i, "to enforce policy"],
     [/^policy flows\b/i, "to enforce policy flows"],
+    [/^prepare\b/i, "to prepare"],
     [/^private or changing documents must become\b/i, "to prepare private or changing documents as"],
     [/^production model APIs\b/i, "to provide production model APIs"],
     [/^pulling\b/i, "to pull"],
@@ -717,8 +874,11 @@ function gerundPhrase(text) {
     [/^compare\b/i, "comparing"],
     [/^connect\b/i, "connecting"],
     [/^coordinate\b/i, "coordinating"],
+    [/^compose\b/i, "composing"],
     [/^create\b/i, "creating"],
     [/^curate\b/i, "curating"],
+    [/^change\b/i, "changing"],
+    [/^decide\b/i, "deciding"],
     [/^deduplicate\b/i, "deduplicating"],
     [/^diagnose\b/i, "diagnosing"],
     [/^enforce\b/i, "enforcing"],
@@ -728,6 +888,9 @@ function gerundPhrase(text) {
     [/^ground\b/i, "grounding"],
     [/^handle\b/i, "handling"],
     [/^identify\b/i, "identifying"],
+    [/^improve\b/i, "improving"],
+    [/^keep\b/i, "keeping"],
+    [/^make\b/i, "making"],
     [/^manage\b/i, "managing"],
     [/^measure\b/i, "measuring"],
     [/^optimize\b/i, "optimizing"],
@@ -737,10 +900,17 @@ function gerundPhrase(text) {
     [/^prepare\b/i, "preparing"],
     [/^provide\b/i, "providing"],
     [/^pull\b/i, "pulling"],
+    [/^reduce\b/i, "reducing"],
     [/^remember\b/i, "remembering"],
+    [/^route\b/i, "routing"],
     [/^run\b/i, "running"],
+    [/^separate\b/i, "separating"],
     [/^serve\b/i, "serving"],
-    [/^support\b/i, "supporting"]
+    [/^store\b/i, "storing"],
+    [/^support\b/i, "supporting"],
+    [/^track\b/i, "tracking"],
+    [/^turn\b/i, "turning"],
+    [/^validate\b/i, "validating"]
   ];
   for (const [pattern, replacement] of replacements) {
     if (pattern.test(withoutTo)) return withoutTo.replace(pattern, replacement);
@@ -809,21 +979,15 @@ function serviceWrongChoice(service, index) {
   return choices[index % choices.length];
 }
 
-function serviceWrongReason(choice, service, wrongService) {
-  if (choice.includes(wrongService.name)) {
-    return `${wrongService.name} belongs to ${wrongService.lifecycle || "a neighboring layer"}, while this scenario is about ${service.lifecycle}.`;
-  }
-  if (/generic model selection/i.test(choice)) {
-    return `Model selection does not satisfy the ${service.lifecycle} requirement described in the stem.`;
-  }
-  if (/prompt/i.test(choice)) {
-    return "Prompt wording alone does not provide the NVIDIA service boundary required by the scenario.";
-  }
-  if (/TensorRT-LLM|decode|KV cache|batching|quantization/i.test(choice) && service.lifecycle === "Data preparation") {
-    return "Those are inference-optimization concerns; the stem is about data preparation before training or indexing.";
-  }
-  if (/NIM endpoint|endpoint|serving/i.test(choice) && service.lifecycle !== "Serving and deployment") {
-    return "A serving endpoint does not solve this neighboring lifecycle requirement.";
+function serviceWrongReason(choice, service) {
+  const chosen = [...nvidiaServices]
+    .sort((a, b) => b.name.length - a.name.length)
+    .find((candidate) => choice.includes(candidate.name));
+  if (chosen) {
+    if (chosen.lifecycle === service.lifecycle) {
+      return `${chosen.name} is a neighboring ${lowerFirst(service.lifecycle)} component, but this signal asks specifically for ${service.name}: ${serviceNeed(service)}.`;
+    }
+    return `${chosen.name} belongs to ${chosen.lifecycle || "a neighboring layer"}, while this scenario asks for ${service.lifecycle}.`;
   }
   return `${service.avoid || "It addresses a neighboring layer rather than the stated requirement."}`;
 }
@@ -937,6 +1101,9 @@ function validateQuestionText(questions) {
     const text = `${question.question} ${question.choices.join(" ")} ${question.explanation}`;
     for (const pattern of banned) {
       if (pattern.test(text)) failures.push(`Banned phrase in ${question.id}: ${pattern}`);
+    }
+    if (/NVIDIA service:/i.test(question.topic) && !serviceSignalPattern.test(question.question)) {
+      failures.push(`Service stem lacks a concrete operational signal in ${question.id}`);
     }
     if (question.choices.length !== 4) failures.push(`Wrong choice count in ${question.id}`);
     if (!["easy", "medium", "hard", "expert"].includes(question.difficulty)) failures.push(`Bad difficulty in ${question.id}: ${question.difficulty}`);

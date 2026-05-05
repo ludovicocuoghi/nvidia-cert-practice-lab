@@ -134,6 +134,18 @@ Model **deployment** is the bridge between a trained/optimized model and users:
 
 **Exam signal**: For LLM inference, horizontal scaling means more **GPU** instances. Vertical scaling means bigger/faster GPUs. Auto-scaling handles variable load but needs warm-up time for new instances (cold start problem).
 
+### User count, concurrency, and latency metrics
+
+When a deployment question mentions user volume, convert it into a serving workload before choosing a scaling answer: requests per second, concurrent generations, prompt tokens, output tokens, streaming requirement, and burst pattern.
+
+| Cue | Metric to inspect | Deployment answer pattern | Trap |
+| --- | ----------------- | ------------------------- | ---- |
+| Interactive chat must feel quick | P95/P99 TTFT, inter-token latency | Streaming, short batching window, warm replicas, context control | Only measure full response time |
+| Many users arrive at once | Queue depth, concurrent requests, HPA state, cold starts | Warm pool, autoscaling, rate limiting, admission control | Scale to zero for chat |
+| P50 fine but P99 bad | Tail traces, queue time, long-output requests, retries | Prioritize lanes, cap outputs, tune timeouts and batching | Trust average latency |
+| High throughput batch job | Tokens/sec, total completion time, GPU utilization | Larger batches, throughput lane, offline scheduling | Apply chat TTFT settings to batch |
+| Variable-length generation | Batch occupancy, least-outstanding routing, KV-cache pressure | In-flight batching and load-aware routing | Round-robin as the only balancer |
+
 ## Infrastructure patterns
 
 | Pattern | What it is | Exam context |

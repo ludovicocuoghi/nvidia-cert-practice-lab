@@ -45,6 +45,8 @@ This is the vendor-neutral home for operating agentic systems after release. Kee
 - A **trace** is the end-to-end request path; a **span** is one timed step such as retrieval, rerank, prefill, decode, tool call, guardrail, or review.
 - **p50** is typical latency; **p95/p99** show tail latency where users feel slow requests and timeout risk.
 - **Time to first token** is mostly prefill, queueing, and routing; **tokens per second** is mostly decode and serving efficiency.
+- **User-count scenarios** should be translated into request rate, concurrent in-flight work, token shape, queue depth, and per-lane saturation before picking a fix.
+- **p50 flat but p99 high** usually means tail behavior: queueing, slow tools, long contexts, long outputs, retries, or a few overloaded routes.
 - **Cost per completed task** is more useful than cost per API call when agents may retrieve, rerank, call tools, retry, or escalate.
 - **Route drift** means traffic moves into more expensive, less safe, or less accurate lanes than expected.
 - **Incident replay** should preserve model, prompt, route, retrieval index, tool schema, guardrail, and policy versions so the failure can become a regression test.
@@ -77,6 +79,9 @@ Operations metrics are functions over traces, not only logs: p50/p95/p99, empty 
 | Symptom | Inspect first | Trap |
 |---|---|---|
 | High p99 | Stage-level trace | Optimize model blindly |
+| Many users, rising latency | Request rate, queue depth, concurrency, autoscaling state | Treat raw registered-user count as the bottleneck |
+| Few users, slow first token | TTFT trace: cold start, routing, prefill, retrieval/tool waits | Add capacity before checking warmup and context |
+| p50 normal, p99 bad | Tail spans, retry storms, slow dependencies, long-output outliers | Average latency dashboard |
 | Cost spike | Route/token/tool cost | Blame traffic only |
 | Failed task with 200 | Task success events | HTTP only |
 | Retrieval failure | Retrieval spans | Final answer only |

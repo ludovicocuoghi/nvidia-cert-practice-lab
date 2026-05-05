@@ -21,12 +21,14 @@ Use this skill when creating or repairing practice questions for this project. T
 - Never use app/meta stems such as "a study session asks", "during a mock review", "remember for the exam", or "lifecycle drill".
 - A good stem describes a real production situation: architecture review, rollout, profiling trace, RAG failure, training-data issue, safety incident, or governance requirement.
 - Service questions must be scenario-first. Do not write product flashcards such as "The requirement is X", "Which service fits best?" without a concrete workload, or "The design must avoid the common trap". The learner should know what problem is being solved before seeing the answer choices.
+- Do not write fake procurement stories such as "the team initially selected X" followed by "which component should replace it" unless the actual scenario is a procurement/design review. Prefer observed signals: traces, rollout blockers, missing labels, retrieval failures, policy incidents, or release-gate evidence.
 - If a question compares two NVIDIA services, the stem must state the operational signal that separates them: Kubernetes lifecycle, inference endpoint packaging, data curation, retrieval, guardrails, profiling, evaluation, training communication, or model customization.
-- Do not leak source notes into stems or choices. Banned wording includes "common trap", "not the layer described here", "actual requirement is", and generic "supported NVIDIA path" language.
+- Do not leak source notes into stems or choices. Banned wording includes "common trap", "not the layer described here", "actual requirement is", "critical design question", "without hiding the root cause in prompts or model size", and generic "supported NVIDIA path" language.
 - Domain must match the lifecycle being tested. RAPIDS/NeMo Curator belong in data preparation, NIM/NIM Operator in serving/deployment, Nsight in monitoring/profiling, NeMo Guardrails in safety, and service-comparison questions for NCP-AAI should generally sit under NVIDIA Platform Implementation.
 - The correct answer must identify the right lifecycle layer, NVIDIA service, bottleneck, or safety boundary.
 - Distractors must be plausible neighboring-layer mistakes, not silly answers.
-- Distractors should all answer the same question. Avoid mixing one product choice with unrelated prompt/context/logging mistakes unless the stem is explicitly about that operational trade-off.
+- Distractors should all answer the same question. For service-selection stems, all four options should be service/tool choices. For evaluation stems, all four options should be eval/release-gate choices. Avoid mixing one product choice with unrelated prompt/context/logging mistakes unless the stem is explicitly about that operational trade-off.
+- Example repair: instead of "A retailer initially selected NeMo Customizer...which component should replace it?", write "A retailer's inference service shows low GPU occupancy and long idle gaps between CUDA launches...which NVIDIA tool should they use first?" with Nsight Systems, Nsight Compute, NIM, and NeMo Customizer as same-axis tool choices.
 - Difficulty should skew medium/hard, with easy for fundamentals and a small expert tail.
 - Every generated question must have a stable ID, domain, topic, difficulty, four choices, answer, explanation, and wrong-answer reasons.
 

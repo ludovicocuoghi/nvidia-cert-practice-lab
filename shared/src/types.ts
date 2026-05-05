@@ -20,6 +20,7 @@ export type Question = {
   domain: string;
   topic?: string;
   difficulty?: string;
+  source?: "original" | "high_fidelity_generated" | "generated_draft";
   question: string;
   choices: string[];
   answer: number;
@@ -32,6 +33,9 @@ export type ExamPayload = {
   domains: BlueprintDomain[];
   questions: Question[];
   practicePoolIds?: string[];
+  originalBankIds?: string[];
+  highFidelityGeneratedIds?: string[];
+  generatedPracticeIds?: string[];
   approvedGeneratedIds?: string[];
   pendingGeneratedIds?: string[];
   rejectedGeneratedIds?: string[];

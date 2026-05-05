@@ -64,6 +64,19 @@ Deployment and Scaling sits at the **operationalization** stage:
 - Prevents head-of-line blocking: batch jobs don't delay real-time responses
 - **Intent/complexity routing**: Simple queries → cheap deterministic/small-model path; complex → full agent workflow
 
+### User count, concurrency, and UX latency
+
+Exam scenarios often mention "1,000 users" or "1 million users" to test capacity reasoning. Do not treat the number by itself as the answer. First translate it into concurrent requests, requests per second, token lengths, workflow length, traffic bursts, and the user-facing SLO.
+
+| Scenario cue | Agent-specific interpretation | Better first action | Trap |
+| --------- | ----------------------------- | ------------------- | ---- |
+| Few users, slow first token | Cold start, long prompt/prefill, slow retrieval, slow tool, or route overhead | Trace TTFT by span and check warm readiness | Add GPUs before finding the slow span |
+| Many users, p95/p99 worsens | Queueing, autoscaling lag, shared lane, saturated model/tool/retriever | Inspect queue depth and per-component saturation | Optimize only the LLM while tools block |
+| p50 OK, p99 terrible | Tail requests have retries, long tool calls, long output, or complex agent paths | Add timeouts, bulkheads, lane isolation, and route caps | Trust average latency |
+| Chat feels slow but total time is acceptable | User cares about TTFT and inter-token latency | Stream safely and reduce prefill/queue time | Use only end-to-end latency |
+| LLM idle but agent slow | Bottleneck is likely retrieval, tool API, guardrail, network, or orchestration | Follow distributed traces before scaling inference | Assume low GPU use means no performance issue |
+| LLM saturated with low tokens/sec | Runtime/profile/batching/KV-cache/model-size issue | Tune NIM/Triton/TensorRT-LLM profile or scale that endpoint | Blame "too many users" without endpoint metrics |
+
 ### Edge and regional deployment
 
 - **Edge deployment with regional inference endpoints**: Minimizes network **latency** for geographically distributed users

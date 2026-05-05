@@ -107,6 +107,21 @@ Do not optimize the model first if traces show retrieval, tool APIs, queueing, o
 | RAG cost spike | Retrieval/context | top-k, reranker budget, cache, chunk packing |
 | Quality drops after speed fix | Eval regression | Restore route/model/context or adjust threshold |
 
+### User count, concurrency, and latency SLOs
+
+Raw user count is a capacity clue, not a diagnosis. Convert "1,000 users" or "1 million users" into request rate, concurrent requests, token lengths, traffic bursts, and the user-facing SLO before choosing a fix.
+
+| Scenario cue | Watch first | Likely first move | Trap |
+|---|---|---|---|
+| Few users but slow first token | TTFT, cold starts, prompt length, retrieval/tool spans | Warm endpoint, trim context, trace slow dependency | Autoscale replicas for a non-capacity bottleneck |
+| Many users and p95/p99 climbs | Queue depth, concurrency, batching window, autoscaling lag | Add capacity or admission control after measuring the saturated lane | Tune only the prompt while requests wait in queue |
+| p50 normal, p99 bad | Tail spans, timeout rate, slow tools, long-output outliers | Set per-step timeouts, isolate lanes, cap output or route outliers | Trust average latency |
+| Good TTFT but slow completion | Decode time, tokens/sec, output tokens, KV-cache pressure | Output cap, smaller/faster route, serving profile, batching | Treat streaming as a backend speed fix |
+| Low GPU use while users wait | Tool, retrieval, network, gateway, queue spans | Fix the non-GPU bottleneck or parallelize safe reads | Buy GPUs because the app feels slow |
+| High GPU use and low tokens/sec | Batch shape, KV cache, precision, TensorRT-LLM/NIM profile | Tune serving runtime, quantization, batching, or model size | Blame user volume only |
+
+For interactive UX, p95/p99 TTFT and inter-token latency matter more than average total latency. For offline batch work, throughput and total completion time usually matter more than first-token responsiveness.
+
 ### NVIDIA optimization map
 
 | Tool/service | Use it for | Not for |

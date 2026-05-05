@@ -192,12 +192,14 @@ function parseQuestionBlock(block: string, index: number): Question {
   if (!question || choices.length < 2 || answer < 0 || answer >= choices.length) {
     throw new Error(`Invalid markdown question block near Q${index + 1}`);
   }
+  const source = /-hf-/.test(id) ? "high_fidelity_generated" : "original";
 
   return {
     id,
     domain,
     topic,
     difficulty,
+    source,
     question,
     choices,
     answer,

@@ -140,11 +140,16 @@ async function readExam(certDir) {
     ].join("\n");
   });
   const exam = parseExamMarkdown(markdown);
-  // Bank IDs (questions.md) are always practiceable. Generated IDs require approval.
-  const bankIds = new Set(exam.questions.map((q) => q.id));
+  const questionIds = new Set(exam.questions.map((q) => q.id));
+  const originalBankIds = new Set(
+    exam.questions.filter((q) => q.source !== "high_fidelity_generated").map((q) => q.id)
+  );
+  const highFidelityGeneratedIds = new Set(
+    exam.questions.filter((q) => q.source === "high_fidelity_generated").map((q) => q.id)
+  );
 
-  // Generated questions are merged into the full pool so mock_N.json IDs and the adaptive coach
-  // can still resolve every question, but only approved ones go into practicePoolIds.
+  // Draft generated questions are merged into the full pool so saved IDs and the adaptive coach
+  // can still resolve every question, but only approved drafts go into generatedPracticeIds.
   const generatedIds = new Set<string>();
   try {
     const generatedRaw = await readFile(join(certDir, "generated-questions.md"), "utf8");
@@ -155,9 +160,11 @@ async function readExam(certDir) {
     if (blocksMd) {
       const generatedExam = parseExamMarkdown(`## Questions\n\n${blocksMd}`);
       for (const q of generatedExam.questions) {
+        q.source = "generated_draft";
         generatedIds.add(q.id);
-        if (!bankIds.has(q.id)) {
+        if (!questionIds.has(q.id)) {
           exam.questions.push(q);
+          questionIds.add(q.id);
         }
       }
     }
@@ -171,7 +178,11 @@ async function readExam(certDir) {
   const approvedSet = new Set(approvals.approved);
   const rejectedSet = new Set(approvals.rejected);
   const approvedGenerated = [...generatedIds].filter((id) => approvedSet.has(id));
-  exam.practicePoolIds = [...bankIds, ...approvedGenerated];
+  const generatedPracticeIds = [...highFidelityGeneratedIds, ...approvedGenerated];
+  exam.practicePoolIds = [...originalBankIds, ...generatedPracticeIds];
+  exam.originalBankIds = [...originalBankIds];
+  exam.highFidelityGeneratedIds = [...highFidelityGeneratedIds];
+  exam.generatedPracticeIds = generatedPracticeIds;
   exam.approvedGeneratedIds = approvedGenerated;
   exam.pendingGeneratedIds = [...generatedIds].filter((id) => !approvedSet.has(id) && !rejectedSet.has(id));
   exam.rejectedGeneratedIds = [...generatedIds].filter((id) => rejectedSet.has(id));
@@ -1003,7 +1014,7 @@ const server = createServer(async (req, res) => {
 
       const practiceOnly = Boolean(body.practiceOnly);
       const practiceSet = practiceOnly && Array.isArray(exam.practicePoolIds) ? new Set(exam.practicePoolIds) : null;
-      const generatedSet = new Set(exam.approvedGeneratedIds || []);
+      const generatedSet = new Set(exam.generatedPracticeIds || exam.approvedGeneratedIds || []);
       const candidateSource = ["bank", "generated", "all"].includes(body.candidateSource) ? body.candidateSource : "all";
       const scopedCandidateIds = Array.isArray(body.candidateIds) && body.candidateIds.length
         ? new Set(body.candidateIds.map((id) => String(id)))

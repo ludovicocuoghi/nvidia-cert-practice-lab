@@ -48,6 +48,14 @@ const banned = [
   /component for the scenario/i,
   /common trap:/i,
   /task is described this way: The design must avoid/i,
+  /without hiding the root cause/i,
+  /critical design question/i,
+  /initially selected/i,
+  /Which component should replace it/i,
+  /not selecting a model family/i,
+  /generic model selection/i,
+  /for the deployment, not/i,
+  /The work item is/i,
   /is deciding between [^.]+\. The requirement is/i,
   /initially selected [^.]+, but the actual requirement is/i,
   /has a [^.]+ requirement\. The requirement is/i,
@@ -55,12 +63,20 @@ const banned = [
   /has a design review question about/i,
   /is choosing an NVIDIA component\. The team needs/i,
   /is choosing an NVIDIA component\. The immediate task is/i,
+  /is choosing an NVIDIA component\./i,
   /not the layer described here/i,
+  /Treat the requirement as generic model selection/i,
+  /Use average latency alone and ignore/i,
+  /Move the workload to a larger model/i,
+  /Rely on prompt wording alone/i,
+  /Add more GPUs before measuring/i,
   /supports to /i,
   /packaging or manage/i,
   /nVIDIA/,
   /Use first when/i
 ];
+
+const serviceSignalPattern = /trace|timeline|kernel|CUDA|Kubernetes|endpoint|API|LoRA|PEFT|RAG|retrieval|embedding|rerank|guardrail|policy|eval|benchmark|judge|dataset|dedup|PII|profile|registry|container|rollout|autoscal|all-reduce|NCCL|GPU|latency|throughput|documents|workflow|tools|memory|state|agent|router|specialist|planner|handoff|retry|preference|session|recall|consent|model artifacts|release|serve|serving|routing|runtime|artifact|microservice|profiler|JSONL|Parquet|corpus|pipeline|ScoreFilter|classifier|curation|prefill|decode|KV-cache|multi-node|H100/i;
 
 function countBy(items, keyFn) {
   return items.reduce((counts, item) => {
@@ -124,6 +140,9 @@ async function auditConfig(config) {
     const text = `${question.question} ${question.choices.join(" ")} ${question.explanation}`;
     for (const pattern of banned) {
       if (pattern.test(text)) failures.push(`${question.id}: banned phrase ${pattern}`);
+    }
+    if (/NVIDIA service:/i.test(question.topic) && !serviceSignalPattern.test(question.question)) {
+      failures.push(`${question.id}: service stem lacks a concrete operational signal`);
     }
   }
 

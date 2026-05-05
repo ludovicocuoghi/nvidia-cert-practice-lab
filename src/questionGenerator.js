@@ -87,11 +87,13 @@ const QUESTION_FORMAT_INSTRUCTIONS = `You generate scenario-based, Professional-
 ## Hard rules (non-negotiable)
 
 1. **Scenario, not definition.** Every stem sets up a real engineering trade-off with concrete constraints — latency budget, GPU memory, accuracy floor, throughput SLA, distribution shift, cost cap, safety requirement. NEVER write "what is X?" or definitional stems.
-2. **All four options are exam-plausible.** Wrong answers must be near-miss techniques a competent learner might choose — they should solve the wrong layer, optimize the wrong bottleneck, miss a safety boundary, or ignore a production constraint. Do not use strawmen such as "hide logs", "retry forever", "disable evals", "use prompt only", "use the biggest model for everything", or "do nothing".
-3. **NVIDIA-specific tooling, used correctly.** TensorRT-LLM, NIM, NeMo Framework/Curator/Evaluator/Guardrails/Customizer, Triton Inference Server, NCCL, Nsight Systems/Compute, NGC, RAPIDS, Riva, TAO, BioNeMo, Dynamo. For NCP-AAI add NeMo Agent Toolkit, NeMo Retriever, Nemotron. Never invent product names, flags, or parameters.
-4. **Vary the correct letter.** Do NOT default to C. Within a batch, distribute the correct letter across A/B/C/D.
-5. **A "Why X is wrong" line for EVERY wrong option.** Four-option question = exactly three "Why X is wrong" lines.
-6. **Output ONLY the markdown question blocks** — no preamble, no closing remarks, no code fences.
+2. **No fake replacement stories.** Do not write stems like "the team initially selected X" or "which component should replace it" unless the actual problem is a documented design-review correction. Do not use abstract glue like "critical design question" or "without hiding the root cause in prompts or model size"; state the observed signal directly.
+3. **Same decision axis.** All four choices must answer the same kind of decision. Service-selection stems need four plausible service/tool choices; evaluation stems need four evaluation/release-gate choices; profiling stems need four profiler/observability choices or profiling-sequence choices.
+4. **All four options are exam-plausible.** Wrong answers must be near-miss techniques a competent learner might choose — they should solve the wrong layer, optimize the wrong bottleneck, miss a safety boundary, or ignore a production constraint. Do not use strawmen such as "hide logs", "retry forever", "disable evals", "use prompt only", "use the biggest model for everything", "treat the requirement as generic model selection", or "do nothing".
+5. **NVIDIA-specific tooling, used correctly.** TensorRT-LLM, NIM, NeMo Framework/Curator/Evaluator/Guardrails/Customizer, Triton Inference Server, NCCL, Nsight Systems/Compute, NGC, RAPIDS, Riva, TAO, BioNeMo, Dynamo. For NCP-AAI add NeMo Agent Toolkit, NeMo Retriever, Nemotron. Never invent product names, flags, or parameters.
+6. **Vary the correct letter.** Do NOT default to C. Within a batch, distribute the correct letter across A/B/C/D.
+7. **A "Why X is wrong" line for EVERY wrong option.** Four-option question = exactly three "Why X is wrong" lines.
+8. **Output ONLY the markdown question blocks** — no preamble, no closing remarks, no code fences.
 
 ## Output format (one block per question, separated by a blank line)
 
@@ -132,11 +134,13 @@ const QUESTION_QC_SYSTEM_PROMPT = `You are a strict quality reviewer for NVIDIA 
 
 Review each question block on these criteria:
 1. SCENARIO: Sets up a real engineering trade-off with concrete numbers/constraints. Reject if it's a "what is X?" / definitional / textbook-recall stem.
-2. DISTRACTORS: All four options are real, plausible NVIDIA techniques/tools or production controls. Wrong answers fail the *specific* stated constraint, not by being made up or obviously reckless. Reject if the correct option is the only professional-sounding answer.
-3. NVIDIA TOOLING: Tool/product names, flags, parameters are real and used correctly. Reject if the question invents an NVIDIA feature.
-4. CALIBRATION: Difficulty matches Professional level (engineer with 2–3 years LLM/agent experience). Reject if it's associate-level recall.
-5. WHY-WRONG: Has a "Why <letter> is wrong" line for every wrong option. Four-option question = exactly three "Why X is wrong" lines.
-6. ANSWER VARIANCE: Within the batch, correct letters should vary across A/B/C/D. Flag if all answers in the batch are the same letter.
+2. BAD TEMPLATE LANGUAGE: Reject stems that use "initially selected", "which component should replace it", "critical design question", or "without hiding the root cause".
+3. SAME DECISION AXIS: Reject if one choice is a service, another is generic prompt/model/logging advice, and the stem did not ask for that trade-off.
+4. DISTRACTORS: All four options are real, plausible NVIDIA techniques/tools or production controls. Wrong answers fail the *specific* stated constraint, not by being made up or obviously reckless. Reject if the correct option is the only professional-sounding answer.
+5. NVIDIA TOOLING: Tool/product names, flags, parameters are real and used correctly. Reject if the question invents an NVIDIA feature.
+6. CALIBRATION: Difficulty matches Professional level (engineer with 2–3 years LLM/agent experience). Reject if it's associate-level recall.
+7. WHY-WRONG: Has a "Why <letter> is wrong" line for every wrong option. Four-option question = exactly three "Why X is wrong" lines.
+8. ANSWER VARIANCE: Within the batch, correct letters should vary across A/B/C/D. Flag if all answers in the batch are the same letter.
 
 For each block return:
 - verdict: "accept" | "fix" | "reject"

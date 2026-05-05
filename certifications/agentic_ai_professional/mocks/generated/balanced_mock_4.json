@@ -49,10 +49,10 @@
     "aai-hf-knowledge-integration-and-data-handling-015",
     "aai-hf-knowledge-integration-and-data-handling-029",
     "aai-hf-knowledge-integration-and-data-handling-021",
-    "aai-hf-svc-nim-operator-021",
-    "aai-hf-svc-nemo-framework-014",
-    "aai-hf-nvidia-platform-implementation-032",
-    "aai-hf-svc-nemo-evaluator-014",
+    "aai-hf-svc-nemo-guardrails-001",
+    "aai-hf-svc-rapids-004",
+    "aai-hf-svc-nemo-framework-010",
+    "aai-hf-svc-nemo-framework-021",
     "aai-hf-run-monitor-and-maintain-047",
     "aai-hf-run-monitor-and-maintain-027",
     "aai-hf-run-monitor-and-maintain-019",
@@ -62,6 +62,6 @@
     "aai-hf-human-ai-interaction-and-oversight-016",
     "aai-hf-human-ai-interaction-and-oversight-019",
     "aai-hf-human-ai-interaction-and-oversight-032",
-    "aai-hf-cognition-planning-and-memory-040"
+    "aai-hf-svc-rapids-021"
   ]
 }

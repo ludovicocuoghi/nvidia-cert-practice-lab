@@ -73,6 +73,18 @@ Production System
 | **Refusal rate** | % of requests the model declines | Sudden spike → **safety** filter problem |
 | **Output token distribution** | Distribution shift vs baseline | Significant change → possible model **drift** |
 
+### User count and percentile diagnosis
+
+Registered users, daily active users, and tenant size are scenario context. The operational diagnosis comes from live request rate, concurrency, queue depth, token shape, and percentile latency.
+
+| Scenario | Better metric | What it usually means | First diagnostic move |
+| -------- | ------------- | --------------------- | --------------------- |
+| 1,000 users but slow first response | TTFT p95/p99, cold-start count, prefill span | Warmup, long prompt, or slow dependency may dominate | Trace queue, prefill, retrieval, and gateway spans |
+| 1 million users and rising p99 | Queue depth, concurrency, saturation per endpoint | Capacity, autoscaling, rate limit, or lane isolation issue | Check HPA, warm replicas, batching, and admission control |
+| P50 steady, P99 spikes | Tail traces, retries, timeout rate, long-output distribution | A small slice of requests or dependencies is slow | Inspect outlier traces instead of averages |
+| TTFT good, total latency bad | Tokens/sec, output tokens, decode span | Decode throughput or output length is the bottleneck | Tune runtime/profile, cap output, or route to faster model |
+| Total latency good, UX still bad | TTFT and inter-token latency | Users wait too long before seeing progress | Stream safely and reduce queue/prefill time |
+
 ## Logging for LLM applications
 
 ### Structured logging requirements

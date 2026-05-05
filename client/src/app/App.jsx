@@ -70,8 +70,9 @@ const studyFocus = {
 const ADAPTIVE_PRACTICE_TARGET = 20;
 const QUICK_PRACTICE_TARGET = 20;
 const SECTION_QUIZ_TARGET = 10;
-const DRILL_COUNTS = [10, 20, 30, 50];
-const DRILL_DIFFICULTIES = ["any", "easier", "medium", "hard", "advanced", "expert"];
+const DRILL_COUNTS = [1, 5, 10, 20];
+const DRILL_DIFFICULTIES = ["any", "easy", "medium", "hard", "expert"];
+const PRACTICE_RESET_EPOCH = "source-split-2026-05-05";
 
 function loadJson(key, fallback) {
   try {
@@ -83,6 +84,25 @@ function loadJson(key, fallback) {
 
 function saveJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
+}
+
+function resetPracticeStorageOnce() {
+  try {
+    const marker = "ncp-practice-reset-epoch";
+    if (localStorage.getItem(marker) === PRACTICE_RESET_EPOCH) return;
+    for (const key of Object.keys(localStorage)) {
+      if (key.endsWith("-history") || key.endsWith("-confidence") || key.startsWith("recent-mock-ids-")) {
+        localStorage.removeItem(key);
+      }
+    }
+    localStorage.setItem(marker, PRACTICE_RESET_EPOCH);
+  } catch {
+    // Ignore storage failures; server-side state is still reset below.
+  }
+}
+
+function idSet(values) {
+  return new Set(Array.isArray(values) ? values : []);
 }
 
 function scrollToTop() {
@@ -168,7 +188,7 @@ function questionMatchesDifficulty(question, difficulty) {
   const target = String(difficulty || "any").toLowerCase();
   if (target === "any") return true;
   const actual = String(question.difficulty || "medium").toLowerCase();
-  return target === "easier" ? actual === "easier" || actual === "easy" : actual === target;
+  return target === "easy" || target === "easier" ? actual === "easier" || actual === "easy" : actual === target;
 }
 
 function questionsForDifficulty(questions, difficulty) {
@@ -180,30 +200,8 @@ function domainPercent(score) {
   return Math.round((score.correct / score.total) * 100);
 }
 
-function buildFeedbackByDomain(exam, ratings) {
-  const byDomain = Object.fromEntries(exam.domains.map((domain) => [domain.name, {
-    easy: 0,
-    hard: 0,
-    good: 0,
-    bad: 0,
-    total: 0
-  }]));
-  for (const question of exam.questions) {
-    const rating = ratings[question.id];
-    if (!rating || !byDomain[question.domain]) continue;
-    const bucket = byDomain[question.domain];
-    if (rating.difficulty === "easy") bucket.easy += 1;
-    if (rating.difficulty === "hard") bucket.hard += 1;
-    if (rating.quality === "good") bucket.good += 1;
-    if (rating.quality === "bad") bucket.bad += 1;
-    if (rating.difficulty || rating.quality) bucket.total += 1;
-  }
-  return byDomain;
-}
-
-function buildDashboard(exam, history, confidence, currentGrade, questionRatings = {}, learnerProfile = null) {
+function buildDashboard(exam, history, confidence, currentGrade, learnerProfile = null) {
   const latest = currentGrade || history[0]?.grade || null;
-  const feedbackByDomain = buildFeedbackByDomain(exam, questionRatings);
   const domains = exam.domains.map((domain) => {
     const score = latest?.byDomain?.[domain.name] || null;
     const percent = domainPercent(score);
@@ -211,10 +209,9 @@ function buildDashboard(exam, history, confidence, currentGrade, questionRatings
     const measured = learnerProfile?.domains?.[domain.name] || null;
     const profileAttempts = measured?.attempts || 0;
     const self = confidence[domain.name] ?? 2;
-    const feedback = feedbackByDomain[domain.name] || { easy: 0, hard: 0, good: 0, bad: 0, total: 0 };
     const reliablePercent = sampleSize >= 5 ? percent : measured?.attempts >= 5 ? Math.round((measured.accuracy || 0) * 100) : null;
     const samplePenalty = sampleSize && sampleSize < 5 ? (5 - sampleSize) * 9 : profileAttempts && profileAttempts < 5 ? (5 - profileAttempts) * 5 : 0;
-    const weakness = (reliablePercent === null ? 55 : 100 - reliablePercent) + samplePenalty + (4 - self) * 12 + domain.weight / 2 + feedback.hard * 14 - feedback.easy * 4;
+    const weakness = (reliablePercent === null ? 55 : 100 - reliablePercent) + samplePenalty + (4 - self) * 12 + domain.weight / 2;
     return {
       ...domain,
       score,
@@ -223,7 +220,6 @@ function buildDashboard(exam, history, confidence, currentGrade, questionRatings
       reliablePercent,
       measured,
       confidence: self,
-      feedback,
       focus: studyFocus[domain.name] || "Review official objectives and missed questions.",
       weakness
     };
@@ -237,9 +233,6 @@ function buildDashboard(exam, history, confidence, currentGrade, questionRatings
         signals.push(domain.sampleSize < 5 ? `${domain.percent}% on ${domain.sampleSize}Q sample` : `${domain.percent}% last score`);
       }
       if (domain.measured?.attempts) signals.push(`${domain.measured.correct}/${domain.measured.attempts} all-time`);
-      if (domain.feedback.hard) signals.push(`${domain.feedback.hard} marked hard`);
-      if (domain.feedback.easy) signals.push(`${domain.feedback.easy} marked easy`);
-      if (domain.feedback.bad) signals.push(`${domain.feedback.bad} bad question flag${domain.feedback.bad === 1 ? "" : "s"}`);
       if (!signals.length) signals.push(`${domain.weight}% exam weight`);
       return {
         ...domain,
@@ -254,22 +247,6 @@ function buildDashboard(exam, history, confidence, currentGrade, questionRatings
     recommendations,
     attempts: history.length
   };
-}
-
-function questionRatingPenalty(question, ratings) {
-  const rating = ratings[question.id] || {};
-  let penalty = 0;
-  if (rating.difficulty === "easy") penalty += 40;
-  if (rating.quality === "bad") penalty += 60;
-  return penalty;
-}
-
-function questionRatingBoost(question, ratings) {
-  const rating = ratings[question.id] || {};
-  let boost = 0;
-  if (rating.difficulty === "hard") boost += 28;
-  if (rating.quality === "good") boost += 6;
-  return boost;
 }
 
 const RECENT_MOCK_DEBOOST_MS = 48 * 60 * 60 * 1000;
@@ -294,7 +271,7 @@ function recordMockSeen(slug, ids) {
   saveJson(key, map);
 }
 
-function buildAdaptiveSet(exam, dashboard, ratings, limit = 24, recentMockSeen = {}) {
+function buildAdaptiveSet(exam, dashboard, limit = 24, recentMockSeen = {}) {
   const weakNames = new Set(dashboard.weak.map((domain) => domain.name));
   const scored = exam.questions.map((question, index) => {
     const domain = dashboard.domains.find((item) => item.name === question.domain);
@@ -309,7 +286,7 @@ function buildAdaptiveSet(exam, dashboard, ratings, limit = 24, recentMockSeen =
           ? ({ easy: 20, medium: 12, hard: -10, advanced: -18, expert: -22 }[difficulty] || 0)
           : ({ easy: 4, medium: 10, hard: 8, advanced: 4, expert: 0 }[difficulty] || 0);
     const recentMockDeboost = recentMockSeen[question.id] ? -60 : 0;
-    const score = weakBoost + domainWeakness + difficultyBoost + recentMockDeboost + questionRatingBoost(question, ratings) - questionRatingPenalty(question, ratings) - index / 1000;
+    const score = weakBoost + domainWeakness + difficultyBoost + recentMockDeboost - index / 1000;
     return { question, score };
   });
   return scored
@@ -417,6 +394,7 @@ function brandingForExam(exam) {
 }
 
 function App() {
+  resetPracticeStorageOnce();
   const [selectedCertSlug, setSelectedCertSlug] = useState("agentic_ai_professional");
   const [exam, setExam] = useState(null);
   const [certifications, setCertifications] = useState([]);
@@ -441,8 +419,6 @@ function App() {
   const [grade, setGrade] = useState(null);
   const [history, setHistory] = useState(() => loadJson("ncp-genl-history", []));
   const [confidence, setConfidence] = useState(() => loadJson("ncp-genl-confidence", {}));
-  const [questionRatings, setQuestionRatings] = useState(() => loadJson("ncp-genl-question-ratings", {}));
-  const [learnerNotes, setLearnerNotes] = useState(() => loadJson("ncp-genl-learner-notes", {}));
   const [learnerProfile, setLearnerProfile] = useState(null);
   const [generationStatus, setGenerationStatus] = useState({ state: "idle", message: "" });
   const [busy, setBusy] = useState(false);
@@ -495,8 +471,6 @@ function App() {
       setSecondsLeft(examData.certification.durationMinutes * 60);
       setHistory(loadJson(`${selectedCertSlug}-history`, []));
       setConfidence(loadJson(`${selectedCertSlug}-confidence`, {}));
-      setQuestionRatings(loadJson(`${selectedCertSlug}-question-ratings`, {}));
-      setLearnerNotes(loadJson(`${selectedCertSlug}-learner-notes`, {}));
       setGrade(null);
       setAnswers({});
       setFlagged({});
@@ -546,13 +520,17 @@ function App() {
   const bankLabel = exam?.questions?.length && activeBankCount !== exam.questions.length
     ? `${activeBankCount}/${exam.questions.length} questions`
     : `${activeBankCount} questions`;
+  const originalBankIdSet = idSet(exam?.originalBankIds);
+  const generatedPracticeIdSet = idSet(
+    Array.isArray(exam?.generatedPracticeIds) ? exam.generatedPracticeIds : exam?.approvedGeneratedIds
+  );
 
   const dashboard = useMemo(() => {
     if (!exam) return { domains: [], weak: [], strong: [], attempts: 0 };
-    return buildDashboard(exam, history, confidence, grade, questionRatings, learnerProfile);
-  }, [exam, history, confidence, grade, questionRatings, learnerProfile]);
+    return buildDashboard(exam, history, confidence, grade, learnerProfile);
+  }, [exam, history, confidence, grade, learnerProfile]);
 
-  // Practice mode draws from mocks/*_bank.md ∪ generated-questions.md only — never legacy questions.md.
+  // Practice mode draws from original-bank IDs plus generated practice IDs.
   // Mock tests keep the full pool (they need every ID resolvable).
   const practiceQuestions = useMemo(() => {
     if (!exam) return [];
@@ -583,37 +561,6 @@ function App() {
     saveJson(`${selectedCertSlug}-confidence`, next);
   }
 
-  function updateLearnerNote(questionId, note) {
-    const next = { ...learnerNotes };
-    if (note && note.trim()) {
-      next[questionId] = { note: note.trim(), updatedAt: new Date().toISOString() };
-    } else {
-      delete next[questionId];
-    }
-    setLearnerNotes(next);
-    saveJson(`${selectedCertSlug}-learner-notes`, next);
-    const questionForFeedback = exam?.questions.find((item) => item.id === questionId);
-    postQuestionFeedback({
-      questionId,
-      domain: questionForFeedback?.domain,
-      note: note?.trim(),
-      ...(questionRatings[questionId] || {})
-    });
-  }
-
-  async function postQuestionFeedback(payload) {
-    if (!payload?.questionId) return;
-    if (!payload.note && !payload.difficulty && !payload.quality) return;
-    try {
-      await api(certPath("/api/question-feedback", selectedCertSlug), {
-        method: "POST",
-        body: JSON.stringify({ ...payload, flow: flow || mode })
-      });
-    } catch (err) {
-      console.warn("question feedback write failed", err);
-    }
-  }
-
   function rememberCoachReply(questionId, learnerQuestion, reply) {
     const note = [
       learnerQuestion ? `Learner asked: ${learnerQuestion}` : "",
@@ -632,20 +579,17 @@ function App() {
   async function postSessionLog(gradeResult, questionsForLog = sessionQuestions) {
     const entries = questionsForLog.map((q) => {
       const selectedIndex = answers[q.id];
-      const note = learnerNotes[q.id]?.note || "";
       const coach = coachNotes[q.id]?.note || "";
       return {
         id: q.id,
         domain: q.domain,
-        feedback: feedbackForQuestion(q.id),
         question: q.question,
         choices: q.choices,
         correctIndex: q.answer,
         selectedIndex,
         correct: selectedIndex === q.answer,
         explanation: q.explanation,
-        coachNote: coach,
-        learnerNote: note
+        coachNote: coach
       };
     });
     if (!entries.length) return;
@@ -661,36 +605,6 @@ function App() {
     } catch (err) {
       console.warn("session log write failed", err);
     }
-  }
-
-  function updateQuestionRating(questionId, patch) {
-    const merged = {
-      ...(questionRatings[questionId] || {}),
-      ...patch,
-      updatedAt: new Date().toISOString()
-    };
-    const next = {
-      ...questionRatings,
-      [questionId]: merged
-    };
-    setQuestionRatings(next);
-    saveJson(`${selectedCertSlug}-question-ratings`, next);
-    const questionForFeedback = exam?.questions.find((item) => item.id === questionId);
-    postQuestionFeedback({
-      questionId,
-      domain: questionForFeedback?.domain,
-      difficulty: merged.difficulty,
-      quality: merged.quality,
-      note: learnerNotes[questionId]?.note || ""
-    });
-  }
-
-  function feedbackForQuestion(questionId) {
-    const rating = questionRatings[questionId] || {};
-    return {
-      difficulty: rating.difficulty,
-      quality: rating.quality
-    };
   }
 
   async function generateQuestions({ count = 5, weakOnly = false, focusDomains = [], service = null, topic = '', difficulty = 'hard' } = {}) {
@@ -893,19 +807,20 @@ function App() {
     if (["practice-adaptive", "practice-coach-bank", "practice-coach-generated"].includes(nextFlow)) {
       setSessionKind("practice");
       const recentMockSeen = loadRecentMockSeen(selectedCertSlug);
-      const approved = new Set(exam.approvedGeneratedIds || []);
       let pool = practiceQuestions;
       if (nextFlow === "practice-coach-generated") {
-        pool = exam.questions.filter((q) => approved.has(q.id));
+        pool = exam.questions.filter((q) => generatedPracticeIdSet.has(q.id));
       } else if (nextFlow === "practice-coach-bank") {
-        pool = practiceQuestions.filter((q) => !approved.has(q.id));
+        pool = originalBankIdSet.size
+          ? exam.questions.filter((q) => originalBankIdSet.has(q.id))
+          : practiceQuestions.filter((q) => !generatedPracticeIdSet.has(q.id));
       }
       const adaptiveExam = { ...exam, questions: pool };
-      const seed = buildAdaptiveSet(adaptiveExam, dashboard, questionRatings, 1, recentMockSeen);
+      const seed = buildAdaptiveSet(adaptiveExam, dashboard, 1, recentMockSeen);
       const first = seed.length ? seed[0] : pool[0];
       if (!first) {
         setError(nextFlow === "practice-coach-generated"
-          ? "No approved generated questions yet. Generate and approve some first."
+          ? "No generated practice questions are available yet."
           : "No practice questions available. Generate some first.");
         setFlow(null);
         return;
@@ -919,10 +834,9 @@ function App() {
 
     if (nextFlow === "practice-generated") {
       setSessionKind("practice");
-      const approved = new Set(exam.approvedGeneratedIds || []);
-      const pool = exam.questions.filter((q) => approved.has(q.id));
+      const pool = exam.questions.filter((q) => generatedPracticeIdSet.has(q.id));
       if (!pool.length) {
-        setError("No approved generated questions yet. Generate and approve some in the Review Queue first.");
+        setError("No generated practice questions are available yet.");
         setFlow(null);
         return;
       }
@@ -969,7 +883,7 @@ function App() {
     setSessionKind("practice");
     setExamStartedAt(Date.now());
     const adaptiveExam = { ...exam, questions: pool };
-    const seed = buildAdaptiveSet(adaptiveExam, dashboard, questionRatings, 1, loadRecentMockSeen(selectedCertSlug));
+    const seed = buildAdaptiveSet(adaptiveExam, dashboard, 1, loadRecentMockSeen(selectedCertSlug));
     setSessionQuestions([shuffleQuestionChoices(seed[0] || pool[0])]);
     setSecondsLeft(0);
     setMode("exam");
@@ -1316,7 +1230,7 @@ function App() {
           h("button", { onClick: () => setError("") }, "Dismiss"))
       : null,
     mode === "start" ? h(StartScreen, {
-      exam, domainStats, dashboard, confidence, questionRatings, learnerProfile, mockSummary, mockResultsMd,
+      exam, domainStats, dashboard, confidence, learnerProfile, mockSummary, mockResultsMd,
       track, setTrack, busy, certifications, studyView, setStudyView,
       branding,
       availableMocks, selectedMockId, setSelectedMockId, selectedMockSource, setSelectedMockSource,
@@ -1339,12 +1253,8 @@ function App() {
           flagged,
           flaggedCount,
           secondsLeft,
-          questionRatings,
           answerQuestion,
           toggleFlag,
-          updateQuestionRating,
-          learnerNotes,
-          updateLearnerNote,
           submitExam,
           busy,
           sessionKind,
@@ -1373,10 +1283,6 @@ function App() {
           flagged,
           domainStats,
           mistakes,
-          questionRatings,
-          updateQuestionRating,
-          learnerNotes,
-          updateLearnerNote,
           flow,
           coachNotes,
           mockResultsMd,
@@ -1403,7 +1309,7 @@ function flowLabel(flow, mockDef) {
 }
 
 function StartScreen(props) {
-  const { exam, domainStats, dashboard, confidence, questionRatings, learnerProfile, mockSummary, mockResultsMd,
+  const { exam, domainStats, dashboard, confidence, learnerProfile, mockSummary, mockResultsMd,
     track, setTrack, busy, certifications, studyView, setStudyView,
     branding,
     availableMocks, selectedMockId, setSelectedMockId, selectedMockSource, setSelectedMockSource,
@@ -1423,7 +1329,7 @@ function StartScreen(props) {
     h(TrackChooser, { track, setTrack, mockSummary, exam, branding }),
     track === "practice"
       ? h(PracticePanel, {
-          exam, domainStats, dashboard, confidence, questionRatings, learnerProfile,
+          exam, domainStats, dashboard, confidence, learnerProfile,
           updateConfidence, startFlow, startTargetedGuidedPractice, startQuestionDrill, generateQuestions, generationStatus, cancelGeneration,
           availableMocks, selectedMockId, setSelectedMockId, selectedMockSource, setSelectedMockSource,
           selectedCertSlug, drillRecentMistakes,
@@ -1522,8 +1428,8 @@ function TrackChooser({ track, setTrack, mockSummary, exam, branding }) {
     { className: "track-chooser" },
     h("h2", null, "Choose your session"),
     h("p", { className: "muted" }, isGenericStudy
-      ? "Use Study for the lifecycle map and Practice for short feedback-driven drills."
-      : "Practice = short shuffled study sets with feedback. Test = exam-style under time."),
+      ? "Use Study for the lifecycle map and Practice for short guided drills."
+      : "Practice = short shuffled study sets with explanations. Test = exam-style under time."),
     h(
       "div",
       { className: `track-cards ${isGenericStudy ? "track-cards-two" : ""}` },
@@ -1543,11 +1449,11 @@ function TrackChooser({ track, setTrack, mockSummary, exam, branding }) {
         "button",
         { className: `track-card ${track === "practice" ? "active" : ""}`, onClick: () => setTrack("practice") },
         h("strong", null, "Practice"),
-        h("p", null, "Shuffled question sets with immediate feedback, notes, and an end-of-session review."),
+        h("p", null, "Shuffled question sets with immediate explanations and an end-of-session review."),
         h("ul", null,
           h("li", null, "No timer"),
           h("li", null, hasQuestionBank ? "Coach chat available inside each question" : "Question bank not built yet"),
-          h("li", null, "Learning notes saved to markdown")
+          h("li", null, "Review answered questions at finish")
         )
       ),
       isGenericStudy ? null : h(
@@ -4908,6 +4814,7 @@ function PracticeDrillSetup({
   setCount,
   difficulty,
   setDifficulty,
+  difficultyOptions = DRILL_DIFFICULTIES,
   bankCount,
   generatedCount,
   target,
@@ -4935,7 +4842,7 @@ function PracticeDrillSetup({
       h("div", { className: "drill-group drill-group-diff" },
         h("span", { className: "drill-label" }, "Difficulty"),
         h("div", { className: "drill-chip-group" },
-          DRILL_DIFFICULTIES.map((d) =>
+          difficultyOptions.map((d) =>
             h("button", { key: d, type: "button", className: `drill-chip drill-chip-difficulty diff-${d} ${difficulty === d ? "active" : ""}`, onClick: () => setDifficulty(d) }, d)
           )
         )
@@ -4943,18 +4850,25 @@ function PracticeDrillSetup({
     ),
     h("div", { className: "practice-drill-summary" },
       h("strong", null, targetLabel),
-      h("span", null, `${bankCount} matching bank question${bankCount === 1 ? "" : "s"} · ${generatedCount} matching generated question${generatedCount === 1 ? "" : "s"} for this focus and difficulty`)
+      h("span", null, `${bankCount} original mock match${bankCount === 1 ? "" : "es"} · ${generatedCount} generated-bank match${generatedCount === 1 ? "" : "es"} for this focus and difficulty`)
     ),
     h("div", { className: "practice-drill-actions" },
-      h("button", { type: "button", className: "pp-btn pp-btn-primary", disabled: !bankCount, onClick: onStartBank },
-        bankStartCount ? `Start ${bankStartCount} from bank` : "No bank match"
-      ),
-      h("button", { type: "button", className: "pp-btn", disabled: !generatedCount, onClick: onStartGenerated },
-        generatedStartCount ? `Start ${generatedStartCount} generated` : "No generated match"
+      h("div", { className: "practice-source-actions" },
+        h("button", { type: "button", className: "pp-btn pp-btn-source pp-btn-original", disabled: !bankCount, onClick: onStartBank },
+          h("strong", null, "Original mocks"),
+          h("span", null, bankStartCount ? `${bankStartCount} question${bankStartCount === 1 ? "" : "s"}` : "No match")
+        ),
+        h("button", { type: "button", className: "pp-btn pp-btn-source pp-btn-generated-bank", disabled: !generatedCount, onClick: onStartGenerated },
+          h("strong", null, "Generated bank"),
+          h("span", null, generatedStartCount ? `${generatedStartCount} question${generatedStartCount === 1 ? "" : "s"}` : "No match")
+        )
       ),
       onGenerateNew
-        ? h("button", { type: "button", className: "pp-btn pp-btn-generate", disabled: running, onClick: onGenerateNew },
-            running ? "Generating..." : `Generate ${generateCount} new`
+        ? h("div", { className: "practice-generate-more" },
+            h("span", null, "Need more coverage?"),
+            h("button", { type: "button", className: "pp-btn pp-btn-generate-small", disabled: running, onClick: onGenerateNew },
+              running ? "Generating..." : `Generate ${generateCount} new drafts`
+            )
           )
         : null
     ),
@@ -4969,7 +4883,7 @@ function DrillInlineForm({
   generationStatus,
   cancelGeneration,
   drillRecentMistakes,
-  approvedGenerated,
+  generatedPracticeCount,
   startFlow,
   target,
   studyBy,
@@ -5040,8 +4954,8 @@ function DrillInlineForm({
         studyBy === "recommended" ? "Start bank guided" : `Start bank (${bankCount}Q)`
       ),
       h("button", { type: "button", className: "drill-shortcut-btn", disabled: running, onClick: () => drillRecentMistakes(5) }, "Drill 5 recent mistakes"),
-      approvedGenerated
-        ? h("button", { type: "button", className: "drill-shortcut-btn", onClick: () => startFlow("practice-generated") }, `Drill pool (${approvedGenerated}Q)`)
+      generatedPracticeCount
+        ? h("button", { type: "button", className: "drill-shortcut-btn", onClick: () => startFlow("practice-generated") }, `Drill generated (${generatedPracticeCount}Q)`)
         : null
     )
   );
@@ -5312,10 +5226,10 @@ function PracticePanel(props) {
     availableMocks = [], selectedMockId, setSelectedMockId, selectedMockSource, setSelectedMockSource,
     selectedCertSlug, refreshExam } = props;
   const hasBank = exam.questions.length > 0;
-  const approvedGenerated = exam.approvedGeneratedIds?.length || 0;
+  const approvedDraftCount = exam.approvedGeneratedIds?.length || 0;
   const pendingCount = exam.pendingGeneratedIds?.length || 0;
   const mockGroups = groupMocksBySource(availableMocks);
-  const bankCount = Array.isArray(exam.practicePoolIds) && exam.practicePoolIds.length ? exam.practicePoolIds.length : exam.questions.length;
+  const practiceBankCount = Array.isArray(exam.practicePoolIds) && exam.practicePoolIds.length ? exam.practicePoolIds.length : exam.questions.length;
   const isGenericStudy = exam.certification.code === "AAI-GEN";
   const currentExamLabel = examLabel(exam);
   const practiceServices = sortServices(nvidiaServices.filter((service) => service.exams.includes(currentExamLabel)));
@@ -5326,7 +5240,7 @@ function PracticePanel(props) {
   const [serviceName, setServiceName] = useState("__all__");
   const [lifecycleLane, setLifecycleLane] = useState(lifecycleOptions[0]?.lane || "");
   const [keyword, setKeyword] = useState("");
-  const [drillCount, setDrillCount] = useState(20);
+  const [drillCount, setDrillCount] = useState(10);
   const [drillDifficulty, setDrillDifficulty] = useState("hard");
   useEffect(() => {
     if (!studyByOptions.some((option) => option.value === studyBy)) {
@@ -5339,38 +5253,60 @@ function PracticePanel(props) {
       setLifecycleLane(lifecycleOptions[0].lane);
     }
   }, [studyByOptions, studyBy, defaultStudyBy, practiceServices, serviceName, lifecycleOptions, lifecycleLane]);
-  const practiceIdSet = new Set(Array.isArray(exam.practicePoolIds) && exam.practicePoolIds.length ? exam.practicePoolIds : exam.questions.map((q) => q.id));
+  const practiceIdSet = idSet(Array.isArray(exam.practicePoolIds) && exam.practicePoolIds.length ? exam.practicePoolIds : exam.questions.map((q) => q.id));
   const practicePool = exam.questions.filter((q) => practiceIdSet.has(q.id));
-  const approvedSet = new Set(exam.approvedGeneratedIds || []);
-  const bankOnlyPool = practicePool.filter((q) => !approvedSet.has(q.id));
-  const generatedPool = exam.questions.filter((q) => approvedSet.has(q.id));
+  const approvedDraftSet = idSet(exam.approvedGeneratedIds);
+  const originalBankIdSet = idSet(exam.originalBankIds);
+  const generatedPracticeIdSet = idSet(Array.isArray(exam.generatedPracticeIds) ? exam.generatedPracticeIds : exam.approvedGeneratedIds);
+  const bankOnlyPool = originalBankIdSet.size
+    ? exam.questions.filter((q) => originalBankIdSet.has(q.id))
+    : practicePool.filter((q) => !approvedDraftSet.has(q.id));
+  const generatedPool = generatedPracticeIdSet.size
+    ? exam.questions.filter((q) => generatedPracticeIdSet.has(q.id))
+    : exam.questions.filter((q) => approvedDraftSet.has(q.id));
+  const originalBankCount = bankOnlyPool.length;
+  const generatedPracticeCount = generatedPool.length;
+  const highFidelityCount = exam.highFidelityGeneratedIds?.length || 0;
+  const generatedSourceLabel = approvedDraftCount
+    ? `${highFidelityCount} generated bank · ${approvedDraftCount} approved draft${approvedDraftCount === 1 ? "" : "s"}`
+    : `${highFidelityCount} generated bank`;
   const target = buildPracticeTarget({ studyBy, serviceName, lifecycleLane, keyword, lifecycleLabel: currentExamLabel });
   const bankMatches = filteredPracticeQuestions(bankOnlyPool, target, studyBy);
   const generatedMatches = filteredPracticeQuestions(generatedPool, target, studyBy);
   const canUseStudyFilters = ["Agentic AI", "Agentic AI General", "GenAI LLMs"].includes(currentExamLabel);
+  const difficultyOptions = DRILL_DIFFICULTIES.filter((difficulty) => {
+    if (difficulty === "any") return true;
+    return questionsForDifficulty(bankMatches, difficulty).length + questionsForDifficulty(generatedMatches, difficulty).length > 0;
+  });
+  const difficultyOptionsKey = difficultyOptions.join("|");
+  useEffect(() => {
+    if (!difficultyOptions.includes(drillDifficulty)) {
+      setDrillDifficulty(difficultyOptions.includes("hard") ? "hard" : difficultyOptions[0] || "any");
+    }
+  }, [difficultyOptionsKey, drillDifficulty]);
   const bankDifficultyMatches = questionsForDifficulty(bankMatches, drillDifficulty);
   const generatedDifficultyMatches = questionsForDifficulty(generatedMatches, drillDifficulty);
   const profileRecommendations = h(ProfileRecommendations, { dashboard, learnerProfile, isGenericStudy });
 
   const recommendedReviewGrid = h("div", { className: `practice-overview-grid ${canUseStudyFilters ? "practice-overview-secondary" : ""}` },
-    h("div", { className: "pp-card pp-card-guided pp-card-feature" },
+      h("div", { className: "pp-card pp-card-guided pp-card-feature" },
       h("div", { className: "pp-card-body" },
         h("span", { className: "pp-badge pp-badge-guided" }, "Recommended"),
         h("h3", null, "Weak-domain guided practice"),
-        h("p", null, `${ADAPTIVE_PRACTICE_TARGET} untimed questions selected from your weakest blueprint domains. Separate from the Study By filter below.`)
+        h("p", null, `Original uses mock-bank questions; generated uses the high-fidelity generated bank plus approved drafts. Each guided run uses up to ${ADAPTIVE_PRACTICE_TARGET} available questions.`)
       ),
       h("div", { className: "pp-card-foot pp-card-actions" },
         h("button", {
           className: "pp-btn pp-btn-primary pp-btn-full",
           disabled: !hasBank || !bankOnlyPool.length,
           onClick: () => startFlow("practice-coach-bank")
-        }, `Start weak-domain bank (${Math.min(ADAPTIVE_PRACTICE_TARGET, bankOnlyPool.length)}Q)`),
-        approvedGenerated
+        }, "Start weak-domain bank"),
+        generatedPracticeCount
           ? h("button", {
               className: "pp-btn pp-btn-full",
               onClick: () => startFlow("practice-coach-generated")
-            }, `Start weak-domain generated (${Math.min(ADAPTIVE_PRACTICE_TARGET, approvedGenerated)}Q)`)
-          : h("span", { className: "pp-card-hint" }, "No approved generated drafts yet")
+            }, "Start weak-domain generated")
+          : h("span", { className: "pp-card-hint" }, "No generated bank questions yet")
       )
     ),
     h("div", { className: "pp-side-panel practice-review-panel" },
@@ -5400,7 +5336,7 @@ function PracticePanel(props) {
       h("div", { className: "pp-card-body" },
         h("span", { className: "pp-badge pp-badge-drill" }, "Study by"),
         h("h3", null, `Practice ${target.label}`),
-        h("p", null, "Choose a focus, then start from the bank, approved generated questions, or create new questions for this topic."),
+        h("p", null, "Choose a focus, then start from original mocks, the generated bank, or create new draft questions for this topic."),
         h(PracticeScopePanel, {
           studyBy,
           setStudyBy,
@@ -5430,6 +5366,7 @@ function PracticePanel(props) {
           setCount: setDrillCount,
           difficulty: drillDifficulty,
           setDifficulty: setDrillDifficulty,
+          difficultyOptions,
           bankCount: bankDifficultyMatches.length,
           generatedCount: generatedDifficultyMatches.length,
           target,
@@ -5478,7 +5415,7 @@ function PracticePanel(props) {
           },
             studyBy === "recommended" ? `Start ${ADAPTIVE_PRACTICE_TARGET}Q guided` : `Guided ${target.label}`
           ),
-          approvedGenerated
+          generatedPracticeCount
             ? h("button", {
                 className: "pp-btn pp-btn-full",
                 disabled: !generatedMatches.length,
@@ -5486,7 +5423,7 @@ function PracticePanel(props) {
                   ? startFlow("practice-coach-generated")
                   : startTargetedGuidedPractice({ questions: generatedMatches, label: `${target.label} generated pool` })
               }, generatedMatches.length ? `Guided generated (${Math.min(ADAPTIVE_PRACTICE_TARGET, generatedMatches.length)}Q)` : "No generated match")
-            : h("span", { className: "pp-card-hint" }, "No approved generated drafts yet")
+            : h("span", { className: "pp-card-hint" }, "No generated bank questions yet")
         )
       ),
 
@@ -5494,7 +5431,7 @@ function PracticePanel(props) {
         h("div", { className: "pp-card-body" },
           h("span", { className: "pp-badge pp-badge-drill" }, "Drill"),
           h("h3", null, "Question drill setup"),
-          h("p", null, "Choose count and difficulty, then start from the selected bank scope or approved generated drafts.")
+          h("p", null, "Choose count and difficulty, then start from original mocks or the generated bank.")
         ),
         h("div", { className: "pp-card-foot" },
           h(PracticeDrillSetup, {
@@ -5502,6 +5439,7 @@ function PracticePanel(props) {
             setCount: setDrillCount,
             difficulty: drillDifficulty,
             setDifficulty: setDrillDifficulty,
+            difficultyOptions,
             bankCount: bankDifficultyMatches.length,
             generatedCount: generatedDifficultyMatches.length,
             target,
@@ -5529,11 +5467,11 @@ function PracticePanel(props) {
     h("div", { className: "pp-head" },
       h("div", null,
         h("h2", null, "Practice"),
-        h("p", { className: "muted" }, isGenericStudy
+      h("p", { className: "muted" }, isGenericStudy
           ? "Pick the next best drill or generate new scenario questions."
           : "Pick the next best drill, review fixed mocks, or generate new scenario questions.")
       ),
-      h("span", { className: "pp-bank-count" }, `${bankCount}/${exam.questions.length} active questions`)
+      h("span", { className: "pp-bank-count" }, `${originalBankCount} original · ${generatedPracticeCount} generated`)
     ),
 
     !hasBank
@@ -5542,14 +5480,14 @@ function PracticePanel(props) {
 
     h("div", { className: "practice-dashboard" },
       h("div", { className: "practice-stat" },
-        h("span", null, "Question bank"),
-        h("strong", null, `${bankCount}/${exam.questions.length}`),
-        h("em", null, "active / total")
+        h("span", null, "Practice pool"),
+        h("strong", null, `${practiceBankCount}/${exam.questions.length}`),
+        h("em", null, `${originalBankCount} original · ${generatedSourceLabel}`)
       ),
       isGenericStudy ? null : h("div", { className: "practice-stat" },
-        h("span", null, "Approved drafts"),
-        h("strong", null, `${approvedGenerated}Q`),
-        h("em", null, pendingCount ? `${pendingCount} pending review` : "all reviewed")
+        h("span", null, "Review queue"),
+        h("strong", null, `${approvedDraftCount}Q`),
+        h("em", null, pendingCount ? `${pendingCount} pending review` : "no draft queue")
       ),
       isGenericStudy ? null : h("div", { className: "practice-stat" },
         h("span", null, "Original mocks"),
@@ -5610,7 +5548,7 @@ function PracticeScopePanel({
         h("strong", null, target?.label || "recommended weak domains")
       ),
       h("span", { className: `scope-bank-count ${bankMatches.length ? "" : "empty"}` },
-        studyBy === "recommended" ? "Adaptive weak-domain bank" : `${bankMatches.length} bank match${bankMatches.length === 1 ? "" : "es"}`
+        studyBy === "recommended" ? "Adaptive weak-domain bank" : `${bankMatches.length} original mock match${bankMatches.length === 1 ? "" : "es"}`
       )
     ),
     h("div", { className: "practice-scope-grid" },
@@ -5665,9 +5603,9 @@ function PracticeScopePanel({
 function ProfileRecommendations({ dashboard, learnerProfile, isGenericStudy = false }) {
   const recommendations = dashboard.recommendations || [];
   const strongest = [...(dashboard.strong || dashboard.domains || [])]
-    .filter((d) => d.feedback?.easy || d.reliablePercent !== null || (d.measured?.attempts || d.sampleSize || 0) >= 5)
+    .filter((d) => d.reliablePercent !== null || (d.measured?.attempts || d.sampleSize || 0) >= 5)
     .sort((a, b) => {
-      const score = (d) => (d.reliablePercent ?? 50) + Math.min(d.measured?.attempts || 0, 10) + (d.feedback?.easy || 0) * 8 - (d.feedback?.hard || 0) * 8;
+      const score = (d) => (d.reliablePercent ?? 50) + Math.min(d.measured?.attempts || 0, 10);
       return score(b) - score(a);
     })
     .slice(0, 3);
@@ -6000,8 +5938,7 @@ function ConfidenceRow({ domain, value, onChange }) {
 function ExamScreen(props) {
   const {
     questions, question, current, setCurrent, answers, answeredCount, flagged, flaggedCount,
-    secondsLeft, questionRatings, answerQuestion, toggleFlag, updateQuestionRating,
-    learnerNotes, updateLearnerNote, submitExam,
+    secondsLeft, answerQuestion, toggleFlag, submitExam,
     busy, sessionKind, revealed, flow, generationStatus, coachNotes, coachStatus, adaptivePosition, adaptiveTarget,
     fetchCoachingAndAdvance, rememberCoachReply, revealAnswer, onExit, selectedCertSlug
   } = props;
@@ -6148,14 +6085,7 @@ function ExamScreen(props) {
         (!isAdaptive || current < questions.length - 1)
           ? h("button", { className: "next-btn", onClick: () => setCurrent(Math.min(questions.length - 1, current + 1)), disabled: current === questions.length - 1 }, "Next →")
           : null
-      ),
-      h(QuestionRatingPanel, {
-        question,
-        rating: questionRatings[question.id] || {},
-        onRate: updateQuestionRating,
-        learnerNote: learnerNotes[question.id]?.note || "",
-        onNoteChange: (value) => updateLearnerNote(question.id, value)
-      })
+      )
     )
   );
 }
@@ -6315,7 +6245,6 @@ function HelperChat({ question, selectedCertSlug, includeAnswer = false, onRemem
 
 function ReviewScreen(props) {
   const { questions, grade, current, setCurrent, answers, flagged, domainStats, mistakes,
-    questionRatings, updateQuestionRating, learnerNotes, updateLearnerNote,
     flow, coachNotes, mockResultsMd, mockDef, startFlow, onExit, onBackToPractice } = props;
   const question = questions[current];
   const selected = answers[question.id];
@@ -6396,13 +6325,6 @@ function ReviewScreen(props) {
             h("strong", null, "Coach said"),
             h("p", null, coachNotes[question.id].note))
         : null,
-      h(QuestionRatingPanel, {
-        question,
-        rating: questionRatings[question.id] || {},
-        onRate: updateQuestionRating,
-        learnerNote: learnerNotes[question.id]?.note || "",
-        onNoteChange: (value) => updateLearnerNote(question.id, value)
-      }),
       isMock && mockResultsMd
         ? h("details", { className: "mock-history" },
             h("summary", null, "Mock results history"),
@@ -6417,73 +6339,6 @@ function QuestionDifficultyBadge({ difficulty }) {
   const value = String(difficulty || "medium").toLowerCase();
   const label = value === "easier" ? "easy" : value;
   return h("span", { className: `question-difficulty-badge diff-${label}` }, `Difficulty: ${label}`);
-}
-
-function QuestionRatingPanel({ question, rating, onRate, learnerNote, onNoteChange }) {
-  return h(
-    "div",
-    { className: "rating-panel" },
-    h(
-      "div",
-      null,
-      h("strong", null, "Learning note"),
-      h("span", null, "Mark mastery and question quality. Every click is logged for your dashboard and saved to sessions.md on finish.")
-    ),
-    h(
-      "div",
-      { className: "rating-groups" },
-      h(
-        "div",
-        { className: "rating-group horizontal" },
-        h("span", null, "Mastery"),
-        h("div", { className: "rating-pills" },
-          ["easy", "hard"].map((value) => h("button", {
-            key: value,
-            "data-rating": value,
-            className: `pill-btn ${rating.difficulty === value ? "active" : ""}`,
-            onClick: () => onRate(question.id, { difficulty: value })
-          }, value))
-        )
-      ),
-      h(
-        "div",
-        { className: "rating-group horizontal" },
-        h("span", null, "Question"),
-        h("div", { className: "rating-pills" },
-          ["good", "bad"].map((value) => h("button", {
-            key: value,
-            "data-rating": value,
-            className: `pill-btn ${rating.quality === value ? "active" : ""}`,
-            onClick: () => onRate(question.id, { quality: value })
-          }, value))
-        )
-      )
-    ),
-    h(LearnerNoteField, { question, value: learnerNote, onChange: onNoteChange })
-  );
-}
-
-function LearnerNoteField({ question, value, onChange }) {
-  const [draft, setDraft] = useState(value || "");
-  useEffect(() => { setDraft(value || ""); }, [question.id, value]);
-  useEffect(() => {
-    if (draft === value) return undefined;
-    const timer = setTimeout(() => onChange(draft), 700);
-    return () => clearTimeout(timer);
-  }, [draft, value, question.id]);
-  return h(
-    "div",
-    { className: "learner-note" },
-    h("label", { htmlFor: `note-${question.id}` }, "Your note (e.g. \"I don't know this topic\", \"confused LoRA vs QLoRA\")"),
-    h("textarea", {
-      id: `note-${question.id}`,
-      value: draft,
-      placeholder: "Type a note about this question — saved as you type, persisted to sessions.md on finish.",
-      onChange: (e) => setDraft(e.target.value),
-      onBlur: () => { if (draft !== value) onChange(draft); },
-      rows: 2
-    })
-  );
 }
 
 function DomainRow({ domain, showScore = false }) {

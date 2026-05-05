@@ -154,7 +154,7 @@ Also account for exam weight. A weak high-weight domain should appear more often
 3. Shuffle options after generation.
 4. Distractors should be plausible near misses, not obviously reckless or unserious answers.
 5. Wrong answers should usually solve the wrong layer, miss a safety boundary, optimize the wrong bottleneck, or ignore production constraints.
-6. Avoid giveaway options like "hide logs", "retry forever", "disable evaluation", "prompt only", "use the biggest model for everything", or "do nothing" unless the question is intentionally basic.
+6. Avoid giveaway options like "hide logs", "retry forever", "disable evaluation", "prompt only", "use the biggest model for everything", "treat the requirement as generic model selection", or "do nothing" unless the question is intentionally basic.
 7. Explanations should teach the decision rule, not just restate the answer.
 8. Include the reason each wrong option is wrong whenever possible.
 
@@ -175,10 +175,24 @@ A team is rolling out several NIM endpoints on Kubernetes and needs autoscaling,
 Rules:
 
 - Do not leak generator notes such as "common trap", "actual requirement", "not the layer described here", or "supported NVIDIA path".
+- Do not use fake replacement/procurement stems such as "initially selected X" or "which component should replace it" unless the scenario explicitly says a design review is correcting a mistaken shortlist.
+- Do not use abstract glue such as "critical design question" or "without hiding the root cause in prompts or model size". State the observed signal or release blocker directly.
 - State the lifecycle signal in scenario language: Kubernetes rollout, endpoint packaging, dataframe preprocessing, training-data dedupe, inference-time retrieval, runtime policy, eval regression, timeline profiling, kernel profiling, or distributed training communication.
 - Keep the domain aligned with the tested lifecycle. Do not place service-selection questions in unrelated domains just to satisfy balance.
-- Make every choice answer the same decision. Avoid one real product option plus unrelated generic failures unless the scenario explicitly compares those operational moves.
+- Make every choice answer the same decision. Service-selection stems should have four plausible service/tool choices; evaluation stems should have four evaluation/release-gate choices; profiling stems should have four profiler/observability choices or profiling-sequence choices.
 - Run `node scripts/audit_question_bank.mjs` after generation; the audit must fail if these weak patterns return.
+
+Weak:
+
+```text
+A global retailer initially selected NeMo Customizer. The work item is diagnosing CPU/GPU timelines ... Which component should replace it?
+```
+
+Better:
+
+```text
+A retailer's inference service shows low GPU occupancy and long idle gaps between CUDA launches. The team needs to see CPU threads, CUDA API calls, GPU work, synchronization, and data movement before drilling into any single kernel. Which NVIDIA tool should they use first?
+```
 
 ## Shuffling rule
 

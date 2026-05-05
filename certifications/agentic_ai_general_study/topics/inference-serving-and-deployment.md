@@ -46,6 +46,8 @@ This is the vendor-neutral home for turning models into production services. Kee
 - **NIM** is the NVIDIA packaged inference microservice cue; **Triton** is broader multi-framework serving; **TensorRT-LLM** optimizes LLM execution under serving.
 - **Prefill** processes input/context tokens before the first output token. Long prompts, long chat history, and too many retrieved chunks make prefill slower.
 - **Decode** generates output tokens. Long answers, large models, KV-cache pressure, and poor batching often show up here.
+- **User count** becomes useful only after you translate it into request rate, concurrency, token lengths, and traffic bursts.
+- **TTFT** is the user-visible wait for the first streamed token; **p95/p99** show tail latency that drives timeout and "this feels broken" complaints.
 - **Canary, shadow, blue-green, fallback, rollback, rate limits, and health checks** are deployment controls, but quality and safety metrics must travel with them.
 
 ### Code anchor
@@ -80,6 +82,9 @@ Deployment gates combine operational metrics with quality gates: a faster endpoi
 | Canary rollout | Gateway/deployment | Full rollout |
 | p99 latency | Observability + optimizer | Add GPUs blindly |
 | Bad groundedness | Evaluation/RAG | Serving-only fix |
+| 1,000 users but slow first token | Endpoint/profile trace: cold start, queue, prefill, retrieval | Assume user count alone means horizontal scaling |
+| 1 million users with rising queue depth | Gateway, autoscaling, rate limits, serving lanes | Put every request through one shared queue |
+| Chat UX feels slow | TTFT, inter-token latency, streaming behavior | Measure only total response time |
 
 ### Hands-on checks
 

@@ -68,6 +68,19 @@ Run, Monitor, and Maintain covers the **ongoing operation** of deployed agents:
 - **First diagnostic step**: Check resource utilization and inference load metrics — not immediate model retraining
 - **Not**: GPU utilization alone (misses **tool/orchestration latency**), model perplexity (not **latency**), daily active users (not bottleneck analysis)
 
+### User-volume diagnosis
+
+User count matters when it changes the traffic shape. A large registered-user number is less useful than live concurrency, queue depth, tokens per request, tool calls per request, and p95/p99 by span.
+
+| Observation | Meaning | Monitor or action |
+| ----------- | ------- | ----------------- |
+| More users, queue depth grows first | Capacity or admission-control pressure | Autoscaling, rate limits, priority queues, warm replicas |
+| More users, tool span grows first | External dependency is saturated | Tool timeout, bulkhead, cache safe reads, vendor/service scaling |
+| More users, retrieval span grows first | Vector DB, embedding, or reranker bottleneck | Scale retrieval path independently, cache scoped results |
+| More users, TTFT grows but decode stable | Queueing or prefill is the UX bottleneck | Reduce context, warm endpoints, tune batching window |
+| More users, tokens/sec drops | Decode/runtime bottleneck | Tune serving profile, batching, KV cache, quantization, endpoint capacity |
+| Few users, high latency | Not a scale problem by default | Check cold start, long context, slow dependency, network path |
+
 ## Retrieval quality monitoring
 
 - **Canary queries with expected source documents**: Run known queries, verify correct documents appear in results
