@@ -412,34 +412,6 @@ const server = createServer(async (req, res) => {
       return;
     }
 
-    if (req.method === "POST" && url.pathname === "/api/question-feedback") {
-      const { dir } = certFromUrl(url);
-      const body = await readBody(req);
-      if (!body.questionId) {
-        send(res, 400, { error: "Missing questionId" });
-        return;
-      }
-      const lines = [
-        `### ${cleanMarkdownLine(body.questionId)} — ${new Date().toISOString()}`,
-        `- **Domain:** ${cleanMarkdownLine(body.domain) || "Unknown"}`,
-        body.difficulty ? `- **Mastery:** ${cleanMarkdownLine(body.difficulty)}` : "",
-        body.quality ? `- **Question quality:** ${cleanMarkdownLine(body.quality)}` : "",
-        body.note ? `- **Note:** ${cleanMarkdownLine(body.note)}` : "",
-        body.flow ? `- **Flow:** ${cleanMarkdownLine(body.flow)}` : "",
-        ""
-      ].filter(Boolean).join("\n");
-      const path = join(dir, "question_feedback.md");
-      const existing = await readFile(path, "utf8").catch((err) => {
-        if (err.code === "ENOENT") return "";
-        throw err;
-      });
-      const header = "# Question Feedback\n\nLatest notes and ratings from practice/test sessions.\n\n";
-      const stripped = existing.replace(/^# Question Feedback\n\nLatest notes and ratings from practice\/test sessions\.\n\n/, "");
-      await writeFile(path, header + lines + "\n" + stripped, "utf8");
-      send(res, 201, { saved: true });
-      return;
-    }
-
     if (req.method === "GET" && url.pathname === "/api/learner-profile") {
       const { dir } = certFromUrl(url);
       const blueprint = await readBlueprint(dir);

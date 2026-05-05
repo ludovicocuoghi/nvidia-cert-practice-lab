@@ -783,58 +783,6 @@ h2 {
   color: var(--amber);
 }
 
-.rating-panel {
-  margin-top: 16px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fbfdfb;
-  padding: 12px;
-  display: grid;
-  gap: 12px;
-}
-
-.rating-panel > div:first-child {
-  display: grid;
-  gap: 3px;
-}
-
-.rating-panel span {
-  color: var(--muted);
-  font-size: 0.78rem;
-  font-weight: 800;
-}
-
-.rating-groups {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.rating-group {
-  display: grid;
-  gap: 7px;
-}
-
-.rating-group {
-  display: grid;
-}
-
-.rating-group button {
-  min-height: 34px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: #f8fbf7;
-  color: var(--ink);
-  font-size: 0.8rem;
-  font-weight: 900;
-}
-
-.rating-group button.active {
-  border-color: var(--blue);
-  background: rgba(30, 113, 154, 0.12);
-  color: var(--blue);
-}
-
 .review-summary {
   position: sticky;
   top: 18px;
@@ -942,8 +890,7 @@ pre {
   .cert-chooser,
   .service-layout,
   .study-head,
-  .service-actions,
-  .rating-groups {
+  .service-actions {
     grid-template-columns: 1fr;
   }
 
@@ -1245,20 +1192,6 @@ button.secondary:hover { background: #f0f8e6; }
   font-weight: 800;
 }
 
-/* Difficulty/Quality rating buttons get color cues */
-.rating-group button[data-rating="easy"]   { border-color: #cde79b; color: #4a6a1a; }
-.rating-group button[data-rating="medium"],
-.rating-group button[data-rating="good"]   { border-color: #b3d390; color: #2c5d12; }
-.rating-group button[data-rating="hard"]   { border-color: #e2bb55; color: #7a5400; }
-.rating-group button[data-rating="bad"]    { border-color: #d56a4f; color: #7a1a00; }
-.rating-group button[data-rating="ok"]     { border-color: #c8d6e0; color: #1e4d7c; }
-.rating-group button.active[data-rating="easy"]   { background: #e7f4d6; }
-.rating-group button.active[data-rating="medium"],
-.rating-group button.active[data-rating="good"]   { background: #cde79b; color: #2c5d12; }
-.rating-group button.active[data-rating="hard"]   { background: #fff3d6; }
-.rating-group button.active[data-rating="bad"]    { background: #fadcd5; }
-.rating-group button.active[data-rating="ok"]     { background: #e3eefa; }
-
 /* End-exam / Finish-practice button gets a strong color */
 .end-exam {
   background: var(--green, #76b900) !important;
@@ -1407,53 +1340,6 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 .service-detail-title p { font-size: 1.02rem; line-height: 1.5; }
 .service-detail-grid div { padding: 14px 16px; }
 .service-detail-grid p { font-size: 1rem; }
-
-/* Filled-color rating pills (horizontal) */
-.rating-group.horizontal {
-  display: grid;
-  grid-template-columns: 90px 1fr;
-  align-items: center;
-  gap: 12px;
-}
-.rating-groups {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: 1fr;
-}
-.rating-pills {
-  display: flex;
-  gap: 8px;
-}
-.pill-btn {
-  flex: 1;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-weight: 900;
-  font-size: 14px;
-  cursor: pointer;
-  text-transform: capitalize;
-  color: var(--ink);
-  transition: transform 0.05s ease, filter 0.1s, box-shadow 0.1s;
-  background: #fff;
-}
-.pill-btn:hover { transform: translateY(-1px); }
-.pill-btn.active {
-  box-shadow: inset 0 -3px 0 rgba(0,0,0,0.12);
-  transform: translateY(-1px);
-}
-
-.rating-group:first-child .pill-btn[data-rating="easy"] { border-color: #8dc63f; background: #f2f8e8; color: #315700; }
-.rating-group:first-child .pill-btn[data-rating="medium"] { border-color: #d1a12c; background: #fff5d8; color: #684600; }
-.rating-group:first-child .pill-btn[data-rating="hard"] { border-color: #b66a18; background: #fff0df; color: #7a3700; }
-.rating-group:first-child .pill-btn.active[data-rating="easy"] { background: #8dc63f; color: #111711; }
-.rating-group:first-child .pill-btn.active[data-rating="medium"] { background: #e0b845; color: #111711; }
-.rating-group:first-child .pill-btn.active[data-rating="hard"] { background: #c9751d; color: #ffffff; }
-
-.rating-group:last-child .pill-btn[data-rating="good"] { border-color: #2f7da8; background: #edf7fb; color: #174d6c; }
-.rating-group:last-child .pill-btn[data-rating="bad"] { border-color: #c85d49; background: #fff0ec; color: #842610; }
-.rating-group:last-child .pill-btn.active[data-rating="good"] { background: #2f7da8; color: #ffffff; }
-.rating-group:last-child .pill-btn.active[data-rating="bad"] { background: #cf6049; color: #ffffff; }
 
 /* Review screen: action buttons at the top, compact */
 .review-actions-top {
@@ -1628,9 +1514,6 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   .lifecycle-grid {
     grid-template-columns: repeat(7, minmax(118px, 1fr));
   }
-
-  .rating-group.horizontal { grid-template-columns: 1fr; gap: 4px; }
-  .rating-pills { flex-wrap: wrap; }
   .recommendation-grid { grid-template-columns: 1fr; }
 }
 
@@ -4096,36 +3979,6 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   padding-left: 18px;
   font-size: 14px;
   font-weight: 500;
-}
-
-/* ---- Learner note textarea ---- */
-.learner-note {
-  margin-top: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.learner-note label {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-}
-.learner-note textarea {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  font: inherit;
-  font-size: 14px;
-  resize: vertical;
-  min-height: 56px;
-  background: var(--wash);
-}
-.learner-note textarea:focus {
-  outline: none;
-  border-color: var(--green);
-  background: #fff;
 }
 
 @media (max-width: 980px) {

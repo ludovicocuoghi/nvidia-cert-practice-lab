@@ -123,30 +123,8 @@ function domainPercent(score) {
   return Math.round((score.correct / score.total) * 100);
 }
 
-function buildFeedbackByDomain(exam, ratings) {
-  const byDomain = Object.fromEntries(exam.domains.map((domain) => [domain.name, {
-    easy: 0,
-    hard: 0,
-    good: 0,
-    bad: 0,
-    total: 0
-  }]));
-  for (const question of exam.questions) {
-    const rating = ratings[question.id];
-    if (!rating || !byDomain[question.domain]) continue;
-    const bucket = byDomain[question.domain];
-    if (rating.difficulty === "easy") bucket.easy += 1;
-    if (rating.difficulty === "hard") bucket.hard += 1;
-    if (rating.quality === "good") bucket.good += 1;
-    if (rating.quality === "bad") bucket.bad += 1;
-    if (rating.difficulty || rating.quality) bucket.total += 1;
-  }
-  return byDomain;
-}
-
-function buildDashboard(exam, history, confidence, currentGrade, questionRatings = {}, learnerProfile = null) {
+function buildDashboard(exam, history, confidence, currentGrade, learnerProfile = null) {
   const latest = currentGrade || history[0]?.grade || null;
-  const feedbackByDomain = buildFeedbackByDomain(exam, questionRatings);
   const domains = exam.domains.map((domain) => {
     const score = latest?.byDomain?.[domain.name] || null;
     const percent = domainPercent(score);
@@ -154,10 +132,9 @@ function buildDashboard(exam, history, confidence, currentGrade, questionRatings
     const measured = learnerProfile?.domains?.[domain.name] || null;
     const profileAttempts = measured?.attempts || 0;
     const self = confidence[domain.name] ?? 2;
-    const feedback = feedbackByDomain[domain.name] || { easy: 0, hard: 0, good: 0, bad: 0, total: 0 };
     const reliablePercent = sampleSize >= 5 ? percent : measured?.attempts >= 5 ? Math.round((measured.accuracy || 0) * 100) : null;
     const samplePenalty = sampleSize && sampleSize < 5 ? (5 - sampleSize) * 9 : profileAttempts && profileAttempts < 5 ? (5 - profileAttempts) * 5 : 0;
-    const weakness = (reliablePercent === null ? 55 : 100 - reliablePercent) + samplePenalty + (4 - self) * 12 + domain.weight / 2 + feedback.hard * 14 - feedback.easy * 4;
+    const weakness = (reliablePercent === null ? 55 : 100 - reliablePercent) + samplePenalty + (4 - self) * 12 + domain.weight / 2;
     return {
       ...domain,
       score,
@@ -166,7 +143,6 @@ function buildDashboard(exam, history, confidence, currentGrade, questionRatings
       reliablePercent,
       measured,
       confidence: self,
-      feedback,
       focus: studyFocus[domain.name] || "Review official objectives and missed questions.",
       weakness
     };
@@ -180,9 +156,6 @@ function buildDashboard(exam, history, confidence, currentGrade, questionRatings
         signals.push(domain.sampleSize < 5 ? `${domain.percent}% on ${domain.sampleSize}Q sample` : `${domain.percent}% last score`);
       }
       if (domain.measured?.attempts) signals.push(`${domain.measured.correct}/${domain.measured.attempts} all-time`);
-      if (domain.feedback.hard) signals.push(`${domain.feedback.hard} marked hard`);
-      if (domain.feedback.easy) signals.push(`${domain.feedback.easy} marked easy`);
-      if (domain.feedback.bad) signals.push(`${domain.feedback.bad} bad question flag${domain.feedback.bad === 1 ? "" : "s"}`);
       if (!signals.length) signals.push(`${domain.weight}% exam weight`);
       return {
         ...domain,
@@ -197,22 +170,6 @@ function buildDashboard(exam, history, confidence, currentGrade, questionRatings
     recommendations,
     attempts: history.length
   };
-}
-
-function questionRatingPenalty(question, ratings) {
-  const rating = ratings[question.id] || {};
-  let penalty = 0;
-  if (rating.difficulty === "easy") penalty += 40;
-  if (rating.quality === "bad") penalty += 60;
-  return penalty;
-}
-
-function questionRatingBoost(question, ratings) {
-  const rating = ratings[question.id] || {};
-  let boost = 0;
-  if (rating.difficulty === "hard") boost += 28;
-  if (rating.quality === "good") boost += 6;
-  return boost;
 }
 
 const RECENT_MOCK_DEBOOST_MS = 48 * 60 * 60 * 1000;
@@ -237,7 +194,7 @@ function recordMockSeen(slug, ids) {
   saveJson(key, map);
 }
 
-function buildAdaptiveSet(exam, dashboard, ratings, limit = 24, recentMockSeen = {}) {
+function buildAdaptiveSet(exam, dashboard, limit = 24, recentMockSeen = {}) {
   const weakNames = new Set(dashboard.weak.map((domain) => domain.name));
   const scored = exam.questions.map((question, index) => {
     const domain = dashboard.domains.find((item) => item.name === question.domain);
@@ -252,7 +209,7 @@ function buildAdaptiveSet(exam, dashboard, ratings, limit = 24, recentMockSeen =
           ? ({ easy: 20, medium: 12, hard: -10, advanced: -18, expert: -22 }[difficulty] || 0)
           : ({ easy: 4, medium: 10, hard: 8, advanced: 4, expert: 0 }[difficulty] || 0);
     const recentMockDeboost = recentMockSeen[question.id] ? -60 : 0;
-    const score = weakBoost + domainWeakness + difficultyBoost + recentMockDeboost + questionRatingBoost(question, ratings) - questionRatingPenalty(question, ratings) - index / 1000;
+    const score = weakBoost + domainWeakness + difficultyBoost + recentMockDeboost - index / 1000;
     return { question, score };
   });
   return scored
@@ -316,8 +273,6 @@ function App() {
   const [grade, setGrade] = useState(null);
   const [history, setHistory] = useState(() => loadJson("ncp-genl-history", []));
   const [confidence, setConfidence] = useState(() => loadJson("ncp-genl-confidence", {}));
-  const [questionRatings, setQuestionRatings] = useState(() => loadJson("ncp-genl-question-ratings", {}));
-  const [learnerNotes, setLearnerNotes] = useState(() => loadJson("ncp-genl-learner-notes", {}));
   const [learnerProfile, setLearnerProfile] = useState(null);
   const [generationStatus, setGenerationStatus] = useState({ state: "idle", message: "" });
   const [busy, setBusy] = useState(false);
@@ -351,8 +306,6 @@ function App() {
       setSecondsLeft(examData.certification.durationMinutes * 60);
       setHistory(loadJson(`${selectedCertSlug}-history`, []));
       setConfidence(loadJson(`${selectedCertSlug}-confidence`, {}));
-      setQuestionRatings(loadJson(`${selectedCertSlug}-question-ratings`, {}));
-      setLearnerNotes(loadJson(`${selectedCertSlug}-learner-notes`, {}));
       setGrade(null);
       setAnswers({});
       setFlagged({});
@@ -400,8 +353,8 @@ function App() {
 
   const dashboard = useMemo(() => {
     if (!exam) return { domains: [], weak: [], strong: [], attempts: 0 };
-    return buildDashboard(exam, history, confidence, grade, questionRatings, learnerProfile);
-  }, [exam, history, confidence, grade, questionRatings, learnerProfile]);
+    return buildDashboard(exam, history, confidence, grade, learnerProfile);
+  }, [exam, history, confidence, grade, learnerProfile]);
 
   // Practice mode draws from mocks/*_bank.md ∪ generated-questions.md only — never legacy questions.md.
   // Mock tests keep the full pool (they need every ID resolvable).
@@ -434,37 +387,6 @@ function App() {
     saveJson(`${selectedCertSlug}-confidence`, next);
   }
 
-  function updateLearnerNote(questionId, note) {
-    const next = { ...learnerNotes };
-    if (note && note.trim()) {
-      next[questionId] = { note: note.trim(), updatedAt: new Date().toISOString() };
-    } else {
-      delete next[questionId];
-    }
-    setLearnerNotes(next);
-    saveJson(`${selectedCertSlug}-learner-notes`, next);
-    const questionForFeedback = exam?.questions.find((item) => item.id === questionId);
-    postQuestionFeedback({
-      questionId,
-      domain: questionForFeedback?.domain,
-      note: note?.trim(),
-      ...(questionRatings[questionId] || {})
-    });
-  }
-
-  async function postQuestionFeedback(payload) {
-    if (!payload?.questionId) return;
-    if (!payload.note && !payload.difficulty && !payload.quality) return;
-    try {
-      await api(certPath("/api/question-feedback", selectedCertSlug), {
-        method: "POST",
-        body: JSON.stringify({ ...payload, flow: flow || mode })
-      });
-    } catch (err) {
-      console.warn("question feedback write failed", err);
-    }
-  }
-
   function rememberCoachReply(questionId, learnerQuestion, reply) {
     const note = [
       learnerQuestion ? `Learner asked: ${learnerQuestion}` : "",
@@ -483,20 +405,17 @@ function App() {
   async function postSessionLog(gradeResult, questionsForLog = sessionQuestions) {
     const entries = questionsForLog.map((q) => {
       const selectedIndex = answers[q.id];
-      const note = learnerNotes[q.id]?.note || "";
       const coach = coachNotes[q.id]?.note || "";
       return {
         id: q.id,
         domain: q.domain,
-        feedback: feedbackForQuestion(q.id),
         question: q.question,
         choices: q.choices,
         correctIndex: q.answer,
         selectedIndex,
         correct: selectedIndex === q.answer,
         explanation: q.explanation,
-        coachNote: coach,
-        learnerNote: note
+        coachNote: coach
       };
     });
     if (!entries.length) return;
@@ -512,36 +431,6 @@ function App() {
     } catch (err) {
       console.warn("session log write failed", err);
     }
-  }
-
-  function updateQuestionRating(questionId, patch) {
-    const merged = {
-      ...(questionRatings[questionId] || {}),
-      ...patch,
-      updatedAt: new Date().toISOString()
-    };
-    const next = {
-      ...questionRatings,
-      [questionId]: merged
-    };
-    setQuestionRatings(next);
-    saveJson(`${selectedCertSlug}-question-ratings`, next);
-    const questionForFeedback = exam?.questions.find((item) => item.id === questionId);
-    postQuestionFeedback({
-      questionId,
-      domain: questionForFeedback?.domain,
-      difficulty: merged.difficulty,
-      quality: merged.quality,
-      note: learnerNotes[questionId]?.note || ""
-    });
-  }
-
-  function feedbackForQuestion(questionId) {
-    const rating = questionRatings[questionId] || {};
-    return {
-      difficulty: rating.difficulty,
-      quality: rating.quality
-    };
   }
 
   async function generateQuestions({ count = 5, weakOnly = false, focusDomains = [], service = null, topic = '', difficulty = 'hard' } = {}) {
@@ -751,7 +640,7 @@ function App() {
         pool = practiceQuestions.filter((q) => !approved.has(q.id));
       }
       const adaptiveExam = { ...exam, questions: pool };
-      const seed = buildAdaptiveSet(adaptiveExam, dashboard, questionRatings, 1, recentMockSeen);
+      const seed = buildAdaptiveSet(adaptiveExam, dashboard, 1, recentMockSeen);
       const first = seed.length ? seed[0] : pool[0];
       if (!first) {
         setError(nextFlow === "practice-coach-generated"
@@ -1119,7 +1008,7 @@ function App() {
           h("button", { onClick: () => setError("") }, "Dismiss"))
       : null,
     mode === "start" ? h(StartScreen, {
-      exam, domainStats, dashboard, confidence, questionRatings, learnerProfile, mockSummary, mockResultsMd,
+      exam, domainStats, dashboard, confidence, learnerProfile, mockSummary, mockResultsMd,
       track, setTrack, busy, certifications, studyView, setStudyView,
       availableMocks, selectedMockId, setSelectedMockId,
       selectedCertSlug, setSelectedCertSlug,
@@ -1141,12 +1030,8 @@ function App() {
           flagged,
           flaggedCount,
           secondsLeft,
-          questionRatings,
           answerQuestion,
           toggleFlag,
-          updateQuestionRating,
-          learnerNotes,
-          updateLearnerNote,
           submitExam,
           busy,
           sessionKind,
@@ -1175,10 +1060,6 @@ function App() {
           flagged,
           domainStats,
           mistakes,
-          questionRatings,
-          updateQuestionRating,
-          learnerNotes,
-          updateLearnerNote,
           flow,
           coachNotes,
           mockResultsMd,
@@ -1209,7 +1090,7 @@ function examLabel(exam) {
 }
 
 function StartScreen(props) {
-  const { exam, domainStats, dashboard, confidence, questionRatings, learnerProfile, mockSummary, mockResultsMd,
+  const { exam, domainStats, dashboard, confidence, learnerProfile, mockSummary, mockResultsMd,
     track, setTrack, busy, certifications, studyView, setStudyView,
     availableMocks, selectedMockId, setSelectedMockId,
     selectedCertSlug, setSelectedCertSlug,
@@ -1227,7 +1108,7 @@ function StartScreen(props) {
     h(TrackChooser, { track, setTrack, mockSummary, exam }),
     track === "practice"
       ? h(PracticePanel, {
-          exam, domainStats, dashboard, confidence, questionRatings, learnerProfile,
+          exam, domainStats, dashboard, confidence, learnerProfile,
           updateConfidence, startFlow, generateQuestions, generationStatus, cancelGeneration,
           availableMocks, selectedMockId, setSelectedMockId,
           selectedCertSlug, drillRecentMistakes,
@@ -3710,7 +3591,7 @@ function PracticePanel(props) {
     { className: "practice-panel" },
     h("div", { className: "practice-panel-head" },
       h("h2", null, "Practice"),
-      h("p", { className: "muted" }, "Untimed sessions with per-question feedback and the topic tutor.")
+      h("p", { className: "muted" }, "Untimed sessions with immediate explanations and the topic tutor.")
     ),
     !hasQuestionBank
       ? h("p", { className: "empty-bank-note" }, `No ${exam.certification.code} question bank yet. Use the AI drill builder below to create questions.`)
@@ -3788,10 +3669,10 @@ function ProfileRecommendations({ dashboard, learnerProfile }) {
   const recommendations = dashboard.recommendations || [];
   if (!recommendations.length) return null;
   const strongest = [...(dashboard.domains || [])]
-    .filter((domain) => domain.feedback?.easy || domain.reliablePercent !== null || (domain.measured?.attempts || 0) >= 5)
+    .filter((domain) => domain.reliablePercent !== null || (domain.measured?.attempts || 0) >= 5)
     .sort((a, b) => {
-      const aScore = (a.reliablePercent ?? 50) + Math.min(a.measured?.attempts || 0, 10) + (a.feedback?.easy || 0) * 8 - (a.feedback?.hard || 0) * 8;
-      const bScore = (b.reliablePercent ?? 50) + Math.min(b.measured?.attempts || 0, 10) + (b.feedback?.easy || 0) * 8 - (b.feedback?.hard || 0) * 8;
+      const aScore = (a.reliablePercent ?? 50) + Math.min(a.measured?.attempts || 0, 10);
+      const bScore = (b.reliablePercent ?? 50) + Math.min(b.measured?.attempts || 0, 10);
       return bScore - aScore;
     })
     .slice(0, 2);
@@ -3819,12 +3700,10 @@ function ProfileRecommendations({ dashboard, learnerProfile }) {
               h("em", null, [
                 domain.reliablePercent !== null ? `${domain.reliablePercent}% reliable score` : "",
                 domain.percent !== null && domain.sampleSize < 5 ? `${domain.percent}% last ${domain.sampleSize}Q sample` : "",
-                domain.measured?.attempts ? `${domain.measured.correct}/${domain.measured.attempts} all-time` : "",
-                domain.feedback?.easy ? `${domain.feedback.easy} easy` : "",
-                domain.feedback?.good ? `${domain.feedback.good} good question${domain.feedback.good === 1 ? "" : "s"}` : ""
+                domain.measured?.attempts ? `${domain.measured.correct}/${domain.measured.attempts} all-time` : ""
               ].filter(Boolean).join(" · "))
             )))
-          : h("p", { className: "muted" }, "Mark a few questions Easy/Hard to build a cleaner profile.")
+          : h("p", { className: "muted" }, "Answer a few practice questions to build a cleaner profile.")
       )
     )
   );
@@ -4174,8 +4053,7 @@ function ConfidenceRow({ domain, value, onChange }) {
 function ExamScreen(props) {
   const {
     questions, question, current, setCurrent, answers, answeredCount, flagged, flaggedCount,
-    secondsLeft, questionRatings, answerQuestion, toggleFlag, updateQuestionRating,
-    learnerNotes, updateLearnerNote, submitExam,
+    secondsLeft, answerQuestion, toggleFlag, submitExam,
     busy, sessionKind, revealed, flow, generationStatus, coachNotes, coachStatus, adaptivePosition, adaptiveTarget,
     fetchCoachingAndAdvance, rememberCoachReply, revealAnswer, onExit, selectedCertSlug
   } = props;
@@ -4319,14 +4197,7 @@ function ExamScreen(props) {
         (!isAdaptive || current < questions.length - 1)
           ? h("button", { className: "next-btn", onClick: () => setCurrent(Math.min(questions.length - 1, current + 1)), disabled: current === questions.length - 1 }, "Next →")
           : null
-      ),
-      h(QuestionRatingPanel, {
-        question,
-        rating: questionRatings[question.id] || {},
-        onRate: updateQuestionRating,
-        learnerNote: learnerNotes[question.id]?.note || "",
-        onNoteChange: (value) => updateLearnerNote(question.id, value)
-      })
+      )
     )
   );
 }
@@ -4486,7 +4357,6 @@ function HelperChat({ question, selectedCertSlug, includeAnswer = false, onRemem
 
 function ReviewScreen(props) {
   const { questions, grade, current, setCurrent, answers, flagged, domainStats, mistakes,
-    questionRatings, updateQuestionRating, learnerNotes, updateLearnerNote,
     flow, coachNotes, mockResultsMd, mockDef, startFlow, onExit, onBackToPractice } = props;
   const question = questions[current];
   const selected = answers[question.id];
@@ -4561,13 +4431,6 @@ function ReviewScreen(props) {
             h("strong", null, "Coach said"),
             h("p", null, coachNotes[question.id].note))
         : null,
-      h(QuestionRatingPanel, {
-        question,
-        rating: questionRatings[question.id] || {},
-        onRate: updateQuestionRating,
-        learnerNote: learnerNotes[question.id]?.note || "",
-        onNoteChange: (value) => updateLearnerNote(question.id, value)
-      }),
       isMock && mockResultsMd
         ? h("details", { className: "mock-history" },
             h("summary", null, "Mock results history"),
@@ -4575,73 +4438,6 @@ function ReviewScreen(props) {
         : null,
       h("details", { className: "mistake-log" }, h("summary", null, "Mistake markdown log"), h("pre", null, mistakes))
     )
-  );
-}
-
-function QuestionRatingPanel({ question, rating, onRate, learnerNote, onNoteChange }) {
-  return h(
-    "div",
-    { className: "rating-panel" },
-    h(
-      "div",
-      null,
-      h("strong", null, "Learning note"),
-      h("span", null, "Mark mastery and question quality. Every click is logged for your dashboard and saved to sessions.md on finish.")
-    ),
-    h(
-      "div",
-      { className: "rating-groups" },
-      h(
-        "div",
-        { className: "rating-group horizontal" },
-        h("span", null, "Mastery"),
-        h("div", { className: "rating-pills" },
-          ["easy", "hard"].map((value) => h("button", {
-            key: value,
-            "data-rating": value,
-            className: `pill-btn ${rating.difficulty === value ? "active" : ""}`,
-            onClick: () => onRate(question.id, { difficulty: value })
-          }, value))
-        )
-      ),
-      h(
-        "div",
-        { className: "rating-group horizontal" },
-        h("span", null, "Question"),
-        h("div", { className: "rating-pills" },
-          ["good", "bad"].map((value) => h("button", {
-            key: value,
-            "data-rating": value,
-            className: `pill-btn ${rating.quality === value ? "active" : ""}`,
-            onClick: () => onRate(question.id, { quality: value })
-          }, value))
-        )
-      )
-    ),
-    h(LearnerNoteField, { question, value: learnerNote, onChange: onNoteChange })
-  );
-}
-
-function LearnerNoteField({ question, value, onChange }) {
-  const [draft, setDraft] = useState(value || "");
-  useEffect(() => { setDraft(value || ""); }, [question.id, value]);
-  useEffect(() => {
-    if (draft === value) return undefined;
-    const timer = setTimeout(() => onChange(draft), 700);
-    return () => clearTimeout(timer);
-  }, [draft, value, question.id]);
-  return h(
-    "div",
-    { className: "learner-note" },
-    h("label", { htmlFor: `note-${question.id}` }, "Your note (e.g. \"I don't know this topic\", \"confused LoRA vs QLoRA\")"),
-    h("textarea", {
-      id: `note-${question.id}`,
-      value: draft,
-      placeholder: "Type a note about this question — saved as you type, persisted to sessions.md on finish.",
-      onChange: (e) => setDraft(e.target.value),
-      onBlur: () => { if (draft !== value) onChange(draft); },
-      rows: 2
-    })
   );
 }
 

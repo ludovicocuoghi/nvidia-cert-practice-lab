@@ -86,7 +86,7 @@ All endpoints accept an optional `?cert=<slug>` query param (defaults to `CERT_S
 ## Three modes
 
 - **Study** — read topic/service markdown; section drill (per-domain quiz with helper chatbot + immediate feedback).
-- **Practice** — untimed, helper chatbot per question, per-question feedback. Entry points:
+- **Practice** — untimed, helper chatbot per question, immediate explanations. Entry points:
   - **Practice a Mock** — pick mock_N, get the same 50 questions as the timed exam but untimed and with the tutor.
   - **Adaptive Practice** — weak-domain biased, with 48h deboost on mock IDs you've recently seen.
   - **Generated Practice** — drill the approved subset of `generated-questions.md`.
