@@ -6,72 +6,97 @@ status: populated
 
 # NeMo Customizer
 
-## What to study first
-
-- **Core idea:** Managed API microservice + Python SDK — **PEFT**/**LoRA** fine-tuning without managing GPUs
-- **Use it when:** Use when an enterprise wants API-driven LoRA/PEFT customization of a supported base model without managing a full training stack.
-- **Choose another path when:** Choose the neighboring service for full pretraining, low-level training research, or production inference serving.
-- **Concrete surface:** Access: REST API (`POST /v1/fine-tuning/jobs`) or `pip install nvidia-ai-endpoints` Inside: LoRA/QLoRA, supervised fine-tuning (SFT), RLHF/DPO alignment recipes I/O: Base model ID + training dataset (JSONL) + fine-tuning config (rank, alpha, epochs) -> LoRA adapter weights or merged model checkpoint
-- **Study first:** LoRA/QLoRA — low-rank adaptation with zero inference overhead after merging
-- PEFT vs full fine-tuning — ~0.1-1% of parameters updated vs 100%
-- ~2-50 MB storage per task vs ~14 GB
-- SFT dataset quality — 500-1000 high-quality examples beat 5000+ noisy ones (LIMA principle)
-- RLHF/DPO pipeline — reward model training on preference pairs, then policy optimization with KL penalty
-- continued pre-training vs fine-tuning — CPT injects knowledge (billions of tokens)
-- SFT teaches format/style (thousands of examples)
-- **Real trap:** Treating a managed PEFT customization service as a replacement for NeMo Framework training or NIM serving.
-
-## At a glance
-
-| | |
-|---|---|
-| **What it is** | Managed API microservice + Python SDK — PEFT/LoRA fine-tuning without managing GPUs |
-| **How you access it** | REST API (`POST /v1/fine-tuning/jobs`) or `pip install nvidia-ai-endpoints` |
-| **Input** | Base model ID + training dataset (JSONL) + fine-tuning config (rank, alpha, epochs) |
-| **Output** | LoRA adapter weights or merged model checkpoint |
-| **Inside** | LoRA/QLoRA, supervised fine-tuning (SFT), RLHF/DPO alignment recipes |
-
-```bash
-curl -X POST https://API.nvidia.com/v1/fine-tuning/jobs   -d '{"model": "nemotron-4-15b", "dataset": "s3://my-data/train.jsonl",
-       "method": "lora", "rank": 16, "epochs": 3}'
-```
-
-**Mental model**: upload training data via API, download a LoRA adapter — no training loop to write, no GPU cluster to manage.
-
----
-
 ## What it is, in one paragraph
 
-NVIDIA's simplified fine-tuning and customization tool for language models. NeMo Customizer provides an accessible interface for adapting foundation models to specific domains, tasks, or behaviors — without requiring full-scale training infrastructure. It is the **lightweight customization layer** compared to NeMo Framework's full training capabilities.
+NeMo Customizer is the NeMo microservice for API-driven model customization: you point to a base Model Entity, attach a compatible Dataset FileSet, submit a customization job, and get either a LoRA adapter attached back to the base model or a fully fine-tuned Model Entity. Use it when the task is not "train a foundation model from scratch" and not "serve an already-ready model," but "adapt this supported model to our examples, domain, style, or task with managed fine-tuning."
 
 ## Where it sits in the lifecycle
 
-**Customization / fine-tuning** — after initial training, before serving. Takes a pre-trained model and adapts it for specific use cases.
+**Customization / fine-tuning** — after model selection and dataset preparation, before evaluation and deployment. The practical flow is local/Curator-prepared data -> uploaded Dataset FileSet -> Model Entity + training config -> customization job -> adapter or customized Model Entity -> evaluate -> deploy with NIM / Deployment Management Service.
 
 ```
-[Pre-trained model] → [NeMo Customizer: fine-tune on domain data] → [Customized model] → [NIM: serve]
+[Local/Curator data] -> [Dataset FileSet] + [Model Entity] -> [Customizer job: SFT + LoRA/PEFT] -> [Adapter or customized Model Entity] -> [Evaluator] -> [NIM]
 ```
 
 ## When it is the right answer
 
-- Questions about NVIDIA's fine-tuning/customization tool
-- Adapting a pre-trained model to a specific domain or task
-- Lightweight customization without full training infrastructure
-- "How to customize an NVIDIA model for enterprise-specific needs?"
+- The scenario says **fine-tune**, **customize**, **SFT**, **LoRA**, **QLoRA**, **PEFT**, **adapter**, or **domain/task adaptation** for an existing supported model.
+- The required action is to create and monitor a customization job, not to write a distributed training loop.
+- The inputs are a base model/config, a prepared training dataset, and hyperparameters such as LoRA rank, alpha, batch size, epochs, or learning rate.
+- The expected output is an adapter or customized model artifact that will be evaluated and then deployed.
 
 ## Adjacent-service decision boundary
 
-- **Full-scale model training from scratch**: That's NeMo Framework.
-- **Model serving**: That's NIM or Triton.
-- **Inference optimization**: That's TensorRT-LLM.
-- **Safety filtering**: That's NeMo Guardrails.
-- **Agent orchestration**: That's NeMo Agent Toolkit.
+- **NeMo Curator** comes before Customizer when the problem is cleaning, filtering, deduplicating, licensing, PII handling, or formatting raw corpora into training/evaluation data.
+- **NeMo Framework** is the deeper training stack for full pretraining, post-training research, distributed recipes, or custom training code. Customizer is the managed job surface.
+- **NeMo Evaluator** comes after Customizer when the question is whether the customized model improved quality, safety, regressions, or task metrics.
+- **NIM / Deployment Management Service** comes after Customizer when the question is serving the finished adapter/model as an inference endpoint.
+- **NGC / model registry / model catalog** helps find or manage base artifacts; it is not the customization job runner.
+
+## Actual implementation / How you use it
+
+```python
+import os
+from nemo_platform import NeMoPlatform
+
+client = NeMoPlatform(
+    base_url=os.environ.get("NMP_BASE_URL", "http://localhost:8080"),
+    workspace="default",
+)
+
+job = client.customization.jobs.create(
+    name="legal-lora-sft",
+    workspace="default",
+    spec={
+        "model": "default/llama-3-2-1b",
+        "dataset": "fileset://default/legal-sft-jsonl",
+        "training": {
+            "type": "sft",
+            "peft": {"type": "lora", "rank": 8, "alpha": 32},
+            "epochs": 3,
+            "learning_rate": 1e-4,
+        },
+        "output": {"name": "legal-lora-adapter"},
+        "deployment_config": {"lora_enabled": True},
+    },
+)
+```
+
+```bash
+nmp customization jobs create --input-file customizer-job.json
+
+curl -X POST "$CUSTOMIZER_BASE_URL/v1/customization/jobs" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"legal-lora-sft","config":"meta/llama-3.2-1b-instruct@v1.0.0+80GB","hyperparameters":{"finetuning_type":"lora","training_type":"sft","epochs":3},"dataset":"legal-sft-jsonl","output_model":"legal-lora-adapter"}'
+```
+
+| | |
+|---|---|
+| **What it is** | Managed NeMo customization microservice + SDK/CLI/API surface for SFT and LoRA/PEFT jobs |
+| **How you access it** | NeMo Platform SDK (`from nemo_platform import NeMoPlatform`), `nmp customization jobs create`, or Customizer API (`/v1/customization/jobs`) |
+| **Input** | Base Model Entity or customization config + uploaded Dataset FileSet (`fileset://...`) + training hyperparameters. Local JSONL is a preparation artifact; the job should reference platform resources, not a laptop path. |
+| **Output** | LoRA job: adapter attached to the original Model Entity, with adapter weights stored in its own FileSet. Full SFT/all-weights job: new customized Model Entity with full weights linked to the base model. |
+| **Data / artifact handoff** | Curator or local scripts clean/format data -> upload/register Dataset FileSet -> Customizer writes adapter/model artifacts into the NeMo Platform entity/file store. |
+| **What happens next** | Evaluate the customized artifact with NeMo Evaluator, then deploy with Deployment Management Service / NIM. For LoRA, deploy the base model with LoRA enabled so attached adapters can be served. |
+| **Inside** | Customization jobs, model entities, dataset FileSets, SFT, LoRA/QLoRA-style PEFT settings, metrics integration |
+
+**Mental model**: prepare data locally or with Curator, register it as a Dataset FileSet, submit a managed fine-tuning job, then evaluate and deploy the adapter/model from the platform — do not treat the local file as the production artifact.
+
+## What to study first
+
+- **Core idea:** Managed NeMo customization job surface for SFT and LoRA/PEFT on an existing supported model.
+- **Call surface:** `client.customization.jobs.create(...)`, `nmp customization jobs create`, `/v1/customization/jobs`, `training.type: sft`, `peft.type: lora`, `deployment_config.lora_enabled`.
+- **Right-answer trigger:** The scenario asks to adapt a base model with examples, domain data, task data, or instruction data.
+- **Choose another service when:** Use Curator for preparing the dataset. Use Framework for deep/full training code. Use Evaluator for scoring the result. Use NIM for serving the final artifact.
+- **Must know:** LoRA/QLoRA update small adapter parameters while the base model stays mostly frozen; SFT teaches behavior/format more than new facts; full SFT/all-weights produces a heavier customized model; Dataset FileSets and output adapter/model entities are the handoff points; adapters must be evaluated before deployment.
+- **Real trap:** Confusing "prepare data for tuning" with Customizer itself, or confusing "serve the tuned artifact" with the customization job.
 
 ## How it relates to neighboring services
 
-- vs **NeMo Framework**: Framework = full-scale training (from scratch or major adaptation). Customizer = simplified fine-tuning (domain/task adaptation). Customizer is the accessible subset of customization capabilities.
-- vs **NIM**: Customizer produces customized models; NIM serves them.
-- vs **NeMo Evaluator**: Evaluator measures how well the customized model performs.
+- vs **NeMo Curator**: Curator prepares training/tuning/evaluation data; Customizer consumes prepared datasets to run tuning jobs.
+- vs **NeMo Framework**: Framework is the full training/post-training toolkit; Customizer is the managed microservice/job API for common customization workflows.
+- vs **NeMo Evaluator**: Evaluator measures whether the customized model actually improved.
+- vs **NIM**: Customizer produces adapters or customized model artifacts; NIM serves them.
 
 ## Numbers, defaults, knobs you should recognize
 
@@ -438,14 +463,14 @@ where l_k, l_v, and l_ff are learned vectors (length = hidden dimension), and �
 ## Study card data
 - **Lifecycle:** Customization / fine-tuning
 - **Relevant exams:** GenAI LLMs, Agentic AI
-- **What it is:** Managed API microservice + Python SDK — **PEFT**/**LoRA** fine-tuning without managing GPUs
-- **Use it when:** Use when an enterprise wants API-driven LoRA/PEFT customization of a supported base model without managing a full training stack.
-- **Do not use it when:** Choose the neighboring service for full pretraining, low-level training research, or production inference serving.
-- **Common trap:** Treating a managed PEFT customization service as a replacement for NeMo Framework training or NIM serving.
-- **Recognition clues:** An enterprise wants API-driven LoRA/PEFT customization of a base model without managing distributed training infrastructure.
+- **What it is:** Managed NeMo customization microservice for SFT and LoRA/PEFT jobs on existing supported models.
+- **Use it when:** Use when the task is to adapt a base model with examples, domain data, task data, or instruction data through a managed customization job.
+- **Do not use it when:** Choose Curator for data preparation, Framework for deep/full training code, Evaluator for scoring, and NIM for serving the final artifact.
+- **Common trap:** Confusing data preparation before tuning or model serving after tuning with the customization job itself.
+- **Recognition clues:** A scenario mentions `client.customization.jobs.create(...)`, `nmp customization jobs create`, `/v1/customization/jobs`, SFT, LoRA, PEFT, adapter output, or model/domain adaptation.
 ### Study notes
-- Place **NeMo Customizer** at **Customization / fine-tuning**: upload training data via API, download a LoRA adapter — no training loop to write, no GPU cluster to manage.
-- Boundary cue: choose it when an enterprise wants API-driven LoRA/PEFT customization of a supported base model without managing a full training stack. Adjacent-service cue: not for full pretraining, low-level training research, or production inference serving.
+- Place **NeMo Customizer** at **Customization / fine-tuning**: submit a managed job from a model entity/config plus dataset plus hyperparameters, then evaluate and deploy the adapter/model.
+- Boundary cue: choose it for SFT/LoRA/PEFT customization jobs. Adjacent-service cue: Curator prepares data, Framework handles deeper training code, Evaluator scores outputs, and NIM serves the final artifact.
 ### Must know
 - LoRA/QLoRA — low-rank adaptation with zero inference overhead after merging
 - PEFT vs full fine-tuning — ~0.1-1% of parameters updated vs 100%; ~2-50 MB storage per task vs ~14 GB
@@ -453,7 +478,7 @@ where l_k, l_v, and l_ff are learned vectors (length = hidden dimension), and �
 - RLHF/DPO pipeline — reward model training on preference pairs, then policy optimization with KL penalty
 - continued pre-training vs fine-tuning — CPT injects knowledge (billions of tokens); SFT teaches format/style (thousands of examples)
 ### What to recognize
-- PEFT customization → NeMo Customizer provides API-driven LoRA/QLoRA without standing up a full training stack
+- PEFT customization → NeMo Customizer provides API-driven SFT/LoRA/PEFT customization jobs without standing up a full training stack
 - domain adaptation → fine-tune a base model on domain instructions for legal, medical, or enterprise use cases
 - QLoRA on single GPU → 4-bit quantization enables fine-tuning 70B models on one A100-80GB
 - adapter merging → LoRA adapters merge into base weights for zero inference overhead, unlike prefix tuning or adapters

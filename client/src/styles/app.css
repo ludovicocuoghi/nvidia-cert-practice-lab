@@ -3387,6 +3387,29 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   background: #f9f8fc;
 }
 
+.decision-snapshot .right-answer {
+  grid-column: 1 / -1;
+}
+
+.decision-snapshot .decision-card-body {
+  display: grid;
+  gap: 8px;
+}
+
+.decision-snapshot .decision-card-body > * {
+  margin: 0;
+}
+
+.decision-snapshot .decision-card-body .md-ul,
+.decision-snapshot .decision-card-body .md-ol {
+  margin-left: 18px;
+}
+
+.decision-snapshot .decision-card-body .md-code {
+  margin: 2px 0 0;
+  font-size: 0.84rem;
+}
+
 .suite-study-map {
   grid-template-columns: 1fr 1fr;
 }
@@ -3502,6 +3525,16 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 .impl-grid .impl-mental {
   border-left: 4px solid #7b6f9e;
   background: #f9f8fc;
+}
+
+.impl-grid .impl-handoff {
+  border-left: 4px solid #2f7da8;
+  background: #f0f7fb;
+}
+
+.impl-grid .impl-next {
+  border-left: 4px solid #4a9e4a;
+  background: #f2faf2;
 }
 
 .impl-grid .impl-access,

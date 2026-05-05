@@ -3072,7 +3072,20 @@ function renderStudyFirstContent(content) {
   const lines = String(content || "").split("\n");
   const nodes = [];
   let prose = [];
+  let pendingRow = null;
   const renderOptions = { autoHighlight: true, highlightSeen: new Set(), highlightCount: { value: 0 }, maxHighlights: 8 };
+  function flushRow() {
+    if (!pendingRow) return;
+    const label = pendingRow.label;
+    const parts = splitStudyFirstParts(label, pendingRow.values.join("; "));
+    nodes.push(h("div", { className: `study-first-row study-first-${topicSlug(label)}`, key: `${label}-${nodes.length}` },
+      h("strong", null, label),
+      parts.length > 1
+        ? h("ul", null, parts.map((part, index) => h("li", { key: `${index}-${part}` }, renderInline(part, renderOptions))))
+        : h("p", null, renderInline(parts[0] || "", renderOptions))
+    ));
+    pendingRow = null;
+  }
   function flushProse() {
     const text = prose.join("\n").trim();
     prose = [];
@@ -3081,19 +3094,21 @@ function renderStudyFirstContent(content) {
   for (const line of lines) {
     const match = line.match(/^-\s+\*\*(.+?)\*\*:?\s*(.+)$/);
     if (!match) {
+      const continuation = line.match(/^-\s+(.+)$/);
+      if (pendingRow && /^(study first|must know)$/i.test(pendingRow.label) && continuation) {
+        pendingRow.values.push(continuation[1].trim());
+        continue;
+      }
+      flushRow();
       prose.push(line);
       continue;
     }
     flushProse();
+    flushRow();
     const label = match[1].trim().replace(/:\s*$/, "");
-    const parts = splitStudyFirstParts(label, match[2]);
-    nodes.push(h("div", { className: `study-first-row study-first-${topicSlug(label)}`, key: `${label}-${nodes.length}` },
-      h("strong", null, label),
-      parts.length > 1
-        ? h("ul", null, parts.map((part) => h("li", { key: part }, renderInline(part, renderOptions))))
-        : h("p", null, renderInline(parts[0] || "", renderOptions))
-    ));
+    pendingRow = { label, values: [match[2].trim()] };
   }
+  flushRow();
   flushProse();
   return nodes.length ? nodes : renderMarkdown(content, { autoHighlight: true });
 }
@@ -3128,6 +3143,14 @@ function ImplementationCards({ impl }) {
         h("p", null, h("strong", null, "Input: "), renderInline(impl.input)),
         h("p", null, h("strong", null, "Output: "), renderInline(impl.output))
       ),
+      impl.handoff ? h("section", { className: "impl-handoff" },
+        h("span", null, "Data / artifact handoff"),
+        h("p", null, renderInline(impl.handoff))
+      ) : null,
+      impl.nextStep ? h("section", { className: "impl-next" },
+        h("span", null, "What happens next"),
+        h("p", null, renderInline(impl.nextStep))
+      ) : null,
       h("section", { className: "impl-mental" },
         h("span", null, "One-line mental model"),
         h("p", null, renderInline(impl.mentalModel))
@@ -3164,6 +3187,50 @@ function ExamDecisionCards({ study }) {
         h("span", null, "Recognition clues"),
         h("p", null, renderInline(study.scenario))
       )
+    )
+  );
+}
+
+function markdownSectionContent(markdown, heading) {
+  return markdownSections(markdown)[normalizeHeadingName(heading)]?.content?.trim() || "";
+}
+
+function ServiceDecisionSnapshot({ markdown }) {
+  const cards = [
+    {
+      label: "What it is, in one paragraph",
+      className: "identity summary",
+      content: markdownSectionContent(markdown, "What it is, in one paragraph")
+    },
+    {
+      label: "Where it sits in the lifecycle",
+      className: "scenario lifecycle",
+      content: markdownSectionContent(markdown, "Where it sits in the lifecycle")
+    },
+    {
+      label: "When it is the right answer",
+      className: "use right-answer",
+      content: markdownSectionContent(markdown, "When it is the right answer")
+    },
+    {
+      label: "Adjacent-service decision boundaries",
+      className: "trap boundary",
+      content: markdownSectionContent(markdown, "Adjacent-service decision boundary")
+    }
+  ].filter((card) => card.content);
+
+  if (!cards.length) return null;
+  const renderOptions = { autoHighlight: true, highlightSeen: new Set(), highlightCount: { value: 0 }, maxHighlights: 10 };
+  return h("div", { className: "decision-snapshot service-section" },
+    h("div", { className: "service-section-heading" },
+      h("span", null, "Start here"),
+      h("h4", null, "Decision snapshot")
+    ),
+    h("div", { className: "study-map" },
+      cards.map((card) => h("section", { className: card.className, key: card.label },
+        h("span", null, card.label),
+        h("div", { className: "decision-card-body" }, renderMarkdown(card.content, renderOptions))
+      ))
     )
   );
 }
@@ -3213,6 +3280,7 @@ function ServiceDetail({ service, certSlug, quickQuiz, generateStudyQuiz, quizDi
   const study = parseStudyContent(markdownState.markdown, service, "service");
   const implementation = extractImplementationDetails(markdownState.markdown);
   const titleSummary = service.fullName || (!implementation ? study.description : "");
+  const isCustomizerPrototype = topicSlug(service.name) === "nemo-customizer";
 
   if (isGenericStudy) {
     return h(
@@ -3242,10 +3310,11 @@ function ServiceDetail({ service, certSlug, quickQuiz, generateStudyQuiz, quizDi
       h("h3", null, service.name),
       titleSummary ? h("p", null, renderInline(titleSummary)) : null
     ),
+    isCustomizerPrototype ? h(ServiceDecisionSnapshot, { markdown: markdownState.markdown }) : null,
     h(ImplementationCards, { impl: implementation }),
     h(StudyFirstPanel, { markdown: markdownState.markdown }),
     showLifecyclePriority ? h(LifecycleUsagePanel, { service, activeServiceFilter, currentExamLabel }) : null,
-    h(ExamDecisionCards, { study }),
+    isCustomizerPrototype ? null : h(ExamDecisionCards, { study }),
     h(RelatedVendorServiceCards, { service }),
     h(StudyDeepDive, { item: study }),
     isGenericStudy && markdownState.status === "missing" ? null : h(StudyMarkdown, {
@@ -3643,6 +3712,8 @@ function extractImplementationDetails(markdown) {
     input,
     output,
     inside: fields["Inside"] || "",
+    handoff: fields["Data / artifact handoff"] || fields["Data and artifact handoff"] || fields["Handoff"] || "",
+    nextStep: fields["What happens next"] || fields["Next step"] || fields["After output"] || "",
     codeBlocks,
     mentalModel
   };
