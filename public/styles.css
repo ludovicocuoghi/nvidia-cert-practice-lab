@@ -2418,11 +2418,11 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   min-width: 0;
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   background: #fff;
   display: grid;
   align-content: start;
-  gap: 7px;
+  gap: 8px;
   line-height: 1.38;
 }
 
@@ -2436,11 +2436,24 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 
 .flow-node strong {
   color: var(--ink);
-  font-size: 0.95rem;
+  font-size: 1rem;
 }
 
 .flow-node p {
   margin: 0;
+}
+
+.flow-kicker {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.flow-note {
+  border-top: 1px solid rgba(118, 185, 0, 0.16);
+  margin-top: 2px !important;
+  padding-top: 8px;
+  color: #475048;
+  font-size: 0.8rem;
 }
 
 .flow-node ul {
@@ -2448,6 +2461,10 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   padding-left: 17px;
   display: grid;
   gap: 4px;
+}
+
+.flow-node b {
+  font-weight: 900;
 }
 
 .flow-node code {
@@ -2459,6 +2476,12 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   border-radius: 4px;
   padding: 1px 5px;
   font-size: 0.83rem;
+}
+
+.flow-code-stack {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
 }
 
 .flow-input {

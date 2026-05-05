@@ -3254,30 +3254,36 @@ function CustomizerFlowDiagram() {
   return h("div", { className: "service-flow-diagram customizer-flow", "aria-label": "NeMo Customizer input output flow" },
     h("section", { className: "flow-node flow-input" },
       h("span", null, "Input"),
-      h("strong", null, "Model Entity + Dataset FileSet"),
+      h("strong", null, "What you provide"),
+      h("p", { className: "flow-kicker" }, "Registered resources plus the tuning recipe."),
       h("ul", null,
-        h("li", null, h("code", null, "default/llama-3-2-1b"), " base model"),
-        h("li", null, h("code", null, "fileset://..."), " JSONL examples"),
-        h("li", null, "SFT + LoRA/PEFT settings")
+        h("li", null, h("b", null, "Base model: "), h("code", null, "default/llama-3-2-1b"), " Model Entity"),
+        h("li", null, h("b", null, "Dataset: "), h("code", null, "fileset://default/legal-sft-jsonl"), " uploaded JSONL examples"),
+        h("li", null, h("b", null, "Recipe: "), "SFT + LoRA/PEFT knobs: rank, alpha, epochs")
       )
     ),
     h("div", { className: "flow-arrow", "aria-hidden": "true" }, "->"),
     h("section", { className: "flow-node flow-service" },
       h("span", null, "Service"),
-      h("strong", null, "NeMo Customizer"),
-      h("p", null, "Runs the managed customization job."),
-      h("code", null, "client.customization.jobs.create(...)"),
-      h("code", null, "POST /v1/customization/jobs")
+      h("strong", null, "NeMo Customizer job"),
+      h("p", { className: "flow-kicker" }, "Runs managed fine-tuning; submit job, monitor status/metrics."),
+      h("div", { className: "flow-code-stack" },
+        h("code", null, "client.customization.jobs.create(...)"),
+        h("code", null, "POST /v1/customization/jobs")
+      ),
+      h("p", { className: "flow-note" }, "Local files are prep artifacts; the job reads platform entities.")
     ),
     h("div", { className: "flow-arrow", "aria-hidden": "true" }, "->"),
     h("section", { className: "flow-node flow-output" },
       h("span", null, "Output"),
-      h("strong", null, "LoRA adapter or customized Model Entity"),
+      h("strong", null, "What you get back"),
+      h("p", { className: "flow-kicker" }, "A deployable artifact, not a running endpoint yet."),
       h("ul", null,
-        h("li", null, "Adapter/model artifact in the platform store"),
-        h("li", null, "Evaluate with NeMo Evaluator"),
-        h("li", null, "Deploy with NIM / DMS")
-      )
+        h("li", null, h("b", null, "LoRA path: "), "adapter FileSet attached to the base Model Entity"),
+        h("li", null, h("b", null, "Full SFT path: "), "new customized Model Entity"),
+        h("li", null, h("b", null, "Next: "), "evaluate with NeMo Evaluator, then deploy with NIM / DMS")
+      ),
+      h("p", { className: "flow-note" }, "For LoRA serving, enable adapter loading on the base model.")
     )
   );
 }
