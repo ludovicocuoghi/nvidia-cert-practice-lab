@@ -3195,36 +3195,54 @@ function markdownSectionContent(markdown, heading) {
   return markdownSections(markdown)[normalizeHeadingName(heading)]?.content?.trim() || "";
 }
 
-function ServiceDecisionSnapshot({ markdown }) {
-  const cards = [
+function serviceDecisionCards(markdown) {
+  return [
     {
+      kind: "summary",
       label: "What it is, in one paragraph",
       className: "identity summary",
       content: markdownSectionContent(markdown, "What it is, in one paragraph")
     },
     {
+      kind: "detail",
       label: "Where it sits in the lifecycle",
       className: "scenario lifecycle",
       content: markdownSectionContent(markdown, "Where it sits in the lifecycle")
     },
     {
+      kind: "detail",
       label: "When it is the right answer",
       className: "use right-answer",
       content: markdownSectionContent(markdown, "When it is the right answer")
     },
     {
+      kind: "detail",
       label: "Adjacent-service decision boundaries",
       className: "trap boundary",
       content: markdownSectionContent(markdown, "Adjacent-service decision boundary")
     }
   ].filter((card) => card.content);
+}
+
+function ServiceDecisionSnapshot({ markdown, mode = "all" }) {
+  const cards = serviceDecisionCards(markdown).filter((card) => {
+    if (mode === "summary") return card.kind === "summary";
+    if (mode === "details") return card.kind === "detail";
+    return true;
+  });
 
   if (!cards.length) return null;
+  const heading =
+    mode === "summary"
+      ? { eyebrow: "Start here", title: "What it is" }
+      : mode === "details"
+        ? { eyebrow: "Decision guide", title: "Lifecycle and boundaries" }
+        : { eyebrow: "Start here", title: "Decision snapshot" };
   const renderOptions = { autoHighlight: true, highlightSeen: new Set(), highlightCount: { value: 0 }, maxHighlights: 10 };
   return h("div", { className: "decision-snapshot service-section" },
     h("div", { className: "service-section-heading" },
-      h("span", null, "Start here"),
-      h("h4", null, "Decision snapshot")
+      h("span", null, heading.eyebrow),
+      h("h4", null, heading.title)
     ),
     h("div", { className: "study-map" },
       cards.map((card) => h("section", { className: card.className, key: card.label },
@@ -3310,8 +3328,9 @@ function ServiceDetail({ service, certSlug, quickQuiz, generateStudyQuiz, quizDi
       h("h3", null, service.name),
       titleSummary ? h("p", null, renderInline(titleSummary)) : null
     ),
-    isCustomizerPrototype ? h(ServiceDecisionSnapshot, { markdown: markdownState.markdown }) : null,
+    isCustomizerPrototype ? h(ServiceDecisionSnapshot, { markdown: markdownState.markdown, mode: "summary" }) : null,
     h(ImplementationCards, { impl: implementation }),
+    isCustomizerPrototype ? h(ServiceDecisionSnapshot, { markdown: markdownState.markdown, mode: "details" }) : null,
     h(StudyFirstPanel, { markdown: markdownState.markdown }),
     showLifecyclePriority ? h(LifecycleUsagePanel, { service, activeServiceFilter, currentExamLabel }) : null,
     isCustomizerPrototype ? null : h(ExamDecisionCards, { study }),
