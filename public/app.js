@@ -356,7 +356,7 @@ function App() {
     return buildDashboard(exam, history, confidence, grade, learnerProfile);
   }, [exam, history, confidence, grade, learnerProfile]);
 
-  // Practice mode draws from mocks/*_bank.md ∪ generated-questions.md only — never legacy questions.md.
+  // Practice mode draws from original mock-bank IDs plus generated practice IDs.
   // Mock tests keep the full pool (they need every ID resolvable).
   const practiceQuestions = useMemo(() => {
     if (!exam) return [];
@@ -632,19 +632,19 @@ function App() {
     if (["practice-adaptive", "practice-coach-bank", "practice-coach-generated"].includes(nextFlow)) {
       setSessionKind("practice");
       const recentMockSeen = loadRecentMockSeen(selectedCertSlug);
-      const approved = new Set(exam.approvedGeneratedIds || []);
+      const generated = new Set(Array.isArray(exam.generatedPracticeIds) ? exam.generatedPracticeIds : exam.approvedGeneratedIds || []);
       let pool = practiceQuestions;
       if (nextFlow === "practice-coach-generated") {
-        pool = exam.questions.filter((q) => approved.has(q.id));
+        pool = exam.questions.filter((q) => generated.has(q.id));
       } else if (nextFlow === "practice-coach-bank") {
-        pool = practiceQuestions.filter((q) => !approved.has(q.id));
+        pool = practiceQuestions.filter((q) => !generated.has(q.id));
       }
       const adaptiveExam = { ...exam, questions: pool };
       const seed = buildAdaptiveSet(adaptiveExam, dashboard, 1, recentMockSeen);
       const first = seed.length ? seed[0] : pool[0];
       if (!first) {
         setError(nextFlow === "practice-coach-generated"
-          ? "No approved generated questions yet. Generate and approve some first."
+          ? "No generated practice questions yet. Generate or approve some first."
           : "No practice questions available. Generate some first.");
         setFlow(null);
         return;
@@ -658,10 +658,10 @@ function App() {
 
     if (nextFlow === "practice-generated") {
       setSessionKind("practice");
-      const approved = new Set(exam.approvedGeneratedIds || []);
-      const pool = exam.questions.filter((q) => approved.has(q.id));
+      const generated = new Set(Array.isArray(exam.generatedPracticeIds) ? exam.generatedPracticeIds : exam.approvedGeneratedIds || []);
+      const pool = exam.questions.filter((q) => generated.has(q.id));
       if (!pool.length) {
-        setError("No approved generated questions yet. Generate and approve some in the Review Queue first.");
+        setError("No generated practice questions yet. Generate or approve some in the Review Queue first.");
         setFlow(null);
         return;
       }
@@ -3581,7 +3581,7 @@ function PracticePanel(props) {
     availableMocks = [], selectedMockId, setSelectedMockId,
     selectedCertSlug, drillRecentMistakes, refreshExam } = props;
   const hasQuestionBank = exam.questions.length > 0;
-  const approvedGenerated = exam.approvedGeneratedIds?.length || 0;
+  const generatedPracticeCount = Array.isArray(exam.generatedPracticeIds) ? exam.generatedPracticeIds.length : exam.approvedGeneratedIds?.length || 0;
   const pendingCount = exam.pendingGeneratedIds?.length || 0;
   const selectedMock = availableMocks.find((m) => m.id === selectedMockId) || availableMocks[0];
   const running = generationStatus.state === "running";
@@ -3611,9 +3611,9 @@ function PracticePanel(props) {
           onClick: () => startFlow("practice-coach-bank")
         }, `Start guided set (${ADAPTIVE_PRACTICE_TARGET}Q)`),
         h("button", {
-          disabled: !approvedGenerated,
+          disabled: !generatedPracticeCount,
           onClick: () => startFlow("practice-coach-generated")
-        }, approvedGenerated ? `Use approved generated pool (${approvedGenerated}Q)` : "No approved generated questions")
+        }, generatedPracticeCount ? `Use generated pool (${generatedPracticeCount}Q)` : "No generated questions")
       ),
 
       h("div", { className: "practice-card card-generated" },
@@ -3625,9 +3625,9 @@ function PracticePanel(props) {
           onClick: () => drillRecentMistakes(5)
         }, running ? "Generating…" : "Drill 5 from recent mistakes"),
         h("button", {
-          disabled: !approvedGenerated,
+          disabled: !generatedPracticeCount,
           onClick: () => startFlow("practice-generated")
-        }, approvedGenerated ? `Drill approved pool (${approvedGenerated}Q)` : "No approved yet"),
+        }, generatedPracticeCount ? `Drill generated pool (${generatedPracticeCount}Q)` : "No generated yet"),
         h(ReviewQueueCompact, { pendingCount, selectedCertSlug, onChange: refreshExam }),
         h(GeneratePanelCompact, { exam, generateQuestions, generationStatus, refreshExam })
       ),
@@ -3885,7 +3885,7 @@ function GeneratePanel({ exam, generateQuestions, generationStatus }) {
     "details",
     { className: "generate-panel-collapsible", open: false },
     h("summary", null, "Generate practice questions (LLM, with QC)"),
-    h("p", { className: "muted" }, "Drafts pass through a quality-check pass before appending to generated-questions.md. Accepted questions appear immediately in your practice pool."),
+    h("p", { className: "muted" }, "Drafts pass through a quality-check pass before appending to generated/drafts.md. Accepted questions appear immediately in your practice pool."),
     h("div", { className: "filter-block" },
       h("div", { className: "filter-block-head" }, h("span", { className: "filter-label" }, "Domain (optional)")),
       h("select", {
