@@ -4279,21 +4279,25 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 .section-service-guide-flow {
   display: flex;
   align-items: stretch;
-  gap: 10px;
-  overflow-x: auto;
-  padding: 2px 2px 8px;
-  scroll-snap-type: x proximity;
+  gap: 6px;
+  overflow: visible;
+  padding: 2px 0 4px;
+  width: 100%;
+}
+
+.section-service-guide-flow.is-multirow {
+  flex-wrap: wrap;
+  row-gap: 8px;
 }
 
 .section-service-guide-card {
-  flex: 1 0 260px;
-  max-width: 380px;
+  flex: 1 1 0;
+  min-width: 0;
   border: 1px solid #d4e4f0;
   border-left: 4px solid #2a6e9e;
   border-radius: 8px;
   background: #ffffff;
-  padding: 10px 12px;
-  scroll-snap-align: start;
+  padding: 8px 10px;
 }
 
 .section-service-guide-step {
@@ -4323,42 +4327,70 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 }
 
 .section-service-guide-card-title {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
+  display: block;
   margin-bottom: 5px;
 }
 
 .section-service-guide-card-title strong {
+  display: block;
   color: var(--ink);
-  font-size: 0.96rem;
+  font-size: 0.88rem;
   line-height: 1.2;
 }
 
 .section-service-guide-card-title span {
+  display: block;
+  margin-top: 3px;
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: 0.66rem;
   font-weight: 800;
-  text-align: right;
+  line-height: 1.15;
+  text-align: left;
 }
 
 .section-service-guide-card p {
   margin: 0;
   color: var(--ink);
-  font-size: 0.88rem;
-  line-height: 1.45;
+  font-size: 0.78rem;
+  line-height: 1.35;
 }
 
 .section-service-guide-arrow {
-  flex: 0 0 24px;
+  display: flex;
+  flex: 0 0 18px;
+  align-items: center;
+  justify-content: center;
   align-self: center;
   color: #4f7f2a;
   font-family: var(--mono);
-  font-size: 1.25rem;
+  font-size: 1.05rem;
   font-weight: 900;
   line-height: 1;
   text-align: center;
+  white-space: nowrap;
+}
+
+.section-service-guide-flow.is-multirow .section-service-guide-card {
+  flex: 1 1 180px;
+}
+
+.section-service-guide-flow.is-multirow .section-service-guide-arrow {
+  display: none;
+}
+
+@media (max-width: 1100px) {
+  .section-service-guide-flow {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  .section-service-guide-card {
+    flex: 1 1 180px;
+  }
+
+  .section-service-guide-arrow {
+    display: none;
+  }
 }
 
 /* Must know: two-column compact cards, full width, blue accent */

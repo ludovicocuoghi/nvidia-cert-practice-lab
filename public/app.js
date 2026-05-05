@@ -2641,7 +2641,10 @@ function SectionNvidiaServiceGuide({ section, certSlug }) {
       h("h4", null, "Services to use in this section"),
       h("p", null, "Use this as the quick answer map before reading the longer section notes.")
     ),
-    h("div", { className: "section-service-guide-flow", "aria-label": "NVIDIA service flow, read left to right" },
+    h("div", {
+      className: `section-service-guide-flow${items.length > 5 ? " is-multirow" : ""}`,
+      "aria-label": "NVIDIA service flow, read left to right"
+    },
       items.flatMap(({ service, purpose }, index) => {
         const card = h("article", {
           key: service.name,
@@ -2657,7 +2660,7 @@ function SectionNvidiaServiceGuide({ section, certSlug }) {
         if (index === items.length - 1) return [card];
         return [
           card,
-          h("div", { key: `${service.name}-arrow`, className: "section-service-guide-arrow", "aria-hidden": "true" }, "->")
+          h("div", { key: `${service.name}-arrow`, className: "section-service-guide-arrow", "aria-hidden": "true" }, "→")
         ];
       })
     )
