@@ -4568,8 +4568,9 @@ function renderListItemInline(text, options = {}) {
   if (options.autoHighlight) {
     const leadMatch = source.match(/^([^:]{2,72}):\s+(.+)$/);
     if (leadMatch && !/^https?:\/\//i.test(leadMatch[1])) {
+      const leadText = leadMatch[1].trim().replace(/^\*\*(.+)\*\*$/, "$1");
       return [
-        h("strong", { key: "lead", className: "md-lead" }, leadMatch[1]),
+        h("strong", { key: "lead", className: "md-lead" }, renderInline(leadText, { ...options, autoHighlight: false })),
         ": ",
         ...renderInline(leadMatch[2], options)
       ];
