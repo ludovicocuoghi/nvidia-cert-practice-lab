@@ -39,11 +39,13 @@ NeMo Customizer is the NeMo microservice for API-driven model customization: you
 import os
 from nemo_platform import NeMoPlatform
 
+# Connect to NeMo Platform / Customizer API.
 client = NeMoPlatform(
     base_url=os.environ.get("NMP_BASE_URL", "http://localhost:8080"),
     workspace="default",
 )
 
+# Input: supported base Model Entity + uploaded Dataset FileSet + tuning config.
 job = client.customization.jobs.create(
     name="legal-lora-sft",
     workspace="default",
@@ -60,6 +62,9 @@ job = client.customization.jobs.create(
         "deployment_config": {"lora_enabled": True},
     },
 )
+
+# Output: LoRA adapter/model artifact to evaluate, then deploy with NIM/DMS.
+print(job.id, job.status)
 ```
 
 ```bash

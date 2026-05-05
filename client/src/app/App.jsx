@@ -3224,7 +3224,39 @@ function serviceDecisionCards(markdown) {
   ].filter((card) => card.content);
 }
 
-function ServiceDecisionSnapshot({ markdown, mode = "all" }) {
+function CustomizerFlowDiagram() {
+  return h("div", { className: "service-flow-diagram customizer-flow", "aria-label": "NeMo Customizer input output flow" },
+    h("section", { className: "flow-node flow-input" },
+      h("span", null, "Input"),
+      h("strong", null, "Model Entity + Dataset FileSet"),
+      h("ul", null,
+        h("li", null, h("code", null, "default/llama-3-2-1b"), " base model"),
+        h("li", null, h("code", null, "fileset://..."), " JSONL examples"),
+        h("li", null, "SFT + LoRA/PEFT settings")
+      )
+    ),
+    h("div", { className: "flow-arrow", "aria-hidden": "true" }, "->"),
+    h("section", { className: "flow-node flow-service" },
+      h("span", null, "Service"),
+      h("strong", null, "NeMo Customizer"),
+      h("p", null, "Runs the managed customization job."),
+      h("code", null, "client.customization.jobs.create(...)"),
+      h("code", null, "POST /v1/customization/jobs")
+    ),
+    h("div", { className: "flow-arrow", "aria-hidden": "true" }, "->"),
+    h("section", { className: "flow-node flow-output" },
+      h("span", null, "Output"),
+      h("strong", null, "LoRA adapter or customized Model Entity"),
+      h("ul", null,
+        h("li", null, "Adapter/model artifact in the platform store"),
+        h("li", null, "Evaluate with NeMo Evaluator"),
+        h("li", null, "Deploy with NIM / DMS")
+      )
+    )
+  );
+}
+
+function ServiceDecisionSnapshot({ markdown, mode = "all", serviceSlug = "" }) {
   const cards = serviceDecisionCards(markdown).filter((card) => {
     if (mode === "summary") return card.kind === "summary";
     if (mode === "details") return card.kind === "detail";
@@ -3249,7 +3281,8 @@ function ServiceDecisionSnapshot({ markdown, mode = "all" }) {
         h("span", null, card.label),
         h("div", { className: "decision-card-body" }, renderMarkdown(card.content, renderOptions))
       ))
-    )
+    ),
+    mode === "summary" && serviceSlug === "nemo-customizer" ? h(CustomizerFlowDiagram) : null
   );
 }
 
@@ -3328,9 +3361,9 @@ function ServiceDetail({ service, certSlug, quickQuiz, generateStudyQuiz, quizDi
       h("h3", null, service.name),
       titleSummary ? h("p", null, renderInline(titleSummary)) : null
     ),
-    isCustomizerPrototype ? h(ServiceDecisionSnapshot, { markdown: markdownState.markdown, mode: "summary" }) : null,
+    isCustomizerPrototype ? h(ServiceDecisionSnapshot, { markdown: markdownState.markdown, mode: "summary", serviceSlug: topicSlug(service.name) }) : null,
     h(ImplementationCards, { impl: implementation }),
-    isCustomizerPrototype ? h(ServiceDecisionSnapshot, { markdown: markdownState.markdown, mode: "details" }) : null,
+    isCustomizerPrototype ? h(ServiceDecisionSnapshot, { markdown: markdownState.markdown, mode: "details", serviceSlug: topicSlug(service.name) }) : null,
     h(StudyFirstPanel, { markdown: markdownState.markdown }),
     showLifecyclePriority ? h(LifecycleUsagePanel, { service, activeServiceFilter, currentExamLabel }) : null,
     isCustomizerPrototype ? null : h(ExamDecisionCards, { study }),
@@ -4050,6 +4083,9 @@ const PLAYBOOK_KEY_TERMS = [
   "approval gate", "approval gates", "rollback", "canary", "routing", "batching",
   "p95", "p99", "guardrails", "policy", "observability", "tool calls",
   "hosted API", "open-weight model", "open-weight", "self-hosted endpoint",
+  "NeMo Customizer", "NeMo microservice", "API-driven model customization",
+  "base Model Entity", "Dataset FileSet", "customization job", "LoRA adapter",
+  "fine-tuned Model Entity", "managed fine-tuning",
   "base checkpoint", "tuned adapter", "tuned adapters", "embedding model",
   "reasoning model", "multimodal model", "model artifact", "model artifacts",
   "base model", "base models", "data residency", "deployment environment",

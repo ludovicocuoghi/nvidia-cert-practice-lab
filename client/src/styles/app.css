@@ -3410,6 +3410,105 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   font-size: 0.84rem;
 }
 
+.decision-snapshot mark {
+  display: inline;
+  border-radius: 4px;
+  padding: 0 4px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  font-weight: 900;
+}
+
+.decision-snapshot .md-keyterm {
+  background: rgba(16, 105, 91, 0.14);
+  color: #0d5f55;
+}
+
+.decision-snapshot .md-riskterm {
+  background: rgba(184, 69, 69, 0.13);
+  color: #8f2626;
+}
+
+.service-flow-diagram {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.08fr) auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: stretch;
+  margin-top: 12px;
+}
+
+.flow-node {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: #fff;
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  line-height: 1.38;
+}
+
+.flow-node > span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.flow-node strong {
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+
+.flow-node p {
+  margin: 0;
+}
+
+.flow-node ul {
+  margin: 0;
+  padding-left: 17px;
+  display: grid;
+  gap: 4px;
+}
+
+.flow-node code {
+  width: fit-content;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  color: #326418;
+  background: #eef6e8;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.83rem;
+}
+
+.flow-input {
+  border-left: 4px solid #2f7da8;
+  background: #f7fbfd;
+}
+
+.flow-service {
+  border-left: 4px solid #4a9e4a;
+  background: #f4fbf3;
+}
+
+.flow-output {
+  border-left: 4px solid #7b6f9e;
+  background: #faf9fd;
+}
+
+.flow-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4a6f3a;
+  font-weight: 950;
+  font-size: 1.1rem;
+  padding: 0 2px;
+}
+
 .suite-study-map {
   grid-template-columns: 1fr 1fr;
 }
@@ -3587,6 +3686,16 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 @media (max-width: 680px) {
   .impl-grid {
     grid-template-columns: 1fr;
+  }
+
+  .service-flow-diagram {
+    grid-template-columns: 1fr;
+  }
+
+  .flow-arrow {
+    min-height: 22px;
+    justify-self: stretch;
+    text-align: center;
   }
 
   .study-first-row {
@@ -6363,6 +6472,32 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 :root[data-appearance="dark"] .playbook-section-body .md-riskterm {
   background: rgba(220, 105, 92, 0.22);
   color: #ffd4cf;
+}
+
+:root[data-appearance="dark"] .decision-snapshot .md-keyterm {
+  background: rgba(95, 220, 186, 0.18);
+  color: #bfffea;
+}
+
+:root[data-appearance="dark"] .decision-snapshot .md-riskterm {
+  background: rgba(220, 105, 92, 0.22);
+  color: #ffd4cf;
+}
+
+:root[data-appearance="dark"] .flow-node {
+  background: var(--field);
+  border-color: var(--line);
+}
+
+:root[data-appearance="dark"] .flow-input,
+:root[data-appearance="dark"] .flow-service,
+:root[data-appearance="dark"] .flow-output {
+  background: var(--field);
+}
+
+:root[data-appearance="dark"] .flow-node code {
+  background: rgba(95, 220, 186, 0.14);
+  color: #c9ffe7;
 }
 
 :root[data-appearance="dark"] .playbook-section-body .md-table td:first-child {
