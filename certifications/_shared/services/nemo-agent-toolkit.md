@@ -9,7 +9,7 @@ status: populated
 ## What to study first
 
 - **Core idea:** NeMo Agent Toolkit is the `nat` workflow layer. You configure model providers in `llms:`, callable work in `functions:` / `function_groups:`, optional `retrievers:` and `memory:`, then choose the control-flow pattern with `workflow._type`.
-- **Study first:** read the code block above this panel before memorizing names
+- **Study first:** read the input/output flow first, then use the code block below for exact `nat` CLI, YAML section, and `workflow._type` names.
 - `_type: tool_calling_agent` is for clean structured tool calls
 - `_type: react_agent` is for observation-dependent loops
 - `_type: reasoning_agent` and `_type: rewoo_agent` plan first
