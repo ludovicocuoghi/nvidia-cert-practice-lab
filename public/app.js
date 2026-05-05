@@ -2810,7 +2810,7 @@ function renderMarkdown(text) {
 
 function renderInline(text) {
   const out = [];
-  const re = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|\[[^\]]+\]\([^)]+\))/g;
+  const re = /(\*\*[^*]+\*\*|\*[^*\s](?:[^*]*?[^*\s])?\*|`[^`]+`|\[[^\]]+\]\([^)]+\))/g;
   let lastIdx = 0;
   let key = 0;
   let m;

@@ -4132,7 +4132,7 @@ function safeMarkdownHref(href) {
 
 function renderInline(text, options = {}) {
   const out = [];
-  const re = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|\[[^\]]+\]\([^)]+\))/g;
+  const re = /(\*\*[^*]+\*\*|\*[^*\s](?:[^*]*?[^*\s])?\*|`[^`]+`|\[[^\]]+\]\([^)]+\))/g;
   let lastIdx = 0;
   let key = 0;
   let m;
