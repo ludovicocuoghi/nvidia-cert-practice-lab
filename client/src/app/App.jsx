@@ -1671,6 +1671,151 @@ const LIFECYCLE_FLOWS = {
   }
 };
 
+const SECTION_NVIDIA_SERVICE_GUIDES = {
+  "Agentic AI": {
+    "Agent Architecture and Design": [
+      ["NeMo Agent Toolkit", "Workflow architecture: ReAct, router, sequential/parallel execution, memory, MCP/A2A publishing, and tool wiring."],
+      ["Nemotron models", "Reasoning model choice for agents that plan, call tools, or follow enterprise instructions."],
+      ["NeMo Retriever", "RAG architecture when the agent needs private or changing knowledge instead of learned facts."],
+      ["NeMo Guardrails", "Policy layer around dialog, retrieval, and tool/action proposals."],
+      ["NIM", "The model endpoint the agent calls, not the agent workflow itself."]
+    ],
+    "Agent Development": [
+      ["NeMo Agent Toolkit", "Implement the workflow config, functions, function groups, retrievers, memory, and execution pattern."],
+      ["NIM", "Serve the LLM or embedding/rerank model behind the workflow."],
+      ["NeMo Retriever", "Connect document extraction, embeddings, search, rerank, citations, and permissions."],
+      ["NeMo Guardrails", "Validate prompts, tool calls, tool results, and final outputs at runtime."],
+      ["NGC", "Find model/container artifacts before wiring them into the app."]
+    ],
+    "Evaluation and Tuning": [
+      ["NeMo Evaluator", "Measure task success, groundedness, safety, regression, and LLM-as-judge scores."],
+      ["NeMo Agent Toolkit", "Replay and inspect agent traces, routes, tool calls, latency, and workflow failures."],
+      ["NeMo Guardrails", "Evaluate whether policy checks block the right inputs, tools, retrieved content, and outputs."],
+      ["NeMo Customizer", "Fine-tune an existing model when evals show durable behavior needs to change."],
+      ["NeMo Curator", "Prepare or clean examples, labels, traces, and holdouts before tuning or evaluation."]
+    ],
+    "Deployment and Scaling": [
+      ["NIM", "Expose optimized model APIs for the agent to call in production."],
+      ["NIM Operator", "Manage NIM deployments, profiles, rollout, scale, and health on Kubernetes."],
+      ["Dynamo (Triton Dynamo)", "Distributed LLM serving when prefill/decode or multi-node routing becomes the scaling problem."],
+      ["Triton Inference Server", "Serve multi-framework models, ensembles, dynamic batching, or custom inference pipelines."],
+      ["Nsight Systems", "Profile end-to-end latency across model calls, tools, retrieval, queues, and GPU activity."]
+    ],
+    "Cognition, Planning, and Memory": [
+      ["NeMo Agent Toolkit", "Pick the control-flow pattern: ReAct, plan/reasoning wrapper, router, ReWOO, sequential, parallel, or memory agent."],
+      ["Nemotron models", "Use reasoning/instruction models that can plan and follow tool-use constraints."],
+      ["NeMo Retriever", "Support semantic memory or knowledge lookup without putting facts into model weights."],
+      ["NeMo Guardrails", "Constrain plans, tool choices, and memory/retrieval use when autonomy creates risk."]
+    ],
+    "Knowledge Integration and Data Handling": [
+      ["NeMo Retriever", "Primary answer for enterprise RAG: extract, chunk, embed, index, search, rerank, cite, and preserve permissions."],
+      ["NeMo Curator", "Offline cleanup for corpora or examples before they become training, tuning, or evaluation data."],
+      ["RAPIDS", "GPU-accelerated tabular/text processing when data prep becomes large-scale."],
+      ["NeMo Guardrails", "Runtime policy checks around retrieved content and final answers, after access filtering is correct."],
+      ["NeMo Evaluator", "Measure retrieval quality, groundedness, citation quality, and RAG regressions."]
+    ],
+    "NVIDIA Platform Implementation": [
+      ["NeMo Agent Toolkit", "Agent workflow layer: tools, memory, routing, retrievers, traces, evals, API/MCP/A2A exposure."],
+      ["NeMo Retriever", "RAG/retrieval layer: extraction, embeddings, indexing/search, reranking, citations."],
+      ["NeMo Guardrails", "Runtime safety and policy layer for dialog, retrieval, tools, and outputs."],
+      ["NIM", "Production model API layer for LLMs, embeddings, rerankers, and other supported models."],
+      ["NeMo Evaluator", "Quality and regression layer for models, RAG, and agent trajectories."],
+      ["TensorRT-LLM", "LLM inference optimization layer: KV cache, batching, quantization, engines."],
+      ["Triton Inference Server", "General multi-framework inference server and ensemble layer."],
+      ["NIM Operator", "Kubernetes operations layer for NIM lifecycle and scale."],
+      ["NeMo Curator", "Offline data curation layer for training, tuning, and evaluation datasets."],
+      ["NeMo Customizer", "Managed customization layer for LoRA/PEFT jobs on supported base models."]
+    ],
+    "Run, Monitor, and Maintain": [
+      ["NeMo Evaluator", "Scheduled regression checks for answer quality, safety, groundedness, and task success."],
+      ["NeMo Agent Toolkit", "Agent traces, route inspection, workflow profiling, and tool-call failure analysis."],
+      ["Nsight Systems", "System timeline when latency or GPU utilization needs root-cause analysis."],
+      ["NIM Operator", "Operational control for NIM rollout, scaling, health, and profile management."],
+      ["NIM", "Live model endpoint metrics, health checks, and serving behavior."]
+    ],
+    "Safety, Ethics, and Compliance": [
+      ["NeMo Guardrails", "Primary runtime policy answer for prompt injection, unsafe outputs, dialog policy, and risky tool actions."],
+      ["NeMo Retriever", "Permission-aware retrieval so unauthorized context never reaches the model."],
+      ["NeMo Evaluator", "Offline red-team, safety, bias, groundedness, and regression evaluation."],
+      ["NeMo Curator", "PII, license, safety, and contamination checks before training or tuning data is used."],
+      ["NeMo Agent Toolkit", "Workflow-level auditability for tool calls, traces, approvals, and handoffs."]
+    ],
+    "Human-AI Interaction and Oversight": [
+      ["NeMo Guardrails", "Escalation and refusal behavior for user-facing dialog and high-risk actions."],
+      ["NeMo Agent Toolkit", "Workflow handoffs, approval steps, trace evidence, and reviewable tool calls."],
+      ["NeMo Evaluator", "Turn human feedback and review labels into regression checks."],
+      ["NeMo Retriever", "Ground user-facing answers in reviewable sources and citations."]
+    ]
+  },
+  "GenAI LLMs": {
+    "LLM Architecture": [
+      ["Nemotron models", "Concrete NVIDIA model family to recognize when architecture, reasoning, instruction, or reward models are discussed."],
+      ["TensorRT-LLM", "Connect architecture choices to inference behavior: attention kernels, KV cache, batching, quantization, and decode speed."],
+      ["NIM", "The serving package that exposes a supported model architecture as a callable API."],
+      ["Nsight Systems", "Profile architecture/runtime bottlenecks before drilling into kernels."]
+    ],
+    "Prompt Engineering": [
+      ["NIM", "Call the model endpoint while iterating on prompts, schemas, and context."],
+      ["NeMo Retriever", "Add private or fresh evidence when prompts alone cannot supply missing knowledge."],
+      ["NeMo Guardrails", "Add policy, refusal, jailbreak, and output checks around prompt-driven behavior."],
+      ["NeMo Evaluator", "Compare prompt variants for quality, groundedness, safety, and regressions."]
+    ],
+    "Data Preparation": [
+      ["NeMo Curator", "Primary answer for cleaning, deduping, filtering, scoring, redacting, and splitting training or tuning data."],
+      ["RAPIDS", "GPU-accelerated dataframes and preprocessing when corpora are large."],
+      ["NeMo Retriever", "Use for query-time RAG ingestion and chunk/vector outputs, not training corpus outputs."],
+      ["NGC", "Manage artifacts and containers used around data preparation workflows."]
+    ],
+    "Model Optimization": [
+      ["TensorRT-LLM", "Primary answer for LLM runtime optimization: engines, fused kernels, KV cache, batching, quantization, and TTFT."],
+      ["Triton Inference Server", "Serve optimized models with batching, ensembles, model repositories, HTTP/gRPC, and instance groups."],
+      ["NIM", "Use a packaged optimized microservice when you want supported production serving rather than building the stack yourself."],
+      ["Nsight Systems", "Start profiling with end-to-end timelines."],
+      ["Nsight Compute", "Kernel-level investigation after Nsight Systems points to a CUDA kernel."]
+    ],
+    "Fine-Tuning": [
+      ["NeMo Customizer", "Managed fine-tuning/customization job for supported base models with LoRA/PEFT-style outputs."],
+      ["NeMo Framework", "Full training/customization stack when you need deeper recipes, distributed training, or custom control."],
+      ["NeMo Curator", "Prepare SFT, preference, alignment, and validation datasets before tuning."],
+      ["NeMo Evaluator", "Compare tuned model against baseline for quality, safety, and regressions."],
+      ["NIM", "Deploy the approved tuned model or adapter-backed endpoint after evaluation."]
+    ],
+    "Evaluation": [
+      ["NeMo Evaluator", "Primary answer for benchmarks, LLM-as-judge, RAG metrics, safety, regression, and reportable evals."],
+      ["NeMo Guardrails", "Runtime policy behavior to test alongside quality metrics."],
+      ["NeMo Retriever", "Evaluate retrieval, reranking, citations, and groundedness for RAG workflows."],
+      ["Nsight Systems", "Profile performance when evaluation includes latency and throughput behavior."]
+    ],
+    "GPU Acceleration and Optimization": [
+      ["TensorRT-LLM", "LLM inference acceleration with NVIDIA kernels, batching, paged KV cache, and quantization."],
+      ["Nsight Systems", "System-level GPU and CPU timeline for utilization, stalls, and end-to-end latency."],
+      ["Nsight Compute", "Kernel-level CUDA metrics after a specific kernel is suspect."],
+      ["NCCL", "Multi-GPU and multi-node collective communication for distributed training or serving."],
+      ["RAPIDS", "GPU-accelerated data processing when preprocessing is the bottleneck."]
+    ],
+    "Model Deployment": [
+      ["NIM", "Primary packaged model microservice answer for supported optimized inference APIs."],
+      ["Triton Inference Server", "General production inference server for multi-framework models, ensembles, and batching."],
+      ["NIM Operator", "Deploy, scale, and manage NIM on Kubernetes."],
+      ["Dynamo (Triton Dynamo)", "Distributed LLM serving and disaggregated serving patterns at scale."],
+      ["NGC", "Catalog and registry source for containers, models, and artifacts."]
+    ],
+    "Production Monitoring and Reliability": [
+      ["NIM Operator", "Kubernetes lifecycle, rollout, health, scale, and profile operations for NIM deployments."],
+      ["NIM", "Endpoint health, metrics, errors, rate limits, and production API behavior."],
+      ["NeMo Evaluator", "Continuous or scheduled quality, safety, and regression checks after release."],
+      ["Nsight Systems", "Performance investigation when live latency or utilization drifts."],
+      ["Dynamo (Triton Dynamo)", "Reliability and routing concerns for distributed LLM serving."]
+    ],
+    "Safety, Ethics, and Compliance": [
+      ["NeMo Guardrails", "Primary runtime control for unsafe prompts, outputs, policies, and jailbreak/tool-risk checks."],
+      ["NeMo Evaluator", "Offline safety, bias, red-team, groundedness, and regression measurement."],
+      ["NeMo Curator", "PII, license, provenance, contamination, and safety filtering before data enters training or tuning."],
+      ["NeMo Retriever", "Permission-aware RAG so sensitive data is filtered before context assembly."]
+    ]
+  }
+};
+
 const GENERAL_LIFECYCLE_STAGE_DETAILS = {
   "gen-train-data": {
     focus: "This is pretraining data curation, not RAG ingestion. The output is a versioned learning corpus with safe train/val/test splits.",
@@ -3610,6 +3755,51 @@ function RelatedVendorServiceCards({ service, compact = false }) {
   );
 }
 
+function examLabelForSection(section, certSlug) {
+  if (section?.exam) return section.exam;
+  if (certSlug === "agentic_ai_professional") return "Agentic AI";
+  if (certSlug === "genai_llms_professional") return "GenAI LLMs";
+  return "";
+}
+
+function sectionNvidiaServiceGuide(section, certSlug) {
+  const examLabel = examLabelForSection(section, certSlug);
+  const entries = SECTION_NVIDIA_SERVICE_GUIDES[examLabel]?.[section?.name] || [];
+  return entries
+    .map(([name, purpose]) => {
+      const service = serviceByName(name);
+      if (!service) return null;
+      return { service, purpose };
+    })
+    .filter(Boolean);
+}
+
+function SectionNvidiaServiceGuide({ section, certSlug }) {
+  const items = sectionNvidiaServiceGuide(section, certSlug);
+  if (!items.length) return null;
+  return h(
+    "section",
+    { className: "section-block section-service-guide" },
+    h("div", { className: "section-service-guide-head" },
+      h("span", null, "NVIDIA service map"),
+      h("h4", null, "Services to use in this section"),
+      h("p", null, "Use this as the quick answer map before reading the longer section notes.")
+    ),
+    h("div", { className: "section-service-guide-grid" },
+      items.map(({ service, purpose }) => h("article", {
+        key: service.name,
+        className: `section-service-guide-card ${serviceGroupClass(service)}`
+      },
+        h("div", { className: "section-service-guide-card-title" },
+          h("strong", null, service.name),
+          h("span", null, service.lifecycle || serviceGroupName(service))
+        ),
+        h("p", null, renderInline(purpose))
+      ))
+    )
+  );
+}
+
 function SectionDetail({ section, certSlug, quickQuiz, generateStudyQuiz, quizDifficulty, setQuizDifficulty, studyStatus, generationStatus, cancelGeneration }) {
   const markdownState = useTopicMarkdown(certSlug, section.name);
   const study = parseStudyContent(markdownState.markdown, section, "section");
@@ -3624,6 +3814,7 @@ function SectionDetail({ section, certSlug, quickQuiz, generateStudyQuiz, quizDi
       h("p", null, renderInline(study.description))
     ),
     h(ServiceDecisionSnapshot, { markdown: markdownState.markdown, mode: "summary", serviceSlug: topicSlug(section.name), fallback: { ...study, name: study.name || section.name, kind: "Topic" } }),
+    h(SectionNvidiaServiceGuide, { section, certSlug }),
     h(MarkdownCodePreview, { markdown: markdownState.markdown }),
     h(ServiceDecisionSnapshot, { markdown: markdownState.markdown, mode: "details", serviceSlug: topicSlug(section.name), fallback: { ...study, name: study.name || section.name, kind: "Topic" } }),
     h(StudyFirstPanel, { markdown: markdownState.markdown }),

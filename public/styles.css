@@ -3134,6 +3134,97 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   margin-top: 6px;
 }
 
+.section-service-guide {
+  border-left: 4px solid #2a6e9e;
+  background: linear-gradient(135deg, #f0f7fb 0%, #fbfdfb 100%);
+}
+
+.section-service-guide-head {
+  display: grid;
+  gap: 3px;
+  margin-bottom: 12px;
+}
+
+.section-service-guide-head > span {
+  color: #2a6e9e;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.section-service-guide-head > h4 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.section-service-guide-head > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.section-service-guide-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.section-service-guide-card {
+  border: 1px solid #d4e4f0;
+  border-left: 4px solid #2a6e9e;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 10px 12px;
+}
+
+.section-service-guide-card.nemo {
+  border-left-color: #14756c;
+}
+
+.section-service-guide-card.serving {
+  border-left-color: #4f7f2a;
+}
+
+.section-service-guide-card.optimize {
+  border-left-color: #8b6d1f;
+}
+
+.section-service-guide-card.data {
+  border-left-color: #5d51a3;
+}
+
+.section-service-guide-card-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.section-service-guide-card-title strong {
+  color: var(--ink);
+  font-size: 0.96rem;
+  line-height: 1.2;
+}
+
+.section-service-guide-card-title span {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-align: right;
+}
+
+.section-service-guide-card p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
 /* Must know: two-column compact cards, full width, blue accent */
 .section-must-know {
   border-left: 4px solid #2a6e9e;
@@ -3986,7 +4077,8 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   .service-actions,
   .study-map,
   .suite-knowledge-grid,
-  .study-deep-dive-grid {
+  .study-deep-dive-grid,
+  .section-service-guide-grid {
     grid-template-columns: 1fr;
   }
 
