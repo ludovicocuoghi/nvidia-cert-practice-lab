@@ -3785,17 +3785,25 @@ function SectionNvidiaServiceGuide({ section, certSlug }) {
       h("h4", null, "Services to use in this section"),
       h("p", null, "Use this as the quick answer map before reading the longer section notes.")
     ),
-    h("div", { className: "section-service-guide-grid" },
-      items.map(({ service, purpose }) => h("article", {
-        key: service.name,
-        className: `section-service-guide-card ${serviceGroupClass(service)}`
-      },
-        h("div", { className: "section-service-guide-card-title" },
-          h("strong", null, service.name),
-          h("span", null, service.lifecycle || serviceGroupName(service))
-        ),
-        h("p", null, renderInline(purpose))
-      ))
+    h("div", { className: "section-service-guide-flow", "aria-label": "NVIDIA service flow, read left to right" },
+      items.flatMap(({ service, purpose }, index) => {
+        const card = h("article", {
+          key: service.name,
+          className: `section-service-guide-card ${serviceGroupClass(service)}`
+        },
+          h("span", { className: "section-service-guide-step" }, `Step ${index + 1}`),
+          h("div", { className: "section-service-guide-card-title" },
+            h("strong", null, service.name),
+            h("span", null, service.lifecycle || serviceGroupName(service))
+          ),
+          h("p", null, renderInline(purpose))
+        );
+        if (index === items.length - 1) return [card];
+        return [
+          card,
+          h("div", { key: `${service.name}-arrow`, className: "section-service-guide-arrow", "aria-hidden": "true" }, "->")
+        ];
+      })
     )
   );
 }
