@@ -2309,7 +2309,7 @@ function buildStudyFlow({ markdown, title, kind = "Service", impl = null, fallba
     title,
     serviceText: impl?.whatItIs || summary,
     codeChips,
-    note: impl?.handoff || concrete,
+    note: impl?.handoff || "",
     outputTitle: kind === "Topic" ? "What you should choose" : "What you get back",
     output,
     nextStep: impl?.nextStep || ""
@@ -2637,6 +2637,22 @@ function normalizeHeadingName(value) {
   return String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
 }
 
+function cleanMarkdownFragment(text) {
+  const lines = String(text || "").replace(/\r\n/g, "\n").split("\n");
+  const cleaned = [];
+  let inFence = false;
+  for (const line of lines) {
+    if (/^```/.test(line.trim())) {
+      inFence = !inFence;
+      cleaned.push(line);
+      continue;
+    }
+    if (!inFence && /^(?:-{3,}|\*{3,}|_{3,})$/.test(line.trim())) continue;
+    cleaned.push(line);
+  }
+  return cleaned.join("\n").trim();
+}
+
 function markdownSections(markdown) {
   const lines = stripFrontmatter(markdown).split("\n");
   const sections = {};
@@ -2653,7 +2669,7 @@ function markdownSections(markdown) {
       buf.push(lines[j]);
       j += 1;
     }
-    sections[normalizeHeadingName(title)] = { title, level, content: buf.join("\n").trim() };
+    sections[normalizeHeadingName(title)] = { title, level, content: cleanMarkdownFragment(buf.join("\n")) };
   }
   return sections;
 }
@@ -2942,6 +2958,7 @@ function renderMarkdown(text) {
     const line = lines[i];
     if (!line.trim()) { i += 1; continue; }
     if (/^<!--[\s\S]*?-->\s*$/.test(line.trim())) { i += 1; continue; }
+    if (/^(?:-{3,}|\*{3,}|_{3,})$/.test(line.trim())) { i += 1; continue; }
     // Fenced code
     if (/^```/.test(line)) {
       const buf = [];
@@ -3026,7 +3043,7 @@ function renderMarkdown(text) {
     // Paragraph (collect until blank or block-y line)
     const buf = [line];
     i += 1;
-    while (i < lines.length && lines[i].trim() && !isMarkdownTableStart(lines, i) && !/^(#{1,4}\s|>\s?|\s*[-*]\s|\s*\d+\.\s|```)/.test(lines[i])) {
+    while (i < lines.length && lines[i].trim() && !isMarkdownTableStart(lines, i) && !/^(#{1,4}\s|>\s?|\s*[-*]\s|\s*\d+\.\s|```|(?:-{3,}|\*{3,}|_{3,})\s*$)/.test(lines[i].trim())) {
       buf.push(lines[i]);
       i += 1;
     }
