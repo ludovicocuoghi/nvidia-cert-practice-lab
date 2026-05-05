@@ -1,11 +1,9 @@
-import { readFile, writeFile, readdir, mkdir } from "node:fs/promises";
+import { readFile, writeFile, readdir, mkdir, rm } from "node:fs/promises";
 import path from "node:path";
 import { parseExamMarkdown } from "../src/simulator.js";
 import { nvidiaServices, studySections } from "../client/src/data/study-services.js";
 
 const root = process.cwd();
-const bankMarkerStart = "<!-- BEGIN HIGH FIDELITY BANK GENERATED -->";
-const bankMarkerEnd = "<!-- END HIGH FIDELITY BANK GENERATED -->";
 const mockDifficultyRank = { expert: 4, hard: 3, medium: 2, easy: 1 };
 
 const banned = [
@@ -376,7 +374,7 @@ const generalDomainConcepts = {
 const certificationConfigs = [
   {
     slug: "agentic_ai_professional",
-    file: "certifications/agentic_ai_professional/questions.md",
+    certDir: "certifications/agentic_ai_professional",
     prefix: "aai-hf",
     domainConcepts: agenticDomainConcepts,
     services: nvidiaServices.filter((service) => service.exams.includes("Agentic AI")),
@@ -389,7 +387,7 @@ const certificationConfigs = [
   },
   {
     slug: "genai_llms_professional",
-    file: "certifications/genai_llms_professional/questions.md",
+    certDir: "certifications/genai_llms_professional",
     prefix: "genl-hf",
     domainConcepts: genaiDomainConcepts,
     services: nvidiaServices.filter((service) => service.exams.includes("GenAI LLMs")),
@@ -402,7 +400,7 @@ const certificationConfigs = [
   },
   {
     slug: "agentic_ai_general_study",
-    file: "certifications/agentic_ai_general_study/questions.md",
+    certDir: "certifications/agentic_ai_general_study",
     prefix: "ags-hf",
     domainConcepts: generalDomainConcepts,
     services: nvidiaServices.filter((service) => service.exams.includes("Agentic AI General")),
@@ -417,11 +415,6 @@ const certificationConfigs = [
 
 function slugify(value) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-}
-
-function stripGeneratedBlock(markdown) {
-  const pattern = new RegExp(`\\n?${escapeRegExp(bankMarkerStart)}[\\s\\S]*?${escapeRegExp(bankMarkerEnd)}\\n?`, "g");
-  return markdown.replace(pattern, "").trimEnd();
 }
 
 function escapeRegExp(value) {
@@ -1041,8 +1034,85 @@ function questionToMarkdown(question, ordinal) {
   ].join("\n");
 }
 
+async function readBlueprintHeader(certDir) {
+  const blueprint = JSON.parse(await readFile(path.join(root, certDir, "blueprint.json"), "utf8"));
+  return [
+    `- Name: ${blueprint.name || "Certification"}`,
+    `- Code: ${blueprint.code || "CERT"}`,
+    `- Duration Minutes: ${blueprint.format?.durationMinutes || 120}`,
+    `- Question Range: ${blueprint.format?.questionCount ? `${blueprint.format.questionCount.min}-${blueprint.format.questionCount.max}` : "60-70"}`,
+    `- Level: ${blueprint.level || "Professional"}`,
+    `- Source: ${blueprint.homepage || "https://www.nvidia.com/en-us/learn/certification/"}`,
+    "",
+    "## Blueprint Domains",
+    ...(blueprint.domains || []).map((domain) => `- ${domain.name}: ${domain.weight}%`),
+    "",
+    "## Questions",
+    ""
+  ].join("\n");
+}
+
+async function readQuestionFiles(folder, matcher) {
+  const entries = await readdir(folder).catch((err) => {
+    if (err.code === "ENOENT") return [];
+    throw err;
+  });
+  const parts = [];
+  for (const file of entries.filter(matcher).sort()) {
+    const markdown = await readFile(path.join(folder, file), "utf8");
+    const firstQ = markdown.search(/^###\s*Q\d+:/m);
+    if (firstQ !== -1) parts.push(markdown.slice(firstQ).trim());
+  }
+  return parts.join("\n\n");
+}
+
+async function loadBaseMarkdown(config) {
+  const certDir = path.join(root, config.certDir);
+  return [
+    await readBlueprintHeader(config.certDir),
+    await readQuestionFiles(path.join(certDir, "mocks", "original"), (file) => file.endsWith(".questions.md"))
+  ].filter(Boolean).join("\n\n");
+}
+
+async function loadCombinedMarkdown(config, generatedQuestions) {
+  const base = await loadBaseMarkdown(config);
+  return [
+    base,
+    ...generatedQuestions.map((question, index) => questionToMarkdown(question, activeQuestions(base).length + index + 1))
+  ].join("\n");
+}
+
+async function writeGeneratedShards(config, questions, size = 100) {
+  const generatedDir = path.join(root, config.certDir, "generated");
+  await mkdir(generatedDir, { recursive: true });
+  const existing = await readdir(generatedDir).catch((err) => {
+    if (err.code === "ENOENT") return [];
+    throw err;
+  });
+  await Promise.all(existing
+    .filter((file) => /^high_fidelity_\d+\.md$/.test(file))
+    .map((file) => rm(path.join(generatedDir, file), { force: true })));
+  for (let i = 0; i < questions.length; i += size) {
+    const chunk = questions.slice(i, i + size);
+    const number = String(Math.floor(i / size) + 1).padStart(3, "0");
+    const markdown = [
+      `# High Fidelity Generated Questions ${number}`,
+      "",
+      "## Questions",
+      "",
+      ...chunk.map((question, index) => questionToMarkdown(question, index + 1))
+    ].join("\n").trimEnd() + "\n";
+    await writeFile(path.join(generatedDir, `high_fidelity_${number}.md`), markdown);
+  }
+}
+
 function activeQuestions(markdown) {
-  return parseExamMarkdown(markdown).questions.filter((question) => question.status !== "inactive");
+  const seen = new Set();
+  return parseExamMarkdown(markdown).questions.filter((question) => {
+    if (question.status === "inactive" || seen.has(question.id)) return false;
+    seen.add(question.id);
+    return true;
+  });
 }
 
 function countBy(items, keyFn) {
@@ -1166,25 +1236,14 @@ async function rebuildGeneratedMocks(config, markdown) {
 async function main() {
   const summary = [];
   for (const config of certificationConfigs) {
-    const filePath = path.join(root, config.file);
-    const original = await readFile(filePath, "utf8");
-    const base = stripGeneratedBlock(original);
+    const base = await loadBaseMarkdown(config);
     const generated = buildGeneratedQuestions(config, base);
     validateQuestionText(generated);
-    const existingCount = parseExamMarkdown(base).questions.length;
-    const block = [
-      "",
-      bankMarkerStart,
-      `<!-- Generated by scripts/build_high_fidelity_question_bank.mjs. Style source: original mocks + topic/service summaries. -->`,
-      ...generated.map((question, index) => questionToMarkdown(question, existingCount + index + 1)),
-      bankMarkerEnd,
-      ""
-    ].join("\n");
-    const next = `${base}\n${block}`;
-    parseExamMarkdown(next);
-    await writeFile(filePath, next);
-    await rebuildGeneratedMocks(config, next);
-    const parsed = parseExamMarkdown(next);
+    await writeGeneratedShards(config, generated);
+    const combined = await loadCombinedMarkdown(config, generated);
+    parseExamMarkdown(combined);
+    await rebuildGeneratedMocks(config, combined);
+    const parsed = parseExamMarkdown(combined);
     const serviceCounts = serviceMentions(parsed.questions, config.services);
     summary.push({
       slug: config.slug,

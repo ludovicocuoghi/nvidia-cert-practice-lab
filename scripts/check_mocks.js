@@ -5,13 +5,13 @@ import { fileURLToPath } from "url";
 import { join, dirname } from "path";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const base = join(root, "certifications", "genai_llms_professional", "mocks");
+const base = join(root, "certifications", "genai_llms_professional", "mocks", "original");
 const files = [
-  join(base, "mock_1_bank.md"),
-  join(base, "mock_2_bank.md"),
-  join(base, "mock_3_bank.md"),
-  join(base, "mock_4_bank.md"),
-  join(base, "mock_5_bank.md"),
+  join(base, "mock_1.questions.md"),
+  join(base, "mock_2.questions.md"),
+  join(base, "mock_3.questions.md"),
+  join(base, "mock_4.questions.md"),
+  join(base, "mock_5.questions.md"),
 ];
 
 for (const path of files) {

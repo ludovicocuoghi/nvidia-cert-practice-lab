@@ -8,22 +8,19 @@ const root = process.cwd();
 const configs = [
   {
     slug: "agentic_ai_professional",
-    file: "certifications/agentic_ai_professional/questions.md",
-    generated: "certifications/agentic_ai_professional/generated-questions.md",
+    certDir: "certifications/agentic_ai_professional",
     mocksDir: "certifications/agentic_ai_professional/mocks",
     services: nvidiaServices.filter((service) => service.exams.includes("Agentic AI"))
   },
   {
     slug: "genai_llms_professional",
-    file: "certifications/genai_llms_professional/questions.md",
-    generated: "certifications/genai_llms_professional/generated-questions.md",
+    certDir: "certifications/genai_llms_professional",
     mocksDir: "certifications/genai_llms_professional/mocks",
     services: nvidiaServices.filter((service) => service.exams.includes("GenAI LLMs"))
   },
   {
     slug: "agentic_ai_general_study",
-    file: "certifications/agentic_ai_general_study/questions.md",
-    generated: null,
+    certDir: "certifications/agentic_ai_general_study",
     mocksDir: "certifications/agentic_ai_general_study/mocks",
     services: nvidiaServices.filter((service) => service.exams.includes("Agentic AI General"))
   }
@@ -105,30 +102,75 @@ async function collectMockFiles(dir) {
     .map((entry) => path.join(entry.parentPath, entry.name));
 }
 
-async function readGeneratedQuestions(file) {
-  if (!file) return [];
+async function readBlueprintHeader(certDir) {
+  const blueprint = JSON.parse(await readFile(path.join(root, certDir, "blueprint.json"), "utf8"));
+  return [
+    `- Name: ${blueprint.name || "Certification"}`,
+    `- Code: ${blueprint.code || "CERT"}`,
+    `- Duration Minutes: ${blueprint.format?.durationMinutes || 120}`,
+    `- Question Range: ${blueprint.format?.questionCount ? `${blueprint.format.questionCount.min}-${blueprint.format.questionCount.max}` : "60-70"}`,
+    `- Level: ${blueprint.level || "Professional"}`,
+    `- Source: ${blueprint.homepage || "https://www.nvidia.com/en-us/learn/certification/"}`,
+    "",
+    "## Blueprint Domains",
+    ...(blueprint.domains || []).map((domain) => `- ${domain.name}: ${domain.weight}%`),
+    "",
+    "## Questions",
+    ""
+  ].join("\n");
+}
+
+async function readQuestionFiles(folder, matcher) {
+  const entries = await readdir(folder).catch((err) => {
+    if (err.code === "ENOENT") return [];
+    throw err;
+  });
+  const parts = [];
+  for (const file of entries.filter(matcher).sort()) {
+    const markdown = await readFile(path.join(folder, file), "utf8");
+    const firstQ = markdown.search(/^###\s*Q\d+:/m);
+    if (firstQ !== -1) parts.push(markdown.slice(firstQ).trim());
+  }
+  return parts.join("\n\n");
+}
+
+async function loadBankMarkdown(config) {
+  const certDir = path.join(root, config.certDir);
+  return [
+    await readBlueprintHeader(config.certDir),
+    await readQuestionFiles(path.join(certDir, "mocks", "original"), (file) => file.endsWith(".questions.md")),
+    await readQuestionFiles(path.join(certDir, "generated"), (file) => /^high_fidelity_\d+\.md$/.test(file)),
+    await readFile(path.join(certDir, "generated", "drafts.md"), "utf8").catch((err) => {
+      if (err.code === "ENOENT") return "";
+      throw err;
+    })
+  ].filter(Boolean).join("\n\n");
+}
+
+async function readApprovedDraftIds(certDir) {
   try {
-    const text = await readFile(path.join(root, file), "utf8");
-    const matches = [...text.matchAll(/```json\s*([\s\S]*?)```/g)];
-    return matches.flatMap((match) => {
-      try {
-        const parsed = JSON.parse(match[1]);
-        return parsed.status === "approved" ? [parsed] : [];
-      } catch {
-        return [];
-      }
-    });
-  } catch {
-    return [];
+    const parsed = JSON.parse(await readFile(path.join(root, certDir, "generated", "approvals.json"), "utf8"));
+    return Array.isArray(parsed.approved) ? parsed.approved : [];
+  } catch (err) {
+    if (err.code === "ENOENT") return [];
+    throw err;
   }
 }
 
 async function auditConfig(config) {
-  const markdown = await readFile(path.join(root, config.file), "utf8");
+  const markdown = await loadBankMarkdown(config);
   const parsed = parseExamMarkdown(markdown);
-  const generatedApproved = await readGeneratedQuestions(config.generated);
+  const uniqueQuestions = [];
+  const uniqueIds = new Set();
+  for (const question of parsed.questions) {
+    if (uniqueIds.has(question.id)) continue;
+    uniqueIds.add(question.id);
+    uniqueQuestions.push(question);
+  }
+  parsed.questions = uniqueQuestions;
+  const generatedApproved = await readApprovedDraftIds(config.certDir);
   const allIds = new Set(parsed.questions.map((question) => question.id));
-  for (const question of generatedApproved) allIds.add(question.id);
+  for (const id of generatedApproved) allIds.add(id);
 
   const failures = [];
   const seen = new Set();

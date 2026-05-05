@@ -58,6 +58,9 @@ async function writeQuestionFile(filePath, title, questions) {
 async function migrateCert(slug) {
   const certDir = path.join(root, "certifications", slug);
   const questionsPath = path.join(certDir, "questions.md");
+  if (!existsSync(questionsPath)) {
+    return { slug, status: "already migrated" };
+  }
   const markdown = await readFile(questionsPath, "utf8");
   const parsed = parseExamMarkdown(markdown);
   const byId = new Map(parsed.questions.map((question) => [question.id, question]));

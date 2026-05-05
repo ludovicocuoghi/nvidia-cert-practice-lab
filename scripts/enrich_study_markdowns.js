@@ -122,19 +122,24 @@ async function loadCertQuestions(cert) {
     }
   }
 
-  await addMarkdown(join(certDir, "questions.md"));
-  const mocksDir = join(certDir, "mocks");
-  if (existsSync(mocksDir)) {
-    for (const file of await readdir(mocksDir)) {
-      if (file.endsWith("_bank.md")) await addMarkdown(join(mocksDir, file));
+  const originalDir = join(certDir, "mocks", "original");
+  if (existsSync(originalDir)) {
+    for (const file of await readdir(originalDir)) {
+      if (file.endsWith(".questions.md")) await addMarkdown(join(originalDir, file));
     }
-    for (const file of await readdir(mocksDir)) {
+    for (const file of await readdir(originalDir)) {
       if (!file.endsWith(".json")) continue;
-      const mock = JSON.parse(await readFile(join(mocksDir, file), "utf8"));
+      const mock = JSON.parse(await readFile(join(originalDir, file), "utf8"));
       mock.questionIds.forEach((id, index) => {
         const q = questions.get(id);
         if (q) q.refs.push({ mock: mock.id || file.replace(/\.json$/, ""), name: mock.name || file.replace(/\.json$/, ""), number: index + 1 });
       });
+    }
+  }
+  const generatedDir = join(certDir, "generated");
+  if (existsSync(generatedDir)) {
+    for (const file of await readdir(generatedDir)) {
+      if (/^high_fidelity_\d+\.md$/.test(file)) await addMarkdown(join(generatedDir, file));
     }
   }
   return [...questions.values()];

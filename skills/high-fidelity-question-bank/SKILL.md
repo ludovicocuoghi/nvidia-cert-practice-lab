@@ -14,7 +14,7 @@ Use this skill when creating or repairing practice questions for this project. T
 3. Topic summaries under `certifications/*/topics/`.
 4. Shared NVIDIA service pages under `certifications/_shared/services/`.
 5. General Study capability pages under `certifications/agentic_ai_general_study/capabilities/`.
-6. Existing active `questions.md` files for format and parser compatibility.
+6. Existing active generated shards under `certifications/*/generated/high_fidelity_###.md` for format and parser compatibility.
 
 ## Quality Rules
 
@@ -48,19 +48,19 @@ Use this skill when creating or repairing practice questions for this project. T
 
    This audit is the deterministic gate for generated-bank quality. It catches thin service stems, leaked trap notes, domain/service coverage gaps, duplicate IDs, missing mock IDs, and grammar artifacts.
 
-3. Run the local evaluator on draft generated-question files when working outside the high-fidelity generated block:
+3. Run the local evaluator on draft generated-question files when working outside the high-fidelity generated shards:
 
    ```bash
-   node scripts/evaluate_questions.js certifications/genai_llms_professional/generated-questions.md --local-only
-   node scripts/evaluate_questions.js certifications/agentic_ai_professional/generated-questions.md --local-only
+   node scripts/evaluate_questions.js certifications/genai_llms_professional/generated/drafts.md --local-only
+   node scripts/evaluate_questions.js certifications/agentic_ai_professional/generated/drafts.md --local-only
    ```
 
    Use the LLM-backed mode only when an API key is available and a smaller draft batch needs subjective review.
 
 4. Spot-check generated questions in all three banks:
-   - `certifications/agentic_ai_professional/questions.md`
-   - `certifications/genai_llms_professional/questions.md`
-   - `certifications/agentic_ai_general_study/questions.md`
+   - `certifications/agentic_ai_professional/generated/high_fidelity_###.md`
+   - `certifications/genai_llms_professional/generated/high_fidelity_###.md`
+   - `certifications/agentic_ai_general_study/generated/high_fidelity_###.md`
 
    Spot-check at least:
    - one service-comparison item for RAPIDS vs NIM,

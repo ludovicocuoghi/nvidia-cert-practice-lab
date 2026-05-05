@@ -40,7 +40,7 @@ function parseQuestions(markdown) {
 
 function listMockFiles(certDir) {
   const folders = [
-    { source: "original", dir: join(certDir, "mocks") },
+    { source: "original", dir: join(certDir, "mocks", "original") },
     { source: "generated", dir: join(certDir, "mocks", "generated") }
   ];
   return folders.flatMap(({ source, dir }) => {
@@ -49,6 +49,29 @@ function listMockFiles(certDir) {
       .filter((file) => file.endsWith(".json"))
       .map((file) => ({ source, path: join(dir, file) }));
   });
+}
+
+function readQuestionFiles(folder, matcher) {
+  if (!existsSync(folder)) return "";
+  return readdirSync(folder)
+    .filter(matcher)
+    .sort()
+    .map((file) => {
+      const markdown = readFileSync(join(folder, file), "utf8");
+      const firstQ = markdown.search(/^###\s*Q\d+:/m);
+      return firstQ === -1 ? "" : markdown.slice(firstQ).trim();
+    })
+    .filter(Boolean)
+    .join("\n\n");
+}
+
+function readBankMarkdown(certDir) {
+  return [
+    "## Questions",
+    readQuestionFiles(join(certDir, "mocks", "original"), (file) => file.endsWith(".questions.md")),
+    readQuestionFiles(join(certDir, "generated"), (file) => /^high_fidelity_\d+\.md$/.test(file)),
+    existsSync(join(certDir, "generated", "drafts.md")) ? readFileSync(join(certDir, "generated", "drafts.md"), "utf8") : ""
+  ].filter(Boolean).join("\n\n");
 }
 
 function targetCounts(blueprint, count) {
@@ -131,7 +154,13 @@ function evaluateMock({ mock, source, questionsById, blueprint }) {
 function evaluateCert(slug) {
   const certDir = join(certsDir, slug);
   const blueprint = readJson(join(certDir, "blueprint.json"));
-  const questions = parseQuestions(readFileSync(join(certDir, "questions.md"), "utf8"));
+  const questions = [];
+  const seen = new Set();
+  for (const question of parseQuestions(readBankMarkdown(certDir))) {
+    if (seen.has(question.id)) continue;
+    seen.add(question.id);
+    questions.push(question);
+  }
   const questionsById = new Map(questions.map((question) => [question.id, question]));
   const mocks = listMockFiles(certDir).map(({ source, path }) => (
     evaluateMock({ mock: readJson(path), source, questionsById, blueprint })

@@ -26,7 +26,7 @@ Use this skill when working on mock exam quality for the NVIDIA certification pr
    - If a mock shows many service-comparison items, sample them manually for lifecycle clarity: data preparation vs serving, serving endpoint vs Kubernetes operator, retrieval vs training-data curation, and timeline profiling vs kernel profiling.
 
 3. Keep improved mocks separate from originals:
-   - Original mocks live in `certifications/<cert>/mocks/*.json`.
+   - Original mocks live in `certifications/<cert>/mocks/original/*.json`.
    - Improved generated mocks live in `certifications/<cert>/mocks/generated/*.json`.
    - Do not overwrite original mocks unless the user explicitly asks.
 

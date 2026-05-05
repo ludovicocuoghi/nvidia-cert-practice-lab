@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import {
   buildMistakeEntry,
@@ -16,6 +16,17 @@ const model = {
   latencyMs: 800,
   throughputTokensSec: 1000
 };
+
+async function readQuestionFiles(folder: string, matcher: (file: string) => boolean) {
+  const files = await readdir(folder);
+  const parts: string[] = [];
+  for (const file of files.filter(matcher).sort()) {
+    const markdown = await readFile(`${folder}/${file}`, "utf8");
+    const firstQ = markdown.search(/^###\s*Q\d+:/m);
+    if (firstQ !== -1) parts.push(markdown.slice(firstQ).trim());
+  }
+  return parts.join("\n\n");
+}
 
 describe("simulator domain", () => {
   it("estimates zero tokens for empty text", () => {
@@ -66,8 +77,28 @@ describe("simulator domain", () => {
     expect(result.byDomain["Prompt Engineering"]).toEqual({ total: 2, correct: 1 });
   });
 
-  it("loads the editable question bank", async () => {
-    const markdown = await readFile("certifications/genai_llms_professional/questions.md", "utf8");
+  it("loads the structured question bank", async () => {
+    const certDir = "certifications/genai_llms_professional";
+    const blueprint = JSON.parse(await readFile(`${certDir}/blueprint.json`, "utf8"));
+    const header = [
+      `- Name: ${blueprint.name}`,
+      `- Code: ${blueprint.code}`,
+      `- Duration Minutes: ${blueprint.format.durationMinutes}`,
+      `- Question Range: ${blueprint.format.questionCount.min}-${blueprint.format.questionCount.max}`,
+      `- Level: ${blueprint.level}`,
+      `- Source: ${blueprint.homepage}`,
+      "",
+      "## Blueprint Domains",
+      ...blueprint.domains.map((domain: { name: string; weight: number }) => `- ${domain.name}: ${domain.weight}%`),
+      "",
+      "## Questions",
+      ""
+    ].join("\n");
+    const markdown = [
+      header,
+      await readQuestionFiles(`${certDir}/mocks/original`, (file) => file.endsWith(".questions.md")),
+      await readQuestionFiles(`${certDir}/generated`, (file) => /^high_fidelity_\d+\.md$/.test(file))
+    ].join("\n\n");
     const exam = parseExamMarkdown(markdown);
 
     expect(exam.certification.code).toBe("NCP-GENL");

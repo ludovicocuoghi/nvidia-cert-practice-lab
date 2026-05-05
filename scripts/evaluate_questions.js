@@ -352,8 +352,8 @@ Usage:
 
 Example:
   node scripts/evaluate_questions.js \\
-    certifications/genai_llms_professional/generated-questions.md \\
-    certifications/genai_llms_professional/questions.md \\
+    certifications/genai_llms_professional/generated/drafts.md \\
+    certifications/genai_llms_professional/generated/high_fidelity_001.md \\
     --cert NCP-GENL
 `);
     process.exit(0);

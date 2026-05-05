@@ -25,7 +25,7 @@ Both modes have **Adaptive** (weak-domain biased) and **Full-Bank** variants.
 
 ## Question Bank
 
-Edit `certifications/<cert_slug>/questions.md`. Each question:
+Edit active question-bank shards under `certifications/<cert_slug>/mocks/original/*.questions.md` or `certifications/<cert_slug>/generated/high_fidelity_###.md`. Each question:
 
 ```markdown
 ### Q21: A 70B chat model must serve ≥3,000 concurrent requests on H100s while staying within 1 ROUGE-L point of FP16. Best quantization recipe?
@@ -45,13 +45,13 @@ Parsed at runtime by `server/src/domain/simulator.ts`.
 To reshuffle a bank file safely, including question order, answer-choice order, `Answer:` labels, and `Why X is wrong` labels:
 
 ```bash
-npm run shuffle:bank -- certifications/<cert_slug>/questions.md --in-place
+npm run shuffle:bank -- certifications/<cert_slug>/generated/high_fidelity_001.md --in-place
 ```
 
 The same script can shuffle mock JSON `questionIds`:
 
 ```bash
-npm run shuffle:bank -- certifications/<cert_slug>/mocks/mock_1.json --in-place
+npm run shuffle:bank -- certifications/<cert_slug>/mocks/original/mock_1.json --in-place
 ```
 
 Runtime practice/test sessions also shuffle loaded questions and choices in the UI while preserving the original answer mapping for grading.
@@ -62,7 +62,7 @@ After adding `LLM_API_KEY` to `.env` and restarting:
 - Click **Generate 10 (weak domains)** on the dashboard, or
 - `POST /api/generate-questions` with `{count, weakOnly, focusDomains}`
 
-Output is appended to `certifications/<slug>/generated-questions.md` for manual review — never auto-merged into `questions.md`.
+Output is appended to `certifications/<slug>/generated/drafts.md` for manual review. Approval state is stored in `certifications/<slug>/generated/approvals.json`.
 
 By default, the server sends an OpenAI-style chat-completions request to the Kimi endpoint configured in `.env.example`. Override `LLM_API_URL` and `LLM_MODEL` for another compatible provider.
 
@@ -71,10 +71,16 @@ By default, the server sends an OpenAI-style chat-completions request to the Kim
 ```
 certifications/<slug>/
 ├── blueprint.json          # official weights + format
-├── questions.md            # editable bank (source of truth)
+├── mocks/
+│   ├── original/           # original mock JSON + normalized question text
+│   └── generated/          # generated mock JSON playlists
+├── generated/
+│   ├── high_fidelity_001.md
+│   ├── high_fidelity_002.md
+│   ├── drafts.md           # AI-generated review queue
+│   └── approvals.json      # approved/rejected draft IDs
 ├── mistakes.md             # auto-appended on wrong answers
 ├── learner_profile.md      # auto-updated per session
-├── generated-questions.md  # AI-generated review queue
 ├── reference/              # PDF, research report, notes
 └── archive/                # superseded banks
 ```
@@ -91,7 +97,7 @@ npm run typecheck  # TypeScript verification
 
 ## Multi-Cert
 
-Add a new cert by creating `certifications/<new-slug>/` with a `blueprint.json` and `questions.md`. Set `CERT_SLUG` in `.env` or pass `?cert=<slug>` to API endpoints.
+Add a new cert by creating `certifications/<new-slug>/` with a `blueprint.json`, `mocks/original/*.questions.md`, and/or `generated/high_fidelity_###.md`. Set `CERT_SLUG` in `.env` or pass `?cert=<slug>` to API endpoints.
 
 ## Files of Note
 
