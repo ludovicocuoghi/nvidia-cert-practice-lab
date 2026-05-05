@@ -6,6 +6,17 @@ status: populated
 
 # GPU Acceleration and Optimization
 
+## What to study first
+
+- **Core idea:** Scale and optimize LLM training/inference on **GPU** hardware.
+- **Use it when:** Study this when scaling, OOMs, collectives, **GPU** utilization, or memory layout appear in a scenario.
+- **Study first:** DDP (Distributed Data Parallel): Each **GPU** has full model replica. Gradients all-reduced across GPUs. Simplest strategy. Model must fit on one **GPU**.
+- FSDP (Fully Sharded Data Parallel): PyTorch's **ZeRO**-3 equivalent. Shards parameters, gradients, and optimizer states across data-parallel GPUs. Parameters are all-gathered before each layer, discarded after backward. Memory scales ~linearly with **GPU** count.
+- Tensor parallelism: Splits individual weight matrices across GPUs (column-parallel for **attention** projections, row-parallel for output). **All-reduce** required per forward/backward pass per layer — HIGH communication frequency. Use within a node where NVLink provides 900 GB/s.
+- Pipeline parallelism: Splits **transformer** layers across GPUs. **GPU** 0 has layers 0-9, **GPU** 1 has layers 10-19, etc. Point-to-point communication between stages — LOWER communication than tensor. Pipeline bubbles (GPUs idle waiting for previous stage) reduce efficiency. Bubble fraction = (p-1)/m where p = pipeline stages, m = micro-batches. More micro-batches = less bubble.
+- Activation checkpointing: Store only checkpoint boundaries during forward. Recompute intermediate activations during backward. Trades ~33% more forward compute for significant memory savings. Selective checkpointing (every other **transformer** block) gives O(√L) memory instead of O(L).
+- **Real trap:** More GPUs can be slower if communication dominates.
+
 ## Certification boundary
 
 This page is intentionally NVIDIA-heavy because NCP-GENL tests GPU acceleration. Keep CUDA, Tensor Cores, NCCL, NVLink, TensorRT, RAPIDS, Nsight, and NVIDIA hardware/software-stack knowledge here. General serving tradeoffs can be summarized in Agentic AI General Study, but GPU-specific NVIDIA implementation detail belongs in this certificate.
@@ -227,7 +238,7 @@ The exam tests awareness that data preprocessing, not just model training, benef
 
 **Exam signal**: cuDF avoids the CPU-**GPU** data transfer bottleneck. Data stays on **GPU** from loading through training.
 
-## Common exam traps
+## Decision traps worth remembering
 
 1. **More CUDA cores** — **Memory bandwidth** is often the bottleneck. A **GPU** with fewer cores but more bandwidth can outperform for LLM workloads.
 
@@ -295,7 +306,7 @@ The exam tests awareness that data preprocessing, not just model training, benef
 - **All-reduce** — collective operation; sum values across all GPUs, result on all
 - **Kernel fusion** — combine multiple **GPU** kernels into one; reduces launch overhead
 
-### Top exam traps
+### Top decision traps
 - **Nsight Systems timeline** → it analyzes TIMELINE; **Nsight Compute** does kernels
 - **H100+ FP8** → only H100+ (4th gen Tensor Core)
 - **NVLink intra-node** → NVLink is intra-node; InfiniBand/RoCE is inter-node
@@ -326,7 +337,7 @@ Evidence source: `mock_1` through `mock_5`, especially **CUDA** optimization, **
 - **What it covers:** Scale and optimize LLM training/inference on **GPU** hardware.
 - **Use this section when:** Study this when scaling, OOMs, collectives, **GPU** utilization, or memory layout appear in a scenario.
 - **Common trap:** More GPUs can be slower if communication dominates.
-- **Scenario signal:** Training scales well inside a node but poorly across nodes due to **all-reduce** traffic.
+- **Recognition clues:** Training scales well inside a node but poorly across nodes due to **all-reduce** traffic.
 
 ### Study notes
 
@@ -414,7 +425,7 @@ Evidence source: `mock_1` through `mock_5`, especially **CUDA** optimization, **
    Best answer pattern: Use **activation checkpointing** and possibly sequence parallelism.
    Trap: Only sharding optimizer states.
 
-### High-yield exam signals
+### What to recognize
 
 - **OOM during optimizer step**: Optimizer states (Adam m+v) are the culprit — 8× **weight memory** in FP32 terms. Enable **ZeRO**-1 (shards optimizer states) or **ZeRO**-3 (shards everything).
 - **OOM during forward pass**: Activations too large. Enable activation checkpointing.

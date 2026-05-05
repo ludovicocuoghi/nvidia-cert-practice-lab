@@ -6,6 +6,21 @@ status: populated
 
 # BioNeMo
 
+## What to study first
+
+- **Core idea:** Domain-specific Python framework + pre-trained model weights for computational biology
+- **Use it when:** Use when the scenario is about proteins, molecules, genomics, drug discovery, or life-sciences foundation models.
+- **Choose another path when:** Choose the neighboring service for general text LLM training, chat/RAG applications, or generic model serving.
+- **Concrete surface:** Access: NGC container: `nvcr.io/nvidia/clara/bionemo-framework`, `pip install bionemo`, HF checkpoints I/O: Protein amino acid sequence / molecular SMILES string / protein pocket + ligand -> Per-residue embedding / molecular property prediction / binding pose prediction
+- **Study first:** Domain-specific foundation models: ESM-2 (protein language model trained on 250M sequences), MolMIM (molecular VAE for molecule generation), DiffDock (diffusion model for protein-ligand docking)
+- Biological sequence modality: trained on amino acid sequences, DNA, and SMILES strings — fundamentally different from general text LLMs
+- residue-level tokenizers instead of SentencePiece/BPE
+- Drug-discovery pipeline stages: target identification (protein embedding), virtual screening (molecule generation/scoring), lead optimization (fine-tune on binding affinity), docking validation (DiffDock pose prediction)
+- BioNeMo vs NeMo Framework distinction: both on NeMo Megatron infrastructure, but BioNeMo targets biological domains with specialized loss functions and evaluation metrics
+- text LLM tasks use NeMo Framework
+- Deployment via NIM microservices: BioNeMo models can be served as NIM microservices with standard REST APIs for pipeline integration
+- **Real trap:** Confusing biology-specific models and workflows with the general NeMo Framework or NIM stack.
+
 ## At a glance
 
 | | |
@@ -44,7 +59,7 @@ BioNeMo is NVIDIA's life-sciences AI platform family for working with biological
 - The question asks for a domain-specific NVIDIA AI platform, not generic LLM serving.
 - The answer choices include general tools like NIM/Triton but the task is scientific model development.
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
 - **General LLM training/customization**: use NeMo Framework or NeMo Customizer.
 - **Model serving API**: use NIM or Triton Inference Server.
@@ -126,19 +141,19 @@ The exam-relevant point: BioNeMo is the answer when the scenario involves protei
 - **Relevant exams:** GenAI LLMs, Agentic AI
 - **What it is:** Domain-specific Python framework + pre-trained model weights for computational biology
 - **Use it when:** Use when the scenario is about proteins, molecules, genomics, drug discovery, or life-sciences foundation models.
-- **Do not use it when:** Do not use it for general text LLM training, chat/RAG applications, or generic model serving.
+- **Do not use it when:** Choose the neighboring service for general text LLM training, chat/RAG applications, or generic model serving.
 - **Common trap:** Confusing biology-specific models and workflows with the general NeMo Framework or NIM stack.
-- **Scenario signal:** A research team needs NVIDIA tooling for protein, molecule, genomics, or drug-discovery foundation-model workflows.
+- **Recognition clues:** A research team needs NVIDIA tooling for protein, molecule, genomics, or drug-discovery foundation-model workflows.
 ### Study notes
 - Place **BioNeMo** at **Domain model development and customization**: NeMo Framework but for biology — download protein/molecule models, fine-tune on sequences, serve as NIMs.
-- Choose it when: Use when the scenario is about proteins, molecules, genomics, drug discovery, or life-sciences foundation models. Reject it when: Do not use it for general text LLM training, chat/RAG applications, or generic model serving.
+- Boundary cue: choose it when the scenario is about proteins, molecules, genomics, drug discovery, or life-sciences foundation models. Adjacent-service cue: not for general text LLM training, chat/RAG applications, or generic model serving.
 ### Must know
 - **Domain-specific foundation models**: ESM-2 (protein language model trained on 250M sequences), MolMIM (molecular VAE for molecule generation), DiffDock (diffusion model for protein-ligand docking)
 - **Biological sequence modality**: trained on amino acid sequences, DNA, and SMILES strings — fundamentally different from general text LLMs; residue-level tokenizers instead of SentencePiece/BPE
 - **Drug-discovery pipeline stages**: target identification (protein embedding), virtual screening (molecule generation/scoring), lead optimization (fine-tune on binding affinity), docking validation (DiffDock pose prediction)
 - **BioNeMo vs NeMo Framework distinction**: both on NeMo Megatron infrastructure, but BioNeMo targets biological domains with specialized loss functions and evaluation metrics; text LLM tasks use NeMo Framework
 - **Deployment via NIM microservices**: BioNeMo models can be served as NIM microservices with standard REST APIs for pipeline integration
-### High-yield exam signals
+### What to recognize
 - **Protein/molecule modeling scenario** → scenario explicitly mentions proteins, molecules, drug discovery, or genomics; BioNeMo is the domain-specific platform, not general LLM tools like NeMo Framework
 - **ESM-2 and protein sequences** → scenario describes embedding or analyzing protein amino acid sequences; ESM-2 (BioNeMo) is the protein language model analogous to BERT for text
 - **Drug-discovery workflow** → scenario describes a multi-stage pipeline from target identification through virtual screening to lead optimization; BioNeMo covers the full drug-discovery workflow
@@ -147,8 +162,8 @@ The exam-relevant point: BioNeMo is the answer when the scenario involves protei
 - Write one scenario where **BioNeMo** is correct and one scenario where it is a tempting but wrong distractor.
 ## Exam tips from mocks
 - Mock-style questions test whether **BioNeMo** matches **Domain model development and customization**, not whether the product name sounds familiar.
-- Choose it when the scenario signal matches this boundary: Use when the scenario is about proteins, molecules, genomics, drug discovery, or life-sciences foundation models.
-- Reject it when the problem is actually about another layer: Do not use it for general text LLM training, chat/RAG applications, or generic model serving.
+- Boundary cue: choose it when the scenario is about proteins, molecules, genomics, drug discovery, or life-sciences foundation models.
+- Adjacent-service cue: not for general text LLM training, chat/RAG applications, or generic model serving.
 - The common trap pattern is: Confusing biology-specific models and workflows with the general NeMo Framework or NIM stack.
 - If it appears only as a distractor, decide by the required lifecycle phase before choosing a product name.
 - Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.

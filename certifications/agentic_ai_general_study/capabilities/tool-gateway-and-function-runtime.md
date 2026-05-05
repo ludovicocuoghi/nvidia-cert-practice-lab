@@ -6,9 +6,28 @@ source_lens: general-study
 
 # Tool Gateway and Function Runtime
 
+## What to study first
+
+- **Core idea:** You are building the execution boundary between model intent and real systems. The model proposes a tool call; the gateway validates schema, authorization, risk, idempotency, and audit before anything happens.
+- **Study first:** Define tool schema, inputs, outputs, risk tier, and owner.
+- Validate model-proposed arguments against schema and business rules.
+- Authorize user/agent for the requested operation.
+- Apply risk controls: read-only, mutating, high-impact, approval-required.
+- Execute with timeouts, retries, idempotency keys, and error mapping.
+
 ## What You Are Building
 
 You are building the execution boundary between model intent and real systems. The model proposes a tool call; the gateway validates schema, authorization, risk, idempotency, and audit before anything happens.
+
+## Lifecycle Lane Playbooks
+
+| Lane | What this page means there | Output |
+|---|---|---|
+| Train model from zero | Not used for foundation training. Training jobs may call infrastructure APIs, but that is not model tool use. | No model-proposed tool execution |
+| Fine-tune existing model | Tool traces can become tuning examples after curation. The gateway still enforces safety at runtime. | Curated trajectories or runtime tool boundary |
+| Use existing model/API | Use if the model can call functions; otherwise endpoint calls may be enough. | Validated tool execution layer |
+| Build agent/RAG application | Main lane: schemas, authz, business rules, risk tiers, idempotency, timeouts, audit. | Safe tool-call boundary |
+| Operate, govern, and improve | Use tool traces to find duplicate side effects, auth gaps, timeout issues, and unsafe proposals. | Policy fixes and regression cases |
 
 ## Pipeline
 
@@ -100,6 +119,50 @@ Passing JSON schema is not enough to issue a refund, delete a record, send an em
 ### Tool outputs are untrusted
 
 Tool outputs are evidence, not instructions. An API response can be malformed, stale, partial, or malicious. The agent may reason over the result, but policy, validation, and guardrails decide whether it changes workflow state or triggers another action.
+
+### Execution boundary details
+
+| Control | What it prevents | Example |
+|---|---|---|
+| Schema validation | Bad shape or missing required fields | Missing account ID |
+| Business validation | Domain-invalid action | Refund outside allowed window |
+| Authorization | Correctly shaped but forbidden action | User edits another tenant's record |
+| Least privilege | Broad credential blast radius | Tool can read invoices but not delete accounts |
+| Idempotency key | Duplicate mutation after retry | Same refund submitted twice |
+| Timeout budget | Runaway external call | Agent waits forever on CRM API |
+| Error mapping | Confusing partial failures | External 409 becomes "needs reconciliation" |
+| Audit record | Unexplainable side effect | No trace of who/model/tool changed data |
+
+The gateway is where model intent becomes a real operation. Passing JSON schema is only the first gate; permission, risk, idempotency, and audit decide whether execution is allowed.
+
+### Implementation card: tool execution boundary
+
+```python
+def execute_tool(proposal, user):
+    schema.validate(proposal.name, proposal.arguments)
+    authorize(user, proposal.name, proposal.arguments)
+    business_rules.validate(proposal.name, proposal.arguments)
+
+    risk = risk_tier(proposal.name, proposal.arguments)
+    if risk == "approval_required":
+        return review_queue.submit(proposal, user)
+
+    key = idempotency_key(user.id, proposal.name, proposal.arguments)
+    if result := idempotency_store.get(key):
+        return result
+
+    with audit_span("tool_call", tool=proposal.name, user=user.id) as span:
+        result = tool_runtime.call(
+            proposal.name,
+            proposal.arguments,
+            timeout_ms=tool_timeout(proposal.name),
+        )
+        span.set("status", result.status)
+        idempotency_store.put(key, result)
+        return sanitize_tool_output(result)
+```
+
+Tool metrics include schema-valid rate, authorization-denied rate, business-rule failure rate, duplicate-prevented count, timeout rate, side-effect success, audit completeness, and unsafe-tool-call catch rate.
 
 ## Exam Signals
 

@@ -6,6 +6,24 @@ status: populated
 
 # LLM Architecture
 
+## What to study first
+
+- **Core idea:** Understand **transformer** structures and mechanisms that drive LLM behavior and cost.
+- **Use it when:** Study this when a question asks why an architecture behaves differently under context, **latency**, or scaling constraints.
+- **Study first:** decoder-only vs encoder-decoder: — **decoder-only** (GPT-style) uses causal **attention** for autoregressive generation
+- **encoder-decoder** (T5-style) uses bidirectional encoder + cross-**attention** decoder for seq2seq tasks like translation
+- RoPE/ALiBi: — **RoPE** encodes position by rotating Q/K vectors, enabling relative position awareness
+- **ALiBi** adds a linear **bias** to **attention** scores, naturally extrapolating beyond trained context length
+- MHA/MQA/GQA: — MHA has separate K/V per head (max quality, max memory)
+- MQA shares K/V across all heads (min memory, slight quality loss)
+- GQA groups heads sharing K/V within groups (best practical tradeoff)
+- MoE routing: — **Mixture of Experts** activates only a subset of parameters per token via a learned **router**
+- increases total parameters without proportional compute increase
+- KV cache: — stores previously computed Key and Value tensors at each layer
+- avoids recomputation during autoregressive generation
+- grows linearly with sequence length × layers × hidden dim
+- **Real trap:** Do not answer with a **deployment** tool when the issue is model structure or **attention** behavior.
+
 ## Certification boundary
 
 This page is the NCP-GENL exam lens for LLM architecture. General Transformer, tokenization, attention, normalization, and KV-cache knowledge stays here because it is prerequisite LLM certification material. Agent lifecycle architecture belongs in Agentic AI General Study; NVIDIA acceleration cues stay here when they explain how the architecture runs on NVIDIA platforms.
@@ -114,7 +132,7 @@ KV Cache stored in GPU HBM; optimized via MQA/GQA, PagedAttention
 
 **Embedding dimension**: Typical range is 512-8192. Larger → more expressive but more parameters. The embedding matrix is `vocab_size × d_model` — a significant parameter count.
 
-## Common exam traps
+## Decision traps worth remembering
 
 1. **BERT is not for text generation** — BERT uses bidirectional **attention** and masked LM pre-training; it cannot autoregressively generate coherent text.
 
@@ -177,7 +195,7 @@ KV Cache stored in GPU HBM; optimized via MQA/GQA, PagedAttention
 - **WordPiece** — merge pairs maximizing training data likelihood
 - **SentencePiece** — language-agnostic **tokenizer**; raw text input, no pre-**tokenization**
 
-### Top exam traps
+### Top decision traps
 - **BERT is not for generation** → BERT is bidirectional, NOT autoregressive
 - **MHA/MQA/GQA differ in K/V sharing** → they differ in K,V sharing across heads, not number of heads
 - **LayerNorm ≠ BatchNorm** → LayerNorm works per-token across features; BatchNorm works per-feature across batch
@@ -208,7 +226,7 @@ Evidence source: `mock_1` through `mock_5`, especially **Transformer** component
 - **What it covers:** Understand **transformer** structures and mechanisms that drive LLM behavior and cost.
 - **Use this section when:** Study this when a question asks why an architecture behaves differently under context, **latency**, or scaling constraints.
 - **Common trap:** Do not answer with a **deployment** tool when the issue is model structure or **attention** behavior.
-- **Scenario signal:** A long-context model slows sharply because **attention** and KV-cache behavior dominate the request.
+- **Recognition clues:** A long-context model slows sharply because **attention** and KV-cache behavior dominate the request.
 
 ### Study notes
 
@@ -264,7 +282,7 @@ Evidence source: `mock_1` through `mock_5`, especially **Transformer** component
    Best answer pattern: Identify **MQA** and its KV-cache memory reduction.
    Trap: Calling it ordinary multi-head attention.
 
-### High-yield exam signals
+### What to recognize
 
 - **Context length bottleneck**: Model slows sharply as sequence length grows → **attention** is O(n²) with sequence length; use **FlashAttention** (IO-aware tiled computation) or sparse **attention** patterns to reduce quadratic cost.
 - **Attention memory pressure**: OOM during long-context inference → **KV cache** grows linearly with sequence length; check for full MHA (switch to GQA or MQA), enable PagedAttention to eliminate fragmentation, or quantize **KV cache** to **INT8**.

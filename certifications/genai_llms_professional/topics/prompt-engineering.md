@@ -6,6 +6,17 @@ status: populated
 
 # Prompt Engineering
 
+## What to study first
+
+- **Core idea:** Adapt LLM behavior through prompt structure, **examples**, reasoning patterns, and output control.
+- **Use it when:** Study this when the task can be improved without changing model weights.
+- **Study first:** Zero-shot prompting: No **examples**, just instructions. Works for well-defined tasks the model encountered in pre-training. Fails when the output format or reasoning pattern is ambiguous without demonstration.
+- Few-shot prompting: 2-5 input-output **examples** in the prompt. Demonstrates format, style, and decision boundaries. Does NOT change model weights. Most useful when the desired format/pattern is specific and **examples** reduce ambiguity.
+- Chain-of-Thought (CoT): Explicit step-by-step reasoning in the prompt. Improves multi-step accuracy but increases token count and **latency**. Risk on small models: reasoning may not track actual computation (unfaithful CoT).
+- Structured output: Enforcing specific formats (JSON, XML). Prompt-based = fragile. Constrained decoding (GBNF/grammar) = reliable. The exam expects you to choose constrained decoding for production JSON output requirements.
+- Grounded prompts: Prompts that bind answers to retrieved evidence with citation requirements and **abstention** rules for missing evidence. The standard **RAG prompt** pattern: numbered context + "cite [n]" + "refuse if evidence insufficient."
+- **Real trap:** Prompting cannot reliably fix missing private knowledge, unauthorized **retrieval**, or unsafe tool design.
+
 ## Certification boundary
 
 This page is the NCP-GENL exam lens for prompt engineering. Keep prompt structure, templates, few-shot design, prompt evaluation, context-window management, and caching here because they are core LLM certification knowledge. Agentic tool-control and orchestration boundaries belong in Agentic AI General Study; NVIDIA-specific prompt/eval cues stay here when relevant.
@@ -154,7 +165,7 @@ With Anthropic's API:
 
 **Exam signal**: The **system prompt** (static across requests) should always be first in the prompt and marked for caching.
 
-## Common exam traps
+## Decision traps worth remembering
 
 1. **Systematic evaluation** — The exam expects systematic **evaluation** and **versioning**, not ad-hoc playground iteration.
 
@@ -214,7 +225,7 @@ With Anthropic's API:
 - **Adversarial testing** — test prompts against edge cases, jailbreaks, and boundary inputs
 - **Failure pattern diagnosis** — isolate: test without **examples**, test without context, test on different model
 
-### Top exam traps
+### Top decision traps
 - "Just rephrase the prompt" → systematic **evaluation** and **versioning**, not ad-hoc tinkering
 - "Put **safety** rules in the prompt" → deterministic boundaries needed for **safety**; prompt is not a control
 - "More **examples** always help" → 2-5 well-chosen > 20 stale, biased, or bloated
@@ -244,7 +255,7 @@ Evidence source: `mock_1` and `mock_5`, especially prompt structure, **few-shot*
 - **What it covers:** Adapt LLM behavior through prompt structure, **examples**, reasoning patterns, and output control.
 - **Use this section when:** Study this when the task can be improved without changing model weights.
 - **Common trap:** Prompting cannot reliably fix missing private knowledge, unauthorized **retrieval**, or unsafe tool design.
-- **Scenario signal:** A support bot needs JSON answers with **citations** and **abstention** when evidence is missing.
+- **Recognition clues:** A support bot needs JSON answers with **citations** and **abstention** when evidence is missing.
 
 ### Study notes
 
@@ -275,7 +286,7 @@ Evidence source: `mock_1` and `mock_5`, especially prompt structure, **few-shot*
   1. Constrained decoding / grammar-restricted generation (GBNF, **JSON schema**) — most reliable, no prompt vulnerability
   2. Function calling with strict schema — model selects function and parameters, validated by runtime
   3. Prompt with format example + post-processing parser — less reliable, model can produce trailing prose
-  - Exam trap: "A better prompt always fixes format issues" → constrained decoding is the structural fix
+  - Decision trap: "A better prompt always fixes format issues" → constrained decoding is the structural fix
 
 ### Must know
 
@@ -326,7 +337,7 @@ Evidence source: `mock_1` and `mock_5`, especially prompt structure, **few-shot*
    Best answer pattern: Suspect unfaithful **chain-of-thought**; test direct prompting, larger model, or verifier-based approach.
    Trap: Assuming more visible reasoning always improves accuracy.
 
-### High-yield exam signals
+### What to recognize
 
 - **Format control**: The model must output specific JSON/XML/YAML → constrained decoding, not just "better prompts"
 - **Citations**: Regulated domain, must cite sources → numbered passages [n], inline citation instructions, post-generation verification

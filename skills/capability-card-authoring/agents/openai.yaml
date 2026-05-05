@@ -1,0 +1,4 @@
+interface:
+  display_name: "Capability Card Authoring"
+  short_description: "Write complete certification capability and service cards."
+  default_prompt: "Use this skill when adding or revising certification capability cards, NVIDIA service pages, or new certificate study sections."

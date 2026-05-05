@@ -6,9 +6,28 @@ source_lens: general-study
 
 # Model Customization Toolkit
 
+## What to study first
+
+- **Core idea:** You are building the path for changing an existing model's durable behavior with curated examples: SFT, PEFT/LoRA, QLoRA, preference tuning, alignment, or continued pretraining. Use it when prompting and RAG are not enough.
+- **Study first:** Establish a baseline model, prompt, and eval.
+- Decide whether the requirement is behavior, style, domain reasoning, or fresh knowledge.
+- Curate examples, labels, rubrics, tool traces, preference pairs, and validation holdouts.
+- Choose method: PEFT/LoRA, full SFT, preference tuning, or continued pretraining.
+- Train/tune with adapter and dataset lineage.
+
 ## What You Are Building
 
 You are building the path for changing an existing model's durable behavior with curated examples: SFT, PEFT/LoRA, QLoRA, preference tuning, alignment, or continued pretraining. Use it when prompting and RAG are not enough.
+
+## Lifecycle Lane Playbooks
+
+| Lane | What this page means there | Output |
+|---|---|---|
+| Train model from zero | Usually not used; full training creates the base model. Customization may happen later as a separate lane. | Not the foundation checkpoint |
+| Fine-tune existing model | Main lane: choose PEFT/LoRA/QLoRA/SFT/preference tuning based on data shape, budget, and required behavior change. | Adapter or tuned checkpoint with eval evidence |
+| Use existing model/API | Use only if prompt/context does not produce durable behavior. Otherwise avoid unnecessary tuning. | Optional tuned variant |
+| Build agent/RAG application | Use when tool-call behavior, rubric following, or response style must stick beyond prompts/RAG. | Adapter trained on curated trajectories or preference data |
+| Operate, govern, and improve | Incidents or reviewer labels may become tuning data after curation; eval first, tune only when prompt/RAG/policy fixes are insufficient. | Curated tuning issue and regression proof |
 
 ## Pipeline
 
@@ -116,6 +135,47 @@ Every adapter or tuned checkpoint needs a release record:
 - Validation, regression, safety, and task-quality results.
 - Known regressions, fallback model, and rollback target.
 - Serving path: NeMo Customizer/Framework output, NeMo Evaluator evidence, NIM or endpoint profile for deployment.
+
+### Customization term decoder
+
+| Term | What changes | What data looks like |
+|---|---|---|
+| SFT | Model learns to imitate target responses | Prompt/response examples with clean formats and labels |
+| PEFT/LoRA | Small adapter weights are trained while base model stays mostly frozen | Same task examples, usually cheaper and easier to version |
+| QLoRA | Adapter training with the frozen base loaded in low-bit form to save memory | Useful when GPU memory is limited; not the same as serving quantization |
+| Preference tuning | Model learns which answer is preferred | Pairs or rankings: response A better than response B with reason/rubric |
+| DPO | Direct preference optimization from pairs | Preference data without a separate reward-model pipeline |
+| Continued pretraining | Base distribution shifts with raw domain text | Large unlabeled domain corpus, not instruction examples |
+| Catastrophic forgetting | Prior ability regresses after narrow tuning | General chat, safety, or old tasks fail after update |
+
+The exam usually tells you the data shape. Single gold responses point toward SFT/PEFT. Ranked pairs point toward preference tuning. Raw domain text points toward continued pretraining. Fresh private facts point away from tuning and toward RAG.
+
+### Implementation card: SFT and preference losses
+
+```python
+# SFT: imitate gold responses.
+outputs = model(input_ids, labels=labels)
+loss_sft = outputs.loss  # next-token cross-entropy over target response tokens
+
+# Pairwise preference / DPO intuition.
+chosen_logp = sequence_logprob(policy_model, prompt, chosen_response)
+rejected_logp = sequence_logprob(policy_model, prompt, rejected_response)
+ref_chosen_logp = sequence_logprob(reference_model, prompt, chosen_response)
+ref_rejected_logp = sequence_logprob(reference_model, prompt, rejected_response)
+
+policy_margin = chosen_logp - rejected_logp
+reference_margin = ref_chosen_logp - ref_rejected_logp
+loss_dpo = -log_sigmoid(beta * (policy_margin - reference_margin)).mean()
+
+# Regression eval after tuning.
+gate = (
+    task_score(adapter_model) >= baseline_score + 0.03
+    and safety_score(adapter_model) >= baseline_safety - 0.01
+    and general_regression_score(adapter_model) >= 0.98 * baseline_general
+)
+```
+
+Customization training minimizes losses such as cross-entropy or preference loss. Customization release gates use metrics: task win rate, exact/schema validity, safety pass rate, refusal quality, latency, cost, and regression on prior capabilities.
 
 ## Exam Signals
 

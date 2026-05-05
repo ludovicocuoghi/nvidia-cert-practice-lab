@@ -6,30 +6,138 @@ status: populated
 
 # NeMo Agent Toolkit
 
-## At a glance
+## What to study first
+
+- **Core idea:** NeMo Agent Toolkit is the `nat` workflow layer. You configure model providers in `llms:`, callable work in `functions:` / `function_groups:`, optional `retrievers:` and `memory:`, then choose the control-flow pattern with `workflow._type`.
+- **Study first:** read the code block above this panel before memorizing names
+- `_type: tool_calling_agent` is for clean structured tool calls
+- `_type: react_agent` is for observation-dependent loops
+- `_type: reasoning_agent` and `_type: rewoo_agent` plan first
+- `_type: router_agent` chooses one branch
+- `_type: parallel_executor` fans out independent branches
+- `_type: sequential_executor` chains known steps
+- `_type: auto_memory_agent` wraps another agent with memory capture/retrieval.
+- **When to use which:** use tool-calling for one or a few schema-based calls; ReAct when each next action depends on the previous observation; ReWOO/plan-and-execute when the plan is knowable upfront; router when exactly one specialist should handle the request; parallel when branches are independent; sequential when every step feeds the next one; memory wrapper when user/session facts should be recalled without explicit memory tool calls.
+- **MCP boundary:** MCP is not the agent. Toolkit can consume MCP tools as functions or publish a workflow/tool through MCP, while a separate tool gateway may still own auth, schema policy, retries, and audit.
+- **Reasoning shorthand:** CoT decomposes a problem step by step; ToT explores multiple candidate plans; ReAct reasons between actions; ReWOO plans first, executes evidence-gathering steps, then synthesizes. Keep raw hidden reasoning internal and expose concise evidence-based explanations.
+
+## Actual implementation / How you use it
 
 | | |
 |---|---|
-| **What it is** | Python SDK/framework — build and orchestrate AI agents with tools, memory, and multi-agent coordination |
-| **How you access it** | `pip install nvidia-agent-toolkit` or NGC container |
-| **Input** | Tool definitions (JSON schemas) + agent config + user query |
-| **Output** | Orchestrated agent actions (tool calls, final answers), multi-agent workflows |
-| **Inside** | ReAct/Plan-and-Execute loops, tool schemas, memory wrappers, tracing/evaluation |
+| **What it is technically** | A config-driven Python workflow runtime for enterprise agents. You wire `functions`, `llms`, `embedders`, `retrievers`, `memory`, and a `workflow` in YAML, then run it with the `nat` CLI or serve it as an API/MCP/A2A endpoint. |
+| **How you access it** | Install `nvidia-nat` plus optional extras such as `nvidia-nat[langchain]`, `nvidia-nat[mcp]`, or `nvidia-nat[eval]`; use the `nat` CLI (`nat run`, `nat serve`, `nat workflow create`, `nat info components`). |
+| **Input** | Workflow YAML + tool/function definitions + model provider config + user input. Tools can be native functions, MCP tools, LangChain/LlamaIndex/CrewAI-style integrations, retrievers, memory, or custom Python components. |
+| **Output** | Executed agent workflow: tool calls, routed branches, sequential/parallel branch outputs, traces/eval results, API responses, or published MCP/A2A tools. |
+| **Inside** | `workflow`, `functions`, `function_groups`, `llms`, `embedders`, `retrievers`, `memory`; components such as `tool_calling_agent`, `react_agent`, `reasoning_agent`, `rewoo_agent`, `router_agent`, `parallel_executor`, `sequential_executor`, `auto_memory_agent`; MCP client/server, A2A, tracing, eval, profiling. |
 
-```python
-from nvidia_agent_toolkit import Agent, Tool
-tool = Tool(name="web_search", description="Search the web", parameters={"query": "string"})
-agent = Agent(tools=[tool], model="nim://nemotron-4-15b")
-response = agent.run("What's the latest NVIDIA GPU?")
+```bash
+pip install "nvidia-nat[langchain]"
+pip install "nvidia-nat[mcp]"
+pip install "nvidia-nat[eval]"
+
+nat workflow create --workflow-dir examples support_agent
+nat run --config_file configs/support_agent.yml --input "Summarize this customer risk."
+nat serve --config_file configs/support_agent.yml --host 0.0.0.0 --port 8000
 ```
 
-**Mental model**: the Python framework that gives your LLM tools, memory, and multi-step reasoning — LangChain-like but NVIDIA-native.
+```yaml
+# Pattern map: change workflow._type to change the agent behavior.
+llms:
+  nim_llm:
+    _type: nim
+    model_name: meta/llama-3.1-70b-instruct
+
+functions:
+  lookup_ticket:
+    _type: chat_completion
+    llm_name: nim_llm
+  summarize_policy:
+    _type: chat_completion
+    llm_name: nim_llm
+
+workflow:
+  # 1) Tool-calling: one/few structured tool calls.
+  _type: tool_calling_agent
+  tool_names: [lookup_ticket, summarize_policy]
+  llm_name: nim_llm
+
+  # 2) ReAct: reason -> act -> observe loop.
+  # _type: react_agent
+  # tool_names: [lookup_ticket, summarize_policy]
+  # llm_name: nim_llm
+  # max_tool_calls: 6
+
+  # 3) Router: choose exactly one specialist branch.
+  # _type: router_agent
+  # branches: [lookup_ticket, summarize_policy]
+  # llm_name: nim_llm
+
+  # 4) Sequential / parallel executors: deterministic chain or fan-out.
+  # _type: sequential_executor
+  # tool_list: [lookup_ticket, summarize_policy]
+  # _type: parallel_executor
+  # tool_list: [lookup_ticket, summarize_policy]
+
+  # 5) ReWOO / reasoning wrapper: plan first, then execute.
+  # _type: rewoo_agent
+  # tool_names: [lookup_ticket, summarize_policy]
+  # llm_name: nim_llm
+  # _type: reasoning_agent
+  # augmented_fn: summarize_policy
+  # llm_name: nim_llm
+
+  # 6) Automatic memory wrapper: add memory around another agent.
+  # _type: auto_memory_agent
+  # inner_agent_name: support_agent
+  # memory_name: user_memory
+```
+
+```yaml
+# Composition example: router picks a specialist ReAct workflow.
+functions:
+  support_react_agent:
+    _type: react_agent
+    tool_names: [ticket_lookup, policy_search]
+    llm_name: nim_llm
+    max_tool_calls: 6
+
+workflow:
+  _type: router_agent
+  branches: [support_react_agent, billing_workflow, fallback_workflow]
+  llm_name: nim_llm
+  detailed_logs: true
+```
+
+**Mental model**: NeMo Agent Toolkit is the NVIDIA workflow harness around agents. It does not serve the model, build the retriever index, or enforce every safety rule by itself; it decides which configured function/tool/agent runs, how steps are chained or parallelized, and how the workflow is observed and evaluated.
 
 ---
 
 ## What it is, in one paragraph
 
-NVIDIA's framework for building, orchestrating, and deploying agentic AI workflows. Provides built-in support for tool integration, dialogue orchestration, skill chaining, memory management, and multi-agent coordination. It is the **agent workflow/tool orchestration layer** — not a model training tool, not an inference optimizer, not a safety filter.
+NVIDIA's framework for building, orchestrating, evaluating, and deploying agentic AI workflows. The practical surface is not a single `Agent(...)` class; it is a `nat` workflow made from YAML sections such as `llms`, `functions`, `retrievers`, `memory`, and `workflow`. Choose it when the problem is control flow around tools and agents: ReAct loops, tool-calling agents, router agents, sequential or parallel execution, existing framework integration, MCP/A2A publishing, tracing, evals, and workflow profiling.
+
+## Actual workflow and API surface
+
+| Need | What you call/configure | Recognition cue |
+|---|---|---|
+| Install core toolkit | `pip install nvidia-nat` | Base package and `nat` CLI |
+| Add framework plugins | `nvidia-nat[langchain]` or first-party plugin packages such as `nvidia-nat-llama-index` / `nvidia-nat-crewai` | Existing framework integration without replatforming |
+| Add MCP tools | `nvidia-nat[mcp]`, `mcp_client`, `nat mcp ...` | Use remote MCP server tools as Toolkit functions, or publish a workflow/tool as MCP |
+| Define model provider | `llms: nim_llm: _type: nim` | NIM/OpenAI/AWS Bedrock/Azure OpenAI/LiteLLM/Hugging Face provider config |
+| Define callable work | `functions:` and `function_groups:` | Tools, agents, retrievers, and wrappers the workflow can call |
+| ReAct agent | `workflow: _type: react_agent`, `tool_names`, `llm_name`, `max_tool_calls` | Reason/action/observation loop; good when each step depends on previous tool output |
+| Reasoning agent | `_type: reasoning_agent`, `augmented_fn`, `llm_name` | Plan ahead for a configured function/agent; useful when task-specific planning improves execution |
+| ReWOO agent | `_type: rewoo_agent`, `tool_names`, `llm_name` | Plan once, execute evidence-gathering steps, then synthesize; efficient when plan is knowable upfront |
+| Tool-calling agent | `_type: tool_calling_agent` | Structured tool/function definitions; requires a tool-calling-capable LLM |
+| Router agent | `_type: router_agent`, `branches`, `llm_name` | Classify a request and select one specialist branch |
+| Parallel executor | `_type: parallel_executor`, `tool_list` | Fan out the same input to independent tools, then append branch outputs |
+| Sequential executor | `_type: sequential_executor`, `tool_list` | Chain tool output into the next tool without using an LLM for every step |
+| Memory wrapper | `_type: auto_memory_agent`, `inner_agent_name`, `memory_name` | Add automatic memory capture/retrieval to ReAct, ReWOO, tool-calling, or custom agents |
+| Run locally | `nat run --config_file ... --input ...` | Console/debug execution of a workflow |
+| Serve workflow | `nat serve --config_file ... --host ... --port ...` | Expose workflow as a FastAPI microservice |
+| Evaluate workflow | `nat eval --config_file ... --dataset ...` | Dataset-based workflow evaluation and performance instrumentation |
+| Discover components | `nat info components` | Find registered `_type` values and config fields |
 
 ## Where it sits in the lifecycle
 
@@ -50,22 +158,22 @@ NVIDIA's framework for building, orchestrating, and deploying agentic AI workflo
 - "Tool use and dialogue orchestration" — built-in support for these (mock_2 Q20)
 - Parallelizing independent skills: retrieval, memory, tools can operate concurrently through modular runtime
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
-- **Model inference optimization**: That's TensorRT-LLM or Triton. NeMo Agent Toolkit orchestrates workflows, not GPU kernels.
-- **Model training/customization**: That's NeMo Framework or NeMo Customizer.
-- **Safety filtering and jailbreak prevention**: That's NeMo Guardrails.
-- **Data curation/deduplication**: That's NeMo Curator.
-- **Kernel profiling**: That's Nsight Systems / Nsight Compute.
-- **"Compile all skills into a single monolithic model"**: The toolkit supports modular orchestration, not monolithic compilation (mock_2 Q58).
-- **GPU-accelerated training of LLMs**: That's NeMo Framework, not the Agent Toolkit (mock_2 Q20).
+- **The missing capability is only retrieval**: use NeMo Retriever for extraction, embedding, vector/hybrid search, and reranking; use Agent Toolkit when an agent must call that retriever as one tool among others.
+- **The missing capability is only runtime policy**: use NeMo Guardrails for refusal flows, tool restrictions, jailbreak checks, and grounded-output validation; use Agent Toolkit when the workflow must decide when those checks run.
+- **The missing capability is only an endpoint**: use NIM/Triton to expose a model behind APIs; use Agent Toolkit when the endpoint is just one model provider inside a broader workflow.
+- **The missing capability is a tool boundary**: a generic tool gateway/MCP server may own authentication, schemas, retries, and audit; Agent Toolkit consumes or publishes those tools but should not hide authorization in prompt text.
+- **The missing capability is one deterministic process**: a simple state machine or sequential executor is better than adding multiple agents when every step is known and no reasoning/routing is needed.
 
 ## How it relates to neighboring services
 
-- vs **NeMo Framework**: Framework trains and customizes models; Agent Toolkit orchestrates agent workflows around those models.
-- vs **NeMo Guardrails**: Guardrails enforces safety policies at the input/output boundary; Agent Toolkit manages tool orchestration and workflow state. They're complementary layers.
-- vs **NIM**: NIM serves optimized model APIs; Agent Toolkit connects those APIs with tools and workflow logic.
-- vs **LangChain/LlamaIndex**: Similar orchestration domain, but NeMo Agent Toolkit is NVIDIA-native with GPU-optimized runtime, async execution, and caching.
+- vs **NeMo Retriever**: Retriever owns the RAG capability: extraction, embeddings, search, reranking, and citations. Agent Toolkit decides when and how an agent calls the retriever.
+- vs **NeMo Guardrails**: Guardrails owns policy enforcement. Agent Toolkit owns workflow routing, tool execution, memory wiring, traces, and evals. They usually sit together.
+- vs **NIM**: NIM serves optimized model APIs; Agent Toolkit configures those model providers in `llms:` and coordinates them with tools.
+- vs **MCP**: MCP is a protocol for exposing tools/context. Agent Toolkit can act as an MCP client/host or server runtime, but MCP itself is not an agent orchestration policy.
+- vs **LangChain/LlamaIndex/CrewAI**: Similar neighboring frameworks. Agent Toolkit can wrap or integrate existing framework components instead of forcing a rewrite.
+- vs **NeMo Framework/Customizer**: Those change model weights or adapters. Agent Toolkit changes the runtime workflow around the model.
 
 ## Numbers, defaults, knobs you should recognize
 
@@ -94,9 +202,9 @@ NVIDIA's framework for building, orchestrating, and deploying agentic AI workflo
 
 This deep dive covers the key concepts behind NeMo Agent Toolkit that the exam tests:
 
-- **[Agent Architecture Patterns]**: ReAct, Plan-and-Execute, Router-based, and Multi-agent coordination — when each pattern fits
+- **[Agent Architecture Patterns]**: tool-calling, ReAct, reasoning wrapper, ReWOO/plan-and-execute, router, sequential/parallel executors, memory wrapper, and multi-agent coordination — when each pattern fits
 - **[Tool Integration]**: function calling schema, tool selection mechanism, and error handling (retry, fallback chain, escalate)
-- **[Planning and Reasoning]**: Chain-of-Thought, Tree-of-Thought, ReWOO, and budgeted execution with max steps/tokens/critic nodes
+- **[Planning and Reasoning]**: Chain-of-Thought, Tree-of-Thought, ReWOO, reasoning wrappers, and budgeted execution with max steps/tokens/critic nodes
 - **[Memory in Agents]**: short-term (conversation context), working (scratchpad/task state), and long-term (persistent vector store) — with write policies and retrieval strategies
 - **[Multi-Agent Coordination]**: orchestrator, peer-to-peer, and hierarchical patterns — when multi-agent adds value vs a single agent with tools
 
@@ -118,7 +226,7 @@ Final Answer: Your balance is $500.
 ```
 ReAct works best when each step depends on the previous observation — the agent cannot plan ahead because it does not know what it will find. It is ideal for interactive troubleshooting, data lookup, and research tasks where intermediate results inform next steps. The downside: each step requires an LLM call, so latency grows linearly with steps.
 
-**Plan-and-Execute:**
+**Reasoning wrapper / Plan-and-Execute:**
 The agent first creates a plan, then executes steps:
 ```
 Plan:
@@ -130,7 +238,7 @@ Execution:
 → Step 2: extract(columns=["model", "FLOPS", "memory"])
 → Step 3: generate_summary(data)
 ```
-This pattern works better for well-defined multi-step tasks where the full plan is knowable upfront. It reduces LLM calls (one for planning, then tool calls without LLM in the middle) but cannot adapt to unexpected results as well as ReAct.
+This pattern works better for well-defined multi-step tasks where the full plan is knowable upfront. In NeMo Agent Toolkit, recognize `reasoning_agent` when a configured function/agent is augmented with plan generation, and recognize `rewoo_agent` when the workflow explicitly separates planning, evidence execution, and final solution. It reduces repeated reasoning calls but cannot adapt to unexpected results as well as ReAct.
 
 **Router-based:**
 A lightweight classifier or LLM call classifies the user intent and routes to a specialized handler:
@@ -157,12 +265,16 @@ Orchestrator Agent
 Each specialist has its own tools, instructions, and model configuration. The orchestrator delegates sub-tasks and synthesizes results. This pattern excels when tasks span multiple domains (e.g., "Find the latest research, implement the algorithm, and benchmark it"). The cost: more LLM calls, more latency, and coordination overhead.
 
 **When each pattern fits:**
-- **ReAct:** Single-agent, interactive, observation-dependent tasks (customer support, research)
-- **Plan-and-Execute:** Repetitive multi-step workflows with known structure (report generation, data pipelines)
-- **Router:** High-volume, distinct-intent scenarios (chatbots with clear skill boundaries)
-- **Multi-agent:** Cross-domain tasks requiring multiple specializations (research + code + analysis)
+- **Tool-calling:** Structured one-step or few-step API calls where the model can select from clean function schemas.
+- **ReAct:** Single-agent, interactive, observation-dependent tasks such as support triage, troubleshooting, or research.
+- **Reasoning / ReWOO / Plan-and-Execute:** Repetitive multi-step workflows where the full plan is knowable upfront; use ReWOO when evidence placeholders make the data flow clear and token-efficient.
+- **Router:** High-volume, distinct-intent scenarios with clear skill boundaries.
+- **Sequential executor:** Deterministic known pipeline where each output feeds the next step.
+- **Parallel executor:** Independent branches that share the same input and can be merged later.
+- **Automatic memory wrapper:** Any agent type needs consistent user/session memory without relying on explicit memory tool calls.
+- **Multi-agent:** Cross-domain tasks requiring multiple specializations, different tool scopes, or model/access boundaries.
 
-The NeMo Agent Toolkit can implement all four patterns. The exam-relevant skill is identifying which pattern matches the scenario's constraints (latency, determinism, adaptability).
+The NeMo Agent Toolkit can implement these patterns as YAML-configured agents/functions. The exam-relevant skill is identifying which pattern matches the scenario's constraints: latency, determinism, adaptability, branch independence, memory needs, and tool-boundary ownership.
 
 ### DEEP DIVE: Tool Integration
 
@@ -210,16 +322,16 @@ Step 1: The user wants a comparison of H100 and B200 GPUs.
 Step 2: I need to find specifications for both.
 Step 3: Then I need to compute the performance ratio.
 ```
-CoT improves accuracy over direct answering by forcing the model to decompose problems. It is the default reasoning strategy for most agent implementations because it requires no special infrastructure — just prompting.
+CoT can improve accuracy by making the model decompose problems, but raw hidden reasoning should not be exposed to users or stored in logs by default. For study purposes, know CoT as a planning/decomposition technique; production systems usually expose concise evidence-based explanations instead.
 
 **Tree-of-Thought (ToT):**
-The agent explores multiple reasoning paths simultaneously, evaluates them, and chooses the best:
+The agent explores multiple reasoning paths, evaluates them, and chooses the best:
 ```
 Branch A: Search for H100 specs → Compute FLOPS → Search for B200 specs → Compare
 Branch B: Search for both specs in one query → Compare
 Branch C: Use a comparison tool if available → Output
 ```
-Each branch is evaluated (e.g., "does this approach make sense?"). The agent prunes low-value branches and continues with the best ones. ToT is more robust than CoT for problems with multiple valid approaches (e.g., debugging, optimization, creative tasks), but it is significantly more expensive — each branch is an LLM call.
+Each branch is evaluated (e.g., "does this approach make sense?"). The agent prunes low-value branches and continues with the best ones. ToT is more robust than CoT for problems with multiple valid approaches (debugging, optimization, design review), but it is significantly more expensive because each branch costs model calls and trace complexity.
 
 **ReWOO (Reason Without Observation):**
 A planning strategy where the agent creates a complete tool call plan upfront, then executes all calls, then synthesizes the results:
@@ -261,10 +373,11 @@ Working memory is distinct from conversation history. It is task-specific struct
 - **Task context:** Metadata about the current task (task ID, creation time, assigned tools, deadline).
 
 **Long-term memory (persistent across sessions):**
-Information that persists beyond the current conversation. This is typically implemented via a vector store (e.g., Milvus, FAISS, or NVIDIA's vector database offerings):
-- **Storage:** What gets written to long-term memory is determined by a **memory write policy**: "store user preferences," "store resolved issues," "store learned facts."
-- **Retrieval:** When the agent needs previous context, it queries the vector store with relevance scoring (cosine similarity, embedding distance). Only the top-k most relevant memories are injected into context.
-- **Expiry:** Memories have timestamps and TTLs. Stale memories are deprioritized or deleted. A preference set 6 months ago may be less relevant than one set yesterday.
+Information that persists beyond the current conversation. In NeMo Agent Toolkit, recognize the `memory:` YAML section, memory backends such as Redis, Zep, Mem0, or another `MemoryEditor`, and the `auto_memory_agent` wrapper that automatically retrieves and stores memory around another agent:
+- **Storage:** What gets written to long-term memory is determined by a memory write policy: user preferences, resolved issues, durable facts, or explicit "remember this" requests.
+- **Retrieval:** Relevant memories are searched and injected before the inner agent runs. Only the top relevant memories should enter context.
+- **Isolation:** User identity is runtime context, not a prompt string. Multi-tenant memory must not leak another user's facts.
+- **Expiry:** Memories have timestamps and retention/TTL policy. Stale memories should be deprioritized or deleted.
 
 **Memory write policies:**
 The toolkit allows configuring what triggers a memory write:
@@ -339,41 +452,53 @@ The exam-relevant insight: multi-agent is not always better. If a single agent w
 ## Study card data
 - **Lifecycle:** Agent orchestration and development
 - **Relevant exams:** Agentic AI
-- **What it is:** Python SDK/framework — build and orchestrate AI agents with tools, memory, and multi-agent coordination
-- **Use it when:** Use when an enterprise agent workflow needs tools, memory, retrievers, multi-agent coordination, observability, or framework-flexible orchestration.
-- **Do not use it when:** Do not use it for model serving, low-level inference optimization, data curation, or safety policy enforcement by itself.
-- **Common trap:** Confusing the agent workflow orchestrator with the model server, retriever, or guardrail layer it calls.
-- **Scenario signal:** An enterprise agent must coordinate tools, memory, retrievers, and multi-step workflows across an existing stack.
+- **What it is:** Config-driven `nat` workflow runtime for agent control flow: functions/tools, model providers, retrievers, memory, tool-calling/ReAct/reasoning/ReWOO/router agents, sequential/parallel executors, MCP/A2A, tracing, eval, and serving.
+- **Use it when:** Choose it when the scenario is about wiring agent workflow control: route a request, call tools/retrievers/memory, run independent branches in parallel, chain steps, expose the workflow as an API/MCP server, or evaluate/profile agent traces.
+- **Do not use it when:** Choose the neighboring service when the scenario only needs one capability: Retriever for RAG retrieval, Guardrails for runtime policy, NIM/Triton for model endpoints, NeMo Framework/Customizer for changing weights, or a tool gateway/MCP server for tool auth/schema ownership.
+- **Common trap:** Adding an "agent toolkit" when the real failure is the boundary between tools: missing schema validation, missing access control, bad retriever quality, or no deterministic state owner. Agent Toolkit helps wire the workflow, but it does not magically repair those adjacent layers.
+- **Recognition clues:** `workflow:` YAML with `functions`, `llms`, `retrievers`, `memory`, and a `_type` such as `tool_calling_agent`, `react_agent`, `reasoning_agent`, `rewoo_agent`, `router_agent`, `parallel_executor`, `sequential_executor`, or `auto_memory_agent`.
 ### Study notes
-- Treat this as the agent workflow layer: composing agents, tools, retrievers, memory, evaluators, and observability without forcing a single agent framework.
-- It is useful when an enterprise already has LangChain, LlamaIndex, CrewAI, Semantic Kernel, MCP tools, or custom Python agents and wants instrumentation, workflow configuration, tests, and evaluation.
-- Do not confuse agent orchestration with safety enforcement. Pair it with **NeMo Guardrails** when tool use or user-facing responses need policy checks.
+- Start from the YAML surface: `llms` chooses providers such as NIM/OpenAI; `functions` and `function_groups` define callable work; `workflow` chooses the agent/executor pattern.
+- Pattern choice is the core study target: tool-calling is for clean structured calls; ReAct is for observation-dependent loops; `reasoning_agent`/`rewoo_agent` plan first; router agents pick one branch; sequential executors chain known steps; parallel executors fan out independent work; `auto_memory_agent` wraps another agent with memory capture/retrieval.
+- MCP is not "the agent." It is a tool/context protocol. Agent Toolkit can consume MCP tools as functions or publish workflows/tools through MCP server runtimes.
+- Use Agent Toolkit beside existing LangChain, LlamaIndex, CrewAI, Semantic Kernel, Google ADK, or custom Python agents when the value is instrumentation, workflow configuration, evaluation, and deployment around them.
+- Pair with **NeMo Retriever** when the workflow needs RAG; pair with **NeMo Guardrails** when tool use or user-facing responses need policy checks; pair with **NIM** when the model provider should be a supported NVIDIA endpoint.
 ### Must know
-- **ReAct vs routing vs sequential/parallel**: ReAct interleaves reasoning + action + observation in a loop; routing classifies intent and dispatches to a specialized handler; sequential chains tools output→input; parallel runs independent tools concurrently
-- **tool schemas and validation**: each tool is declared with a JSON schema (name, description, parameters, types); the LLM selects tools by matching intent to schema descriptions; responses are validated before passing to the next step
-- **memory wrappers**: Toolkit provides wrappers for short-term (conversation in context), working (scratchpad/task state), and long-term memory (vector DB retrieval) — each with write policies, relevance scoring, and expiry rules
-- **workflow tracing and evaluation**: every agent step (tool call, LLM inference, memory access) is traced as a span; distributed tracing with correlation IDs enables latency breakdown and quality debugging across the pipeline
-### High-yield exam signals
-- multi-agent workflow → NeMo Agent Toolkit orchestrates multiple specialized agents with tool routing and skill chaining
-- tool orchestration → structured tool schemas with JSON validation, retry/fallback/escalate error handling
-- observability → workflow tracing and evaluation across agent steps for debugging latency and quality
-- existing agent framework → Toolkit wraps LangChain, LlamaIndex, CrewAI, or custom Python agents without forcing a rewrite
-- MCP → Model Context Protocol support for connecting external tools and data sources
+- **Install/CLI**: `pip install nvidia-nat`; optional extras include `nvidia-nat[langchain]`, `nvidia-nat[mcp]`, and `nvidia-nat[eval]`; run with `nat run`, serve with `nat serve`, inspect with `nat info components`.
+- **YAML sections**: `functions`, `function_groups`, `llms`, `embedders`, `retrievers`, `memory`, `workflow`.
+- **Agent/executor `_type` values**: `tool_calling_agent`, `react_agent`, `reasoning_agent`, `rewoo_agent`, `router_agent`, `parallel_executor`, `sequential_executor`, `auto_memory_agent`.
+- **LLM provider config**: `llms: nim_llm: _type: nim, model_name: meta/llama-3.1-70b-instruct`.
+- **MCP boundary**: `nvidia-nat[mcp]` lets Toolkit discover remote MCP tools as functions or publish Toolkit workflows/tools as MCP.
+- **Evaluation boundary**: `nat eval` tests workflows against datasets and instruments quality/performance; it is not the same as live monitoring alone.
+### What to recognize
+- "router agent" / `branches` / "choose one specialist" -> NeMo Agent Toolkit router agent.
+- "`parallel_executor`" / fan-out/fan-in / independent branch analysis -> NeMo Agent Toolkit parallel executor.
+- "`sequential_executor`" / deterministic chain where output feeds the next function -> NeMo Agent Toolkit sequential executor.
+- "`react_agent`" / reason-action-observation loop with tool calls -> NeMo Agent Toolkit ReAct agent.
+- "`tool_calling_agent`" / structured function schema / one or few tool calls -> NeMo Agent Toolkit tool-calling agent.
+- "`reasoning_agent`" / `augmented_fn` / plan before executing a configured function -> NeMo Agent Toolkit reasoning wrapper.
+- "`rewoo_agent`" / plan -> evidence slots such as `#E1` -> final answer -> NeMo Agent Toolkit ReWOO pattern.
+- "`auto_memory_agent`" / `inner_agent_name` + `memory_name` -> NeMo Agent Toolkit memory wrapper around another agent.
+- "`mcp_client`" / "use MCP tools as functions" / publish workflow as MCP -> NeMo Agent Toolkit plus MCP plugin.
+- "existing LangChain/LlamaIndex/CrewAI stack needs traces/evals/deployment" -> NeMo Agent Toolkit around the existing stack.
 ### Related services
 
 - **NeMo Guardrails**
 - **NeMo Retriever**
 - **NIM**
+- **MCP / tool gateway**
+- **LangChain, LlamaIndex, CrewAI, Semantic Kernel**
 - **Nemotron** models
 
 ### Hands-on checks
-- Draw a router -> specialist tool agent -> retriever -> final response workflow and mark where tracing/evaluation happens.
+- Draw a `router_agent` -> specialist `react_agent` -> Retriever function -> Guardrails check -> final response workflow and mark which pieces are Toolkit-owned versus neighboring services.
+- Write a YAML sketch with `llms`, two `functions`, and a `parallel_executor`; explain why parallel is correct only when branches do not depend on each other.
 ## Exam tips from mocks
 - Mock-style questions test whether **NeMo Agent Toolkit** matches **Agent orchestration and development**, not whether the product name sounds familiar.
-- Choose it when the scenario signal matches this boundary: Use when an enterprise agent workflow needs tools, memory, retrievers, multi-agent coordination, observability, or framework-flexible orchestration.
-- Reject it when the problem is actually about another layer: Do not use it for model serving, low-level inference optimization, data curation, or safety policy enforcement by itself.
-- The common trap pattern is: Confusing the agent workflow orchestrator with the model server, retriever, or guardrail layer it calls.
-- Expect distractors around nearby services such as **Nsight Compute**, **NCCL**, **NIM**. Decide by lifecycle first, product name second.
+- Choose it when the scenario includes `workflow:` YAML, `functions`, `llms`, branch routing, tool calls, MCP tool discovery, sequential/parallel executors, traces, or agent workflow evaluation.
+- Choose another service when the problem is really one adjacent capability: Retriever quality, Guardrails policy, NIM/Triton serving, NeMo Framework/Customizer training, or tool-gateway authorization.
+- The common trap pattern is: adding "more agent" language when the real failure is an unowned tool boundary, missing schema, bad retrieval, or absent deterministic state machine.
+- Expect distractors around nearby services such as **NeMo Retriever**, **NeMo Guardrails**, **NIM**, **MCP**, and **LangChain/LlamaIndex**. Decide by workflow boundary first.
 - Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.
 <details>
 <summary>Mock question links (click to expand)</summary>

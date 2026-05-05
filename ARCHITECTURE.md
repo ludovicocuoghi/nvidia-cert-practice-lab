@@ -23,7 +23,7 @@ Local React simulator for NVIDIA certification practice. Multi-cert capable. The
 .
 ├── server/src/index.ts             # TypeScript API server + built-client static server
 ├── package.json
-├── .env.example                    # ANTHROPIC_API_KEY etc.
+├── .env.example                    # LLM_API_KEY etc.
 ├── client/
 │   ├── index.html
 │   ├── vite.config.ts
@@ -107,7 +107,8 @@ Combines:
 
 `.env` (gitignored). See `.env.example`:
 
-- `ANTHROPIC_API_KEY` — required for `/api/generate-questions`
+- `LLM_API_KEY` — required for `/api/generate-questions` and tutor chat
+- `LLM_API_URL`, `LLM_MODEL` — optional OpenAI-style chat-completions provider overrides
 - `CERT_SLUG` — override default cert
 - `PORT`, `HOST` — override server bind
 

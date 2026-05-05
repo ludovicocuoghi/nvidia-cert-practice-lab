@@ -6,6 +6,22 @@ status: populated
 
 # Safety, Ethics, and Compliance
 
+## What to study first
+
+- **Core idea:** Apply **responsible AI** controls across **bias**, **fairness**, **PII**, **guardrails**, **red-teaming**, and policy **monitoring**.
+- **Use it when:** Study this when the model handles sensitive data, regulated workflows, or user-facing policy decisions.
+- **Study first:** prompt injection: — direct (user overrides instructions) vs indirect (untrusted content hijacks model)
+- defend with instruction isolation, **canary** tokens, privilege separation
+- least privilege: — tool calls should use the minimum permissions needed
+- a model processing untrusted content should not have delete/admin tools
+- PII: — personally identifiable information
+- detect via regex + NER ensemble
+- redact before training
+- never train on raw **PII**
+- audit logs: — record model version, prompt hash, policy decisions, tool calls, and **redaction** events for **compliance** traceability
+- approval gates: — require human approval for high-risk tool calls (deploy, delete, financial transactions, admin actions)
+- **Real trap:** **Safety** cannot be patched only at the final response if sensitive data already entered context.
+
 ## Certification boundary
 
 This page is the NCP-GENL exam lens for LLM safety and responsible AI. Keep bias, moderation, model cards, privacy, licensing, differential privacy, and NeMo Guardrails knowledge here when tied to LLM systems. Agent trajectory safety, tool approval, and cross-vendor guardrail lifecycle belong in Agentic AI General Study.
@@ -148,7 +164,7 @@ A model card documents:
 - **Licensing considerations**: Commercial vs research-only; derivative work restrictions
 - **Red-teaming**: Structured adversarial testing by internal/external teams before release
 
-## Common exam traps
+## Decision traps worth remembering
 
 1. **Prompt-based safety** — Prompt-based **safety** can be jailbroken, ignored, or hallucinated past. Deterministic **guardrails** (**NeMo Guardrails**) are required for **safety**-critical applications.
 
@@ -207,7 +223,7 @@ A model card documents:
 - **Sustainability** — carbon footprint reporting, efficient architectures
 - **Fairness-accuracy tradeoff** — optimizing **fairness** metric may reduce overall accuracy
 
-### Top exam traps
+### Top decision traps
 - **Deterministic safety needed** → prompt is not a deterministic **safety** boundary
 - **Fairness definitions** → multiple **fairness** definitions; can conflict with each other
 - **Differential privacy guarantee** → DP has mathematical guarantee; anonymization can be reversed
@@ -237,7 +253,7 @@ Evidence source: `mock_1` through `mock_5`, especially **bias**/**fairness**, co
 - **What it covers:** Apply **responsible AI** controls across **bias**, **fairness**, **PII**, **guardrails**, **red-teaming**, and policy **monitoring**.
 - **Use this section when:** Study this when the model handles sensitive data, regulated workflows, or user-facing policy decisions.
 - **Common trap:** **Safety** cannot be patched only at the final response if sensitive data already entered context.
-- **Scenario signal:** A **RAG** assistant must avoid leaking tenant data while still answering authorized questions.
+- **Recognition clues:** A **RAG** assistant must avoid leaking tenant data while still answering authorized questions.
 
 ### Study notes
 
@@ -306,7 +322,7 @@ Evidence source: `mock_1` through `mock_5`, especially **bias**/**fairness**, co
    Best answer pattern: Evaluate **equalized odds/equal opportunity** and mitigate with slice-specific evaluation and data/model controls.
    Trap: Claiming fairness from aggregate accuracy alone.
 
-### High-yield exam signals
+### What to recognize
 
 - **Sensitive data in context**: User provides **PII** or confidential information in the prompt → apply input filter to detect and redact **PII** before it reaches the model; never log raw sensitive data.
 - **External instructions via retrieved content**: A retrieved document contains "Ignore previous instructions" → indirect **prompt injection**; isolate retrieved content in a separate {{CONTEXT}} section with clear boundaries, never merge into the instruction slot.

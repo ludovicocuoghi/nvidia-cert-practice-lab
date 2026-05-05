@@ -6,6 +6,17 @@ status: populated
 
 # Agent Development
 
+## What to study first
+
+- **Core idea:** Build agents that use prompts, APIs, tools, structured outputs, **orchestration** frameworks, and error handling.
+- **Use it when:** Study this when questions involve implementing reliable tool use or controlling agent behavior through code and schemas.
+- **Study first:** Schema-constrained tool calling: typed JSON schemas define tool name, description, parameters, and required fields — runtime rejects calls outside the declared schema before execution
+- Structured output: model responses must fit predefined fields (JSON or typed objects) so downstream code can parse, validate, and route them reliably
+- Runtime validation: pre-execution checks on tool parameters, permissions, and schema compliance — separate from prompt-level instructions
+- Permission validation: tool-level access control before execution — **least privilege** per agent, role, user, and workflow state
+- Schema validation: parameter type checks, required-field verification, enum/value-range enforcement, and safe defaults
+- **Real trap:** Prompting alone is not enough for tool safety; validate tool names, parameters, permissions, and outputs.
+
 ## Certification boundary
 
 This page is the NCP-AAI exam lens for building agents. Keep tool-wrapper, workflow, reliability, and integration knowledge when it is needed for the NVIDIA Agentic AI blueprint. Put the reusable vendor-neutral version in `Agentic AI General Study -> Tooling, Orchestration, and Memory`; keep NVIDIA service cues here.
@@ -120,7 +131,7 @@ Agent Development sits between architecture (design) and deployment (ops). It co
 | **NeMo Agent Toolkit** | Connecting tools, data sources, multiple agents; skill chaining with async execution and caching; tool use and dialogue **orchestration** | When the question asks about model training, **inference optimization**, or safety filtering |
 | **NeMo Guardrails** | Enforcing topical restrictions, blocking jailbreaks, validating grounded **RAG** answers | When the question is about tool **orchestration** or API integration (that's **NeMo Agent Toolkit**) |
 
-## Common exam traps
+## Decision traps worth remembering
 
 1. **"Tell the model not to do X"** as a development control. Prompt-only tool restrictions are bypassable. The exam expects schema constraints, execution gates, and sandboxing.
 
@@ -175,7 +186,7 @@ Evidence source: `mock_1` through `mock_5`, especially tool safety, prompt chain
 - **What it covers:** Build agents that use prompts, APIs, tools, structured outputs, **orchestration** frameworks, and error handling.
 - **Use this section when:** Study this when questions involve implementing reliable tool use or controlling agent behavior through code and schemas.
 - **Common trap:** Prompting alone is not enough for tool safety; validate tool names, parameters, permissions, and outputs.
-- **Scenario signal:** The agent can choose or execute tools, but reliability fails because schemas, **state gates**, retries, or **output validation** are missing.
+- **Recognition clues:** The agent can choose or execute tools, but reliability fails because schemas, **state gates**, retries, or **output validation** are missing.
 
 ### Study notes
 
@@ -248,7 +259,7 @@ Evidence source: `mock_1` through `mock_5`, especially tool safety, prompt chain
    Best answer pattern: Parallelize all three read-only calls, then merge results into **structured observations** before the reasoning step.
    Trap: Sequential calls for independent data — each waiting for the previous to complete when no dependency exists.
 
-### High-yield exam signals
+### What to recognize
 
 - **Wrong tool call**: agent calls the refund API during authentication because tool descriptions are ambiguous and no workflow-state gate exists
 - **Ambiguous API**: two tools have overlapping names or descriptions, causing consistent **wrong-tool selection** and possible permission-boundary mistakes

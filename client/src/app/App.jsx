@@ -1,15 +1,32 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { nvidiaServices, serviceFilters, studySections } from "../data/study-services.js";
+import { nvidiaAcronymExpansions, nvidiaServices, serviceFilters, studySections } from "../data/study-services.js";
 
 const h = React.createElement;
+const MISSING_LLM_KEY_MESSAGE = "Coach chat needs an LLM API key. Create .env from .env.example, set LLM_API_KEY, then restart the dev server.";
 
 async function api(path, options = {}) {
   const response = await fetch(path, {
     headers: { "content-type": "application/json" },
     ...options
   });
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json();
+  const contentType = response.headers.get("content-type") || "";
+  const body = contentType.includes("application/json")
+    ? await response.json().catch(() => null)
+    : null;
+  if (!response.ok) {
+    const error = new Error(body?.error || `Request failed: ${response.status}`);
+    error.status = response.status;
+    error.code = body?.code || "";
+    throw error;
+  }
+  return body || {};
+}
+
+function coachErrorMessage(err, fallback = "Coach request failed") {
+  if (err?.code === "missing_llm_api_key" || /LLM_API_KEY|API key/i.test(err?.message || "")) {
+    return MISSING_LLM_KEY_MESSAGE;
+  }
+  return err?.message || fallback;
 }
 
 function certPath(path, slug) {
@@ -1086,7 +1103,7 @@ function App() {
       if (aborted()) return;
       // The server falls back to heuristic picks when the LLM is slow;
       // this error means the entire endpoint is unreachable.
-      setCoachStatus({ state: "error", message: "Practice selector is unreachable. Tap again to retry." });
+      setCoachStatus({ state: "error", message: coachErrorMessage(err, "Practice selector is unreachable. Tap again to retry.") });
     }
   }
 
@@ -1627,7 +1644,7 @@ const LIFECYCLE_FLOWS = {
       { id: "gen-train-data", lane: "Train model from zero", context: "Training data", name: "Curate model corpus", tools: ["Training Data Curation Pipeline"], note: "Dedupe, filter, license-check, redact PII, control contamination, split holdouts" },
       { id: "gen-train-run", lane: "Train model from zero", context: "Training", name: "Run foundation training", tools: ["Foundation Model Training Stack"], note: "Training recipe, distributed jobs, checkpoints, experiment tracking, model card inputs" },
       { id: "gen-train-eval", lane: "Train model from zero", context: "Evaluation", name: "Evaluate trained model", tools: ["Evaluation and Regression Harness"], note: "Quality, safety, regression, bias, capability, and readiness evidence" },
-      { id: "gen-train-serve", lane: "Train model from zero", context: "Publish", name: "Register and serve artifact", tools: ["Model Selection and Registry", "Model Inference Endpoint"], note: "Approve the model, version it, publish endpoint, keep rollback path" },
+      { id: "gen-train-serve", lane: "Train model from zero", context: "Publish trained checkpoint", name: "Register and serve trained artifact", tools: ["Model Inference Endpoint", "Model Serving Gateway"], note: "Register the newly trained checkpoint, package it as an endpoint, route traffic, and keep rollback path" },
 
       { id: "gen-tune-select", lane: "Fine-tune existing model", context: "Base model", name: "Select base model", tools: ["Model Selection and Registry"], note: "Choose the base model/API or checkpoint; record lineage and constraints" },
       { id: "gen-tune-data", lane: "Fine-tune existing model", context: "Tuning data", name: "Curate examples", tools: ["Training Data Curation Pipeline"], note: "Prepare SFT examples, preference pairs, tool traces, PII cleanup, validation holdouts" },
@@ -1651,6 +1668,254 @@ const LIFECYCLE_FLOWS = {
       { id: "gen-ops-review", lane: "Operate, govern, and improve", context: "Oversight", name: "Review and govern risk", tools: ["Human Review and Governance Console", "Policy and Guardrails Layer"], note: "Approval gates, sampled review, escalation, audit evidence, policy updates" },
       { id: "gen-ops-feedback", lane: "Operate, govern, and improve", context: "Improvement loop", name: "Feed fixes back", tools: ["Evaluation and Regression Harness", "Training Data Curation Pipeline", "Prompt and Context Design"], note: "Turn incidents and review labels into evals, prompts, data fixes, or tuning work" }
     ]
+  }
+};
+
+const GENERAL_LIFECYCLE_STAGE_DETAILS = {
+  "gen-train-data": {
+    focus: "This is pretraining data curation, not RAG ingestion. The output is a versioned learning corpus with safe train/val/test splits.",
+    checks: ["Source inventory and license/provenance pass", "Exact and fuzzy dedupe before expensive filters", "PII/secrets redaction or quarantine", "Zero known overlap with eval/benchmark/canary sets"],
+    metrics: ["duplicate removal rate", "PII/secret hit rate", "license rejection rate", "contamination hit count", "source blend percentages"],
+    code: [
+      "docs = inventory_sources(raw_sources)",
+      "docs = exact_dedupe(docs, key=sha256(normalize(text)))",
+      "docs = fuzzy_dedupe(docs, method=\"minhash_lsh\")",
+      "docs = redact_or_quarantine_pii(docs)",
+      "assert contamination_hits(docs, eval_sets) == 0",
+      "train, val, test = split_by_source_or_time(docs)"
+    ].join("\n")
+  },
+  "gen-train-run": {
+    focus: "This is the actual foundation-training job. The input is the curated corpus; the output is checkpoints plus tokenizer/config/training evidence.",
+    checks: ["Architecture/tokenizer/config fixed before large run", "Distributed plan covers data/tensor/pipeline/expert parallelism", "Checkpoint includes optimizer, scheduler, RNG, tokenizer, and sharded metadata", "Loss, grad norm, throughput, and data loader health monitored"],
+    metrics: ["next-token cross-entropy", "perplexity", "tokens/sec", "grad norm", "GPU utilization", "checkpoint restore success"],
+    code: [
+      "for batch in train_loader:",
+      "    logits = model(batch.input_ids).logits",
+      "    loss_lm = cross_entropy(logits[:, :-1], batch.labels[:, 1:])",
+      "    loss = loss_lm + moe_load_balance_loss(model)",
+      "    loss.backward(); clip_grad_norm_(model.parameters(), 1.0)",
+      "    optimizer.step(); scheduler.step(); save_checkpoint_if_due()"
+    ].join("\n")
+  },
+  "gen-train-eval": {
+    focus: "This evaluates the newly trained artifact before anyone publishes it. It is not prompt-only testing; it is release evidence for a new base model.",
+    checks: ["Capability benchmarks and domain tasks", "Safety, bias, refusal, and policy behavior", "Contamination audit against training corpus", "Regression against prior baseline or target profile"],
+    metrics: ["task accuracy/F1", "perplexity on held-out data", "safety pass rate", "bias slices", "groundedness if used in RAG", "p95 latency in serving profile"],
+    code: [
+      "scores = run_eval_suites(candidate_model, protected_holdouts)",
+      "scores[\"contamination\"] = contamination_hits(train_corpus, holdouts)",
+      "release_pass = (scores.capability >= target",
+      "                and scores.safety >= target_safety",
+      "                and scores.contamination == 0)"
+    ].join("\n")
+  },
+  "gen-train-serve": {
+    focus: "This is publishing a model you just trained. Registry means checkpoint lineage and release approval here; it does not mean selecting a different model.",
+    checks: ["Register checkpoint, tokenizer, config, dataset card, model card, and eval report", "Package a serving profile with precision/context limits", "Expose endpoint with health, auth, rate limits, metrics, and rollback", "Route canary traffic only after release gate passes"],
+    metrics: ["readiness/health", "time to first token", "tokens/sec", "p95/p99 latency", "error rate", "rollback time"],
+    code: [
+      "artifact = registry.register(checkpoint, tokenizer, config, eval_report)",
+      "endpoint = deploy_endpoint(artifact, profile=\"bf16-or-fp8-validated\")",
+      "gateway.canary(route=\"trained-v1\", endpoint=endpoint, traffic=0.05)",
+      "if live_quality_ok() and p95_latency_ok(): gateway.promote(\"trained-v1\")"
+    ].join("\n")
+  },
+  "gen-tune-select": {
+    focus: "This is base-model selection for adaptation. You are not training from zero; you are choosing the checkpoint/API that is closest to the needed behavior.",
+    checks: ["Task fit, context length, modality, tool use, license, and hosting constraints", "Baseline eval before tuning", "Adapter compatibility and deployment path", "Rollback target recorded"],
+    metrics: ["baseline task score", "latency/cost", "license/hosting fit", "safety baseline", "context fit"],
+    code: [
+      "candidates = load_approved_models(task, constraints)",
+      "baseline_scores = {m.id: eval_model(m, task_eval) for m in candidates}",
+      "base = argmax(candidates, key=lambda m: utility(m, baseline_scores[m.id]))"
+    ].join("\n")
+  },
+  "gen-tune-data": {
+    focus: "This curates examples for tuning, not a giant pretraining corpus. The data shape tells you the method: SFT examples, preference pairs, or tool traces.",
+    checks: ["Prompt/response examples follow target schema", "Preference pairs are consistent and policy-aligned", "Duplicate prompts and leakage removed", "Validation and regression holdouts protected"],
+    metrics: ["label agreement", "duplicate prompt rate", "schema-valid example rate", "PII hit rate", "holdout leakage count"],
+    code: [
+      "examples = load_sft_examples()",
+      "examples = remove_duplicate_prompts(examples)",
+      "examples = validate_schema_and_labels(examples)",
+      "train, val, regression = protected_split(examples, by=\"user_or_task\")"
+    ].join("\n")
+  },
+  "gen-tune-adapt": {
+    focus: "This changes durable behavior with adapters or tuning. Use it when prompts/RAG are not enough and the base model already has the core capability.",
+    checks: ["Method chosen from data shape and budget: LoRA/QLoRA/SFT/preference", "Target modules/rank/learning rate selected", "Overfitting and forgetting monitored", "Adapter lineage tied to base model"],
+    metrics: ["SFT cross-entropy", "preference win rate", "DPO/pairwise loss", "task score", "regression score"],
+    code: [
+      "adapter = attach_lora(base, rank=16, targets=[\"q_proj\", \"v_proj\"])",
+      "loss_sft = cross_entropy(adapter(batch.prompt), batch.response)",
+      "loss_dpo = -log_sigmoid(beta * (policy_margin - ref_margin)).mean()",
+      "optimize(loss_sft or loss_dpo)"
+    ].join("\n")
+  },
+  "gen-tune-eval": {
+    focus: "This release gate compares the tuned artifact against the untuned baseline. A tuned model must improve target behavior without breaking old behavior.",
+    checks: ["Target task improves enough to matter", "General regression suite stays within tolerance", "Safety/refusal behavior does not degrade", "Adapter/version approval recorded"],
+    metrics: ["delta task score", "win rate vs baseline", "safety pass rate", "regression pass rate", "overfit gap train-vs-val"],
+    code: [
+      "candidate = base + adapter",
+      "delta = eval(candidate, target_set) - eval(base, target_set)",
+      "regression_ok = eval(candidate, regression_set) >= eval(base, regression_set) - 0.01",
+      "approve = delta >= 0.03 and regression_ok and safety_ok(candidate)"
+    ].join("\n")
+  },
+  "gen-tune-serve": {
+    focus: "This deploys the tuned artifact or adapter-backed profile. The serving path must know which base and adapter are coupled.",
+    checks: ["Endpoint loads base + adapter or merged checkpoint", "Canary compares tuned route to baseline route", "Rollback can disable adapter quickly", "Monitoring separates adapter failures from base model failures"],
+    metrics: ["adapter load success", "route-specific task score", "p95 latency delta", "cost delta", "rollback success"],
+    code: [
+      "profile = ServingProfile(base=base.id, adapter=adapter.id)",
+      "endpoint = deploy_endpoint(profile)",
+      "gateway.split({\"baseline\": 0.95, \"tuned\": 0.05})",
+      "if regression_detected(): gateway.disable_route(\"tuned\")"
+    ].join("\n")
+  },
+  "gen-api-select": {
+    focus: "This is the main place where model selection belongs: you will use an existing API, open model, catalog artifact, or approved internal endpoint.",
+    checks: ["Task, modality, context, latency, cost, safety, license, and data residency fit", "Generator vs embedding vs reranker role separated", "Eval run on real workload", "Registry records approved choice"],
+    metrics: ["quality score", "p95 latency", "cost per task", "context fit", "safety score", "hosting risk"],
+    code: [
+      "for model in candidates:",
+      "    score[model] = quality(model) - cost_penalty(model) - latency_penalty(model)",
+      "chosen = max(candidates, key=lambda m: score[m])",
+      "registry.approve(chosen, eval_report, constraints)"
+    ].join("\n")
+  },
+  "gen-api-prompt": {
+    focus: "This adapts behavior without changing weights. It is the right lane for instructions, examples, schemas, and context packing.",
+    checks: ["Instruction hierarchy clear", "Retrieved/tool content isolated as data", "Schema validation and repair policy defined", "Prompt version tied to model and evals"],
+    metrics: ["schema valid rate", "exact/task score", "refusal correctness", "citation support", "prompt-regression pass rate"],
+    code: [
+      "messages = [system_policy, developer_schema, user_task, evidence_block]",
+      "raw = model.generate(messages)",
+      "parsed = validate_or_retry_json(raw, schema)",
+      "score = eval_prompt_output(parsed, gold, citations)"
+    ].join("\n")
+  },
+  "gen-api-serve": {
+    focus: "This exposes the chosen existing model/API through production controls. No training happens here.",
+    checks: ["Auth, rate limits, context/output limits, and error mapping", "Fallback and canary routes approved", "Batching/cache policy respects tenant and version", "Endpoint and gateway metrics traced"],
+    metrics: ["time to first token", "tokens/sec", "error rate", "cache hit rate", "fallback rate", "p95/p99 latency"],
+    code: [
+      "route = gateway.choose(task, risk, tenant, cost_budget)",
+      "response = endpoint.call(route.model, messages, limits)",
+      "trace.log(route=route.id, tokens=response.usage, latency=response.latency)"
+    ].join("\n")
+  },
+  "gen-api-measure": {
+    focus: "This checks whether the existing-model path is good enough before spending effort on tuning or training.",
+    checks: ["Prompt evals and regression suite", "Latency/cost by route and token count", "Cache/context bloat measured", "Escalate to RAG or tuning only if metrics prove the gap"],
+    metrics: ["task score", "schema valid rate", "cost per completed task", "p95 latency", "context token count", "route mix"],
+    code: [
+      "scores = evaluate_prompt_route(route, eval_cases)",
+      "cost = sum(tokens * price for tokens in trace.token_usage)",
+      "if scores.quality < target: choose_next_fix(prompt_or_rag_or_tuning)"
+    ].join("\n")
+  },
+  "gen-agent-ingest": {
+    focus: "This prepares runtime knowledge for RAG/agents. It does not change model weights.",
+    checks: ["Parse PDFs/tables/code with structure", "Chunk by sections and preserve source metadata", "Propagate ACL/tenant/sensitivity fields", "Delete/update path proven"],
+    metrics: ["parse coverage", "metadata completeness", "ACL test pass rate", "PII/secret hit rate", "deletion propagation time"],
+    code: [
+      "blocks = parse_document(doc)",
+      "chunks = structure_aware_chunk(blocks)",
+      "records = attach_metadata_acl_source(chunks, doc)",
+      "index.upsert(embed(records), deletion_key=doc.id)"
+    ].join("\n")
+  },
+  "gen-agent-rag": {
+    focus: "This is the query-time evidence path: retrieve, rerank, pack context, answer with citations, and evaluate grounding.",
+    checks: ["Dense+sparse retrieval when exact terms matter", "ACL filters before retrieval/context", "Reranker top-N tuned", "Citation support checked per claim"],
+    metrics: ["recall@k", "MRR/nDCG", "answer-bearing chunk rank", "groundedness", "unsupported citation rate"],
+    code: [
+      "dense = vector_search(embed(query), filters=acl)",
+      "sparse = bm25_search(query, filters=acl)",
+      "candidates = rrf([dense, sparse])",
+      "context = pack(cross_encoder_rerank(query, candidates)[:8])"
+    ].join("\n")
+  },
+  "gen-agent-workflow": {
+    focus: "This controls the agent runtime: state, tools, memory, retries, approvals, and recovery.",
+    checks: ["State owner and stop conditions explicit", "Tool schema/auth/idempotency enforced outside the model", "Memory writes are scoped and consented", "Checkpoints avoid duplicate side effects"],
+    metrics: ["trajectory success", "tool success", "duplicate-prevented count", "memory helpfulness", "step budget exhaustion rate"],
+    code: [
+      "state = load_or_create_task_state(task)",
+      "proposal = planner.next_action(state)",
+      "result = tool_gateway.execute(proposal, user)",
+      "state = update_state(state, result); checkpoint(state)"
+    ].join("\n")
+  },
+  "gen-agent-policy": {
+    focus: "This wraps runtime safety around input, retrieved content, tool proposals, tool results, and output.",
+    checks: ["Prompt injection detection on retrieved/tool content", "PII/secrets redaction or blocking", "Tool risk and approval policy", "Groundedness/refusal output policy"],
+    metrics: ["block precision/recall", "PII leak rate", "jailbreak success rate", "groundedness pass rate", "escalation accuracy"],
+    code: [
+      "if input_policy.block(user_msg): return refuse()",
+      "safe_chunks = [c for c in chunks if not prompt_injection(c)]",
+      "tool_policy.authorize(proposed_call, user)",
+      "return output_policy.check(answer, evidence=safe_chunks)"
+    ].join("\n")
+  },
+  "gen-agent-eval": {
+    focus: "This evaluates the full agent trajectory, not only the final text.",
+    checks: ["Final answer correctness and groundedness", "Retrieval and tool choices inspected", "Policy and approval placement checked", "Latency/cost measured per span"],
+    metrics: ["trajectory score", "tool correctness", "retrieval recall@k", "groundedness", "safety pass rate", "cost per task"],
+    code: [
+      "trace = run_agent_case(case)",
+      "score = weighted_mean({",
+      "  \"answer\": answer_score(trace), \"tool\": tool_score(trace),",
+      "  \"groundedness\": groundedness(trace), \"safety\": safety_score(trace)",
+      "})"
+    ].join("\n")
+  },
+  "gen-ops-observe": {
+    focus: "This observes production behavior after release. It turns live failures into replayable evidence.",
+    checks: ["Trace route, retrieval, model, tool, guardrail, review, and final answer spans", "Version tags on model/prompt/index/tools/policy", "Task success captured beyond HTTP 200", "Incidents replayable"],
+    metrics: ["task success rate", "empty retrieval rate", "tool failure rate", "unsupported citation rate", "p95/p99 by span", "replay coverage"],
+    code: [
+      "with trace.span(\"retrieval\"): chunks = retriever.search(query)",
+      "with trace.span(\"model\"): answer = model.generate(prompt)",
+      "trace.set_versions(model, prompt, index, tools, policy)",
+      "trace.set_outcome(task_success=score_task(answer))"
+    ].join("\n")
+  },
+  "gen-ops-optimize": {
+    focus: "This reduces cost/latency only after traces show the bottleneck.",
+    checks: ["Separate retrieval, prefill, decode, tools, queueing, and guardrail time", "Tune routing, batching, caching, context, or precision with evals", "Do not optimize away quality/safety", "Monitor route drift"],
+    metrics: ["p50/p95/p99", "time to first token", "tokens/sec", "cache hit rate", "cost per completed task", "quality after optimization"],
+    code: [
+      "bottleneck = max(stage_latencies(trace), key=p95)",
+      "fix = choose_fix(bottleneck)",
+      "candidate = apply_optimization(fix)",
+      "approve = eval(candidate).quality_ok and p95(candidate) < p95(baseline)"
+    ].join("\n")
+  },
+  "gen-ops-review": {
+    focus: "This governs risk with human review, approval, sampling, escalation, and audit.",
+    checks: ["Risk tiers mapped to auto/sample/approve/escalate/block", "Reviewer card includes evidence and versions", "Feedback labels curated before reuse", "Audit trail complete"],
+    metrics: ["approval rate", "reviewer agreement", "escalation rate", "SLA breach rate", "false allow/block rate", "feedback-to-eval rate"],
+    code: [
+      "tier = risk_tier(action, confidence, authorization)",
+      "if tier == \"approval_required\": review_queue.submit(case)",
+      "elif tier == \"sample_review\": maybe_sample(case)",
+      "audit.write(case, tier, reviewer_decision)"
+    ].join("\n")
+  },
+  "gen-ops-feedback": {
+    focus: "This turns incidents and review labels into the right kind of fix: eval, prompt, retrieval, data, policy, tuning, or serving.",
+    checks: ["Failure classified by layer", "New regression case added before fix", "Fix owner chosen from evidence", "Holdouts protected from training contamination"],
+    metrics: ["incident recurrence rate", "new eval coverage", "fix pass rate", "regression pass rate", "time to mitigation"],
+    code: [
+      "failure = classify_incident(trace)",
+      "eval_set.add_regression_case(trace)",
+      "fix = route_fix(failure, choices=[\"prompt\", \"rag\", \"policy\", \"tuning\", \"serving\"])",
+      "approve = run_regression_suite(fix).passes"
+    ].join("\n")
   }
 };
 
@@ -1681,6 +1946,27 @@ const SERVICE_ORDER = [
   "NeMo Evaluator", "Nsight Systems", "Nsight Compute"
 ];
 
+const ACRONYM_PATTERN = new RegExp(
+  `\\b(${Object.keys(nvidiaAcronymExpansions)
+    .sort((a, b) => b.length - a.length)
+    .map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .join("|")})\\b`,
+  "g"
+);
+
+function expandNvidiaAcronyms(text) {
+  const source = String(text || "");
+  return source.replace(ACRONYM_PATTERN, (match, _acronym, offset) => {
+    if (source.slice(offset + match.length, offset + match.length + 2) === " (") return match;
+    return `${match} (${nvidiaAcronymExpansions[match]})`;
+  });
+}
+
+function serviceSummaryText(service, fallback = "") {
+  const description = fallback || service.description || "";
+  return service.fullName ? `${service.fullName}. ${description}` : description;
+}
+
 const LIFECYCLE_CONTEXT_FILTERS = {
   "GenAI LLMs": [
     { label: "All", lane: "All", short: "All" },
@@ -1695,6 +1981,14 @@ const LIFECYCLE_CONTEXT_FILTERS = {
     { label: "Use existing model for inference", lane: "Core: Use existing model for inference", short: "Inference" },
     { label: "Fine-tune existing model", lane: "Secondary: Fine-tune existing model", short: "Fine-tune" },
     { label: "Train model from zero reference", lane: "Reference: Train model from zero", short: "Train zero" }
+  ],
+  "Agentic AI General": [
+    { label: "All", lane: "All", short: "All" },
+    { label: "Train model from zero", lane: "Train model from zero", short: "Train zero" },
+    { label: "Fine-tune existing model", lane: "Fine-tune existing model", short: "Fine-tune" },
+    { label: "Use existing model or API", lane: "Use existing model or API", short: "Existing API" },
+    { label: "Build agent/RAG application", lane: "Build agent/RAG application", short: "Agent/RAG" },
+    { label: "Operate, govern, and improve", lane: "Operate, govern, and improve", short: "Operate" }
   ]
 };
 
@@ -2166,6 +2460,82 @@ function allLifecycleUsageBadges(service, activeServiceFilter = "All", examLabel
   });
 }
 
+function lifecyclePlaybookGroups(examServices, activeServiceFilter, examLabel) {
+  const flow = LIFECYCLE_FLOWS[examLabel];
+  if (!flow) return [];
+  const serviceByName = new Map(examServices.map((service) => [service.name, service]));
+  const filter = lifecycleContextForFilter(examLabel, activeServiceFilter);
+  const lanes = [...new Set(flow.stages.map((stage) => stage.lane || "Shared"))]
+    .filter((lane) => !filter || filter.lane === "All" || filter.lane === lane);
+
+  return lanes.map((lane) => {
+    const entries = [];
+    flow.stages
+      .filter((stage) => (stage.lane || "Shared") === lane)
+      .forEach((stage) => {
+        [...(stage.tools || []), ...(stage.optionalTools || [])].forEach((tool, toolIndex) => {
+          const service = serviceByName.get(tool);
+          if (!service) return;
+          entries.push({ service, stage, toolIndex, role: toolIndex < (stage.tools || []).length ? "core" : "support" });
+        });
+      });
+    return { lane, description: flow.lanes?.[lane] || "", entries };
+  }).filter((group) => group.entries.length);
+}
+
+function LifecyclePlaybookCard({ service, stage, selected, onClick }) {
+  return h("button", {
+    className: `service-card lifecycle-playbook-card ${serviceGroupClass(service)} ${selected ? "active" : ""}`,
+    onClick
+  },
+    h("span", { className: "lifecycle-stage-context" }, stage.context),
+    h("strong", null, service.name),
+    h("p", null, stage.note),
+    h("small", { className: "service-priority-note" }, `${stage.name} / ${stage.lane}`)
+  );
+}
+
+function LifecycleStagePlaybook({ stage, examLabel, onSelectService }) {
+  const stageKey = lifecycleStageKey(stage);
+  const detail = examLabel === "Agentic AI General" ? GENERAL_LIFECYCLE_STAGE_DETAILS[stageKey] : null;
+  if (!stage || !detail) return null;
+  const playbooks = [...(stage.tools || []), ...(stage.optionalTools || [])];
+  return h("section", { className: `lifecycle-stage-playbook ${serviceGroupClass(stage.tools?.[0] || "")}` },
+    h("div", { className: "lifecycle-stage-playbook-title" },
+      h("span", null, `${stage.lane} / ${stage.context}`),
+      h("h4", null, stage.name),
+      h("p", null, detail.focus)
+    ),
+    h("div", { className: "lifecycle-stage-playbook-grid" },
+      h("article", null,
+        h("strong", null, "Checks in this lane"),
+        h("ul", null, detail.checks.map((item) => h("li", { key: item }, item)))
+      ),
+      h("article", null,
+        h("strong", null, "Scores, losses, or signals"),
+        h("ul", null, detail.metrics.map((item) => h("li", { key: item }, item)))
+      ),
+      h("article", { className: "lifecycle-stage-code" },
+        h("strong", null, "Typical code shape"),
+        h("pre", null, h("code", null, detail.code))
+      ),
+      h("article", null,
+        h("strong", null, "Open playbooks"),
+        playbooks.length
+          ? h("div", { className: "selected-service-chips" },
+              playbooks.map((tool) => h("button", {
+                key: tool,
+                type: "button",
+                className: `selected-service-chip ${serviceGroupClass(tool)}`,
+                onClick: () => onSelectService?.(tool, stage)
+              }, tool))
+            )
+          : h("p", null, "This reference step is explained by the lane-specific checks above.")
+      )
+    )
+  );
+}
+
 function LifecycleFlow({ examLabel: label, selectedStageId, onSelectStage, onSelectService, branding }) {
   const flow = LIFECYCLE_FLOWS[label];
   if (!flow) return null;
@@ -2179,11 +2549,13 @@ function LifecycleFlow({ examLabel: label, selectedStageId, onSelectStage, onSel
         stages: flow.stages.filter((stage) => (stage.lane || "Shared") === lane)
       }))
     : [];
+  const selectedStage = flow.stages.find((stage) => lifecycleStageKey(stage) === selectedStageId) || flow.stages[0];
 
   function renderStage(stage) {
     const stageNumber = flow.stages.indexOf(stage) + 1;
     const stageKey = lifecycleStageKey(stage);
     function renderTool(tool, role = "core") {
+      const expandedTool = expandNvidiaAcronyms(tool);
       return h("button", {
         key: `${role}-${tool}`,
         type: "button",
@@ -2193,7 +2565,8 @@ function LifecycleFlow({ examLabel: label, selectedStageId, onSelectStage, onSel
           onSelectStage?.(stageKey);
           onSelectService?.(tool, stage);
         },
-        title: `Open ${tool}`
+        title: `Open ${expandedTool}`,
+        "aria-label": `Open ${expandedTool}`
       }, tool);
     }
 
@@ -2250,7 +2623,12 @@ function LifecycleFlow({ examLabel: label, selectedStageId, onSelectStage, onSel
             h("div", { className: "lifecycle-grid lifecycle-grid-lane" }, group.stages.map(renderStage))
           ))
         )
-      : h("div", { className: "lifecycle-grid" }, flow.stages.map(renderStage))
+      : h("div", { className: "lifecycle-grid" }, flow.stages.map(renderStage)),
+    h(LifecycleStagePlaybook, {
+      stage: selectedStage,
+      examLabel: label,
+      onSelectService
+    })
   );
 }
 
@@ -2313,6 +2691,7 @@ function StudyModePanel({
   const groupedServices = SERVICE_GROUPS
     .map((group) => ({ ...group, services: sortServicesForStudyContext(filteredServices.filter((service) => serviceGroupName(service) === group.name), activeServiceFilter, currentExamLabel) }))
     .filter((group) => group.services.length);
+  const lifecyclePlaybookLaneGroups = isGenericStudy ? lifecyclePlaybookGroups(examServices, activeServiceFilter, currentExamLabel) : [];
   const otherServices = filteredServices.filter((service) => !SERVICE_GROUPS.some((group) => group.name === serviceGroupName(service)));
   const serviceFilterLabels = serviceFilterLabelsForExam(currentExamLabel, examServices, topicFilters);
 
@@ -2394,7 +2773,7 @@ function StudyModePanel({
     )
   );
 
-  const lifecycleContextFilterGroup = isGenericStudy ? null : h("div", { key: "context", className: "filter-group filter-group-context" },
+  const lifecycleContextFilterGroup = h("div", { key: "context", className: "filter-group filter-group-context" },
     h("span", null, isLifecycleAwareNvidia ? `Filter by ${currentExamLabel} lifecycle context` : "Filter by lifecycle topic"),
     h(
       "div",
@@ -2451,7 +2830,9 @@ function StudyModePanel({
       : effectiveStudyView === "services"
       ? h(React.Fragment, null,
           h("div", { className: "service-filter-panel" },
-            isLifecycleAwareNvidia ? [lifecycleContextFilterGroup, familyFilterGroup] : [familyFilterGroup, lifecycleContextFilterGroup]
+            isGenericStudy
+              ? lifecycleContextFilterGroup
+              : isLifecycleAwareNvidia ? [lifecycleContextFilterGroup, familyFilterGroup] : [familyFilterGroup, lifecycleContextFilterGroup]
           ),
           h(
             "div",
@@ -2459,32 +2840,52 @@ function StudyModePanel({
             h(
               "div",
               { className: "service-cards" },
-              groupedServices.map((group) => h("section", { key: group.name, className: `service-group ${group.className}` },
-                h("h3", null, group.name),
-                group.services.map((service) => h(ServiceCard, {
-                  key: service.name,
-                  service,
-                  selected: service.name === selectedService.name,
-                  showLifecyclePriority: isLifecycleAwareNvidia,
-                  activeServiceFilter,
-                  currentExamLabel,
-                  onClick: () => setSelectedServiceName(service.name)
-                }))
-              )),
-              otherServices.length
-                ? h("section", { className: "service-group" },
-                    h("h3", null, "Other capabilities"),
-                    otherServices.map((service) => h(ServiceCard, {
-                      key: service.name,
+              isGenericStudy
+                ? lifecyclePlaybookLaneGroups.map((group) => h("section", {
+                    key: group.lane,
+                    className: `service-group lifecycle-playbook-group lifecycle-lane-${topicSlug(group.lane)}`
+                  },
+                    h("h3", null, group.lane),
+                    group.description ? h("p", { className: "service-group-note" }, group.description) : null,
+                    group.entries.map(({ service, stage }) => h(LifecyclePlaybookCard, {
+                      key: `${stage.id}-${service.name}`,
                       service,
+                      stage,
                       selected: service.name === selectedService.name,
-                      showLifecyclePriority: isLifecycleAwareNvidia,
-                      activeServiceFilter,
-                      currentExamLabel,
-                      onClick: () => setSelectedServiceName(service.name)
+                      onClick: () => {
+                        setSelectedLifecycleStage(lifecycleStageKey(stage));
+                        setSelectedServiceName(service.name);
+                      }
                     }))
-                  )
-                : null
+                  ))
+                : [
+                    ...groupedServices.map((group) => h("section", { key: group.name, className: `service-group ${group.className}` },
+                      h("h3", null, group.name),
+                      group.services.map((service) => h(ServiceCard, {
+                        key: service.name,
+                        service,
+                        selected: service.name === selectedService.name,
+                        showLifecyclePriority: isLifecycleAwareNvidia,
+                        activeServiceFilter,
+                        currentExamLabel,
+                        onClick: () => setSelectedServiceName(service.name)
+                      }))
+                    )),
+                    otherServices.length
+                      ? h("section", { key: "other", className: "service-group" },
+                          h("h3", null, "Other capabilities"),
+                          otherServices.map((service) => h(ServiceCard, {
+                            key: service.name,
+                            service,
+                            selected: service.name === selectedService.name,
+                            showLifecyclePriority: isLifecycleAwareNvidia,
+                            activeServiceFilter,
+                            currentExamLabel,
+                            onClick: () => setSelectedServiceName(service.name)
+                          }))
+                        )
+                      : null
+                  ]
             ),
             h(ServiceDetail, { service: selectedService, certSlug: exam.slug || "genai_llms_professional", quickQuiz: quickServiceQuiz, generateStudyQuiz, quizDifficulty, setQuizDifficulty, studyStatus, generationStatus, cancelGeneration, branding, showLifecyclePriority: isLifecycleAwareNvidia, activeServiceFilter, currentExamLabel })
           )
@@ -2539,7 +2940,7 @@ function ServiceCard({ service, selected, onClick, priorityRole = "", showLifecy
     ) : null,
     h("span", null, service.lifecycle),
     h("strong", null, service.name),
-    h("p", null, service.description),
+    h("p", null, serviceSummaryText(service)),
     showLifecyclePriority && activeUsage ? h("small", { className: "service-priority-note" }, `${activeUsage.stageName}: ${activeUsage.stageNote}`) : null,
     h("em", null, service.exams.join(" + "))
   );
@@ -2604,7 +3005,7 @@ function SuiteTopicDetail({ topic, studyStatus, suiteLabel }) {
     ),
     h("div", { className: "study-map suite-study-map" },
       h("section", { className: "identity" },
-        h("span", null, "Exam signal"),
+      h("span", null, "Recognition clue"),
         h("p", null, topic.examSignal)
       ),
       h("section", { className: "use" },
@@ -2612,14 +3013,14 @@ function SuiteTopicDetail({ topic, studyStatus, suiteLabel }) {
         h("p", null, topic.keyIdeas[0] ? renderInline(topic.keyIdeas[0]) : "")
       ),
       h("section", { className: "trap" },
-        h("span", null, "Common trap"),
+        h("span", null, "Decision trap"),
         h("p", null, topic.traps[0] || "")
       )
     ),
     h("div", { className: "suite-knowledge-grid" },
       h(SuiteKnowledgeCard, { title: "Key ideas", items: topic.keyIdeas }),
       h(SuiteKnowledgeCard, { title: "Must know", items: topic.mustKnow }),
-      h(SuiteKnowledgeCard, { title: "Exam traps", items: topic.traps }),
+      h(SuiteKnowledgeCard, { title: "Decision traps", items: topic.traps }),
       h(SuiteKnowledgeCard, { title: "Related terms", items: topic.related })
     ),
     h("details", { className: "suite-reference" },
@@ -2639,10 +3040,68 @@ function SuiteKnowledgeCard({ title, items }) {
   );
 }
 
+function StudyFirstPanel({ markdown }) {
+  const content = markdownSections(markdown)[normalizeHeadingName("What to study first")]?.content;
+  if (!content?.trim()) return null;
+  return h("section", { className: "study-first-panel service-section" },
+    h("div", { className: "service-section-heading" },
+      h("span", null, "Start here"),
+      h("h4", null, "What to study first")
+    ),
+    h("div", { className: "study-first-body" }, renderStudyFirstContent(content))
+  );
+}
+
+function splitStudyFirstParts(label, value) {
+  const text = String(value || "").trim().replace(/\.;/g, ";").replace(/\s+/g, " ");
+  if (!text) return [];
+  if (/^concrete surface$/i.test(label)) {
+    return text
+      .split(/\s+(?=(?:Access|Inside|I\/O|Input|Output):)/g)
+      .map((part) => part.trim())
+      .filter(Boolean);
+  }
+  if (/^(study first|must know)$/i.test(label)) {
+    const parts = text.split(/;\s+/).map((part) => part.trim().replace(/[.;]\s*$/, "")).filter(Boolean);
+    return parts.length > 1 ? parts : [text];
+  }
+  return [text];
+}
+
+function renderStudyFirstContent(content) {
+  const lines = String(content || "").split("\n");
+  const nodes = [];
+  let prose = [];
+  const renderOptions = { autoHighlight: true, highlightSeen: new Set(), highlightCount: { value: 0 }, maxHighlights: 8 };
+  function flushProse() {
+    const text = prose.join("\n").trim();
+    prose = [];
+    if (text) nodes.push(h("div", { className: "study-first-prose", key: `p-${nodes.length}` }, renderMarkdown(text, renderOptions)));
+  }
+  for (const line of lines) {
+    const match = line.match(/^-\s+\*\*(.+?)\*\*:?\s*(.+)$/);
+    if (!match) {
+      prose.push(line);
+      continue;
+    }
+    flushProse();
+    const label = match[1].trim().replace(/:\s*$/, "");
+    const parts = splitStudyFirstParts(label, match[2]);
+    nodes.push(h("div", { className: `study-first-row study-first-${topicSlug(label)}`, key: `${label}-${nodes.length}` },
+      h("strong", null, label),
+      parts.length > 1
+        ? h("ul", null, parts.map((part) => h("li", { key: part }, renderInline(part, renderOptions))))
+        : h("p", null, renderInline(parts[0] || "", renderOptions))
+    ));
+  }
+  flushProse();
+  return nodes.length ? nodes : renderMarkdown(content, { autoHighlight: true });
+}
+
 function ImplementationCards({ impl }) {
   if (!impl) return null;
   const codePanel = impl.codeBlocks.length ? h("div", { className: "impl-code" },
-    h("span", null, "Minimal conceptual usage"),
+    h("span", null, "Code and calls to recognize"),
     ...impl.codeBlocks.map(function(cb) {
       return h("pre", { key: cb.code.slice(0, 20) }, h("code", null, cb.code));
     })
@@ -2680,8 +3139,8 @@ function ImplementationCards({ impl }) {
 function ExamDecisionCards({ study }) {
   return h("div", { className: "exam-decision service-section" },
     h("div", { className: "service-section-heading" },
-      h("span", null, "Exam decision guide"),
-      h("h4", null, "When to choose it")
+      h("span", null, "Decision guide"),
+      h("h4", null, "Choose by adjacent-service clues")
     ),
     h("div", { className: "study-map" },
       h("section", { className: "identity" },
@@ -2690,19 +3149,19 @@ function ExamDecisionCards({ study }) {
         h("p", null, renderInline(study.where))
       ),
       h("section", { className: "use" },
-        h("span", null, "Use it when"),
+        h("span", null, "Choose this when"),
         h("p", null, renderInline(study.use))
       ),
       h("section", { className: "avoid" },
-        h("span", null, "Do not use it for"),
+        h("span", null, "Choose another service when"),
         h("p", null, renderInline(study.avoid))
       ),
       h("section", { className: "trap" },
-        h("span", null, "Exam trap"),
+        h("span", null, "Real trap"),
         h("p", null, renderInline(study.traps))
       ),
       h("section", { className: "scenario" },
-        h("span", null, "Scenario signal"),
+        h("span", null, "Recognition clues"),
         h("p", null, renderInline(study.scenario))
       )
     )
@@ -2725,15 +3184,24 @@ function LifecycleUsagePanel({ service, activeServiceFilter = "All", currentExam
       h("h4", null, "Where this service appears in the lifecycle")
     ),
     h("div", { className: "agentic-usage-grid" },
-      orderedUsages.map((usage) => h("article", {
-        key: `${usage.lane}-${usage.stageId}-${usage.roleId}`,
-        className: `agentic-usage-card ${usage.roleClass} ${activeKeys.has(`${usage.lane}-${usage.stageId}-${usage.roleId}`) ? "active" : ""}`
-      },
-        h("span", null, usage.roleLabel),
-        h("strong", null, `${usage.contextLabel} -> ${usage.stageName}`),
-        h("p", null, usage.stageNote),
-        h("em", null, usage.stageContext)
-      ))
+      orderedUsages.map((usage) => {
+        const detail = currentExamLabel === "Agentic AI General" ? GENERAL_LIFECYCLE_STAGE_DETAILS[usage.stageId] : null;
+        return h("article", {
+          key: `${usage.lane}-${usage.stageId}-${usage.roleId}`,
+          className: `agentic-usage-card ${usage.roleClass} ${activeKeys.has(`${usage.lane}-${usage.stageId}-${usage.roleId}`) ? "active" : ""}`
+        },
+          h("span", null, usage.roleLabel),
+          h("strong", null, `${usage.contextLabel} -> ${usage.stageName}`),
+          h("p", null, usage.stageNote),
+          detail ? h("div", { className: "agentic-usage-detail" },
+            h("small", null, "Checks"),
+            h("p", null, detail.checks.slice(0, 2).join("; ")),
+            h("small", null, "Metrics"),
+            h("p", null, detail.metrics.slice(0, 3).join(", "))
+          ) : null,
+          h("em", null, usage.stageContext)
+        );
+      })
     )
   );
 }
@@ -2744,6 +3212,7 @@ function ServiceDetail({ service, certSlug, quickQuiz, generateStudyQuiz, quizDi
   const capabilityState = useCapabilityMarkdown(service.name, isGenericStudy);
   const study = parseStudyContent(markdownState.markdown, service, "service");
   const implementation = extractImplementationDetails(markdownState.markdown);
+  const titleSummary = service.fullName || (!implementation ? study.description : "");
 
   if (isGenericStudy) {
     return h(
@@ -2752,8 +3221,9 @@ function ServiceDetail({ service, certSlug, quickQuiz, generateStudyQuiz, quizDi
       h("div", { className: "service-detail-title" },
         h("span", null, "Study playbook"),
         h("h3", null, service.name),
-        h("p", null, renderInline(service.description || study.description))
+        h("p", null, renderInline(serviceSummaryText(service, study.description)))
       ),
+      h(LifecycleUsagePanel, { service, activeServiceFilter, currentExamLabel }),
       h(CapabilityPlaybook, {
         state: capabilityState,
         title: service.name,
@@ -2770,9 +3240,10 @@ function ServiceDetail({ service, certSlug, quickQuiz, generateStudyQuiz, quizDi
     h("div", { className: "service-detail-title" },
       h("span", null, branding.serviceLabel),
       h("h3", null, service.name),
-      implementation ? null : h("p", null, renderInline(study.description))
+      titleSummary ? h("p", null, renderInline(titleSummary)) : null
     ),
     h(ImplementationCards, { impl: implementation }),
+    h(StudyFirstPanel, { markdown: markdownState.markdown }),
     showLifecyclePriority ? h(LifecycleUsagePanel, { service, activeServiceFilter, currentExamLabel }) : null,
     h(ExamDecisionCards, { study }),
     h(RelatedVendorServiceCards, { service }),
@@ -2798,7 +3269,7 @@ function RelatedVendorServiceCards({ service, compact = false }) {
     h("div", { className: "vendor-card-grid" },
       related.map((item) => h("article", { key: `${item.vendor}-${item.service}`, className: `vendor-card vendor-${topicSlug(item.vendor)}` },
         h("span", null, item.vendor),
-        h("strong", null, item.service),
+        h("strong", null, expandNvidiaAcronyms(item.service)),
         h("p", null, item.role)
       ))
     )
@@ -2818,6 +3289,7 @@ function SectionDetail({ section, certSlug, quickQuiz, generateStudyQuiz, quizDi
       h("h3", null, study.name || section.name),
       h("p", null, renderInline(study.description))
     ),
+    h(StudyFirstPanel, { markdown: markdownState.markdown }),
     h("div", { className: "study-map section-map" },
       h("section", { className: "identity" },
         h("span", null, "Key ideas"),
@@ -2828,11 +3300,11 @@ function SectionDetail({ section, certSlug, quickQuiz, generateStudyQuiz, quizDi
         h("p", null, renderInline(study.use))
       ),
       h("section", { className: "avoid" },
-        h("span", null, "Exam trap"),
+        h("span", null, "Real trap"),
         h("p", null, renderInline(study.traps))
       ),
       h("section", { className: "scenario" },
-        h("span", null, "Scenario signal"),
+        h("span", null, "Recognition clues"),
         h("p", null, renderInline(study.scenario))
       )
     ),
@@ -2887,7 +3359,7 @@ function SectionDetail({ section, certSlug, quickQuiz, generateStudyQuiz, quizDi
       )
     ) : null,
     study.examSignals.length ? h("section", { className: "section-block section-signals" },
-      h("h4", null, "High-yield exam signals"),
+      h("h4", null, "What to recognize"),
       h("div", { className: "signal-tags" }, study.examSignals.map((sig) =>
         h("span", { className: "signal-tag", key: sig }, renderInline(sig))
       ))
@@ -3100,13 +3572,14 @@ function scenariosFromCardData(block, heading) {
 }
 
 const STRUCTURED_STUDY_HEADINGS = [
+  "What to study first",
   "Study card data",
   "Study notes",
   "Must know",
   "Decision guide",
   "Common confusions",
   "Mini scenario drill",
-  "High-yield exam signals",
+  "What to recognize",
   "Hands-on checks"
 ];
 
@@ -3220,11 +3693,11 @@ function parseStudyContent(markdown, fallback, kind) {
     use: valueFromCardData(block, isService ? "Use it when" : "Use this section when") || fallback.use || "",
     avoid: valueFromCardData(block, "Do not use it when") || fallback.avoid || "",
     traps: valueFromCardData(block, "Common trap") || fallback.traps || "",
-    scenario: valueFromCardData(block, "Scenario signal") || fallback.scenario || "",
+    scenario: valueFromCardData(block, "Recognition clues") || fallback.scenario || "",
     studyNotes: listFromCardData(block, "Study notes").length ? listFromCardData(block, "Study notes") : (fallback.studyNotes || []),
     mustKnow: mustKnow.length ? mustKnow : (fallback.mustKnow || fallback.keyIdeas || []),
     keyIdeas: compactKeyIdeas.length ? compactKeyIdeas : (fallback.keyIdeas || fallback.mustKnow || []),
-    examSignals: listFromCardData(block, "High-yield exam signals").length ? listFromCardData(block, "High-yield exam signals") : (fallback.examSignals || []),
+    examSignals: listFromCardData(block, "What to recognize").length ? listFromCardData(block, "What to recognize") : (fallback.examSignals || []),
     handsOn: listFromCardData(block, "Hands-on checks").length ? listFromCardData(block, "Hands-on checks") : (fallback.handsOn || []),
     relatedServices: listFromCardData(block, "Related services").length ? listFromCardData(block, "Related services") : (fallback.relatedServices || []),
     decisionGuide,
@@ -3265,7 +3738,9 @@ function StudyMarkdown({ state, title, missingPath, templatePath, summary, remov
 }
 
 const CAPABILITY_PLAYBOOK_SECTIONS = [
+  "What to study first",
   "What You Are Building",
+  "Lifecycle Lane Playbooks",
   "Pipeline",
   "Platform Examples",
   "Core Concepts",
@@ -3546,13 +4021,29 @@ function renderListItemInline(text, options = {}) {
   return renderInline(source, options);
 }
 
+function safeMarkdownHref(href) {
+  const value = String(href || "").trim();
+  if (!value) return null;
+  if (/^(#|\/(?!\/)|\.{1,2}\/)/.test(value)) return value;
+  try {
+    const parsed = new URL(value, window.location.origin);
+    if (["http:", "https:", "mailto:"].includes(parsed.protocol)) return value;
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 function renderInline(text, options = {}) {
   const out = [];
   const re = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|\[[^\]]+\]\([^)]+\))/g;
   let lastIdx = 0;
   let key = 0;
   let m;
-  const source = String(text || "");
+  const source = String(text || "")
+    .replace(/;\.{2,}/g, "...")
+    .replace(/\.;/g, ".")
+    .replace(/,;/g, ",");
   while ((m = re.exec(source)) !== null) {
     if (m.index > lastIdx) {
       const plain = source.slice(lastIdx, m.index);
@@ -3563,7 +4054,10 @@ function renderInline(text, options = {}) {
     else if (tok.startsWith("`")) out.push(h("code", { key: `i${key++}` }, tok.slice(1, -1)));
     else if (tok.startsWith("[")) {
       const linkMatch = tok.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
-      out.push(h("a", { key: `i${key++}`, href: linkMatch[2], target: "_blank", rel: "noreferrer" }, linkMatch[1]));
+      const href = safeMarkdownHref(linkMatch[2]);
+      out.push(href
+        ? h("a", { key: `i${key++}`, href, target: "_blank", rel: "noreferrer" }, linkMatch[1])
+        : linkMatch[1]);
     }
     else if (tok.startsWith("*")) out.push(h("em", { key: `i${key++}` }, tok.slice(1, -1)));
     lastIdx = m.index + tok.length;
@@ -3658,11 +4152,11 @@ function TopicMarkdown({ certSlug, sectionName }) {
 
 function StudyDeepDive({ item, generic = false }) {
   const groups = [
-      [generic ? "Mental model notes" : "Study notes", item.studyNotes],
+      [generic ? "Mental model notes" : "How to think about it", item.studyNotes],
       ["Must know", item.mustKnow],
-      [generic ? "Recognition signals" : "Exam signals", item.examSignals],
+      ["Recognition cues", item.examSignals],
       [generic ? "Practice checks" : "Hands-on checks", item.handsOn],
-      ["Related capabilities", item.relatedServices]
+      [generic ? "Related capabilities" : "Adjacent services", item.relatedServices]
   ].filter(([, values]) => Array.isArray(values) && values.length);
 
   if (!groups.length) return null;
@@ -3670,15 +4164,15 @@ function StudyDeepDive({ item, generic = false }) {
     "div",
     { className: "study-deep-dive service-section" },
     h("div", { className: "service-section-heading" },
-      h("span", null, generic ? "Deep knowledge" : "Memory layer"),
-      h("h4", null, generic ? "What to internalize" : "Study notes and exam signals")
+      h("span", null, generic ? "Deep knowledge" : "Service memory"),
+      h("h4", null, generic ? "What to internalize" : "What to remember")
     ),
     h("div", { className: "study-deep-dive-grid" },
       groups.map(([label, values]) => h(
         "section",
         { key: label, className: `study-group ${topicSlug(label)}` },
         h("h4", null, label),
-        h("ul", null, values.map((value) => h("li", { key: value }, renderInline(value))))
+        h("ul", null, values.map((value) => h("li", { key: value }, renderInline(label === "Related capabilities" || label === "Adjacent services" ? expandNvidiaAcronyms(value) : value))))
       ))
     )
   );
@@ -4024,7 +4518,7 @@ function StudyChatPanel({ certSlug, topic, alwaysOpen = false, compact = false, 
       if (controller.signal.aborted) {
         setError('Request stopped. Try a shorter question.');
       } else {
-        setError(err.message || 'Chat failed');
+        setError(coachErrorMessage(err, 'Chat failed'));
       }
     } finally {
       clearTimeout(timeout);
@@ -5157,7 +5651,7 @@ function HelperChat({ question, selectedCertSlug, includeAnswer = false, onRemem
       if (controller.signal.aborted) {
         setError("Coach request stopped. Try a shorter question or ask again.");
       } else {
-        setError(err.message || "Helper request failed");
+        setError(coachErrorMessage(err, "Helper request failed"));
       }
     } finally {
       clearTimeout(timeout);

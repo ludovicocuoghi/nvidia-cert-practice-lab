@@ -6,6 +6,14 @@ status: populated
 
 # Cost/Latency Optimizer
 
+## What to study first
+
+- **Core idea:** The lifecycle loop that reduces latency and cost without breaking quality.
+- **Use it when:** The scenario mentions p99, throughput, token cost, long context, queueing, batching, quantization, caching, or route drift.
+- **Choose another path when:** Measure traces, cost, and quality first when the bottleneck is still unknown.
+- **Concrete surface:** Access: Serving runtimes, profilers, autoscaling policies, model routers, cache layers, endpoint tuning tools Inside: Prefill/decode split, KV cache, queueing, model routing, prompt compaction, retrieval pruning, batching, autoscaling I/O: Trace data, latency breakdown, cost by route, token counts, quality floor, traffic pattern -> Faster/cheaper route, smaller context, cache policy, batch policy, quantized model, scaling rule
+- **Real trap:** Adding GPUs or larger models before checking retrieval/tool waits, queueing, or context bloat.
+
 ## At a glance
 
 | | |
@@ -16,6 +24,18 @@ status: populated
 | **Output** | Faster/cheaper route, smaller context, cache policy, batch policy, quantized model, scaling rule |
 | **Inside** | Prefill/decode split, KV cache, queueing, model routing, prompt compaction, retrieval pruning, batching, autoscaling |
 
+```yaml
+route_policy:
+  cheap_path:
+    model: small-fast-endpoint
+    max_context_tokens: 6000
+    cache: true
+  premium_path:
+    condition: risk == "high" or task == "reasoning"
+metrics:
+  watch: [ttft_ms, tokens_per_second, p99_ms, cost_per_task]
+```
+
 **Mental model**: measure where time and money go, then optimize the right layer.
 
 ## Study card data
@@ -24,9 +44,9 @@ status: populated
 - **Lifecycle:** Inference optimization
 - **Relevant exams:** Agentic AI General Study
 - **Use it when:** The scenario mentions p99, throughput, token cost, long context, queueing, batching, quantization, caching, or route drift.
-- **Do not use it when:** The bottleneck has not been measured yet.
+- **Do not use it when:** Measure traces, cost, and quality first when the bottleneck is still unknown.
 - **Common trap:** Adding GPUs or larger models before checking retrieval/tool waits, queueing, or context bloat.
-- **Scenario signal:** "Costs spike because simple tasks route to a premium reasoning model."
+- **Recognition clues:** "Costs spike because simple tasks route to a premium reasoning model."
 
 ## Related service map
 

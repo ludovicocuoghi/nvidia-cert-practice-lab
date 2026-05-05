@@ -6,9 +6,28 @@ source_lens: general-study
 
 # Model Serving Gateway
 
+## What to study first
+
+- **Core idea:** You are building the traffic layer in front of model endpoints. It routes requests, applies admission/rate limits, handles fallback, canaries, batching policy, endpoint selection, and multi-model operations.
+- **Study first:** Define route classes: simple, complex, high-risk, embedding, reranking, generation.
+- Attach candidate endpoints and selection rules.
+- Configure fallback, retries, timeout budgets, and circuit breakers.
+- Add rate limits, batching, cache policy, and cost controls.
+- Connect routing changes to eval and registry approval.
+
 ## What You Are Building
 
 You are building the traffic layer in front of model endpoints. It routes requests, applies admission/rate limits, handles fallback, canaries, batching policy, endpoint selection, and multi-model operations.
+
+## Lifecycle Lane Playbooks
+
+| Lane | What this page means there | Key decision |
+|---|---|---|
+| Train model from zero | Route traffic to the newly trained endpoint through canary/shadow/rollback controls after release approval. | How much traffic can the new checkpoint receive safely? |
+| Fine-tune existing model | Route between baseline and tuned/adapted endpoints; disable adapter route quickly if regressions appear. | Which users/tasks get the tuned behavior? |
+| Use existing model/API | Main lane: choose small/large/specialized endpoints, fallback, rate limits, batching, cache policy, and cost routing. | Which model endpoint should handle each request? |
+| Build agent/RAG application | Route generator, embedding, reranker, and sometimes small-router/large-reasoner calls. | Which model role is being called? |
+| Operate, govern, and improve | Adjust routes from live metrics, incidents, canaries, and cost/latency budgets. | Promote, roll back, or rebalance traffic? |
 
 ## Pipeline
 
@@ -97,6 +116,46 @@ It decides **which endpoint** handles a model call. It does not decide an agent'
 ### NVIDIA service map
 
 NIM packages optimized model APIs. Triton and Dynamo-style serving handle broader or distributed serving patterns. The gateway can sit above them and apply tenant, risk, cost, fallback, and rollout policy. Registry approval and evaluator evidence should feed the route policy.
+
+### Route policy details
+
+| Policy field | Why it matters |
+|---|---|
+| Task class | Sends classification, extraction, embeddings, reranking, and generation to the right endpoint |
+| Risk tier | Prevents high-impact tasks from using weak routes or unsafe fallback |
+| Tenant/user context | Keeps dedicated profiles, data residency, and billing boundaries intact |
+| Quality threshold | Canary/fallback should be governed by eval and live quality signals |
+| Timeout budget | Prevents one slow endpoint from consuming the whole agent budget |
+| Cost ceiling | Enables small-model routing and premium-model escalation only when justified |
+| Rollback target | Defines exactly where traffic goes if a route regresses |
+
+A gateway route is production code. Hidden heuristics such as "try the cheap model first" need eval coverage, monitoring, and explicit fallback behavior.
+
+### Implementation card: route selection
+
+```python
+def choose_route(request, live_metrics):
+    if request.task == "embedding":
+        return "embedding_endpoint"
+    if request.risk == "high":
+        return "approved_large_model_with_review"
+    if request.tenant in dedicated_tenants:
+        return f"tenant_{request.tenant}_profile"
+    if request.complexity < 0.35 and live_metrics["small_model"].quality_ok:
+        return "small_fast_model"
+    return "large_reasoning_model"
+
+def gateway_call(request):
+    route = choose_route(request, live_metrics())
+    try:
+        return call_endpoint(route, request, timeout_ms=route_budget(route))
+    except EndpointUnavailable:
+        fallback = fallback_route(route)
+        assert fallback_is_approved(route, fallback, request.risk)
+        return call_endpoint(fallback, request)
+```
+
+Gateway scoring uses route-level quality, latency, cost, safety, fallback rate, and drift metrics. Canary gates compare candidate route behavior against baseline before increasing traffic.
 
 ## Exam Signals
 

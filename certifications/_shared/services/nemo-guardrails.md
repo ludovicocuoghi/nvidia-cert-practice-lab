@@ -6,6 +6,19 @@ status: populated
 
 # NeMo Guardrails
 
+## What to study first
+
+- **Core idea:** Python library / middleware — programmable safety layer around LLM inputs, outputs, and **tool calls**
+- **Use it when:** Use when an LLM or agent needs programmable input, dialog, retrieval, tool-call, or output policy checks.
+- **Choose another path when:** Choose IAM/document ACLs for access control, a tool gateway for execution security, Evaluator for offline quality scoring, and Framework/Customizer for model training.
+- **Concrete surface:** Access: `pip install nemoguardrails` + Colang flow files (`.co`) Inside: Input rails, output rails, dialog rails, retrieval rails, action rails, Colang runtime I/O: Raw user prompt / LLM response / tool call arguments -> Block/pass decision, canonical refusal, or validated output
+- **Study first:** input rails
+- output rails
+- dialog rails
+- tool/action checks
+- prompt injection: mitigation
+- **Real trap:** Using guardrails after unauthorized context has already been retrieved; access control must happen before retrieval or tool execution.
+
 ## At a glance
 
 | | |
@@ -52,7 +65,7 @@ NVIDIA's safety and policy middleware for LLM-based applications. NeMo Guardrail
 - Any question asking about **safety, compliance, or policy enforcement** around LLM outputs
 - Part of a **layered safety framework**: guardrails validate outputs, content filters handle inputs, escalation handles edge cases
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
 - **Model training or fine-tuning**: Guardrails doesn't train models; it doesn't modify weights.
 - **Model inference optimization**: That's TensorRT-LLM, Triton, or NIM.
@@ -398,9 +411,9 @@ Guardrails occupy layers 3, 4, and 6. They are the **last programmatic line of d
 - **Relevant exams:** GenAI LLMs, Agentic AI
 - **What it is:** Python library / middleware — programmable safety layer around LLM inputs, outputs, and **tool calls**
 - **Use it when:** Use when an LLM or agent needs programmable input, dialog, retrieval, tool-call, or output policy checks.
-- **Do not use it when:** Do not use it as a replacement for IAM, tenant permissions, secure tool design, offline evaluation, or model training.
+- **Do not use it when:** Choose IAM/document ACLs for access control, a tool gateway for execution security, Evaluator for offline quality scoring, and Framework/Customizer for model training.
 - **Common trap:** Using guardrails after unauthorized context has already been retrieved; access control must happen before retrieval or tool execution.
-- **Scenario signal:** A customer assistant must block jailbreaks, enforce policy flows, validate grounded answers, or restrict unsafe tool calls.
+- **Recognition clues:** A customer assistant must block jailbreaks, enforce policy flows, validate grounded answers, or restrict unsafe tool calls.
 ### Study notes
 - Use this for programmable policy around LLM and agent behavior: input checks, output checks, dialog rails, topic control, tool restrictions, and response moderation.
 - **Guardrails** reduce unsafe behavior but do not replace identity, authorization, tenant filtering, audit logging, or secure tool design.
@@ -411,7 +424,7 @@ Guardrails occupy layers 3, 4, and 6. They are the **last programmatic line of d
 - dialog rails
 - tool/action checks
 - **prompt injection** mitigation
-### High-yield exam signals
+### What to recognize
 - **Input rail blocking jailbreak attempts** → scenario describes detecting "Ignore all previous instructions" or role-play evasion (e.g., "DAN") before reaching the LLM; NeMo Guardrails input rails classify intent and match injection patterns
 - **Output rail catching ungrounded claims** → scenario involves hallucination detection where a model generates claims not supported by retrieved context; the output rail runs entailment checks against cited passages
 - **Retrieval rail for cross-tenant data leakage** → scenario where a user receives answers based on another tenant's documents; retrieval rail enforces authorization checks before context reaches the LLM
@@ -427,8 +440,8 @@ Guardrails occupy layers 3, 4, and 6. They are the **last programmatic line of d
 - List which checks run before **retrieval**, before **tool calls**, before generation, and after generation.
 ## Exam tips from mocks
 - Mock-style questions test whether **NeMo Guardrails** matches **Safety / policy enforcement**, not whether the product name sounds familiar.
-- Choose it when the scenario signal matches this boundary: Use when an LLM or agent needs programmable input, dialog, retrieval, tool-call, or output policy checks.
-- Reject it when the problem is actually about another layer: Do not use it as a replacement for IAM, tenant permissions, secure tool design, offline evaluation, or model training.
+- Boundary cue: choose it when an LLM or agent needs programmable input, dialog, retrieval, tool-call, or output policy checks.
+- Adjacent-service cue: not as a replacement for IAM, tenant permissions, secure tool design, offline evaluation, or model training.
 - The common trap pattern is: Using guardrails after unauthorized context has already been retrieved; access control must happen before retrieval or tool execution.
 - Expect distractors around nearby services such as **NCCL**, **NIM**, **Nsight Compute**, **TensorRT-LLM**. Decide by lifecycle first, product name second.
 - Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.
@@ -452,7 +465,7 @@ Guardrails occupy layers 3, 4, and 6. They are the **last programmatic line of d
 - **mock_1 Q6, mock_2 Q4, mock_3 Q6, mock_4 Q6** / `arch-006` (Agent Architecture and Design): A customer-support automation has a fixed sequence: authenticate user, retrieve account, check policy, propose resolution, ask user confirmation, then create ticket. W.. Correct idea: A graph/workflow agent with explicit nodes and transitions, using LLM calls only where interpretation or generation is needed. Trap: ReAct is overkill for deterministic sequences.
 - **mock_3 Q42, mock_4 Q37, mock_5 Q34** / `cog-006` (Cognition, Planning, and Memory): An agent stores every conversation forever and later retrieves irrelevant or sensitive old details. What memory policy is missing? Correct idea: Memory write filters, retention/expiry rules, sensitivity labels, user controls, and relevance scoring for retrieval. Trap: Bigger storage worsens accumulation.
 - **mock_1 Q22, mock_3 Q29, mock_4 Q25, mock_5 Q22** / `deploy-001` (Deployment and Scaling): An agent request triggers classification, retrieval, reranking, two LLM calls, and three external APIs. Users report high p99 latency. What is the first useful analysis? Correct idea: Break the request into traced spans for each step and identify whether latency is from model inference, retrieval, tools, guard.. Trap: More output tokens worsens latency.
-- **deploy-008** / `deploy-008` (Model Deployment): A 70B model is deployed on H100s with Triton. Profiling shows GPU utilization at 35% under load. What is the most useful first investigation? Correct idea: Inspect Triton metrics (queue time, batch size distribution, instance group occupancy) and the engine's preferred batch sizes;..
+- **deploy-008** / `deploy-008` (Model Deployment): A 70B model is deployed on H100s with Triton. Profiling shows GPU utilization at 35% under load. What is the most useful first investigation? Correct idea: Inspect Triton metrics (queue time, batch size distribution, instance group occupancy) and the engine's preferred batch sizes...
 - **mock_2 Q14, mock_3 Q18, mock_4 Q16, mock_5 Q13** / `dev-008` (Agent Development): A support agent should only call the refund tool after the user has authenticated and refund policy retrieval succeeded. Which implementation is best? Correct idea: Use workflow state and tool preconditions so the refund tool is unavailable until authentication and policy-check nodes have su.. Trap: Direct user access bypasses policy.
 - **mock_2 Q23, mock_3 Q28, mock_4 Q24** / `eval-008` (Evaluation and Tuning): An agent sometimes completes a workflow but violates an internal policy along the way. Which evaluation design is best? Correct idea: Policy-aware trajectory tests that score intermediate actions against allowed states, permissions, and required approvals. Trap: Completion rate misses unsafe paths.
 - **mock_1 Q28** / `ft-005` (Fine-Tuning): In RLHF with PPO, the KL-divergence penalty between the policy and the reference model serves what purpose? Correct idea: Prevents the policy from drifting too far from the SFT reference, suppressing reward-hacking behaviors that satisfy the reward..

@@ -6,9 +6,28 @@ source_lens: general-study
 
 # Policy and Guardrails Layer
 
+## What to study first
+
+- **Core idea:** You are building runtime controls that check user input, retrieved content, tool proposals, tool results, dialog behavior, and final output against policy.
+- **Study first:** Define policies: safety, privacy, data access, tool risk, regulated content, escalation.
+- Check user input for unsafe or out-of-scope requests.
+- Check retrieved content for prompt injection, sensitive data, and policy conflicts.
+- Check tool proposals before execution.
+- Check final output for policy, PII, groundedness, and disclosure rules.
+
 ## What You Are Building
 
 You are building runtime controls that check user input, retrieved content, tool proposals, tool results, dialog behavior, and final output against policy.
+
+## Lifecycle Lane Playbooks
+
+| Lane | What this page means there | Output |
+|---|---|---|
+| Train model from zero | Mostly eval/release policy, not runtime rails. Dataset safety belongs to curation; runtime safety matters once served. | Safety requirements and release checks |
+| Fine-tune existing model | Check whether tuned behavior violates policy or increases unsafe outputs. | Safety gate for tuned artifact |
+| Use existing model/API | Apply input/output policy, refusal rules, PII checks, and schema/groundedness checks around the model call. | Runtime policy layer |
+| Build agent/RAG application | Main lane: input, retrieved content, tool proposal, tool result, and output rails. | Layered guardrail middleware |
+| Operate, govern, and improve | Use incidents to tune policies, reduce false blocks/allows, and add regression tests. | Updated policy and eval cases |
 
 ## Pipeline
 
@@ -105,6 +124,44 @@ Keep retrieved/tool content out of the instruction slot. Enforce permissions out
 | Human review | Approve/escalate risky cases | Deterministic access controls |
 
 For exam scenarios, map the risk to the boundary. NeMo Guardrails is the NVIDIA service cue for runtime policy middleware, not training or inference optimization.
+
+### PII, secrets, and policy handling
+
+| Risk | What it looks like | Better control |
+|---|---|---|
+| PII | Names with contact details, IDs, account numbers, patient/customer case notes | Detect/redact at ingestion, retrieval, and output; log policy decisions |
+| Secret | API key, token, password, private key, credential URL | Quarantine/drop, rotate outside the model path, prevent output |
+| Prompt injection | Text that tells the model to ignore policy or call tools | Treat retrieved/tool content as data and enforce policy outside the model |
+| Unsupported claim | Answer states more than sources prove | Groundedness/faithfulness check and refusal/clarification |
+| Unsafe tool proposal | Model requests mutation without permission or approval | Tool gateway, risk tier, human gate, audit |
+
+Guardrails can transform, block, refuse, ask clarification, or escalate. They should not be the only place that knows about permissions; authorization still belongs in retrieval systems, IAM, and tool gateways.
+
+### Implementation card: layered guardrail checks
+
+```python
+def guarded_run(request):
+    input_decision = input_policy.check(request.text)
+    if input_decision.block:
+        return refuse(input_decision.reason)
+
+    chunks = retriever.search(request.text, filters=request.auth_filters)
+    safe_chunks = []
+    for chunk in chunks:
+        if content_policy.has_prompt_injection(chunk.text):
+            audit("retrieved_prompt_injection", chunk.id)
+            continue
+        safe_chunks.append(redact_pii(chunk))
+
+    proposal = model.propose_answer_or_tool(request, safe_chunks)
+    if proposal.tool_call:
+        tool_policy.require_allowed(proposal.tool_call, request.user)
+
+    output = output_policy.check(proposal.text, evidence=safe_chunks)
+    return output.text if output.pass_ else escalate(output.reason)
+```
+
+Guardrail metrics include block precision, block recall, false positive rate, PII leak rate, jailbreak success rate, prompt-injection catch rate, groundedness pass rate, and escalation accuracy.
 
 ## Exam Signals
 

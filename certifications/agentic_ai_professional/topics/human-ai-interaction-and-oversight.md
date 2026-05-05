@@ -6,9 +6,23 @@ status: populated
 
 # Human-AI Interaction and Oversight
 
+## What to study first
+
+- **Core idea:** Design **human-in-the-loop** approvals, escalation, UI feedback, **review queues**, and **human-on-the-loop** monitoring.
+- **Use it when:** Study this when automation must be balanced with human judgment.
+- **Study first:** Human-in-the-loop (HITL): human actively reviews and approves before critical actions execute — **approval gate** before execution, not after. Right for: high-risk decisions (medical, financial, legal), ambiguous cases, sensitive topics.
+- Human-on-the-loop (HOTL): human monitors agent actions in real-time, intervenes only when needed — **real-time override** capabilities for supervisors. Right for: medium-risk, semi-autonomous operations.
+- Risk-based oversight (exam-preferred model): auto-approve low-risk reversible + high-confidence
+- review medium-risk or moderate-confidence
+- escalate high-risk/low-confidence/sensitive
+- randomly sample for audit. NOT approve-everything or approve-nothing.
+- Approval gates: deterministic pause points — agent waits for human confirmation before executing high-impact action (trade, diagnosis, contract). Approval request must include proposed action + evidence/rationale + risk assessment.
+- Escalation paths: agent routes entire task to human when uncertain, detects high-risk domain, or user explicitly requests it. Escalation package includes conversation history + attempted actions + escalation reason.
+- **Real trap:** Putting every action behind human approval can destroy usability and overload reviewers.
+
 ## Certification boundary
 
-This page is the NCP-AAI exam lens for human oversight. Keep risk-based oversight and UX patterns needed for the blueprint, but the reusable governance model belongs in `Agentic AI General Study -> Human Oversight and Governance`. NVIDIA-specific implementation cues and exam traps stay here.
+This page is the NCP-AAI exam lens for human oversight. Keep risk-based oversight and UX patterns needed for the blueprint, but the reusable governance model belongs in `Agentic AI General Study -> Human Oversight and Governance`. NVIDIA-specific implementation cues and decision traps stay here.
 
 ## Core ideas you must hold in your head
 
@@ -128,7 +142,7 @@ Human-AI Interaction and Oversight governs how humans and agents work together:
 - **Consistent behavior**: Few-shot prompting with curated examples for reliable outputs
 - **AI identity disclosure**: Introduce agent as AI-powered at every session start
 
-### Eroding trust (exam traps)
+### Eroding trust (decision traps)
 - Hiding AI identity to seem human-like
 - Showing only numeric confidence without explanation
 - Exposing raw hidden prompts (leaks internals, doesn't build useful trust)
@@ -139,7 +153,7 @@ Human-AI Interaction and Oversight governs how humans and agents work together:
 - **Override logging**: When humans override agents, log the reason
 - **Not**: black-box decisions with no traceability
 
-## Common exam traps
+## Decision traps worth remembering
 
 1. **Remove all oversight:** "Remove all human oversight to maximize efficiency." Always wrong for high-stakes or high-risk scenarios. The question is about designing the right oversight level, not removing it.
 
@@ -199,7 +213,7 @@ Evidence source: `mock_1` through `mock_5`, especially **HITL**/**HOTL**, escala
 - **What it covers:** Design **human-in-the-loop** approvals, escalation, UI feedback, **review queues**, and **human-on-the-loop** monitoring.
 - **Use this section when:** Study this when automation must be balanced with human judgment.
 - **Common trap:** Putting every action behind human approval can destroy usability and overload reviewers.
-- **Scenario signal:** The question balances autonomy with human judgment: gate high-risk actions, monitor medium-risk work, and sample low-risk automation.
+- **Recognition clues:** The question balances autonomy with human judgment: gate high-risk actions, monitor medium-risk work, and sample low-risk automation.
 
 ### Study notes
 
@@ -275,7 +289,7 @@ Evidence source: `mock_1` through `mock_5`, especially **HITL**/**HOTL**, escala
    Best answer pattern: Risk-based **HITL** — auto-approve low-risk reversible actions (balance lookup, shipping status, FAQ answers), flag medium-risk for review (address change, order modification), escalate high-risk (refunds over $500, account closure), and randomly sample 5% of auto-approved actions for **post-hoc audit**. This reduces reviewer workload to genuinely risky decisions while maintaining safety oversight.
    Trap: Approve everything (**reviewer overload** — leads to **rubber-stamping** and missed dangerous actions) or approve nothing (no oversight — unsafe for high-risk actions).
 
-### High-yield exam signals
+### What to recognize
 
 - **Human approval bottleneck**: every action requires manual approval, causing **reviewer overload** and **latency** for low-risk reversible tasks
 - **Escalation failure**: high-confidence but high-risk medical case is auto-approved because no **risk-rule override** checks domain severity

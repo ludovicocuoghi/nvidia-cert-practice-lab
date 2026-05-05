@@ -1,7 +1,32 @@
 const TABLE_HEADER = "| Domain | Attempts | Correct | Accuracy | Confidence | Bucket |";
 const TABLE_DIVIDER = "| --- | --- | --- | --- | --- | --- |";
 
-function bucketFor(accuracy, attempts) {
+type DomainProfile = {
+  attempts: number;
+  correct: number;
+  accuracy: number;
+  confidence: number;
+  bucket: string;
+};
+
+type LearnerProfile = {
+  certName: string;
+  lastUpdated: string | null;
+  sessions: number;
+  domains: Record<string, DomainProfile>;
+  notes: Record<string, string[]>;
+};
+
+type GradeDomainScore = {
+  total: number;
+  correct: number;
+};
+
+type GradeLike = {
+  byDomain?: Record<string, GradeDomainScore>;
+};
+
+function bucketFor(accuracy: number, attempts: number) {
   if (attempts < 5) return "unknown";
   if (accuracy >= 0.85) return "strong";
   if (accuracy >= 0.65) return "solid";
@@ -9,7 +34,7 @@ function bucketFor(accuracy, attempts) {
   return "weak";
 }
 
-export function emptyProfile(certName = "") {
+export function emptyProfile(certName = ""): LearnerProfile {
   return {
     certName,
     lastUpdated: null,
@@ -19,7 +44,7 @@ export function emptyProfile(certName = "") {
   };
 }
 
-export function parseProfileMarkdown(markdown, certName = "") {
+export function parseProfileMarkdown(markdown: string, certName = ""): LearnerProfile {
   const profile = emptyProfile(certName);
   if (!markdown || !markdown.trim()) return profile;
 
@@ -62,7 +87,11 @@ export function parseProfileMarkdown(markdown, certName = "") {
   return profile;
 }
 
-export function mergeSessionResult(profile, grade, { now = new Date(), maxNotesPerDomain = 12 } = {}) {
+export function mergeSessionResult(
+  profile: LearnerProfile,
+  grade: GradeLike,
+  { now = new Date(), maxNotesPerDomain = 12 } = {}
+): LearnerProfile {
   const next = {
     certName: profile.certName,
     lastUpdated: now.toISOString(),
@@ -96,7 +125,12 @@ export function mergeSessionResult(profile, grade, { now = new Date(), maxNotesP
   return next;
 }
 
-export function appendDomainNote(profile, domain, note, { now = new Date(), maxNotesPerDomain = 12 } = {}) {
+export function appendDomainNote(
+  profile: LearnerProfile,
+  domain: string,
+  note: string,
+  { now = new Date(), maxNotesPerDomain = 12 } = {}
+): LearnerProfile {
   const next = {
     ...profile,
     lastUpdated: now.toISOString(),
@@ -108,7 +142,7 @@ export function appendDomainNote(profile, domain, note, { now = new Date(), maxN
   return next;
 }
 
-export function serializeProfile(profile) {
+export function serializeProfile(profile: LearnerProfile) {
   const lines = [`# Learner Profile — ${profile.certName || ""}`.trim(), ""];
   lines.push("> Auto-updated after each session. Consumed by adaptive scoring and the question-generation skill.");
   lines.push("");

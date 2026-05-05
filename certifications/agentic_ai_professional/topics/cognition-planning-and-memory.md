@@ -6,6 +6,17 @@ status: populated
 
 # Cognition, Planning, and Memory
 
+## What to study first
+
+- **Core idea:** Understand ReAct, **plan-and-execute**, **reflection**, task decomposition, **short-term memory**, and **long-term memory**.
+- **Use it when:** Study this when the agent must reason across steps, remember user preferences, or recover from bad plans.
+- **Study first:** ReAct (Reasoning + Acting): interleaved cycle — Thought → Action → Observation → Thought. Enables dynamic adaptation to tool results. Best for external tools, real-time data, and iterative refinement. Key advantage over CoT: incorporates live feedback.
+- Chain-of-Thought (CoT): outputs intermediate reasoning steps without acting. Best for: pure reasoning tasks (math, logic, deduction) that can be solved without external tools. Cannot call tools or adapt to feedback — that's the key limitation.
+- Tree-of-Thought: explores multiple reasoning branches, evaluates, prunes. Best for: puzzle-like tasks, scheduling with many constraints, branching scenarios. Higher cost but justified when many candidate paths exist.
+- Plan-and-execute with re-planning: create initial plan → execute steps → if observation contradicts assumption → re-plan. Missing **re-planning trigger** = decision trap.
+- Re-planning trigger: must fire when tool observations contradict plan assumptions or fail preconditions — NOT "increase iterations" or "try harder."
+- **Real trap:** Memory is not automatically trustworthy. Store only useful, permission-safe facts and retrieve them with relevance checks.
+
 ## Certification boundary
 
 This page is the NCP-AAI exam lens for reasoning, planning, and memory. Keep portable concepts only at the depth needed for the certification. The reusable concept home is `Agentic AI General Study -> Tooling, Orchestration, and Memory` plus `Agent Lifecycle and Architecture`; NVIDIA-specific implementation cues stay here.
@@ -73,7 +84,7 @@ Cognition, Planning, and Memory covers **how agents think, plan, and remember**:
 
 ### Plan-and-execute with re-planning
 - Create initial plan → execute steps → if observation contradicts assumption → re-plan
-- **Missing re-planning trigger** = agent continues with invalid plan. This is an exam trap scenario.
+- **Missing re-planning trigger** = agent continues with invalid plan. This is an decision trap scenario.
 - **Contingency planning**: Anticipate alternative paths, recalculate based on updated state
 
 ### Hierarchical Task Network (HTN) Planning
@@ -138,7 +149,7 @@ Cognition, Planning, and Memory covers **how agents think, plan, and remember**:
 - **Use tools when**: Factual uncertainty can be resolved by **retrieval/API**
 - **Not**: never asking (wrong actions), always asking (hurts UX), guessing missing high-impact fields (unsafe)
 
-## Common exam traps
+## Decision traps worth remembering
 
 1. **"CoT for everything."** CoT can't call tools. When the task needs external data or APIs, ReAct is the answer.
 
@@ -199,7 +210,7 @@ Evidence source: `mock_1` through `mock_5`, especially memory, ReAct/CoT, replan
 - **What it covers:** Understand ReAct, **plan-and-execute**, **reflection**, task decomposition, **short-term memory**, and **long-term memory**.
 - **Use this section when:** Study this when the agent must reason across steps, remember user preferences, or recover from bad plans.
 - **Common trap:** Memory is not automatically trustworthy. Store only useful, permission-safe facts and retrieve them with relevance checks.
-- **Scenario signal:** The agent must adapt across steps, remember relevant state, or recover from contradictory observations instead of repeating a stale plan.
+- **Recognition clues:** The agent must adapt across steps, remember relevant state, or recover from contradictory observations instead of repeating a stale plan.
 
 ### Study notes
 
@@ -219,7 +230,7 @@ Evidence source: `mock_1` through `mock_5`, especially memory, ReAct/CoT, replan
 - **ReAct (Reasoning + Acting)**: interleaved cycle — Thought → Action → Observation → Thought. Enables dynamic adaptation to tool results. Best for external tools, real-time data, and iterative refinement. Key advantage over CoT: incorporates live feedback.
 - **Chain-of-Thought (CoT)**: outputs intermediate reasoning steps without acting. Best for: pure reasoning tasks (math, logic, deduction) that can be solved without external tools. Cannot call tools or adapt to feedback — that's the key limitation.
 - **Tree-of-Thought**: explores multiple reasoning branches, evaluates, prunes. Best for: puzzle-like tasks, scheduling with many constraints, branching scenarios. Higher cost but justified when many candidate paths exist.
-- **Plan-and-execute with re-planning**: create initial plan → execute steps → if observation contradicts assumption → re-plan. Missing **re-planning trigger** = exam trap.
+- **Plan-and-execute with re-planning**: create initial plan → execute steps → if observation contradicts assumption → re-plan. Missing **re-planning trigger** = decision trap.
 - **Re-planning trigger**: must fire when tool observations contradict plan assumptions or fail preconditions — NOT "increase iterations" or "try harder."
 - **Short-term/working memory**: sliding window of recent conversation turns + current task scratchpad (partial results, tool outputs, current plan step) — lost when session ends unless promoted
 - **Long-term/episodic memory**: cross-session recall of past interactions and user preferences — retrieved via vector similarity with **recency/relevance scoring**
@@ -275,7 +286,7 @@ Evidence source: `mock_1` through `mock_5`, especially memory, ReAct/CoT, replan
    Best answer pattern: **Memory governance** framework — write filters (relevance + sensitivity checks before storing), **TTL/expiry** (old addresses expire), **recency boost** (newer addresses rank higher), **sensitivity labels** (health info gated by **consent**), and **staleness detection** (unconfirmed old data deprecated).
    Trap: "Store everything for better personalization" — accumulates stale, irrelevant, and **sensitive data** that poisons future responses.
 
-### High-yield exam signals
+### What to recognize
 
 - **Multi-step reasoning failure**: agent loses intermediate results because **working memory** is not checkpointed or **structured observations** are not used
 - **Forgot tool result**: agent repeats the same search query because observations were not stored as structured state

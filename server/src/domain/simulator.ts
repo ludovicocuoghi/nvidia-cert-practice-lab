@@ -1,10 +1,44 @@
+import type { ExamPayload, Question } from "../../../shared/src/types";
+
+type ModelProfile = {
+  id: string;
+  family: string;
+  minGpuMemoryGb: number;
+  latencyMs: number;
+  throughputTokensSec: number;
+};
+
+type HardwareProfile = {
+  label: string;
+  memoryGb: number;
+};
+
+export type DomainScore = {
+  total: number;
+  correct: number;
+};
+
+export type GradeResult = {
+  total: number;
+  correct: number;
+  percent: number;
+  rows: Array<{
+    id: string;
+    domain: string;
+    correct: boolean;
+    selected: number | undefined;
+    answer: number;
+  }>;
+  byDomain: Record<string, DomainScore>;
+};
+
 export function estimateTokens(text = "") {
   const trimmed = String(text).trim();
   if (!trimmed) return 0;
   return Math.max(1, Math.ceil(trimmed.split(/\s+/).length * 1.35));
 }
 
-export function findById(items, id) {
+export function findById<T extends { id: string }>(items: T[], id: string): T {
   return items.find((item) => item.id === id) || items[0];
 }
 
@@ -32,7 +66,21 @@ export function evaluatePrompt(prompt = "", useRetrieval = false, useGuardrails 
   return { score, issues };
 }
 
-export function simulateRun({ prompt, model, hardware, temperature = 0.3, useRetrieval = true, useGuardrails = true }) {
+export function simulateRun({
+  prompt,
+  model,
+  hardware,
+  temperature = 0.3,
+  useRetrieval = true,
+  useGuardrails = true
+}: {
+  prompt: string;
+  model: ModelProfile;
+  hardware: HardwareProfile;
+  temperature?: number;
+  useRetrieval?: boolean;
+  useGuardrails?: boolean;
+}) {
   const tokenCount = estimateTokens(prompt);
   const promptReview = evaluatePrompt(prompt, useRetrieval, useGuardrails);
   const memoryFit = hardware.memoryGb >= model.minGpuMemoryGb;
@@ -94,7 +142,7 @@ function parseMetadataValue(markdown, label, fallback = "") {
   return markdown.match(pattern)?.[1]?.trim() || fallback;
 }
 
-function parseDomainLine(line) {
+function parseDomainLine(line: string) {
   const match = line.match(/^- (.+):\s*(\d+)%\s*$/);
   if (!match) return null;
   return {
@@ -103,12 +151,12 @@ function parseDomainLine(line) {
   };
 }
 
-function parseQuestionBlock(block, index) {
+function parseQuestionBlock(block: string, index: number): Question {
   const lines = block.split("\n").map((line) => line.trim()).filter(Boolean);
   const title = lines.shift() || "";
   const question = title.replace(/^###\s*Q\d+:\s*/i, "").trim();
-  const choices = [];
-  const whyWrong = [];
+  const choices: string[] = [];
+  const whyWrong: string[] = [];
   let id = `q-${String(index + 1).padStart(3, "0")}`;
   let domain = "Uncategorized";
   let topic = "";
@@ -158,7 +206,7 @@ function parseQuestionBlock(block, index) {
   };
 }
 
-export function parseExamMarkdown(markdown) {
+export function parseExamMarkdown(markdown: string): ExamPayload {
   const domainSection = markdown.split("## Blueprint Domains")[1]?.split("## Questions")[0] || "";
   const domains = domainSection
     .split("\n")
@@ -186,7 +234,7 @@ export function parseExamMarkdown(markdown) {
   };
 }
 
-export function gradeExam(questions, answers) {
+export function gradeExam(questions: Question[], answers: Record<string, number>): GradeResult {
   const rows = questions.map((question) => {
     const selected = answers[question.id];
     const correct = selected === question.answer;
@@ -200,7 +248,7 @@ export function gradeExam(questions, answers) {
   });
 
   const correctCount = rows.filter((row) => row.correct).length;
-  const byDomain = rows.reduce((domains, row) => {
+  const byDomain = rows.reduce<Record<string, DomainScore>>((domains, row) => {
     const current = domains[row.domain] || { total: 0, correct: 0 };
     current.total += 1;
     if (row.correct) current.correct += 1;

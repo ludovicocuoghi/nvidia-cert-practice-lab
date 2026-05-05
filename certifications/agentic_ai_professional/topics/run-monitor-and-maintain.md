@@ -6,6 +6,17 @@ status: populated
 
 # Run, Monitor, and Maintain
 
+## What to study first
+
+- **Core idea:** Operate live agents with tracing, tool-call monitoring, **drift** detection, cost dashboards, and **incident response**.
+- **Use it when:** Study this when questions ask what to monitor after deployment.
+- **Study first:** Distributed tracing by span: every pipeline step instrumented — classification/routing, **retrieval** embedding, vector DB search, reranker call, LLM inference, each tool call, guardrail checks, response generation. Aggregate traces to identify which step dominates p95/p99 **latency**.
+- Span-level latency: model inference time vs **retrieval** time vs tool API time vs guardrail time vs queue wait time — you can't fix what you don't measure per component.
+- TTFT (Time to First Token): delay between user prompt and first generated token — directly affects perceived responsiveness in real-time applications. More informative than total generation time alone.
+- Tool success rate: percentage of tool calls that return successfully with valid data — declining rate = integration or dependency issue. Tracked per tool.
+- Cost per completed task: total **tokens** + tool calls + GPU-hours divided by successfully completed tasks — tracks efficiency independent of raw **task success**.
+- **Real trap:** **HTTP 200** does not mean the agent succeeded. Track **task success**, tool success, and trajectory failures.
+
 ## Certification boundary
 
 This page is the NCP-AAI exam lens for operations. Keep monitoring, drift, incident, and maintenance knowledge as it applies to deployed NVIDIA-oriented agentic systems. The reusable concept home is `Agentic AI General Study -> Observability, Operations, and Cost`; NVIDIA profiling and platform-operation cues stay here.
@@ -144,7 +155,7 @@ Run, Monitor, and Maintain covers the **ongoing operation** of deployed agents:
 - GPU fan speed statistics (hardware telemetry, not agent quality)
 - Number of training epochs from initial training (historical, not operational)
 
-## Common exam traps
+## Decision traps worth remembering
 
 1. **GPU utilization sufficient:** "GPU utilization is sufficient for diagnosis." Agent **latency** often comes from tools, APIs, or **orchestration** — not GPU. **Trace spans**, don't just watch GPU.
 
@@ -201,7 +212,7 @@ Evidence source: `mock_1` through `mock_5`, especially tracing, **retrieval** mo
 - **What it covers:** Operate live agents with tracing, tool-call monitoring, **drift** detection, cost dashboards, and **incident response**.
 - **Use this section when:** Study this when questions ask what to monitor after deployment.
 - **Common trap:** **HTTP 200** does not mean the agent succeeded. Track **task success**, tool success, and trajectory failures.
-- **Scenario signal:** The service is "up," but **task success**, tool results, **retrieval** quality, drift, cost, or traces show the agent is failing in production.
+- **Recognition clues:** The service is "up," but **task success**, tool results, **retrieval** quality, drift, cost, or traces show the agent is failing in production.
 
 ### Study notes
 
@@ -277,7 +288,7 @@ Evidence source: `mock_1` through `mock_5`, especially tracing, **retrieval** mo
    Best answer pattern: Structured **incident response** — (1) Check **trace spans** for the failing requests, (2) Review versioned logs (prompt version, model version, tool config), (3) Compare against baseline from before the release, (4) Identify that the new prompt version caused the regression, (5) Roll back to previous prompt version, (6) Add a **regression test**. Restarting destroyed the evidence and masked the root cause.
    Trap: Restart first — clears symptoms but destroys diagnostic state (logs in memory, traces in flight). The root cause (bad prompt version) was never identified, so it recurs on next deploy.
 
-### High-yield exam signals
+### What to recognize
 
 - **Live failure masking**: agent returns **HTTP 200** while every CRM tool call returns empty data, because empty-result success is not tracked
 - **Empty tool result**: agent proceeds with no data from failed **retrieval** because empty results are not surfaced as a distinct trace span or alert

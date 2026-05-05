@@ -6,6 +6,17 @@ status: populated
 
 # NVIDIA Platform Implementation
 
+## What to study first
+
+- **Core idea:** Map agentic workloads to NVIDIA services such as **NIM**, **NeMo Agent Toolkit**, **NeMo Guardrails**, **NeMo Retriever**, Triton, and **TensorRT-LLM**.
+- **Use it when:** Study this when the question asks which NVIDIA component fits a production agent requirement.
+- **Study first:** NIM: **optimized inference microservice** — packages LLM, embedding, or reranker models as API endpoints with **TensorRT-LLM** under the hood. Lifecycle: **serving**. NOT for training, **orchestration**, or safety.
+- NeMo Agent Toolkit: **orchestration** framework for building agent workflows — connects tools, data sources, multiple agents, skill chaining, async execution, caching, and observability. Lifecycle: development/**orchestration**. NOT model **serving** or safety policy.
+- NeMo Guardrails: safety/policy middleware — intercepts LLM input/output to enforce topical restrictions, detect jailbreaks, validate **groundedness**, block **prompt injection**. Operates as external middleware, NOT by modifying **model weights**. Lifecycle: safety.
+- NeMo Retriever: enterprise **RAG** service — document ingestion, chunking, embedding generation, indexing, and **retrieval** APIs. Lifecycle: **retrieval/RAG**. NOT for data curation (that's **NeMo Curator**).
+- NeMo Curator: data curation and filtering — deduplication, quality filtering, **PII** removal, and dataset preparation before training, tuning, or evaluation. Lifecycle: data preparation. NOT for live **retrieval** (that's **NeMo Retriever**).
+- **Real trap:** A model name is not a layer. Use **Nemotron** when the question asks which model family; use **NIM**, Retriever, Agent Toolkit, or Guardrails when the question asks how the model is served, grounded, orchestrated, or governed.
+
 ## Certification boundary
 
 This page is intentionally NVIDIA-specific. It should map NIM, NeMo Agent Toolkit, NeMo Retriever, NeMo Guardrails, NeMo Evaluator, NeMo Curator, NIM Operator, Triton, TensorRT-LLM, Nsight, NGC, and related tools to the Agentic AI lifecycle. Generic lifecycle theory should stay in Agentic AI General Study.
@@ -61,7 +72,8 @@ The detailed extraction is saved at `knowledge extracted from mock exams/Knowled
 | Serve a supported model as a production API | **NIM** | **Nemotron** model family, **NeMo Framework** |
 | Manage **NIM** endpoints on Kubernetes | **NIM Operator** | **NIM** itself |
 | Evaluate agent/model quality, regressions, judge workflows | **NeMo Evaluator** | Nsight **profiling**, infrastructure monitoring |
-| Curate/filter/dedupe data before training or **RAG** ingestion | **NeMo Curator** | **NeMo Retriever** |
+| Prepare training/tuning/evaluation datasets with dedup, filtering, classifier scoring, and PII/safety screens | **NeMo Curator** | **NeMo Retriever** |
+| Extract, chunk, embed, index, retrieve, rerank, and cite enterprise documents at query time | **NeMo Retriever** | **NeMo Curator** |
 | Customize/tune model behavior | **NeMo Framework** or **NeMo Customizer** | **NIM serving**, **Guardrails** |
 | Choose an NVIDIA model family for reasoning/instruction workflows | **Nemotron models** | **NIM serving** stack |
 | Pull trusted containers/models/artifacts | **NGC** | Runtime **serving** |
@@ -81,7 +93,7 @@ These can appear in Agentic AI questions, especially deployment/scaling or NVIDI
 | **TensorRT** | General neural-network **inference optimization** | **TensorRT-LLM** is the LLM-specific stack |
 | **Triton Dynamo** | Distributed LLM inference scheduling and multi-node **serving** | Not agent task planning |
 
-## Common exam traps
+## Real NVIDIA boundary traps
 
 1. **Mixing lifecycle stages:** **NIM** isn't for training; **NeMo Framework** isn't for **serving**; **Guardrails** isn't for optimization. The exam constructs answer choices that are correct tools in wrong stages.
 
@@ -125,11 +137,11 @@ These can appear in Agentic AI questions, especially deployment/scaling or NVIDI
 Across the mock exams, NVIDIA platform questions repeatedly test these durable distinctions:
 
 - **Core Agentic services**: **NeMo Agent Toolkit** for **orchestration**, **NeMo Guardrails** for policy/safety, **NeMo Retriever** for **RAG**, **NIM** for model APIs, and **NeMo Evaluator** for quality/regression checks.
-- **Lifecycle mapping**: data curation/**customization/serving/safety/evaluation** are different stages; correct tools in the wrong stage are wrong answers.
+- **Lifecycle mapping**: data curation/**customization/serving/safety/evaluation** are different stages; a real trap is choosing a valid NVIDIA tool at the wrong lifecycle stage.
 - **Serving stack**: **NIM** packages supported models as APIs; Triton serves multi-framework or multi-model workloads; **TensorRT-LLM** optimizes LLM inference.
 - **Profiling stack**: **Nsight Systems** answers "where is the system bottleneck?"; **Nsight Compute** answers "why is this kernel slow?"
 - **GPU-adjacent tools**: **NCCL**, TensorRT, CUDA, and **RAPIDS** appear as supporting platform concepts, not agent **orchestration** layers.
-- **Exam trap pattern**: answer choices often mix NeMo, **NIM**, Triton, **TensorRT-LLM**, Nsight, and **NCCL** to test whether you know the boundary.
+- **Decision trap pattern**: answer choices often mix NeMo, **NIM**, Triton, **TensorRT-LLM**, Nsight, and **NCCL** to test whether you know the boundary.
 
 Evidence source: `mock_1` through `mock_5`, especially NVIDIA platform, deployment, **inference optimization**, **profiling**, and guardrail questions.
 
@@ -141,14 +153,14 @@ Evidence source: `mock_1` through `mock_5`, especially NVIDIA platform, deployme
 - **Weight:** 7%
 - **What it covers:** Map agentic workloads to NVIDIA services such as **NIM**, **NeMo Agent Toolkit**, **NeMo Guardrails**, **NeMo Retriever**, Triton, and **TensorRT-LLM**.
 - **Use this section when:** Study this when the question asks which NVIDIA component fits a production agent requirement.
-- **Common trap:** Do not answer with a model when the question asks for **orchestration**, **serving**, **retrieval**, or **guardrails**.
-- **Scenario signal:** The question names a production need, so identify the **lifecycle layer** first: **orchestration**, **retrieval**, **guardrails**, **serving**, **evaluation**, **profiling**, or optimization.
+- **Common trap:** A model name is not a layer. Use **Nemotron** when the question asks which model family; use **NIM**, Retriever, Agent Toolkit, or Guardrails when the question asks how the model is served, grounded, orchestrated, or governed.
+- **Recognition clues:** The question names a production need, so identify the **lifecycle layer** first: **orchestration**, **retrieval**, **guardrails**, **serving**, **evaluation**, **profiling**, or optimization.
 
 ### Study notes
 
 - Map each NVIDIA component to lifecycle: **NeMo Framework** customizes, **NeMo Agent Toolkit** orchestrates, **NeMo Retriever** retrieves, **NeMo Guardrails** governs, **NIM** serves, **TensorRT-LLM** optimizes LLM inference, Triton serves multi-framework pipelines.
 - When a question says "which NVIDIA service," identify the bottleneck and lifecycle phase before choosing the product name.
-- **The full NVIDIA agent stack**: (1) **NeMo Agent Toolkit** — orchestrates agent workflows, connects tools and data sources, manages multi-agent coordination, skill chaining with async execution and caching. (2) **NIM** — serves each model (LLM, embedding, reranker) as an **optimized inference microservice**. (3) **NeMo Retriever** — handles enterprise **RAG**: document ingestion, chunking, embedding, indexing, and **retrieval** APIs. (4) **NeMo Guardrails** — enforces safety policy: **input/output validation**, topical restrictions, jailbreak blocking, **groundedness** checks, and **prompt injection** defense. (5) **Nsight Systems/Compute** — **profiling** and observability for agent backends. (6) **NeMo Evaluator** — quality and regression **evaluation** for agent outputs. (7) **NeMo Curator** — data curation and filtering before ingestion or training.
+- **The full NVIDIA agent stack**: (1) **NeMo Agent Toolkit** — orchestrates agent workflows, connects tools and data sources, manages multi-agent coordination, skill chaining with async execution and caching. (2) **NIM** — serves each model (LLM, embedding, reranker) as an **optimized inference microservice**. (3) **NeMo Retriever** — handles enterprise **RAG**: document extraction, chunking, embedding, indexing, **retrieval**, reranking, and citation APIs at query time. (4) **NeMo Guardrails** — enforces safety policy: **input/output validation**, topical restrictions, jailbreak blocking, **groundedness** checks, and **prompt injection** defense. (5) **Nsight Systems/Compute** — **profiling** and observability for agent backends. (6) **NeMo Evaluator** — quality and regression **evaluation** for agent outputs. (7) **NeMo Curator** — prepares training, tuning, and evaluation datasets with filtering, dedup, PII/safety screens, and classifier scoring before the model learns from them.
 - **When to use each component**: (a) Use **NeMo Agent Toolkit** when you need to build, connect, and coordinate agents, tools, and workflows — this is the **orchestration** layer. (b) Use **NIM** when you need to deploy a model as a production API — this is the **serving** layer. (c) Use **NeMo Retriever** when you need to add enterprise documents/knowledge to an agent — this is the **RAG** layer. (d) Use **NeMo Guardrails** when you need to enforce safety policy, block unsafe outputs, or defend against **prompt injection** — this is the safety layer. (e) Use **Nsight Systems** when you need to identify system-level bottlenecks across CPU and GPU — this is the **profiling** layer. (f) Use **NeMo Evaluator** when you need to evaluate agent quality and detect regressions — this is the **evaluation** layer.
 - **Component selection framework**: (1) Name the bottleneck or risk first. Is it **latency**? Safety? **Retrieval** quality? **Orchestration** complexity? (2) Map the bottleneck to a layer: **latency** -> **serving**/optimization, safety -> **guardrails**, **retrieval** -> retriever, **orchestration** -> agent toolkit, **evaluation** -> evaluator. (3) Choose the NVIDIA tool at that layer. Do NOT pick a tool from a different layer, even if the tool name sounds plausible. The exam constructs wrong answers by mixing layers: e.g., "use **NIM** for safety" (wrong — **NIM** is **serving**, **Guardrails** is safety) or "use **NeMo Retriever** for **orchestration**" (wrong — Retriever is **RAG**, Agent Toolkit is **orchestration**).
 
@@ -158,7 +170,7 @@ Evidence source: `mock_1` through `mock_5`, especially NVIDIA platform, deployme
 - **NeMo Agent Toolkit**: **orchestration** framework for building agent workflows — connects tools, data sources, multiple agents, skill chaining, async execution, caching, and observability. Lifecycle: development/**orchestration**. NOT model **serving** or safety policy.
 - **NeMo Guardrails**: safety/policy middleware — intercepts LLM input/output to enforce topical restrictions, detect jailbreaks, validate **groundedness**, block **prompt injection**. Operates as external middleware, NOT by modifying **model weights**. Lifecycle: safety.
 - **NeMo Retriever**: enterprise **RAG** service — document ingestion, chunking, embedding generation, indexing, and **retrieval** APIs. Lifecycle: **retrieval/RAG**. NOT for data curation (that's **NeMo Curator**).
-- **NeMo Curator**: data curation and filtering — deduplication, quality filtering, **PII** removal, data preparation before ingestion or training. Lifecycle: data preparation. NOT for **retrieval** (that's **NeMo Retriever**).
+- **NeMo Curator**: data curation and filtering — deduplication, quality filtering, **PII** removal, and dataset preparation before training, tuning, or evaluation. Lifecycle: data preparation. NOT for live **retrieval** (that's **NeMo Retriever**).
 - **NeMo Evaluator**: agent/model quality **evaluation** — trajectory scoring, regression detection, judge workflows. Lifecycle: **evaluation**. NOT for **profiling** (that's Nsight).
 - **NeMo Framework / NeMo Customizer**: model training and customization. Lifecycle: training/customization. NOT for **serving** (that's **NIM**).
 - **TensorRT-LLM**: LLM **inference optimization** library — in-flight batching, paged KV cache, kernel fusion, FP8/INT4 quantization. Often operates under **NIM** or Triton. Lifecycle: **inference optimization**.
@@ -183,7 +195,8 @@ Evidence source: `mock_1` through `mock_5`, especially NVIDIA platform, deployme
 | safety policies, jailbreak prevention, **prompt injection** defense | **NeMo Guardrails** | **fine-tuning** only or **NIM** |
 | enforce topical restrictions and validate **RAG groundedness** | **NeMo Guardrails** (middleware layer) | **NeMo Agent Toolkit** (**orchestration**, not safety) |
 | add enterprise documents/knowledge to an agent | **NeMo Retriever** | **NeMo Curator** (data prep, not **retrieval**) |
-| data curation, deduplication, filtering before **training/RAG** | **NeMo Curator** | **NeMo Retriever** (**retrieval**, not data prep) |
+| data curation, deduplication, filtering before training/tuning/eval | **NeMo Curator** | **NeMo Retriever** (**retrieval**, not training-data prep) |
+| document extraction, chunking, embedding, indexing, **retrieval**, reranking, citations | **NeMo Retriever** | **NeMo Curator** (dataset prep, not query-time RAG) |
 | evaluate agent quality, detect regressions, trajectory scoring | **NeMo Evaluator** | **Nsight Systems** (**profiling**, not quality **evaluation**) |
 | inference throughput, KV cache, quantization, in-flight batching | **TensorRT-LLM** | **RAPIDS** (data processing, not inference) |
 | multi-framework or multi-model **serving** with dynamic batching | **Triton Inference Server** | **NIM** alone (**NIM** = packaged single-model APIs; Triton = multi-model platform) |
@@ -223,7 +236,7 @@ Evidence source: `mock_1` through `mock_5`, especially NVIDIA platform, deployme
    Best answer pattern: **NeMo Guardrails** — **input guardrail** blocks jailbreak patterns, **output guardrail** enforces topical restrictions, **retrieval guardrail** isolates retrieved text from instructions. Three guardrail gates, one tool.
    Trap: **Fine-tuning** the model to "be safe" — this provides no runtime enforcement. Prompt instructions alone are bypassable. **Guardrails** is the deterministic middleware answer.
 
-### High-yield exam signals
+### What to recognize
 
 - **NVIDIA component confusion**: team picks **NIM** for safety policy enforcement instead of **NeMo Guardrails**, confusing **serving** with safety
 - **Agent workflow bottleneck**: **latency** comes from inefficient tool **orchestration**, but the team investigates GPU kernels instead of workflow **orchestration** and async execution

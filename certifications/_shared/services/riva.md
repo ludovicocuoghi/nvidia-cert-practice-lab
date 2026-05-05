@@ -6,6 +6,26 @@ status: populated
 
 # Riva
 
+## What to study first
+
+- **Core idea:** Containerized microservice + gRPC SDK — GPU-accelerated speech AI (ASR, TTS, translation)
+- **Use it when:** Use when the scenario involves speech recognition, text-to-speech, translation, voice assistants, or streaming call-center audio.
+- **Choose another path when:** Choose the neighboring service for text-only LLM serving, LLM fine-tuning, or RAG retrieval.
+- **Concrete surface:** Access: NGC container: `nvcr.io/nvidia/riva/riva-speech`, Python: `pip install nvidia-riva-client` Inside: Conformer ASR encoder, FastPitch + HiFi-GAN TTS, encoder-decoder NMT, streaming VAD I/O: Audio stream (PCM, FLAC, WAV) / text + voice parameters -> Text transcript with word timestamps (ASR) / audio waveform (TTS) / translated text (NMT)
+- **Study first:** ASR architectures (CTC vs RNN-T): CTC-based (Citrinet, QuartzNet) with simpler decoder for faster streaming
+- RNN-T with prediction+joint network for higher accuracy on noisy audio
+- both use Conformer encoder (convolution + self-attention)
+- TTS pipeline (FastPitch + HiFi-GAN): text-to-spectrogram via FastPitch with explicit pitch/duration control
+- vocoder via HiFi-GAN converts spectrogram to raw audio
+- can generate 100+ seconds of audio per second of GPU time on A100
+- Streaming ASR and VAD: outputs partial transcripts incrementally as audio arrives
+- GPU-accelerated voice activity detection reduces processing on non-speech segments
+- Real-time voice agent pipeline: Riva ASR → LLM/Agent → Riva TTS
+- combined latency must stay under ~300ms for natural conversation
+- Riva vs cloud speech APIs: self-hosted on NVIDIA GPUs with predictable latency and no per-call costs
+- supports domain adaptation (fine-tuning ASR on domain audio) and custom vocabulary injection for rare terms
+- **Real trap:** Choosing Riva for generic text generation because it is a model-serving product; Riva owns speech/audio workflows.
+
 ## At a glance
 
 | | |
@@ -49,7 +69,7 @@ NVIDIA Riva is NVIDIA's speech and audio AI application framework/service family
 - The question asks for NVIDIA speech AI rather than generic text LLM serving.
 - The workflow needs audio I/O around an LLM or agent.
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
 - **Text LLM serving**: use NIM or Triton Inference Server.
 - **LLM customization**: use NeMo Framework or NeMo Customizer.
@@ -158,19 +178,19 @@ Riva is the correct answer when the scenario involves audio/speech I/O, voice as
 - **Relevant exams:** GenAI LLMs, Agentic AI
 - **What it is:** Containerized microservice + gRPC SDK — GPU-accelerated speech AI (ASR, TTS, translation)
 - **Use it when:** Use when the scenario involves speech recognition, text-to-speech, translation, voice assistants, or streaming call-center audio.
-- **Do not use it when:** Do not use it for text-only LLM serving, LLM fine-tuning, or RAG retrieval.
+- **Do not use it when:** Choose the neighboring service for text-only LLM serving, LLM fine-tuning, or RAG retrieval.
 - **Common trap:** Choosing Riva for generic text generation because it is a model-serving product; Riva owns speech/audio workflows.
-- **Scenario signal:** A voice assistant or call-center workflow needs streaming ASR, TTS, translation, or speech processing on NVIDIA GPUs.
+- **Recognition clues:** A voice assistant or call-center workflow needs streaming ASR, TTS, translation, or speech processing on NVIDIA GPUs.
 ### Study notes
 - Place **Riva** at **Multimodal / speech application layer**: deploy a speech AI Docker container, call gRPC methods to transcribe audio or generate speech — the audio equivalent of NIM for text.
-- Choose it when: Use when the scenario involves speech recognition, text-to-speech, translation, voice assistants, or streaming call-center audio. Reject it when: Do not use it for text-only LLM serving, LLM fine-tuning, or RAG retrieval.
+- Boundary cue: choose it when the scenario involves speech recognition, text-to-speech, translation, voice assistants, or streaming call-center audio. Adjacent-service cue: not for text-only LLM serving, LLM fine-tuning, or RAG retrieval.
 ### Must know
 - **ASR architectures (CTC vs RNN-T)**: CTC-based (Citrinet, QuartzNet) with simpler decoder for faster streaming; RNN-T with prediction+joint network for higher accuracy on noisy audio; both use Conformer encoder (convolution + self-attention)
 - **TTS pipeline (FastPitch + HiFi-GAN)**: text-to-spectrogram via FastPitch with explicit pitch/duration control; vocoder via HiFi-GAN converts spectrogram to raw audio; can generate 100+ seconds of audio per second of GPU time on A100
 - **Streaming ASR and VAD**: outputs partial transcripts incrementally as audio arrives; GPU-accelerated voice activity detection reduces processing on non-speech segments
 - **Real-time voice agent pipeline**: Riva ASR → LLM/Agent → Riva TTS; combined latency must stay under ~300ms for natural conversation
 - **Riva vs cloud speech APIs**: self-hosted on NVIDIA GPUs with predictable latency and no per-call costs; supports domain adaptation (fine-tuning ASR on domain audio) and custom vocabulary injection for rare terms
-### High-yield exam signals
+### What to recognize
 - **Speech-to-text or text-to-speech scenario** → scenario involves transcribing audio, generating speech, or building a voice assistant; Riva is NVIDIA's speech AI framework for ASR and TTS
 - **Real-time voice agent pipeline** → scenario describes a voice-enabled agent where a user speaks, the system processes the audio through an LLM, and speaks back; Riva provides the ASR and TTS stages with streaming capability for <300ms latency
 - **CTC vs RNN-T for streaming** → scenario about ASR latency/accuracy tradeoff: CTC (Citrinet/QuartzNet) for lower-latency streaming, RNN-T for better accuracy on noisy audio
@@ -180,8 +200,8 @@ Riva is the correct answer when the scenario involves audio/speech I/O, voice as
 - Write one scenario where **Riva** is correct and one scenario where it is a tempting but wrong distractor.
 ## Exam tips from mocks
 - Mock-style questions test whether **Riva** matches **Multimodal / speech application layer**, not whether the product name sounds familiar.
-- Choose it when the scenario signal matches this boundary: Use when the scenario involves speech recognition, text-to-speech, translation, voice assistants, or streaming call-center audio.
-- Reject it when the problem is actually about another layer: Do not use it for text-only LLM serving, LLM fine-tuning, or RAG retrieval.
+- Boundary cue: choose it when the scenario involves speech recognition, text-to-speech, translation, voice assistants, or streaming call-center audio.
+- Adjacent-service cue: not for text-only LLM serving, LLM fine-tuning, or RAG retrieval.
 - The common trap pattern is: Choosing Riva for generic text generation because it is a model-serving product; Riva owns speech/audio workflows.
 - If it appears only as a distractor, decide by the required lifecycle phase before choosing a product name.
 - Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.

@@ -6,6 +6,17 @@ status: populated
 
 # Knowledge Integration and Data Handling
 
+## What to study first
+
+- **Core idea:** Use **RAG**, **vector search**, knowledge graphs, structured data, access control, and freshness in agent systems.
+- **Use it when:** Study this when an agent needs proprietary or changing knowledge.
+- **Study first:** RAG vs fine-tuning: **RAG** injects **fresh external knowledge** at **query time** without retraining (facts that change, must cite sources). **Fine-tuning** encodes behavior/style into **model weights** (durable patterns, not fresh facts).
+- Authorization filters before retrieval: **tenant_id**, **permission level**, **sensitivity label** applied at index/metadata level — prevents forbidden documents from entering context. NOT **post-generation output filtering**.
+- Pre-filter vs post-filter: **pre-filter** = filter candidates before **ANN search** (efficient, may miss cross-boundary results). **post-filter** = search then filter (more accurate, wastes compute on filtered results). Know the trade-off.
+- Multi-tenant access control: document chunks tagged with **tenant_id** + **permission level** — filters applied at **query time**, not after generation. Cross-tenant leakage = decision trap scenario.
+- Hybrid retrieval (dense + sparse): **dense** embedding similarity (semantic meaning) + **sparse** keyword matching/**BM25** (exact terms) → combined via **Reciprocal Rank Fusion** (**RRF**). Right answer when both "semantic understanding" and "exact matching" matter.
+- **Real trap:** Never retrieve documents the user cannot access and hope **guardrails** will hide them later.
+
 ## Certification boundary
 
 This page is the NCP-AAI exam lens for knowledge integration. Keep RAG, chunking, permissions, and data-handling concepts only to the depth needed for the certification. The reusable concept home is `Agentic AI General Study -> Data Curation and Knowledge Grounding`; NVIDIA Retriever/Curator/service-selection cues stay here.
@@ -146,7 +157,7 @@ Knowledge Integration sits between agent reasoning and external data:
 - **Structured knowledge graph + RAG combined**: KG for relationship constraints, **RAG** for document evidence
 - **Not**: KG alone, **vector search** alone, keyword search alone
 
-## Common exam traps
+## Decision traps worth remembering
 
 1. **Filter after generation:** "Filter output after generation." Access control that happens after the model sees forbidden content is too late. Must filter at **retrieval/index** level.
 
@@ -205,7 +216,7 @@ Evidence source: `mock_1` through `mock_5`, especially tenant filtering, **hybri
 - **What it covers:** Use **RAG**, **vector search**, knowledge graphs, structured data, access control, and freshness in agent systems.
 - **Use this section when:** Study this when an agent needs proprietary or changing knowledge.
 - **Common trap:** Never retrieve documents the user cannot access and hope **guardrails** will hide them later.
-- **Scenario signal:** The agent needs fresh or proprietary knowledge, but access control, chunking, freshness, or **source grounding** determines whether **retrieval** is safe and useful.
+- **Recognition clues:** The agent needs fresh or proprietary knowledge, but access control, chunking, freshness, or **source grounding** determines whether **retrieval** is safe and useful.
 
 ### Study notes
 
@@ -224,7 +235,7 @@ Evidence source: `mock_1` through `mock_5`, especially tenant filtering, **hybri
 - **RAG vs fine-tuning**: **RAG** injects **fresh external knowledge** at **query time** without retraining (facts that change, must cite sources). **Fine-tuning** encodes behavior/style into **model weights** (durable patterns, not fresh facts).
 - **Authorization filters before retrieval**: **tenant_id**, **permission level**, **sensitivity label** applied at index/metadata level — prevents forbidden documents from entering context. NOT **post-generation output filtering**.
 - **Pre-filter vs post-filter**: **pre-filter** = filter candidates before **ANN search** (efficient, may miss cross-boundary results). **post-filter** = search then filter (more accurate, wastes compute on filtered results). Know the trade-off.
-- **Multi-tenant access control**: document chunks tagged with **tenant_id** + **permission level** — filters applied at **query time**, not after generation. Cross-tenant leakage = exam trap scenario.
+- **Multi-tenant access control**: document chunks tagged with **tenant_id** + **permission level** — filters applied at **query time**, not after generation. Cross-tenant leakage = decision trap scenario.
 - **Hybrid retrieval (dense + sparse)**: **dense** embedding similarity (semantic meaning) + **sparse** keyword matching/**BM25** (exact terms) → combined via **Reciprocal Rank Fusion** (**RRF**). Right answer when both "semantic understanding" and "exact matching" matter.
 - **Pure vector vs hybrid**: vector-only misses **exact identifiers**, codes, **legal citations**. Hybrid catches both. "Exact terms plus semantic meaning" = **hybrid retrieval** cue.
 - **RRF (Reciprocal Rank Fusion)**: score = sum(1 / (k + rank_i)) for each document's rank in each result set. Prioritizes documents ranking well in both **dense** and **sparse** results without explicit weight tuning.
@@ -282,7 +293,7 @@ Evidence source: `mock_1` through `mock_5`, especially tenant filtering, **hybri
    Best answer pattern: **Knowledge graph** for the explicit relationship chain (MegaCorp → subsidiaries → contracts → jurisdiction = GDPR) + use entity IDs from KG result as a filter in **vector search** to retrieve supporting document chunks. Generate answer from retrieved chunks with the KG-verified relationship path.
    Trap: Pure **vector search** captures conceptual similarity but misses explicit relationship constraints. Larger top-k adds noise without fixing relationship tracing.
 
-### High-yield exam signals
+### What to recognize
 
 - **Private docs leaked**: user receives another tenant's policy content because **metadata filters** were not applied before **retrieval**
 - **Tenant isolation breach**: access control happens after generation instead of at **retrieval/index** level, so forbidden chunks already entered context

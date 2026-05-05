@@ -4,12 +4,29 @@ relevant_to: [NCP-GENL]
 status: populated
 ---
 
-# TAO Toolkit
+# TAO Toolkit (Train, Adapt, Optimize)
+
+## What to study first
+
+- **Core idea:** CLI tool + Python SDK — transfer learning for computer vision models (Train, Adapt, Optimize, Deploy)
+- **Use it when:** Use when labeled images, object detection, classification, segmentation, or edge vision transfer learning are the core task.
+- **Choose another path when:** Choose NeMo Framework/Customizer for LLM tuning, NIM/Triton for text generation serving, NeMo Retriever for RAG, and TensorRT-LLM for LLM inference optimization.
+- **Concrete surface:** Access: NGC container: `nvcr.io/nvidia/tao/tao-toolkit`, CLI: `tao detectnet_v2 train -e spec.yaml` I/O: Labeled images + pre-trained backbone (NGC) + spec YAML -> Fine-tuned model → pruned model → TensorRT engine (`.engine`) for Jetson/Triton
+- **Study first:** Transfer learning from pre-trained backbones: ResNet, EfficientNet, ViT backbones with task-specific heads (YOLO, Faster R-CNN, UNet, Mask R-CNN) for detection, classification, semantic/instance segmentation
+- TAO workflow (Train, Adapt, Optimize, Deploy): four-stage pipeline from fine-tuning on labeled data through structured pruning, TensorRT export (FP16/INT8), and deployment on Jetson or Triton
+- Structured pruning for edge deployment: removes channels/layers with least accuracy contribution, then fine-tunes to recover
+- critical for Jetson devices with limited memory and compute
+- INT8 quantization via TensorRT: 4x model size reduction with <1% typical accuracy loss
+- essential for real-time inference on embedded GPUs
+- Modality distinction (vision vs LLM): TAO is for vision/perception models
+- NeMo Framework/NeMo Customizer handles text LLM fine-tuning — a common exam trap
+- **Real trap:** Treating any "transfer learning" request as LLM fine-tuning. TAO is the vision/perception transfer-learning lane; NeMo owns LLM customization.
 
 ## At a glance
 
 | | |
 |---|---|
+| **Full name** | Train, Adapt, Optimize Toolkit |
 | **What it is** | CLI tool + Python SDK — transfer learning for computer vision models (Train, Adapt, Optimize, Deploy) |
 | **How you access it** | NGC container: `nvcr.io/nvidia/tao/tao-toolkit`, CLI: `tao detectnet_v2 train -e spec.yaml` |
 | **Input** | Labeled images + pre-trained backbone (NGC) + spec YAML |
@@ -43,7 +60,7 @@ TAO Toolkit is NVIDIA's transfer-learning toolkit for training and adapting comp
 - The question asks for NVIDIA tooling to adapt a pretrained vision model to a domain dataset.
 - The workflow is computer vision rather than text generation.
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
 - **LLM fine-tuning/PEFT**: use NeMo Framework or NeMo Customizer.
 - **LLM serving**: use NIM or Triton Inference Server.
@@ -133,19 +150,19 @@ Both are "training and customization" tools, but for fundamentally different mod
 - **Relevant exams:** GenAI LLMs, Agentic AI
 - **What it is:** CLI tool + Python SDK — transfer learning for computer vision models (Train, Adapt, Optimize, Deploy)
 - **Use it when:** Use when labeled images, object detection, classification, segmentation, or edge vision transfer learning are the core task.
-- **Do not use it when:** Do not use it for LLM fine-tuning, text generation, RAG, or LLM inference optimization.
-- **Common trap:** Confusing TAO vision/perception transfer learning with NeMo LLM customization.
-- **Scenario signal:** A vision team needs to adapt a pretrained detector, classifier, or segmentation model to labeled domain images.
+- **Do not use it when:** Choose NeMo Framework/Customizer for LLM tuning, NIM/Triton for text generation serving, NeMo Retriever for RAG, and TensorRT-LLM for LLM inference optimization.
+- **Common trap:** Treating any "transfer learning" request as LLM fine-tuning. TAO is the vision/perception transfer-learning lane; NeMo owns LLM customization.
+- **Recognition clues:** A vision team needs to adapt a pretrained detector, classifier, or segmentation model to labeled domain images.
 ### Study notes
 - Place **TAO Toolkit** at **Training and customization for vision/perception**: `tao train` for vision models — point at labeled images, pick a backbone, get a TensorRT engine for Jetson or Triton.
-- Choose it when: Use when labeled images, object detection, classification, segmentation, or edge vision transfer learning are the core task. Reject it when: Do not use it for LLM fine-tuning, text generation, RAG, or LLM inference optimization.
+- Boundary cue: choose it when labeled images, object detection, classification, segmentation, or edge vision transfer learning are the core task. Adjacent-service cue: not for LLM fine-tuning, text generation, RAG, or LLM inference optimization.
 ### Must know
 - **Transfer learning from pre-trained backbones**: ResNet, EfficientNet, ViT backbones with task-specific heads (YOLO, Faster R-CNN, UNet, Mask R-CNN) for detection, classification, semantic/instance segmentation
 - **TAO workflow (Train, Adapt, Optimize, Deploy)**: four-stage pipeline from fine-tuning on labeled data through structured pruning, TensorRT export (FP16/INT8), and deployment on Jetson or Triton
 - **Structured pruning for edge deployment**: removes channels/layers with least accuracy contribution, then fine-tunes to recover; critical for Jetson devices with limited memory and compute
 - **INT8 quantization via TensorRT**: 4x model size reduction with <1% typical accuracy loss; essential for real-time inference on embedded GPUs
 - **Modality distinction (vision vs LLM)**: TAO is for vision/perception models; NeMo Framework/NeMo Customizer handles text LLM fine-tuning — a common exam trap
-### High-yield exam signals
+### What to recognize
 - **Vision transfer learning with labeled images** → scenario involves adapting a pre-trained model for defect detection, classification, or segmentation using domain-specific labeled images; TAO is the NVIDIA tool for vision model customization
 - **Edge deployment with size constraints** → scenario requires deploying a vision model on Jetson or embedded GPU; TAO's structured pruning + INT8 quantization pipeline is the relevant optimization path
 - **Train-Adapt-Optimize-Deploy pipeline** → scenario describes a four-stage vision model workflow from training through optimization to deployment; this is the defining TAO workflow pattern
@@ -154,8 +171,8 @@ Both are "training and customization" tools, but for fundamentally different mod
 - Write one scenario where **TAO Toolkit** is correct and one scenario where it is a tempting but wrong distractor.
 ## Exam tips from mocks
 - Mock-style questions test whether **TAO Toolkit** matches **Training and customization for vision/perception**, not whether the product name sounds familiar.
-- Choose it when the scenario signal matches this boundary: Use when labeled images, object detection, classification, segmentation, or edge vision transfer learning are the core task.
-- Reject it when the problem is actually about another layer: Do not use it for LLM fine-tuning, text generation, RAG, or LLM inference optimization.
+- Boundary cue: choose it when labeled images, object detection, classification, segmentation, or edge vision transfer learning are the core task.
+- Adjacent-service cue: not for LLM fine-tuning, text generation, RAG, or LLM inference optimization.
 - The common trap pattern is: Confusing TAO vision/perception transfer learning with NeMo LLM customization.
 - If it appears only as a distractor, decide by the required lifecycle phase before choosing a product name.
 - Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.

@@ -6,6 +6,24 @@ status: populated
 
 # Dynamo (Triton Dynamo)
 
+## What to study first
+
+- **Core idea:** Open-source distributed serving system (Python) — leader-worker architecture for multi-node LLM serving
+- **Use it when:** Use when a large LLM serving system needs multi-node scheduling, disaggregated prefill/decode, or KV-cache-aware request routing.
+- **Choose another path when:** Choose the neighboring service for a simple single-node endpoint; use NIM or Triton first.
+- **Concrete surface:** Access: `pip install ai-dynamo`, GitHub: `github.com/ai-dynamo/dynamo`, NGC containers Inside: Disaggregated prefill/decode, KV-cache routing, leader-worker scheduler, etcd failover I/O: Inference requests + disaggregated topology config (prefill nodes, decode nodes) -> KV-cache-aware routed responses, prefill KV cache streamed to decode instances
+- **Study first:** Disaggregated prefill/decode architecture: separates compute-bound prefill (saturates GPU compute units) from memory-bandwidth-bound decode (reads KV cache from HBM) onto different GPU instances
+- KV-cache-aware request routing: scheduler examines decode-instance KV-cache capacity and shared prefix caches before dispatching
+- KV cache transferred over fast interconnect (NVLink, InfiniBand)
+- Leader-worker architecture: leader runs scheduler with global state (GPU memory, queue depths, model versions)
+- workers run Triton instances
+- leader failover via etcd
+- Dynamo vs Triton vs TensorRT-LLM: Dynamo = multi-node distributed scheduling
+- Triton = single-node serving
+- TensorRT-LLM = engine-level optimization below both
+- When to use Dynamo: multi-node serving with very large models (70B+), disaggregation improves throughput, long context windows where KV-cache pressure is the bottleneck, heterogeneous GPU allocation for prefill vs decode
+- **Real trap:** Choosing Dynamo when the scenario only needs a standard model server rather than distributed LLM serving orchestration.
+
 ## At a glance
 
 | | |
@@ -55,7 +73,7 @@ NVIDIA's distributed inference scheduling and orchestration layer for large GPU 
 - Load balancing and scheduling across model instances at cluster scale
 - When the question is specifically about distributed inference scheduling (not single-node serving)
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
 - **Single-node model serving**: That's Triton Inference Server or NIM. Dynamo adds distributed scheduling on top.
 - **Model training**: That's NeMo Framework.
@@ -140,19 +158,19 @@ Dynamo uses a **leader-worker** architecture. The leader node runs the scheduler
 - **Relevant exams:** GenAI LLMs, Agentic AI
 - **What it is:** Open-source distributed serving system (Python) — leader-worker architecture for multi-node LLM serving
 - **Use it when:** Use when a large LLM serving system needs multi-node scheduling, disaggregated prefill/decode, or KV-cache-aware request routing.
-- **Do not use it when:** Do not use it for a simple single-node endpoint; use NIM or Triton first.
+- **Do not use it when:** Choose the neighboring service for a simple single-node endpoint; use NIM or Triton first.
 - **Common trap:** Choosing Dynamo when the scenario only needs a standard model server rather than distributed LLM serving orchestration.
-- **Scenario signal:** A very large LLM needs multi-node serving with disaggregated prefill/decode and KV-cache-aware routing.
+- **Recognition clues:** A very large LLM needs multi-node serving with disaggregated prefill/decode and KV-cache-aware routing.
 ### Study notes
 - Place **Dynamo (Triton Dynamo)** at **Advanced serving / distributed inference**: the "load balancer with a brain" for multi-node LLM serving — knows which GPU has free KV-cache and routes there.
-- Choose it when: Use when a large LLM serving system needs multi-node scheduling, disaggregated prefill/decode, or KV-cache-aware request routing. Reject it when: Do not use it for a simple single-node endpoint; use NIM or Triton first.
+- Boundary cue: choose it when a large LLM serving system needs multi-node scheduling, disaggregated prefill/decode, or KV-cache-aware request routing. Adjacent-service cue: not for a simple single-node endpoint; use NIM or Triton first.
 ### Must know
 - **Disaggregated prefill/decode architecture**: separates compute-bound prefill (saturates GPU compute units) from memory-bandwidth-bound decode (reads KV cache from HBM) onto different GPU instances
 - **KV-cache-aware request routing**: scheduler examines decode-instance KV-cache capacity and shared prefix caches before dispatching; KV cache transferred over fast interconnect (NVLink, InfiniBand)
 - **Leader-worker architecture**: leader runs scheduler with global state (GPU memory, queue depths, model versions); workers run Triton instances; leader failover via etcd
 - **Dynamo vs Triton vs TensorRT-LLM**: Dynamo = multi-node distributed scheduling; Triton = single-node serving; TensorRT-LLM = engine-level optimization below both
 - **When to use Dynamo**: multi-node serving with very large models (70B+), disaggregation improves throughput, long context windows where KV-cache pressure is the bottleneck, heterogeneous GPU allocation for prefill vs decode
-### High-yield exam signals
+### What to recognize
 - **Disaggregated inference at scale** → scenario describes separating prefill and decode onto different GPU instances for a very large model (70B+); Dynamo provides KV-cache-aware routing across the cluster
 - **KV-cache routing and prefix caching** → scenario mentions routing requests to decode instances based on available KV-cache capacity or shared system prompt prefixes; Dynamo's KV-cache-aware scheduler is the key mechanism
 - **Dynamo vs Triton distinction trap** → scenario about single-node dev serving with Dynamo as a distractor; standard Triton or NIM is the correct choice for single-node deployment
@@ -161,8 +179,8 @@ Dynamo uses a **leader-worker** architecture. The leader node runs the scheduler
 - Write one scenario where this service is correct and one where it is a tempting but wrong distractor.
 ## Exam tips from mocks
 - Mock-style questions test whether **Dynamo (Triton Dynamo)** matches **Advanced serving / distributed inference**, not whether the product name sounds familiar.
-- Choose it when the scenario signal matches this boundary: Use when a large LLM serving system needs multi-node scheduling, disaggregated prefill/decode, or KV-cache-aware request routing.
-- Reject it when the problem is actually about another layer: Do not use it for a simple single-node endpoint; use NIM or Triton first.
+- Boundary cue: choose it when a large LLM serving system needs multi-node scheduling, disaggregated prefill/decode, or KV-cache-aware request routing.
+- Adjacent-service cue: not for a simple single-node endpoint; use NIM or Triton first.
 - The common trap pattern is: Choosing Dynamo when the scenario only needs a standard model server rather than distributed LLM serving orchestration.
 - If it appears only as a distractor, decide by the required lifecycle phase before choosing a product name.
 - Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.

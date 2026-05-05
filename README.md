@@ -7,12 +7,14 @@ This is a simulator, not an NVIDIA product. It uses original scenario-based prac
 ## Quick Start
 
 ```bash
-cp .env.example .env       # then paste your ANTHROPIC_API_KEY
+cp .env.example .env       # then paste your LLM_API_KEY
 npm install
 npm run dev
 ```
 
 Open http://localhost:5173 for Vite dev. The API runs at http://localhost:4273.
+
+The practice bank and generated mock questions load without an LLM key. Coach chat, per-question hints, adaptive coach selection, and AI question generation show a setup message until `LLM_API_KEY` is configured in `.env` and the dev server is restarted.
 
 ## Modes
 
@@ -54,15 +56,15 @@ npm run shuffle:bank -- certifications/<cert_slug>/mocks/mock_1.json --in-place
 
 Runtime practice/test sessions also shuffle loaded questions and choices in the UI while preserving the original answer mapping for grading.
 
-## Generate New Questions (Opus 4.7)
+## Generate New Questions
 
-After adding `ANTHROPIC_API_KEY` to `.env` and restarting:
+After adding `LLM_API_KEY` to `.env` and restarting:
 - Click **Generate 10 (weak domains)** on the dashboard, or
 - `POST /api/generate-questions` with `{count, weakOnly, focusDomains}`
 
 Output is appended to `certifications/<slug>/generated-questions.md` for manual review — never auto-merged into `questions.md`.
 
-The same logic is also available as a Claude Code skill at `~/.claude/skills/nvidia-cert-questions/`.
+By default, the server sends an OpenAI-style chat-completions request to the Kimi endpoint configured in `.env.example`. Override `LLM_API_URL` and `LLM_MODEL` for another compatible provider.
 
 ## Layout
 
@@ -83,7 +85,8 @@ certifications/<slug>/
 npm run dev        # Vite client + API server
 npm run build      # build client into client/dist
 npm start          # build + serve built app from http://localhost:4273
-npm test           # node --test legacy domain tests
+npm test           # Vitest domain tests against the active TypeScript backend
+npm run typecheck  # TypeScript verification
 ```
 
 ## Multi-Cert

@@ -6,6 +6,17 @@ status: populated
 
 # Fine-Tuning
 
+## What to study first
+
+- **Core idea:** Customize model behavior with **SFT**, **PEFT**, **LoRA**/**QLoRA**, **adapters**, **DPO**/**RLHF**, and tuning controls.
+- **Use it when:** Study this when **examples**, domain behavior, style, or **preference data** are central.
+- **Study first:** SFT (Supervised Fine-Tuning): Full weight update on labeled instruction-response pairs. Teaches WHAT to say. Needs full model per task. High quality 1K-100K **examples**. Risk: **catastrophic forgetting**.
+- LoRA (Low-Rank Adaptation): Freezes base weights, trains low-**rank** **adapters** (B×A matrices). **Rank** r=8-64, alpha=16-128. Effective update = (α/r)BA. Adapts <1% of params. Can be merged into weights for **zero** inference overhead.
+- QLoRA: **LoRA** + 4-bit base model **quantization** (NF4 format). Double **quantization** of scaling factors. Paged optimizers for memory spikes. Fits 70B **fine-tuning** on single 48GB **GPU** with minimal accuracy loss vs **FP16** **LoRA**.
+- Rank/alpha: **rank** r = capacity of adaptation (higher = more expressive). alpha = scaling factor (effective strength = α/r). At fixed r, doubling α doubles adapter influence. At fixed ratio, higher r+α gives more capacity at same strength.
+- DPO (Direct Preference Optimization): Trains on (prompt, chosen, rejected) triples without reward model. More stable than PPO, simpler to implement. The loss function directly optimizes preference probability via implicit reward.
+- **Real trap:** **Fine-tuning** is not the right solution for rapidly changing facts; use **RAG**.
+
 ## Certification boundary
 
 This page is the NCP-GENL exam lens for fine-tuning. Keep SFT, PEFT, LoRA/QLoRA, adapters, hyperparameters, catastrophic forgetting, and preference-tuning concepts here because they are core LLM certification knowledge. Agentic model-selection comparisons belong in Agentic AI General Study; NVIDIA NeMo Framework and NeMo Customizer cues stay here or in shared service pages.
@@ -168,7 +179,7 @@ When **fine-tuning** overwrites general pre-trained knowledge:
 - **Deduplication**: Remove duplicate and near-duplicate **examples**; they **bias** the model and waste compute.
 - **Data augmentation**: Synthetic variations of training **examples**; helpful when real data is scarce.
 
-## Common exam traps
+## Decision traps worth remembering
 
 1. **PEFT over full fine-tuning** — **LoRA** achieves comparable results at a fraction of the cost. The exam prefers **PEFT** for practical scenarios.
 
@@ -232,7 +243,7 @@ When **fine-tuning** overwrites general pre-trained knowledge:
 - **Underfitting** — both training and validation loss remain high
 - **Data augmentation** — synthetic variations of training **examples**; helps when data is scarce
 
-### Top exam traps
+### Top decision traps
 - "Full **fine-tuning** is always best" → **LoRA** achieves comparable results at fraction of cost
 - "Higher **LoRA** **rank** = always better" → excessive **rank** causes **overfitting**
 - "Adam = AdamW" → AdamW has decoupled weight decay; correct modern choice
@@ -263,7 +274,7 @@ Evidence source: `mock_1` through `mock_5`, especially **LoRA**/**QLoRA**, **RLH
 - **What it covers:** Customize model behavior with **SFT**, **PEFT**, **LoRA**/**QLoRA**, **adapters**, **DPO**/**RLHF**, and tuning controls.
 - **Use this section when:** Study this when **examples**, domain behavior, style, or **preference data** are central.
 - **Common trap:** **Fine-tuning** is not the right solution for rapidly changing facts; use **RAG**.
-- **Scenario signal:** A legal assistant improves domain tone but loses general instruction-following after narrow **SFT**.
+- **Recognition clues:** A legal assistant improves domain tone but loses general instruction-following after narrow **SFT**.
 
 ### Study notes
 
@@ -354,7 +365,7 @@ Evidence source: `mock_1` through `mock_5`, especially **LoRA**/**QLoRA**, **RLH
    Best answer pattern: Use **DPO** if you want simpler preference optimization without PPO reward-model complexity.
    Trap: Converting the chosen answers into ordinary SFT examples and discarding preference information.
 
-### High-yield exam signals
+### What to recognize
 
 - **Preference data**: Human pairwise comparisons (chosen vs rejected) → **RLHF** or **DPO**. Not **SFT** (which uses instruction-response pairs).
 - **Domain style**: Model needs to sound like a lawyer/doctor → **SFT** on domain **examples**. Teaches style/format, not new facts.

@@ -6,6 +6,20 @@ source_lens: general-study
 
 # Knowledge and RAG Pipeline
 
+## What to study first
+
+- **Core idea:** Build the **query-time retrieval path** that finds permitted evidence, ranks it, packs it into context, and makes the model answer with support from sources.
+- **Use it when:** Build the **query-time retrieval path** that finds permitted evidence, ranks it, packs it into context, and makes the model answer with support from sources.
+- **Study first:** Parse documents: Extract text, tables, page numbers, headings, OCR text, image/chart descriptions, and source structure.
+- Chunk with structure: Split by headings, clauses, sections, paragraphs, tables, or parent-child relationships
+- keep overlap only when it protects boundary context.
+- Attach metadata: Add source, page, version, date, product, jurisdiction, tenant, ACL, sensitivity, author, and freshness fields.
+- Embed chunks: Use a **bi-encoder** embedding model to convert each chunk into a vector.
+- Build indexes: Store text + vectors + metadata in a vector/search store
+- choose ANN indexes such as **HNSW**, **IVF**, Flat, PQ, or IVF+PQ.
+- **Boundary check:** **RAG** supplies fresh or private facts at query time without changing model weights. **Fine-tuning** changes behavior/style and is painful for facts that change.
+- **Watch first:** Bad parsing, bad **chunking**, weak embeddings, missing **metadata/ACL** filters, stale indexes, noisy top-k, weak **reranking**, prompt injection in documents, or citations that do not support claims.
+
 ## What You Are Building
 
 | Question | Practical answer |
@@ -22,6 +36,16 @@ source_lens: general-study
 documents -> parse -> chunk -> embed -> index
 query -> retrieve -> rerank -> pack context -> answer -> cite/evaluate
 ```
+
+## Lifecycle Lane Playbooks
+
+| Lane | What this page means there | Output |
+|---|---|---|
+| Train model from zero | Usually not used. RAG is runtime knowledge, not weight-changing foundation training. | Not part of pretraining |
+| Fine-tune existing model | Use RAG instead of fine-tuning when facts change or need citations. Use tuning only for durable behavior. | Retrieval-backed baseline before tuning |
+| Use existing model/API | Optional but common: pair an existing model with retrieval for private/current/cited facts. | Evidence context + grounded answer |
+| Build agent/RAG application | Main lane: retrieve candidates, hybrid search, rerank, pack context, answer with citations, and score groundedness. | Permissioned, source-grounded responses |
+| Operate, govern, and improve | Diagnose bad answers by failed layer: parser, metadata, retrieval, reranker, context packing, generator, or citation checker. | Retrieval fixes and regression canaries |
 
 ## Pipeline
 
@@ -133,7 +157,7 @@ Use it because **BM25 score** `23.4` and **cosine similarity** `0.87` are not ca
 
 ## Decision Guide
 
-| Scenario signal | Prefer | Avoid |
+| Recognition clue | Prefer | Avoid |
 |---|---|---|
 | **Fresh/private facts** that change often | RAG with index refresh and citations | Fine-tuning every time facts change |
 | Exact IDs, product codes, statute numbers, legal citations | **Hybrid search**: BM25 + dense + RRF | Pure vector search |
@@ -222,6 +246,50 @@ For many modern systems, the strongest default is **structure-aware chunking** p
 | Operations | p50/p95/p99 latency by span, embedding cache hit rate, index freshness, deletion propagation |
 
 When a RAG answer is bad, **locate the failed layer before changing the model**. The fix might be **parsing**, **chunking**, **metadata**, **hybrid retrieval**, **reranking**, **context packing**, **citation validation**, or **freshness monitoring**.
+
+### Retrieval term decoder
+
+| Term | Plain meaning | Why it matters |
+|---|---|---|
+| Embedding | Numeric vector that represents text meaning | Enables semantic search over paraphrases |
+| BM25 | Sparse keyword ranking using term frequency and rarity | Finds exact IDs, codes, names, and citations |
+| ANN | Approximate nearest neighbor search | Makes vector search fast enough at scale |
+| HNSW | Graph-based ANN index | Low latency, higher memory |
+| IVF | Cluster-based ANN index | Searches likely clusters instead of all vectors |
+| PQ | Vector compression | Saves memory with recall risk |
+| RRF | Rank-based fusion of dense and sparse lists | Avoids comparing incompatible raw scores |
+| Reranker | Slower model that scores query and candidate together | Improves precision after broad retrieval |
+
+The practical pipeline is usually broad recall first, precision second: retrieve enough candidates with dense/sparse search, then rerank and pack only the evidence that is compatible, permitted, current, and citation-worthy.
+
+### Implementation card: hybrid retrieval scoring
+
+```python
+def reciprocal_rank_fusion(rank_lists, k=60):
+    scores = {}
+    for ranked_docs in rank_lists:
+        for rank, doc_id in enumerate(ranked_docs, start=1):
+            scores[doc_id] = scores.get(doc_id, 0.0) + 1.0 / (k + rank)
+    return sorted(scores, key=scores.get, reverse=True)
+
+def rag_retrieve(query, user_ctx):
+    filters = {
+        "tenant": user_ctx.tenant,
+        "acl_groups": {"$overlap": user_ctx.groups},
+        "effective_date": {"$lte": user_ctx.now},
+    }
+    dense_hits = vector_index.search(embed(query), filters=filters, top_k=100)
+    sparse_hits = bm25.search(query, filters=filters, top_k=100)
+    fused_ids = reciprocal_rank_fusion([
+        [hit.id for hit in dense_hits],
+        [hit.id for hit in sparse_hits],
+    ])
+    candidates = load_chunks(fused_ids[:100])
+    reranked = cross_encoder_rerank(query, candidates)[:8]
+    return pack_context(reranked, token_budget=3000)
+```
+
+Retrieval metrics usually include recall@k, MRR, nDCG, answer-bearing chunk rank, empty-result rate, and citation support. Rerankers may be trained with pairwise/listwise ranking losses, but the RAG release gate usually uses held-out query evidence metrics plus grounded answer checks.
 
 ### Failure triage
 

@@ -6,6 +6,14 @@ status: populated
 
 # Model Serving Gateway
 
+## What to study first
+
+- **Core idea:** The deployment layer for routing and operating inference endpoints.
+- **Use it when:** The scenario mentions multi-model routing, canary rollout, fallback, traffic splitting, rate limits, batching, or endpoint policies.
+- **Choose another path when:** Choose a neighboring capability when the issue is data quality or model behavior tuning.
+- **Concrete surface:** Access: Model servers, API gateways, service meshes, inference routers, Kubernetes operators Inside: Routing, load balancing, version pinning, canaries, fallback, batching, concurrency, observability I/O: Request, route policy, model pool, health state, cost/latency budget, user tier -> Routed request, fallback response, canary split, throttled request, or model selection
+- **Real trap:** Scaling the gateway while retrieval or tool latency is the real bottleneck.
+
 ## At a glance
 
 | | |
@@ -16,6 +24,18 @@ status: populated
 | **Output** | Routed request, fallback response, canary split, throttled request, or model selection |
 | **Inside** | Routing, load balancing, version pinning, canaries, fallback, batching, concurrency, observability |
 
+```yaml
+routes:
+  - match: task == "simple"
+    target: nim-small
+  - match: risk == "high"
+    target: nim-strong
+fallbacks:
+  nim-strong: nim-medium
+canary:
+  model_v2: 5%
+```
+
 **Mental model**: the production traffic controller in front of model endpoints.
 
 ## Study card data
@@ -24,9 +44,9 @@ status: populated
 - **Lifecycle:** Serving and deployment
 - **Relevant exams:** Agentic AI General Study
 - **Use it when:** The scenario mentions multi-model routing, canary rollout, fallback, traffic splitting, rate limits, batching, or endpoint policies.
-- **Do not use it when:** The issue is data quality or model behavior tuning.
+- **Do not use it when:** Choose a neighboring capability when the issue is data quality or model behavior tuning.
 - **Common trap:** Scaling the gateway while retrieval or tool latency is the real bottleneck.
-- **Scenario signal:** "Simple requests should go to a small model, high-risk tasks to a stronger model, and failed endpoints to fallback."
+- **Recognition clues:** "Simple requests should go to a small model, high-risk tasks to a stronger model, and failed endpoints to fallback."
 
 ## Related service map
 

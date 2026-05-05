@@ -6,6 +6,18 @@ status: populated
 
 # Model Optimization
 
+## What to study first
+
+- **Core idea:** Optimize LLM inference and memory while preserving quality.
+- **Use it when:** Study this when constraints mention **latency**, **throughput**, memory, cost, or accuracy tolerance.
+- **Study first:** INT8 quantization: 8-bit integer weights/activations. Post-Training **Quantization** (PTQ) with calibration on 512-1024 samples. ~2× memory reduction, ~2× **throughput**. Works on T4, A100, H100. SmoothQuant handles activation outliers by migrating **quantization** difficulty to weights via per-channel scaling (α typically 0.5-0.85).
+- FP8 quantization: 8-bit floating point, native on H100 (4th-gen **Tensor Cores**). Two formats: E4M3 (4 exponent, 3 mantissa — better for forward/activations) and E5M2 (5 exponent, 2 mantissa — larger dynamic range, better for gradients). **Transformer** Engine dynamically selects per layer.
+- INT4 quantization: 4-bit integer weights. AWQ (Activation-aware Weight **Quantization** — protects salient weight channels) or GPTQ (layer-wise Hessian-based). ~4× memory reduction, ~3-4× **throughput**. Needs careful calibration
+- QAT recommended for quality-critical workloads.
+- KV cache: Stores past Key and Value tensors to avoid recomputing them at each autoregressive step. Size = 2 × batch × seq_len × layers × heads × head_dim × bytes. For 70B model at 32K context, batch 8, **FP16**: ~70 GB for **KV cache** alone. THIS is the dominant memory consumer at long context, not weights.
+- Continuous (in-flight) batching: Requests dynamically added/removed from running batch. Eliminates the "short request waits for long request" problem. Key enabler for production LLM **serving**. Works with PagedAttention for memory efficiency.
+- **Real trap:** Weight **quantization** does not solve every memory problem; long-context **serving** is often KV-cache-bound.
+
 ## Certification boundary
 
 This page is the NCP-GENL exam lens for model optimization. Keep quantization, pruning, distillation, FlashAttention, KV-cache optimization, parallelism, TensorRT-LLM, and NVIDIA hardware precision support here because they are tested LLM optimization knowledge. Vendor-neutral serving cost/latency framing belongs in Agentic AI General Study.
@@ -76,7 +88,7 @@ Target constraints: **Latency** | **Throughput** | Memory | Accuracy | Cost
 | **Attention result** | Exact | Exact (not an approximation) |
 | **Speedup** | 1× | 2-8× depending on sequence length |
 
-**Exam trap**: "**FlashAttention** approximates **attention** for speed" — WRONG. It computes exact **attention**, just more efficiently.
+**Decision trap**: "**FlashAttention** approximates **attention** for speed" — WRONG. It computes exact **attention**, just more efficiently.
 
 ## KV Cache optimization
 
@@ -151,7 +163,7 @@ KV Cache size = 2 × B × S × L × H × d × bytes_per_element
 - **CPU offloading**: Move optimizer states or infrequently used layers to CPU RAM.
 - **Mixed-precision training**: Master weights in FP32, forward/backward in **FP16**/**BF16**. Loss scaling prevents underflow with **FP16**.
 
-## Common exam traps
+## Decision traps worth remembering
 
 1. **FlashAttention approximate** — It's EXACT. Speedup comes from IO optimization, not approximation.
 
@@ -215,7 +227,7 @@ KV Cache size = 2 × B × S × L × H × d × bytes_per_element
 - **Pruning (unstructured)** — **zero** individual weights; sparse; needs hardware sparsity
 - **Pruning (structured)** — remove channels/heads; dense and hardware-agnostic
 
-### Top exam traps
+### Top decision traps
 - **FlashAttention exact** → it's EXACT; IO-aware does not mean lossy
 - **MQA/GQA K,V sharing** → they differ in K,V sharing scheme
 - **BF16 vs FP16** → **BF16** has FP32's range; **FP16** needs loss scaling
@@ -246,7 +258,7 @@ Evidence source: `mock_1` through `mock_5`, especially **TensorRT-LLM**, **quant
 - **What it covers:** Optimize LLM inference and memory while preserving quality.
 - **Use this section when:** Study this when constraints mention **latency**, **throughput**, memory, cost, or accuracy tolerance.
 - **Common trap:** Weight **quantization** does not solve every memory problem; long-context **serving** is often KV-cache-bound.
-- **Scenario signal:** A 70B model needs high concurrency with mixed prompt lengths under a **TTFT** **SLA**.
+- **Recognition clues:** A 70B model needs high concurrency with mixed prompt lengths under a **TTFT** **SLA**.
 
 ### Study notes
 
@@ -323,7 +335,7 @@ Evidence source: `mock_1` through `mock_5`, especially **TensorRT-LLM**, **quant
    Best answer pattern: Recalibrate with representative data, use AWQ/GPTQ, or raise precision to INT8/FP8.
    Trap: Ignoring the quality floor because latency improved.
 
-### High-yield exam signals
+### What to recognize
 
 - **TTFT** (Time To First Token): Prefill **latency**. High **TTFT** → long prompts or insufficient parallelism for prompt processing. Solution: chunked prefill.
 - **TPOT** (Time Per Output Token): Decode **latency**. High TPOT → memory-bandwidth-bound (weight loading) or **KV-cache memory** pressure. Solution: **quantization** or KV-cache optimization.

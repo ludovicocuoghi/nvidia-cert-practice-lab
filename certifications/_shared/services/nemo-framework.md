@@ -6,6 +6,18 @@ status: populated
 
 # NeMo Framework
 
+## What to study first
+
+- **Core idea:** Python framework/SDK — distributed LLM training built on PyTorch + Megatron-LM
+- **Use it when:** Use when the task is full training, continued pretraining, SFT, PEFT, alignment, or distributed model-development recipes on GPU clusters.
+- **Choose another path when:** Choose the neighboring service when the goal is only to expose an already-trained model behind an optimized API; use NIM or Triton.
+- **Concrete surface:** Access: `nvcr.io/nvidia/nemo:24.12-framework` container or `pip install nemo-toolkit` Inside: Megatron-LM distributed backend, training recipes, TP/PP/DP orchestration, mixed precision I/O: Tokenized training data + model config YAML + GPU cluster -> Trained model checkpoint (`.nemo` file)
+- **Study first:** LoRA: /**QLoRA** vs full fine-tuning
+- activation recomputation memory trade-off
+- distributed optimizer/**FSDP**
+- data curation before tuning
+- **Real trap:** Confusing the framework that trains/customizes models with the microservice that serves trained models.
+
 ## At a glance
 
 | | |
@@ -42,7 +54,7 @@ NVIDIA's end-to-end framework for training and customizing large language models
 - Customizing foundation models with domain-specific data
 - "How are NVIDIA's models trained?" → NeMo Framework
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
 - **Model serving as API**: That's NIM. Framework trains; NIM serves.
 - **Agent workflow orchestration**: That's NeMo Agent Toolkit.
@@ -385,9 +397,9 @@ Where μ is the momentum coefficient (typically 0.9). SGD with momentum has only
 - **Relevant exams:** GenAI LLMs, Agentic AI
 - **What it is:** Python framework/SDK — distributed LLM training built on PyTorch + Megatron-LM
 - **Use it when:** Use when the task is full training, continued pretraining, SFT, PEFT, alignment, or distributed model-development recipes on GPU clusters.
-- **Do not use it when:** Do not use it when the goal is only to expose an already-trained model behind an optimized API; use NIM or Triton.
+- **Do not use it when:** Choose the neighboring service when the goal is only to expose an already-trained model behind an optimized API; use NIM or Triton.
 - **Common trap:** Confusing the framework that trains/customizes models with the microservice that serves trained models.
-- **Scenario signal:** A team needs distributed pretraining, continued pretraining, SFT, PEFT, or alignment recipes on GPU clusters.
+- **Recognition clues:** A team needs distributed pretraining, continued pretraining, SFT, PEFT, or alignment recipes on GPU clusters.
 ### Study notes
 - Think of this as the customization/training layer: **SFT**, **PEFT**, continued pretraining, alignment, evaluation recipes, and scalable distributed model development.
 - For LLMs, connect it to mixed precision, tensor/pipeline/data parallelism, activation recomputation, **FlashAttention**, sequence packing, **quantization**-aware workflows, and checkpoint management.
@@ -397,7 +409,7 @@ Where μ is the momentum coefficient (typically 0.9). SGD with momentum has only
 - activation recomputation memory trade-off
 - distributed optimizer/**FSDP**
 - data curation before tuning
-### High-yield exam signals
+### What to recognize
 - custom model behavior → NeMo Framework trains/customizes models via SFT, PEFT, or continued pre-training
 - domain adaptation → continued pre-training injects new knowledge (requires billions of tokens); SFT teaches format and style (thousands of examples)
 - training recipe → hybrid parallelism: TP within node, PP across nodes, DP everywhere, with ZeRO stages for memory reduction
@@ -413,8 +425,8 @@ Where μ is the momentum coefficient (typically 0.9). SGD with momentum has only
 - Sketch the path from base checkpoint -> curated data -> **PEFT**/**SFT** -> evaluation -> deployment artifact.
 ## Exam tips from mocks
 - Mock-style questions test whether **NeMo Framework** matches **Training / customization**, not whether the product name sounds familiar.
-- Choose it when the scenario signal matches this boundary: Use when the task is full training, continued pretraining, SFT, PEFT, alignment, or distributed model-development recipes on GPU clusters.
-- Reject it when the problem is actually about another layer: Do not use it when the goal is only to expose an already-trained model behind an optimized API; use NIM or Triton.
+- Boundary cue: choose it when the task is full training, continued pretraining, SFT, PEFT, alignment, or distributed model-development recipes on GPU clusters.
+- Adjacent-service cue: not when the goal is only to expose an already-trained model behind an optimized API; use NIM or Triton.
 - The common trap pattern is: Confusing the framework that trains/customizes models with the microservice that serves trained models.
 - Expect distractors around nearby services such as **NIM**, **TensorRT-LLM**, **RAPIDS**. Decide by lifecycle first, product name second.
 - Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.

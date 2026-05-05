@@ -6,9 +6,28 @@ source_lens: general-study
 
 # Knowledge Ingestion and Permission Pipeline
 
+## What to study first
+
+- **Core idea:** You are building the offline or scheduled pipeline that turns private, changing, messy enterprise knowledge into safe, searchable, permission-aware chunks. The output is not an answer. The output is structured records ready for indexing and retrieval, with source, version, ACL, sensitivity, and deletion lineage attached.
+- **Study first:** Connect to sources: file shares, SharePoint/Drive, wikis, PDFs, HTML, databases, APIs, tickets, email exports, and knowledge bases.
+- Extract content with source-specific parsers: OCR for scans, table extraction, chart/image handling, PDF layout recovery, code block preservation.
+- Normalize text and structure: headings, sections, tables, lists, dates, product names, version fields, author/source metadata.
+- Detect and handle PII, secrets, credentials, regulated data, prompt-injection text, and retention constraints.
+- Chunk documents with strategy suited to the content: semantic, structure-aware, clause-aware, parent-child, sliding window, or fixed with overlap.
+
 ## What You Are Building
 
 You are building the offline or scheduled pipeline that turns private, changing, messy enterprise knowledge into safe, searchable, permission-aware chunks. The output is not an answer. The output is structured records ready for indexing and retrieval, with source, version, ACL, sensitivity, and deletion lineage attached.
+
+## Lifecycle Lane Playbooks
+
+| Lane | What this page means there | Output |
+|---|---|---|
+| Train model from zero | Usually not this page. Pretraining corpora belong to training data curation, not runtime knowledge ingestion. | Not a training corpus |
+| Fine-tune existing model | Use only when enterprise documents are being converted into curated examples; otherwise do not tune for changing facts. | Possible tuning candidates after curation |
+| Use existing model/API | Use if the model needs private/current facts without changing weights. | Indexed knowledge records for RAG |
+| Build agent/RAG application | Main lane: parse, chunk, enrich metadata, preserve ACLs, embed/index, refresh, and delete stale records. | Permission-aware chunks ready for retrieval |
+| Operate, govern, and improve | Fix stale/wrong/private-document incidents by improving parse, metadata, refresh, or deletion propagation. | Updated index and incident regression tests |
 
 ## Pipeline
 
@@ -117,6 +136,48 @@ Refresh and deletion are part of correctness. A useful ingestion pipeline knows 
 ### Document prompt injection
 
 A document can contain malicious instructions. Ingestion can tag or quarantine suspicious content, but runtime prompt construction must also isolate retrieved text from system/developer instructions. Retrieved pages are evidence, not authority.
+
+### Sensitive-data and permission details
+
+| Concept | What it means in ingestion | Failure if skipped |
+|---|---|---|
+| PII | Person-identifying spans such as emails, phones, IDs, names tied to addresses, account or medical identifiers | Sensitive chunks become retrievable or cited |
+| Secret | Credential-like text such as API keys, passwords, tokens, private keys | Model can expose or act on credentials |
+| ACL | User, group, role, tenant, document, or section-level permission | Cross-tenant or unauthorized retrieval |
+| Sensitivity label | Classification such as public, internal, confidential, regulated | Wrong route, retention, or review policy |
+| Deletion key | Stable pointer from source doc to indexed chunks/vectors | Removed documents stay in vector indexes |
+| Prompt-injection tag | Marker that content contains instruction-like or malicious text | Retrieved text can be mistaken for system instructions |
+
+Treat metadata as part of the chunk. A perfectly embedded chunk is still unsafe if it lacks tenant, source, version, sensitivity, and deletion lineage.
+
+### Implementation card: chunk records
+
+```python
+def ingest_document(doc, acl):
+    blocks = parse_with_layout(doc.bytes)  # text, tables, headings, page numbers
+    chunks = structure_aware_chunk(blocks, max_tokens=450, overlap=60)
+
+    records = []
+    for chunk in chunks:
+        pii_spans = detect_pii(chunk.text)
+        if pii_spans.high_risk:
+            chunk.text = redact(chunk.text, pii_spans)
+
+        records.append({
+            "chunk_id": stable_id(doc.source_id, chunk.page, chunk.offset),
+            "text": chunk.text,
+            "source_url": doc.url,
+            "page": chunk.page,
+            "version": doc.version,
+            "tenant": doc.tenant,
+            "acl_groups": acl.groups,
+            "sensitivity": classify_sensitivity(chunk.text),
+            "deletion_key": doc.source_id,
+        })
+    return records
+```
+
+Ingestion quality metrics include parse coverage, table extraction accuracy, chunk length distribution, metadata completeness, ACL test pass rate, PII/secret hit rate, deletion propagation time, and canary retrieval success.
 
 ## Exam Signals
 

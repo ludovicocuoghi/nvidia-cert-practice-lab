@@ -6,6 +6,14 @@ status: populated
 
 # Customization Toolkit
 
+## What to study first
+
+- **Core idea:** The lifecycle role for adapting how a model behaves.
+- **Use it when:** The system needs durable style, rubric-following, domain behavior, tool-use habits, or preference alignment.
+- **Choose another path when:** Choose the neighboring capability when the only missing piece is current/private knowledge that should be retrieved.
+- **Concrete surface:** Access: Training frameworks, managed customization APIs, adapter jobs, prompt/version pipelines Inside: Prompt contracts, SFT, LoRA/QLoRA, DPO/RLHF-style preference learning, overfitting checks, regression evals I/O: Base model, curated examples, instruction data, preference pairs, domain rubric, eval set -> Prompt template, adapter, tuned model, or preference-aligned release candidate
+- **Real trap:** Fine-tuning for facts that change weekly.
+
 ## At a glance
 
 | | |
@@ -16,6 +24,16 @@ status: populated
 | **Output** | Prompt template, adapter, tuned model, or preference-aligned release candidate |
 | **Inside** | Prompt contracts, SFT, LoRA/QLoRA, DPO/RLHF-style preference learning, overfitting checks, regression evals |
 
+```python
+customization_job = {
+    "base_model": "approved-base-model",
+    "method": "lora",
+    "train_file": "sft_train.jsonl",
+    "validation_file": "sft_holdout.jsonl",
+    "eval_suite": "regression.yaml",
+}
+```
+
 **Mental model**: the layer that changes durable model behavior, not the layer that supplies fresh facts.
 
 ## Study card data
@@ -24,9 +42,9 @@ status: populated
 - **Lifecycle:** Training and customization
 - **Relevant exams:** Agentic AI General Study
 - **Use it when:** The system needs durable style, rubric-following, domain behavior, tool-use habits, or preference alignment.
-- **Do not use it when:** The only missing piece is current/private knowledge that should be retrieved.
+- **Do not use it when:** Choose the neighboring capability when the only missing piece is current/private knowledge that should be retrieved.
 - **Common trap:** Fine-tuning for facts that change weekly.
-- **Scenario signal:** "The model must follow our claims triage rubric even when the relevant policy document is retrieved correctly."
+- **Recognition clues:** "The model must follow our claims triage rubric even when the relevant policy document is retrieved correctly."
 
 ## Related service map
 

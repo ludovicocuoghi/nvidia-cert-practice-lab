@@ -6,9 +6,28 @@ source_lens: general-study
 
 # Cost/Latency Optimizer
 
+## What to study first
+
+- **Core idea:** You are building the measurement-driven loop that reduces latency and cost without breaking quality or safety.
+- **Study first:** Measure per-stage latency and cost.
+- Separate retrieval, tools, prefill, decode, queueing, network, and guardrail time.
+- Choose optimization: routing, smaller model, quantization, caching, batching, context reduction, KV-cache tuning.
+- Validate quality and safety after optimization.
+- Monitor for route drift, cache staleness, and regression.
+
 ## What You Are Building
 
 You are building the measurement-driven loop that reduces latency and cost without breaking quality or safety.
+
+## Lifecycle Lane Playbooks
+
+| Lane | What this page means there | Main levers |
+|---|---|---|
+| Train model from zero | After publish, optimize serving profile for the trained checkpoint. Training throughput belongs to the foundation training stack. | precision, batching, KV cache, endpoint profile |
+| Fine-tune existing model | Compare tuned vs baseline endpoint latency/cost; adapter routes can add overhead. | adapter merge/load strategy, route policy, rollback |
+| Use existing model/API | Main lane: model routing, prompt/context size, batching, caching, output caps, fallback. | route, cache, context, model size |
+| Build agent/RAG application | Optimize the full chain: retrieval, rerank, tools, model, guardrails, and memory. | top-k, reranker budget, tool timeout, context packing |
+| Operate, govern, and improve | Main lane: use traces to find bottlenecks and verify quality after each optimization. | p95/p99, cost per completed task, route drift |
 
 ## Pipeline
 
@@ -107,6 +126,52 @@ Cost optimization is not only smaller models:
 - Tune retrieval top-k, reranker candidate count, and output token caps.
 - Use caching only when tenant, document version, prompt version, and policy make reuse safe.
 - Validate every precision, batching, and fallback change against quality and safety evals.
+
+### Stage vocabulary
+
+| Term | Meaning | Usual optimization |
+|---|---|---|
+| Time to first token | User wait before generation starts | Reduce queueing, route faster, shorten prefill, stream |
+| Prefill | Process input tokens and retrieved context | Trim prompt/history/chunks, cache prefixes, improve packing |
+| Decode | Generate output tokens autoregressively | Output cap, smaller model, TensorRT-LLM/NIM profile, batching |
+| KV cache | Stored attention keys/values for prior tokens | Paged cache, shorter context, cache quantization where validated |
+| Dynamic batching | Group requests to improve GPU throughput | Tune batch windows so p99 does not suffer |
+| Quantization | Lower numerical precision for weights/activations | Eval quality, calibration, and edge cases |
+| Cache hit | Reused safe result or prefix | Scope by tenant, policy, model, prompt, and source version |
+
+If the scenario says "GPU is idle but the user waits," suspect queueing, retrieval, tools, network, or orchestration before kernel optimization. If it says "GPU is busy with low tokens/sec," then serving profile, batching, precision, and kernel analysis become more likely.
+
+### Implementation card: stage metrics
+
+```python
+def percentile(values, q):
+    values = sorted(values)
+    idx = int((len(values) - 1) * q)
+    return values[idx]
+
+def summarize_latency(traces):
+    stages = ["route", "retrieval", "rerank", "prefill", "decode", "tool", "guardrail"]
+    return {
+        stage: {
+            "p50_ms": percentile([t[stage].ms for t in traces], 0.50),
+            "p95_ms": percentile([t[stage].ms for t in traces], 0.95),
+            "p99_ms": percentile([t[stage].ms for t in traces], 0.99),
+        }
+        for stage in stages
+    }
+
+def cost_per_completed_task(trace):
+    return (
+        trace.input_tokens * trace.input_token_price
+        + trace.output_tokens * trace.output_token_price
+        + trace.embedding_calls * trace.embedding_price
+        + trace.rerank_calls * trace.rerank_price
+        + trace.tool_cost
+        + trace.human_review_cost
+    ) / max(trace.task_success, 1)
+```
+
+The "score" is usually an operating metric, not a training loss: p95 latency, p99 latency, time to first token, tokens/sec, cache hit rate, cost per completed task, and quality after optimization.
 
 ## Exam Signals
 

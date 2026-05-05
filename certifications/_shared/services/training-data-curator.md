@@ -6,6 +6,19 @@ status: populated
 
 # Training Data Curator
 
+## What to study first
+
+- **Core idea:** The lifecycle role responsible for making data fit for model learning and evaluation, with different recipes for pretraining, fine-tuning, RAG ingestion, and holdout construction.
+- **Use it when:** A scenario mentions noisy corpora, duplicate documents, MinHash/LSH, PII, licensing, benchmark contamination, train/eval splits, data mixtures, SFT labels, preference pairs, tool traces, synthetic examples, or dataset lineage.
+- **Choose another path when:** Choose RAG/retrieval for fresh query-time documents, memory for user/session state, NIM/Triton for serving, Agent Toolkit for orchestration, and Guardrails/tool gateways for runtime policy.
+- **Concrete surface:** Access: Data-processing jobs, Spark/Ray pipelines, GPU dataframe jobs, managed data prep services, or vendor tools such as NeMo Curator Inside: Exact hashing, MinHash/LSH, quality filters, language ID, PII detection, contamination checks, data blending, and lineage I/O: Raw text, documents, web crawls, code, logs, annotations, labels, metadata, and policy rules -> Cleaned, deduplicated, licensed, PII-safe, split, and documented datasets
+- **Study first:** Start with the destination: pretraining corpus, continued-pretraining corpus, SFT/PEFT examples, preference data, RAG knowledge, or evaluation holdout.
+- Exact deduplication: removes byte-identical or normalized-text-identical documents using hashes such as SHA-256 before more expensive fuzzy methods.
+- Near-duplicate detection: catches copied pages, boilerplate, lightly edited articles, repeated templates, and duplicated chunks.
+- MinHash: estimates Jaccard similarity between shingle sets without comparing every pair directly.
+- LSH: buckets similar MinHash signatures so near-duplicate candidates can be found at scale.
+- **Real trap:** Saying "data curation" without asking what the data is for. Pretraining, fine-tuning, RAG, and evaluation all need curation, but the acceptance criteria are different.
+
 ## At a glance
 
 | | |
@@ -16,6 +29,13 @@ status: populated
 | **Output** | Cleaned, deduplicated, licensed, PII-safe, split, and documented datasets |
 | **Inside** | Exact hashing, MinHash/LSH, quality filters, language ID, PII detection, contamination checks, data blending, and lineage |
 
+```python
+dataset = read_jsonl("raw/*.jsonl")
+dataset = normalize(dataset).filter(license_ok).filter(no_pii)
+duplicates = minhash_lsh(dataset, threshold=0.85)
+train, validation, test = split(remove(dataset, duplicates), holdout=True)
+```
+
 **Mental model**: the portable curation layer that decides which data is safe, useful, non-leaky, and well-documented enough to teach or evaluate a model.
 
 ## Study card data
@@ -24,9 +44,9 @@ status: populated
 - **Lifecycle:** Training-time data curation
 - **Relevant exams:** Agentic AI General Study
 - **Use it when:** A scenario mentions noisy corpora, duplicate documents, MinHash/LSH, PII, licensing, benchmark contamination, train/eval splits, data mixtures, SFT labels, preference pairs, tool traces, synthetic examples, or dataset lineage.
-- **Do not use it when:** The need is live retrieval over fresh documents, document permission filtering at query time, agent memory, model serving, tool orchestration, or runtime policy enforcement.
+- **Do not use it when:** Choose RAG/retrieval for fresh query-time documents, memory for user/session state, NIM/Triton for serving, Agent Toolkit for orchestration, and Guardrails/tool gateways for runtime policy.
 - **Common trap:** Saying "data curation" without asking what the data is for. Pretraining, fine-tuning, RAG, and evaluation all need curation, but the acceptance criteria are different.
-- **Scenario signal:** "A team must prepare data before a model learns from it or before an evaluation result can be trusted."
+- **Recognition clues:** "A team must prepare data before a model learns from it or before an evaluation result can be trusted."
 
 ### Must know
 

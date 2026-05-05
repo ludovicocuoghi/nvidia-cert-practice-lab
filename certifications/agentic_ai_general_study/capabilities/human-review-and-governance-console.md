@@ -6,9 +6,28 @@ source_lens: general-study
 
 # Human Review and Governance Console
 
+## What to study first
+
+- **Core idea:** You are building the oversight workspace where humans approve, review, sample, escalate, label, audit, and feed back into improvement loops.
+- **Study first:** Classify actions by risk: auto-allow, sample review, approval required, block.
+- Define reviewer queue, SLA, rubric, evidence, and escalation path.
+- Capture model output, retrieval evidence, tool proposal, policy version, and trace.
+- Record human decision and reason.
+- Feed labels and incidents into evaluation, tuning, prompt changes, or policy updates.
+
 ## What You Are Building
 
 You are building the oversight workspace where humans approve, review, sample, escalate, label, audit, and feed back into improvement loops.
+
+## Lifecycle Lane Playbooks
+
+| Lane | What this page means there | Output |
+|---|---|---|
+| Train model from zero | Review release evidence for the trained checkpoint and approve publication if risk thresholds pass. | Governance approval for new model |
+| Fine-tune existing model | Approve adapter/tuned model release and review risky tuning data or regressions. | Adapter release decision |
+| Use existing model/API | Review high-risk outputs/actions and approve model/API rollout where required. | Human approval or sampled QA |
+| Build agent/RAG application | Main lane for risky tool actions, ambiguous answers, regulated cases, and review queues. | Review decisions with evidence |
+| Operate, govern, and improve | Main lane: sample production, resolve escalations, curate feedback, and audit decisions. | Feedback and audit loop |
 
 ## Pipeline
 
@@ -96,6 +115,44 @@ Without that context, review becomes subjective and hard to reproduce.
 ### Feedback loop
 
 Reviewer labels can become eval cases, prompt improvements, retrieval fixes, tool-policy changes, or tuning examples. They should not automatically enter training data because they may contain PII, policy disputes, inconsistent labels, or protected holdout cases.
+
+### Risk-tier design
+
+| Tier | Typical action | Example |
+|---|---|---|
+| Auto-allow | Execute or answer without review | Low-risk FAQ answer with cited policy |
+| Sample review | Allow, then review a slice | Routine support summaries for drift monitoring |
+| Approval-required | Block until human decision | Refund, loan decision, medical escalation, account deletion |
+| Escalate | Route to specialist or policy owner | Conflicting evidence or ambiguous regulated case |
+| Block | Do not execute or answer as requested | Forbidden action or missing authorization |
+
+The review card should show the evidence needed to decide, not just the model's prose. Include the proposed action, risk reason, retrieved sources, tool arguments, prior trace, policy version, model/prompt version, and reviewer decision options.
+
+### Implementation card: risk routing
+
+```python
+def risk_tier(event):
+    if not event.authorized:
+        return "block"
+    if event.action in {"delete_account", "large_refund", "medical_advice"}:
+        return "approval_required"
+    if event.confidence < 0.70 or event.policy_conflict:
+        return "escalate"
+    if event.action in {"routine_summary", "low_risk_answer"}:
+        return "sample_review"
+    return "auto_allow"
+
+def route_for_review(event):
+    tier = risk_tier(event)
+    audit_log.write(event=event, tier=tier, versions=event.versions)
+    if tier == "approval_required":
+        return review_queue.create(event)
+    if tier == "sample_review" and random_sample(rate=0.05):
+        return qa_queue.create(event)
+    return tier
+```
+
+Governance metrics include approval rate, reviewer agreement, escalation rate, SLA breach rate, false block/allow rate, label quality, and how often reviewer feedback becomes eval cases or curated tuning data.
 
 ## Exam Signals
 

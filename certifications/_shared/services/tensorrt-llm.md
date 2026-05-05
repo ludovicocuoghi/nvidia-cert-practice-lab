@@ -4,22 +4,39 @@ relevant_to: [NCP-GENL, NCP-AAI]
 status: populated
 ---
 
-# TensorRT-LLM
+# TensorRT-LLM (TensorRT for Large Language Models)
+
+## What to study first
+
+- **Core idea:** C++ SDK + Python bindings — LLM-specific inference compiler with **paged KV cache** & **in-flight batching**
+- **Use it when:** Use when an LLM needs higher throughput or lower latency through engine building, paged KV cache, in-flight batching, quantization, or optimized attention.
+- **Choose another path when:** Choose NeMo Curator for data prep, NeMo Framework for training, NeMo Retriever for RAG, Guardrails for policy, and TensorRT for non-LLM engine optimization.
+- **Concrete surface:** Access: `pip install tensorrt-llm`, NGC container, Python: `from tensorrt_llm import LLM` Inside: Paged KV cache, in-flight batching, FlashAttention, INT8/INT4/FP8 quantization, speculative decoding I/O: HuggingFace/NeMo checkpoint + build config (TP degree, quantization, batch size) -> TensorRT-LLM engine (`.engine` dir) + streaming token generation
+- **Study first:** paged KV cache: virtual memory for attention keys/values — allocates non-contiguous blocks instead of contiguous tensor, eliminating ~40% internal fragmentation
+- enables 2.5× more concurrent requests on same GPU
+- in-flight batching: requests dynamically join/leave the running batch as they complete — a 10-token response doesn't block a 500-token response
+- the key throughput optimization for variable-length generation
+- attention kernels: FlashAttention (IO-aware exact attention, 2-8× faster), fused attention — combines QKV projection + attention + output projection into minimal kernel launches to reduce HBM round-trips
+- quantization in TRT-LLM: INT8 SmoothQuant (α 0.5-0.85), INT4 AWQ (protects salient channels) or GPTQ (Hessian-based), FP8 native on H100 — reduces weight memory 2-4× while preserving accuracy within quality floor
+- tensor parallelism: splits individual weight matrices across GPUs within a node — all-reduce every forward/backward pass requires NVLink bandwidth
+- provides near-linear memory reduction at the cost of communication overhead
+- **Real trap:** Using "optimization" too broadly. TensorRT-LLM is the LLM decode/serving engine layer; it does not change model behavior, retrieve knowledge, or enforce safety.
 
 ## At a glance
 
 | | |
 |---|---|
+| **Full name** | TensorRT for Large Language Models |
 | **What it is** | C++ SDK + Python bindings — LLM-specific inference compiler with paged KV cache & in-flight batching |
-| **How you access it** | `pip install tensorrt-LLM`, NGC container, Python: `from tensorrt_LLM import LLM` |
+| **How you access it** | `pip install tensorrt-llm`, NGC container, Python: `from tensorrt_llm import LLM` |
 | **Input** | HuggingFace/NeMo checkpoint + build config (TP degree, quantization, batch size) |
 | **Output** | TensorRT-LLM engine (`.engine` dir) + streaming token generation |
 | **Inside** | Paged KV cache, in-flight batching, FlashAttention, INT8/INT4/FP8 quantization, speculative decoding |
 
 ```python
-from tensorrt_LLM import LLM, SamplingParams
-LLM = LLM(model="llama-3.1-8b-engine/")
-outputs = LLM.generate(["Explain GPU computing."], SamplingParams(max_tokens=256))
+from tensorrt_llm import LLM, SamplingParams
+llm = LLM(model="llama-3.1-8b-engine/")
+outputs = llm.generate(["Explain GPU computing."], SamplingParams(max_tokens=256))
 ```
 
 **Mental model**: convert a HuggingFace checkpoint → `.engine`, call `LLM.generate()` — paged KV cache + in-flight batching happen under the hood.
@@ -52,7 +69,7 @@ NVIDIA's specialized inference optimization framework for Large Language Models.
 - Any question about **LLM-specific throughput/latency optimization** on NVIDIA GPUs
 - Questions mentioning "in-flight batching," "paged KV cache," "kernel fusion for LLMs"
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
 - **Data deduplication or curation**: That's NeMo Curator. TensorRT-LLM optimizes inference, not data.
 - **Random forest or classical ML optimization**: That's RAPIDS cuML, not TensorRT-LLM.
@@ -244,9 +261,9 @@ Standard autoregressive decoding generates one token at a time: each step requir
 - **Relevant exams:** GenAI LLMs
 - **What it is:** C++ SDK + Python bindings — LLM-specific inference compiler with **paged KV cache** & **in-flight batching**
 - **Use it when:** Use when an LLM needs higher throughput or lower latency through engine building, paged KV cache, in-flight batching, quantization, or optimized attention.
-- **Do not use it when:** Do not use it for data curation, full model training, RAG retrieval, safety policy, or generic non-LLM model optimization.
-- **Common trap:** Confusing LLM-specific inference optimization with NeMo Framework training or general TensorRT optimization.
-- **Scenario signal:** An LLM endpoint needs higher token throughput, lower TTFT, paged KV cache, in-flight batching, or quantized inference.
+- **Do not use it when:** Choose NeMo Curator for data prep, NeMo Framework for training, NeMo Retriever for RAG, Guardrails for policy, and TensorRT for non-LLM engine optimization.
+- **Common trap:** Using "optimization" too broadly. TensorRT-LLM is the LLM decode/serving engine layer; it does not change model behavior, retrieve knowledge, or enforce safety.
+- **Recognition clues:** An LLM endpoint needs higher token throughput, lower TTFT, paged KV cache, in-flight batching, or quantized inference.
 ### Study notes
 - This is the LLM inference engine optimization layer: kernels, **quantization**, KV-cache handling, batching, and serving performance for generation workloads.
 - Use it when the bottleneck is decode throughput, **TTFT**, GPU memory, long context, or concurrency rather than application orchestration.
@@ -257,7 +274,7 @@ Standard autoregressive decoding generates one token at a time: each step requir
 - **attention kernels**: FlashAttention (IO-aware exact attention, 2-8× faster), fused attention — combines QKV projection + attention + output projection into minimal kernel launches to reduce HBM round-trips
 - **quantization in TRT-LLM**: INT8 SmoothQuant (α 0.5-0.85), INT4 AWQ (protects salient channels) or GPTQ (Hessian-based), FP8 native on H100 — reduces weight memory 2-4× while preserving accuracy within quality floor
 - **tensor parallelism**: splits individual weight matrices across GPUs within a node — all-reduce every forward/backward pass requires NVLink bandwidth; provides near-linear memory reduction at the cost of communication overhead
-### High-yield exam signals
+### What to recognize
 - **TTFT** → Time To First Token, dominated by prefill compute; chunked prefill controls TTFT variance
 - tokens/sec → throughput metric improved by in-flight batching and paged KV cache
 - concurrency → paged KV cache enables 2.5x more concurrent requests by eliminating fragmentation waste
@@ -274,8 +291,8 @@ Standard autoregressive decoding generates one token at a time: each step requir
 - Classify a latency issue as prefill, decode, queueing, **KV cache**, or communication.
 ## Exam tips from mocks
 - Mock-style questions test whether **TensorRT-LLM** matches **Inference optimization**, not whether the product name sounds familiar.
-- Choose it when the scenario signal matches this boundary: Use when an LLM needs higher throughput or lower latency through engine building, paged KV cache, in-flight batching, quantization, or optimized attention.
-- Reject it when the problem is actually about another layer: Do not use it for data curation, full model training, RAG retrieval, safety policy, or generic non-LLM model optimization.
+- Boundary cue: choose it when an LLM needs higher throughput or lower latency through engine building, paged KV cache, in-flight batching, quantization, or optimized attention.
+- Adjacent-service cue: not for data curation, full model training, RAG retrieval, safety policy, or generic non-LLM model optimization.
 - The common trap pattern is: Confusing LLM-specific inference optimization with NeMo Framework training or general TensorRT optimization.
 - Expect distractors around nearby services such as **NIM**, **Triton Inference Server**, **NeMo Curator**, **RAPIDS**. Decide by lifecycle first, product name second.
 - Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.

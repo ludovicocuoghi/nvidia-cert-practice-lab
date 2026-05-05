@@ -6,6 +6,20 @@ status: populated
 
 # Nsight Systems
 
+## What to study first
+
+- **Core idea:** Desktop profiling application (GUI + CLI) — system-wide CPU/GPU timeline profiler
+- **Use it when:** Use when the question is about end-to-end CPU/GPU timelines, CUDA API gaps, kernel launch overhead, memory transfers, or multi-service latency.
+- **Choose another path when:** Choose the neighboring service for detailed single-kernel occupancy or instruction analysis; use Nsight Compute after Systems finds the bottleneck.
+- **Concrete surface:** Access: CLI: `nsys profile -o trace python my_script.py`, GUI: `nsys-ui` (installed with CUDA Toolkit) I/O: Application execution (Python script, binary) with optional NVTX annotations -> Timeline trace file (`.nsys-rep`) — CPU threads, CUDA kernels, memory transfers, NCCL spans
+- **Study first:** timeline: Nsight Systems' primary output — a chronological view of CPU threads, CUDA kernels, memory transfers (H2D/D2H), and NCCL calls on a shared time axis
+- the first tool to reach for when "something is slow"
+- CUDA API gaps: visible as empty spaces between kernel launches on the timeline — indicates CPU-side launch overhead (too many small kernel submissions) → candidate for CUDA Graphs or kernel fusion
+- GPU idle time: SM activity drops to near zero while CPU is busy — can be CPU bottleneck, insufficient work to keep GPU fed, or synchronization stall
+- the timeline immediately shows which
+- distributed trace clues: NCCL collective durations, pipeline bubbles (gaps between stage handoffs), and inter-node communication latency all visible in the multi-GPU timeline view
+- **Real trap:** Confusing system-wide timeline profiling with kernel-level microanalysis.
+
 ## At a glance
 
 | | |
@@ -49,7 +63,7 @@ NVIDIA's **system-level** CPU/GPU timeline profiler. Nsight Systems provides end
 - **First profiling tool** when the problem source isn't yet identified
 - Questions that mention "CPU dispatch," "system timeline," or "interaction between components"
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
 - **First tool for kernel-level questions**: That's Nsight Compute. Use Nsight Systems first, then Nsight Compute.
 - **Safety/policy decisions logging**: That's NeMo Guardrails.
@@ -207,9 +221,9 @@ Idle GPU time ("bubbles") appears as gaps in the timeline:
 - **Relevant exams:** GenAI LLMs, Agentic AI
 - **What it is:** Desktop profiling application (GUI + CLI) — system-wide CPU/GPU timeline profiler
 - **Use it when:** Use when the question is about end-to-end CPU/GPU timelines, CUDA API gaps, kernel launch overhead, memory transfers, or multi-service latency.
-- **Do not use it when:** Do not use it for detailed single-kernel occupancy or instruction analysis; use Nsight Compute after Systems finds the bottleneck.
+- **Do not use it when:** Choose the neighboring service for detailed single-kernel occupancy or instruction analysis; use Nsight Compute after Systems finds the bottleneck.
 - **Common trap:** Confusing system-wide timeline profiling with kernel-level microanalysis.
-- **Scenario signal:** An application has unexplained p99 latency across CPU dispatch, CUDA kernels, memory copies, NCCL, retrieval, or tools.
+- **Recognition clues:** An application has unexplained p99 latency across CPU dispatch, CUDA kernels, memory copies, NCCL, retrieval, or tools.
 ### Study notes
 - Use **Nsight Systems** first for whole-application timelines: CPU/GPU overlap, CUDA API calls, kernel launch gaps, synchronization, I/O, and communication stalls.
 - It answers where time is going across the system. It does not replace kernel-level analysis once a specific kernel is identified.
@@ -218,7 +232,7 @@ Idle GPU time ("bubbles") appears as gaps in the timeline:
 - **CUDA API gaps**: visible as empty spaces between kernel launches on the timeline — indicates CPU-side launch overhead (too many small kernel submissions) → candidate for CUDA Graphs or kernel fusion
 - **GPU idle time**: SM activity drops to near zero while CPU is busy — can be CPU bottleneck, insufficient work to keep GPU fed, or synchronization stall; the timeline immediately shows which
 - **distributed trace clues**: NCCL collective durations, pipeline bubbles (gaps between stage handoffs), and inter-node communication latency all visible in the multi-GPU timeline view
-### High-yield exam signals
+### What to recognize
 - low GPU utilization → Nsight Systems timeline shows GPU idle while CPU is busy; suspect CPU launch overhead
 - long gaps between kernels → CPU-side serialization; candidate for CUDA Graphs
 - CPU launch overhead → thousands of small kernel submissions dominate runtime
@@ -233,8 +247,8 @@ Idle GPU time ("bubbles") appears as gaps in the timeline:
 - Given a trace, decide whether the issue is CPU launch overhead, kernel runtime, transfer, or synchronization.
 ## Exam tips from mocks
 - Mock-style questions test whether **Nsight Systems** matches **Monitoring / optimization**, not whether the product name sounds familiar.
-- Choose it when the scenario signal matches this boundary: Use when the question is about end-to-end CPU/GPU timelines, CUDA API gaps, kernel launch overhead, memory transfers, or multi-service latency.
-- Reject it when the problem is actually about another layer: Do not use it for detailed single-kernel occupancy or instruction analysis; use Nsight Compute after Systems finds the bottleneck.
+- Boundary cue: choose it when the question is about end-to-end CPU/GPU timelines, CUDA API gaps, kernel launch overhead, memory transfers, or multi-service latency.
+- Adjacent-service cue: not for detailed single-kernel occupancy or instruction analysis; use Nsight Compute after Systems finds the bottleneck.
 - The common trap pattern is: Confusing system-wide timeline profiling with kernel-level microanalysis.
 - Expect distractors around nearby services such as **NeMo Guardrails**, **Nsight Compute**, **NCCL**, **TensorRT-LLM**. Decide by lifecycle first, product name second.
 - Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.

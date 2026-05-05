@@ -6,9 +6,21 @@ status: populated
 
 # Agent Architecture and Design
 
+## What to study first
+
+- **Core idea:** Design agent roles, reasoning loops, communication patterns, tool boundaries, and multi-agent systems.
+- **Use it when:** Study this when questions ask what architecture fits a task, how agents coordinate, or when autonomy is too risky.
+- **Study first:** Graph/workflow agent: explicit nodes + transitions, static states, LLM only at interpretation/generation steps — right for compliance, predictable paths, and high-risk domains
+- ReAct loop: Thought → Action → Observation → Thought — right for dynamic environments, streaming data, uncertain intermediate steps
+- Plan-and-execute: plan first, then execute — must re-plan when observations contradict the plan (missing **re-planning trigger** = decision trap)
+- Supervisor/orchestrator: **centralized state** transitions + **approval gates** — right for safety-critical multi-agent, auditable workflows
+- Peer-to-peer/choreography: decentralized coordination with no single bottleneck — right for distributed robots or search-and-rescue
+- wrong when compliance/audit requires centralized control
+- **Real trap:** Do not choose multi-agent design just because it sounds advanced; it adds **latency**, cost, and debugging complexity.
+
 ## Certification boundary
 
-This page is the NCP-AAI exam lens for architecture. Keep enough portable theory to answer NVIDIA Agentic AI blueprint questions, but treat the deeper vendor-neutral home as `Agentic AI General Study -> Agent Lifecycle and Architecture`. Keep NVIDIA-specific cues here when they affect service selection, exam traps, or implementation choices.
+This page is the NCP-AAI exam lens for architecture. Keep enough portable theory to answer NVIDIA Agentic AI blueprint questions, but treat the deeper vendor-neutral home as `Agentic AI General Study -> Agent Lifecycle and Architecture`. Keep NVIDIA-specific cues here when they affect service selection, decision traps, or implementation choices.
 
 ## Core ideas you must hold in your head
 
@@ -45,7 +57,7 @@ Agent architecture sits at the **design** stage — before development, before d
 | **Plan-and-execute** | Task with known subgoals but tool results may invalidate steps | Highly dynamic environments with no stable plan |
 | **Multi-agent debate** | Need for diverse perspectives, adversarial testing | Routine tasks, cost-sensitive, **latency**-sensitive |
 
-## Common exam traps
+## Decision traps worth remembering
 
 1. **"Use a larger model"** is almost never the architectural fix. The exam tests structural controls — gates, state machines, execution layers. A bigger model can still skip evidence, hallucinate, or act prematurely.
 
@@ -146,7 +158,7 @@ The exam tests **when to route**:
 - **gRPC + Protocol Buffers** — low-**latency** structured agent-to-agent comms
 - **Plan-act-observe schema** — typed JSON action messages → enables verification + confidence escalation
 
-### Top exam traps
+### Top decision traps
 - "Use a larger model" → almost never the architectural fix
 - "Put it in the prompt" → prompt is not a control boundary
 - "Remove the tool" → wrong; add controls instead
@@ -174,7 +186,7 @@ Evidence source: `mock_1` through `mock_5`, especially architecture, planning, c
 - **What it covers:** Design agent roles, reasoning loops, communication patterns, tool boundaries, and multi-agent systems.
 - **Use this section when:** Study this when questions ask what architecture fits a task, how agents coordinate, or when autonomy is too risky.
 - **Common trap:** Do not choose multi-agent design just because it sounds advanced; it adds **latency**, cost, and debugging complexity.
-- **Scenario signal:** The question asks how much autonomy is safe: deterministic, high-risk flows usually need **explicit state transitions** and **approval gates**, not free-form agents.
+- **Recognition clues:** The question asks how much autonomy is safe: deterministic, high-risk flows usually need **explicit state transitions** and **approval gates**, not free-form agents.
 
 ### Study notes
 
@@ -194,7 +206,7 @@ Evidence source: `mock_1` through `mock_5`, especially architecture, planning, c
 
 - **Graph/workflow agent**: explicit nodes + transitions, static states, LLM only at interpretation/generation steps — right for compliance, predictable paths, and high-risk domains
 - **ReAct loop**: Thought → Action → Observation → Thought — right for dynamic environments, streaming data, uncertain intermediate steps
-- **Plan-and-execute**: plan first, then execute — must re-plan when observations contradict the plan (missing **re-planning trigger** = exam trap)
+- **Plan-and-execute**: plan first, then execute — must re-plan when observations contradict the plan (missing **re-planning trigger** = decision trap)
 - **Supervisor/orchestrator**: **centralized state** transitions + **approval gates** — right for safety-critical multi-agent, auditable workflows
 - **Peer-to-peer/choreography**: decentralized coordination with no single bottleneck — right for distributed robots or search-and-rescue; wrong when compliance/audit requires centralized control
 - **Router/classifier**: intent routing, risk routing, complexity routing, cost-aware routing — dispatches to FAQ, **RAG**, full agent, or **human escalation**
@@ -249,7 +261,7 @@ Evidence source: `mock_1` through `mock_5`, especially architecture, planning, c
    Best answer pattern: ReAct observe-reason-act loop with periodic re-planning, budgeted tool calls, and guarded tool execution.
    Trap: **Plan-and-execute** without re-planning triggers — continues with invalidated plan.
 
-### High-yield exam signals
+### What to recognize
 
 - **Coordination failure**: agents disagree on task status because no shared state protocol, ontology, or message format exists
 - **Agent handoff with lost context**: one agent passes a summary without **source evidence** or confidence, causing downstream errors or repeated work

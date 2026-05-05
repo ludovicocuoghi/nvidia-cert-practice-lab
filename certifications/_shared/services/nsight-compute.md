@@ -6,6 +6,20 @@ status: populated
 
 # Nsight Compute
 
+## What to study first
+
+- **Core idea:** Desktop profiling application (GUI + CLI) — single CUDA kernel deep-dive analysis
+- **Use it when:** Use when a specific CUDA kernel needs deep analysis of occupancy, memory bandwidth, warp stalls, tensor-core use, or roofline limits.
+- **Choose another path when:** Choose Nsight Systems when the requirement is first-pass whole-application timeline diagnosis; use Compute after a hot kernel is identified.
+- **Concrete surface:** Access: CLI: `ncu --set full --kernel-name ".." python my_script.py`, GUI: `ncu-ui` (CUDA Toolkit) I/O: Specific CUDA kernel (identified by Nsight Systems as bottleneck) -> Kernel report: occupancy, memory bandwidth, warp stalls, roofline, instruction mix
+- **Study first:** occupancy: ratio of active warps to theoretical max per SM — target ≥50% to hide memory latency
+- low occupancy typically from register pressure or shared memory overuse
+- memory-bound vs compute-bound: roofline analysis classification — memory-bound = HBM bandwidth saturated (fix by reducing data movement/fusion)
+- compute-bound = SMs saturated (fix by reducing operations/quantization)
+- warp stalls: warp state breakdown shows WHY warps aren't executing — stalled on memory (Long Scoreboard), waiting at barrier (Barrier), or not scheduled (Not Selected)
+- SM utilization: percentage of peak SM compute throughput achieved — low utilization with high occupancy suggests a memory-bound workload where SMs wait on HBM
+- **Real trap:** Jumping into kernel metrics before identifying which kernel or timeline gap is actually responsible.
+
 ## At a glance
 
 | | |
@@ -49,7 +63,7 @@ NVIDIA's **kernel-level** GPU performance analysis tool. Nsight Compute profiles
 - Optimizing individual CUDA kernel performance
 - Questions that mention "kernel analysis," "occupancy," or "individual kernel profiling"
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
 - **First tool for system-level questions**: That's Nsight Systems. Nsight Compute is the second tool in the workflow (mock_1 platform-005).
 - **"First tool for all system-level questions"**: Explicitly wrong in mock_1 platform-005. Use Nsight Systems for system-level; Nsight Compute for kernel-level.
@@ -228,18 +242,18 @@ Tensor Cores only activate when all conditions are met:
 - **Relevant exams:** GenAI LLMs
 - **What it is:** Desktop profiling application (GUI + CLI) — single CUDA kernel deep-dive analysis
 - **Use it when:** Use when a specific CUDA kernel needs deep analysis of occupancy, memory bandwidth, warp stalls, tensor-core use, or roofline limits.
-- **Do not use it when:** Do not use it as the first tool for whole-application timeline diagnosis; start with Nsight Systems.
+- **Do not use it when:** Choose Nsight Systems when the requirement is first-pass whole-application timeline diagnosis; use Compute after a hot kernel is identified.
 - **Common trap:** Jumping into kernel metrics before identifying which kernel or timeline gap is actually responsible.
-- **Scenario signal:** Nsight Systems has identified one slow CUDA kernel and the team needs occupancy, memory, warp, or roofline details.
+- **Recognition clues:** Nsight Systems has identified one slow CUDA kernel and the team needs occupancy, memory, warp, or roofline details.
 ### Study notes
 - Use **Nsight Compute** after you know which CUDA kernel matters. It provides kernel metrics such as occupancy, memory throughput, warp behavior, and instruction efficiency.
-- Exam trap: do not start here when the problem is whole-pipeline queueing, CPU stalls, or network communication.
+- Boundary cue: do not start here when the problem is whole-pipeline queueing, CPU stalls, or network communication.
 ### Must know
 - **occupancy**: ratio of active warps to theoretical max per SM — target ≥50% to hide memory latency; low occupancy typically from register pressure or shared memory overuse
 - **memory-bound vs compute-bound**: roofline analysis classification — memory-bound = HBM bandwidth saturated (fix by reducing data movement/fusion); compute-bound = SMs saturated (fix by reducing operations/quantization)
 - **warp stalls**: warp state breakdown shows WHY warps aren't executing — stalled on memory (Long Scoreboard), waiting at barrier (Barrier), or not scheduled (Not Selected)
 - **SM utilization**: percentage of peak SM compute throughput achieved — low utilization with high occupancy suggests a memory-bound workload where SMs wait on HBM
-### High-yield exam signals
+### What to recognize
 - specific kernel → Nsight Compute profiles a single CUDA kernel after Nsight Systems identifies it as the bottleneck
 - low occupancy → achieved occupancy < 50% from register pressure or shared memory limits
 - memory stalls → warp state classification reveals warps stalled on HBM data movement
@@ -254,8 +268,8 @@ Tensor Cores only activate when all conditions are met:
 - Explain why a kernel can have high GPU time but low achieved occupancy.
 ## Exam tips from mocks
 - Mock-style questions test whether **Nsight Compute** matches **Monitoring / optimization**, not whether the product name sounds familiar.
-- Choose it when the scenario signal matches this boundary: Use when a specific CUDA kernel needs deep analysis of occupancy, memory bandwidth, warp stalls, tensor-core use, or roofline limits.
-- Reject it when the problem is actually about another layer: Do not use it as the first tool for whole-application timeline diagnosis; start with Nsight Systems.
+- Boundary cue: choose it when a specific CUDA kernel needs deep analysis of occupancy, memory bandwidth, warp stalls, tensor-core use, or roofline limits.
+- Adjacent-service cue: not as the first tool for whole-application timeline diagnosis; start with Nsight Systems.
 - The common trap pattern is: Jumping into kernel metrics before identifying which kernel or timeline gap is actually responsible.
 - Expect distractors around nearby services such as **NCCL**, **NeMo Guardrails**, **NIM**, **NeMo Agent Toolkit**. Decide by lifecycle first, product name second.
 - Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.
@@ -265,7 +279,7 @@ Tensor Cores only activate when all conditions are met:
 - **mock_1 Q25, mock_2 Q26, mock_3 Q32, mock_4 Q28** / `deploy-004` (Deployment and Scaling): An enterprise team wants the fastest supported way to expose an LLM, embedding model, and reranker as APIs for an agent. Which NVIDIA layer is most appropriate? Correct idea: NIM microservices for optimized model APIs, potentially deployed on Kubernetes or called through hosted endpoints. Trap: NCCL handles GPU communication.
 - **mock_1 Q39, mock_2 Q41, mock_3 Q51, mock_4 Q45, mock_5 Q41** / `platform-001` (NVIDIA Platform Implementation): An enterprise wants an agent workflow that connects tools, data sources, and multiple agents while remaining framework-flexible. Which NVIDIA component is most relevant? Correct idea: NeMo Agent Toolkit. Trap: CUDA Graphs reduce launch overhead.
 - **mock_3 Q55, mock_4 Q49, mock_5 Q45** / `platform-005` (NVIDIA Platform Implementation): A team needs GPU timeline analysis for an agent backend where CPU dispatch, retrieval, and LLM inference interact. Which NVIDIA tool should they start with? Correct idea: Nsight Systems. Trap: Nsight Compute is kernel-level after the hot kernel is known.
-- **deploy-008** / `deploy-008` (Model Deployment): A 70B model is deployed on H100s with Triton. Profiling shows GPU utilization at 35% under load. What is the most useful first investigation? Correct idea: Inspect Triton metrics (queue time, batch size distribution, instance group occupancy) and the engine's preferred batch sizes;..
+- **deploy-008** / `deploy-008` (Model Deployment): A 70B model is deployed on H100s with Triton. Profiling shows GPU utilization at 35% under load. What is the most useful first investigation? Correct idea: Inspect Triton metrics (queue time, batch size distribution, instance group occupancy) and the engine's preferred batch sizes...
 
 </details>
 

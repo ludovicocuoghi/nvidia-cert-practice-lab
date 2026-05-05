@@ -6,6 +6,21 @@ status: populated
 
 # Production Monitoring and Reliability
 
+## What to study first
+
+- **Core idea:** Monitor quality, **latency**, **drift**, cost, errors, and reliability after release.
+- **Use it when:** Study this when scenarios involve live systems, **alerts**, anomaly diagnosis, or model lifecycle operations.
+- **Study first:** p50/p95/p99: — **latency** percentiles
+- p99 means 99% of requests are faster than this value
+- P95 **TTFT** is the key interactive metric
+- drift: — input distribution shift (**embeddings** diverge from baseline) and output **quality regression** (scores trend down over time)
+- cost per request: — (input tokens * input price + output tokens * output price) per request
+- monitor trend and per-tenant breakdown
+- quality regression: — **canary** query scores drop below threshold after a **deployment**
+- block/**rollback**
+- versioning: — every artifact (prompt, model, retriever index, guardrail config) must be versioned for reproducible incident analysis
+- **Real trap:** Infrastructure uptime does not prove answer quality or grounding.
+
 ## Certification boundary
 
 This page is the NCP-GENL exam lens for production LLM operations. Keep LLM-specific metrics, NIM/Triton/DCGM/Prometheus monitoring, reliability patterns, drift, logs, traces, and health checks here when they are tied to model serving. Agent-level task-success operations belong in Agentic AI General Study; NVIDIA operational cues stay here.
@@ -166,7 +181,7 @@ After N consecutive failures within a time window, the circuit "opens" and reque
 
 **Exam signal**: "Our model's accuracy is declining in production even though the model hasn't changed" → Data or **concept drift**. Re-evaluate on recent data; consider retraining.
 
-## Common exam traps
+## Decision traps worth remembering
 
 1. **CPU/memory monitoring** — **GPU** utilization, **GPU memory**, and Tensor Core utilization are the critical **metrics**. CPU is secondary.
 
@@ -226,7 +241,7 @@ After N consecutive failures within a time window, the circuit "opens" and reque
 - **Bulkhead** — isolate resources; one tenant's surge doesn't affect others
 - **Backpressure** — signal upstream to slow down when overloaded
 
-### Top exam traps
+### Top decision traps
 - **GPU metrics primary** → **GPU** **metrics** (util, memory, Tensor Core) are primary for LLMs
 - **Liveness vs readiness** → liveness = alive; readiness = can serve (model loaded)
 - **Retry with backoff** → don't retry 4xx; use backoff + jitter; limit retries
@@ -256,7 +271,7 @@ Evidence source: `mock_2` through `mock_5`, especially production **moderation**
 - **What it covers:** Monitor quality, **latency**, **drift**, cost, errors, and reliability after release.
 - **Use this section when:** Study this when scenarios involve live systems, **alerts**, anomaly diagnosis, or model lifecycle operations.
 - **Common trap:** Infrastructure uptime does not prove answer quality or grounding.
-- **Scenario signal:** A release lowers **p99 latency** but increases **hallucination** and refusal rates.
+- **Recognition clues:** A release lowers **p99 latency** but increases **hallucination** and refusal rates.
 
 ### Study notes
 
@@ -327,7 +342,7 @@ Evidence source: `mock_2` through `mock_5`, especially production **moderation**
    Best answer pattern: Stop rollout and rollback using versioned model/prompt/retriever artifacts.
    Trap: Proceeding because liveness/readiness probes are green.
 
-### High-yield exam signals
+### What to recognize
 
 - **Live incident**: **P95 latency** spikes or error rate jumps → inspect **metrics** (Prometheus), **logs** (correlation ID for affected requests), and **traces** (OpenTelemetry) to identify which service hop failed.
 - **Canary deployment quality check**: New model version deployed to 5% traffic → monitor LLM-specific quality **metrics** (**faithfulness** scoring, **LLM-as-judge**, output distribution comparison) before increasing traffic share.

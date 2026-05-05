@@ -6,6 +6,14 @@ status: populated
 
 # Evaluation Harness
 
+## What to study first
+
+- **Core idea:** The lifecycle owner for measuring whether the system works.
+- **Use it when:** The scenario mentions benchmarks, regression, trajectory scoring, RAG groundedness, LLM-as-judge, human ratings, or release gates.
+- **Choose another path when:** Choose a neighboring service when the problem is live operational monitoring only.
+- **Concrete surface:** Access: Eval jobs, CI gates, judge workflows, human review tasks, RAG metrics, replay datasets Inside: Golden sets, trajectory checks, groundedness, tool accuracy, safety tests, LLM-as-judge calibration I/O: Dataset, task rubric, model/prompt/retriever variant, expected behavior, traces, human labels -> Scores, failure cases, regressions, judge reports, approval or block signal
+- **Real trap:** Scoring only final answers when unsafe tool calls happened in the middle.
+
 ## At a glance
 
 | | |
@@ -16,6 +24,15 @@ status: populated
 | **Output** | Scores, failure cases, regressions, judge reports, approval or block signal |
 | **Inside** | Golden sets, trajectory checks, groundedness, tool accuracy, safety tests, LLM-as-judge calibration |
 
+```yaml
+eval:
+  dataset: support_regression.jsonl
+  target: prompt:v12 + model:support-agent
+  metrics: [correctness, groundedness, tool_accuracy, policy]
+  judges: [llm_judge, human_calibration]
+  gate: no_regression
+```
+
 **Mental model**: the quality gate before and after changes.
 
 ## Study card data
@@ -24,9 +41,9 @@ status: populated
 - **Lifecycle:** Evaluation
 - **Relevant exams:** Agentic AI General Study
 - **Use it when:** The scenario mentions benchmarks, regression, trajectory scoring, RAG groundedness, LLM-as-judge, human ratings, or release gates.
-- **Do not use it when:** The problem is live operational monitoring only.
+- **Do not use it when:** Choose a neighboring service when the problem is live operational monitoring only.
 - **Common trap:** Scoring only final answers when unsafe tool calls happened in the middle.
-- **Scenario signal:** "The final answer is correct, but the agent called a private tool unnecessarily."
+- **Recognition clues:** "The final answer is correct, but the agent called a private tool unnecessarily."
 
 ## Related service map
 

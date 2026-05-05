@@ -6,6 +6,14 @@ status: populated
 
 # Observability and Trace Monitor
 
+## What to study first
+
+- **Core idea:** The lifecycle owner for live operational visibility.
+- **Use it when:** The scenario mentions incidents, HTTP 200 but failed tasks, empty tool results, route drift, cost spikes, p99 latency, or trace replay.
+- **Choose another path when:** Choose a neighboring capability when the issue is offline release evaluation only.
+- **Concrete surface:** Access: OpenTelemetry, cloud monitoring, trace dashboards, agent observability tools, log stores Inside: Span IDs, prompt/model versions, tool latency, retrieval metadata, p95/p99, token cost, task-success events I/O: Model calls, retrieval calls, tool calls, guardrail decisions, latency, cost, route, user feedback -> Dashboards, alerts, traces, failure clusters, incident reports, replay cases
+- **Real trap:** Treating infrastructure uptime as agent success.
+
 ## At a glance
 
 | | |
@@ -16,6 +24,14 @@ status: populated
 | **Output** | Dashboards, alerts, traces, failure clusters, incident reports, replay cases |
 | **Inside** | Span IDs, prompt/model versions, tool latency, retrieval metadata, p95/p99, token cost, task-success events |
 
+```python
+with tracer.start_as_current_span("agent.request") as span:
+    span.set_attribute("model.route", route.name)
+    span.set_attribute("retrieval.top_k", top_k)
+    span.set_attribute("cost.input_tokens", tokens_in)
+    span.set_attribute("task.success", success)
+```
+
 **Mental model**: the flight recorder for live agent behavior.
 
 ## Study card data
@@ -24,9 +40,9 @@ status: populated
 - **Lifecycle:** Monitoring and profiling
 - **Relevant exams:** Agentic AI General Study
 - **Use it when:** The scenario mentions incidents, HTTP 200 but failed tasks, empty tool results, route drift, cost spikes, p99 latency, or trace replay.
-- **Do not use it when:** The issue is offline release evaluation only.
+- **Do not use it when:** Choose a neighboring capability when the issue is offline release evaluation only.
 - **Common trap:** Treating infrastructure uptime as agent success.
-- **Scenario signal:** "Users complain even though every request returns 200."
+- **Recognition clues:** "Users complain even though every request returns 200."
 
 ## Related service map
 

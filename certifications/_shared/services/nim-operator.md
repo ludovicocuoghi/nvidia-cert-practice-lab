@@ -4,12 +4,28 @@ relevant_to: [NCP-GENL, NCP-AAI]
 status: populated
 ---
 
-# NIM Operator
+# NIM Operator (NVIDIA Inference Microservice Operator)
+
+## What to study first
+
+- **Core idea:** Kubernetes operator (Go controller) — automates **NIM** deployment lifecycle on K8s
+- **Use it when:** Use when NIM endpoints must be managed on Kubernetes with CRDs, autoscaling, model profiles, health checks, or rolling updates.
+- **Choose another path when:** Choose NIM itself when the requirement is the inference microservice; the Operator manages NIM deployments rather than performing inference.
+- **Concrete surface:** Access: `helm install nim-operator`, then `kubectl apply -f nim-service.yaml` (CRD) Inside: `NIMService` CRD, KEDA autoscaling, 4-layer health probes, GPU-aware scheduling I/O: `NIMService` CR YAML (model, replicas, GPU type) -> Running NIM Deployment + Service + HPA + health checks, managed automatically
+- **Study first:** Kubernetes operator pattern with NIMService CRD: operator watches desired state (model, replicas, GPU resources, update strategy) defined in CRD and reconciles actual state
+- encodes domain-specific operational knowledge
+- NIM-aware auto-scaling via KEDA: scales based on inference queue depth, GPU memory utilization, and model profile switching — not just basic CPU/memory HPA
+- Four-layer health checking: container process → model load (30-120s for large LLMs) → inference readiness → GPU health (CUDA visibility, ECC)
+- prevents routing traffic to unready pods
+- Model-aware rolling updates: creates new pods with new model image, waits for model load+health checks, drains in-flight connections via preStop hook, then terminates old pods
+- GPU-aware scheduling: enforces GPU type (A100/H100/L40S), GPU topology (NVLink/NUMA for multi-GPU TP), and MIG partitioning for fine-grained allocation
+- **Real trap:** Confusing the Kubernetes operator that manages NIM with the NIM container that serves model requests.
 
 ## At a glance
 
 | | |
 |---|---|
+| **Full name** | NVIDIA Inference Microservice Operator |
 | **What it is** | Kubernetes operator (Go controller) — automates NIM deployment lifecycle on K8s |
 | **How you access it** | `helm install nim-operator`, then `kubectl apply -f nim-service.yaml` (CRD) |
 | **Input** | `NIMService` CR YAML (model, replicas, GPU type) |
@@ -17,7 +33,7 @@ status: populated
 | **Inside** | `NIMService` CRD, KEDA autoscaling, 4-layer health probes, GPU-aware scheduling |
 
 ```yaml
-APIVersion: nim.nvidia.com/v1
+apiVersion: nim.nvidia.com/v1
 kind: NIMService
 metadata:
   name: llama-70b
@@ -57,7 +73,7 @@ The Kubernetes operator for managing NIM microservice deployments at scale. NIM 
 - Automated NIM lifecycle management (deploy, scale, update, monitor)
 - "How to run NIM in production on Kubernetes?"
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
 - **The inference service itself**: That's NIM. NIM Operator manages NIM; it doesn't serve models.
 - **Model training**: That's NeMo Framework.
@@ -156,19 +172,19 @@ Manual deployment requires: crafting Deployment YAML, configuring the correct NG
 - **Relevant exams:** GenAI LLMs, Agentic AI
 - **What it is:** Kubernetes operator (Go controller) — automates **NIM** deployment lifecycle on K8s
 - **Use it when:** Use when NIM endpoints must be managed on Kubernetes with CRDs, autoscaling, model profiles, health checks, or rolling updates.
-- **Do not use it when:** Do not use it as the inference microservice itself; it manages NIM deployments rather than performing inference.
+- **Do not use it when:** Choose NIM itself when the requirement is the inference microservice; the Operator manages NIM deployments rather than performing inference.
 - **Common trap:** Confusing the Kubernetes operator that manages NIM with the NIM container that serves model requests.
-- **Scenario signal:** An ops team must deploy, autoscale, health-check, and roll out NIM endpoints on Kubernetes.
+- **Recognition clues:** An ops team must deploy, autoscale, health-check, and roll out NIM endpoints on Kubernetes.
 ### Study notes
 - Place **NIM Operator** at **Deployment operations**: declare "I want NIM X with 3 replicas on H100s" via YAML — the operator creates and manages the full K8s deployment.
-- Choose it when: Use when NIM endpoints must be managed on Kubernetes with CRDs, autoscaling, model profiles, health checks, or rolling updates. Reject it when: Do not use it as the inference microservice itself; it manages NIM deployments rather than performing inference.
+- Boundary cue: choose it when NIM endpoints must be managed on Kubernetes with CRDs, autoscaling, model profiles, health checks, or rolling updates. Adjacent-service cue: not as the inference microservice itself; it manages NIM deployments rather than performing inference.
 ### Must know
 - **Kubernetes operator pattern with NIMService CRD**: operator watches desired state (model, replicas, GPU resources, update strategy) defined in CRD and reconciles actual state; encodes domain-specific operational knowledge
 - **NIM-aware auto-scaling via KEDA**: scales based on inference queue depth, GPU memory utilization, and model profile switching — not just basic CPU/memory HPA
 - **Four-layer health checking**: container process → model load (30-120s for large LLMs) → inference readiness → GPU health (CUDA visibility, ECC); prevents routing traffic to unready pods
 - **Model-aware rolling updates**: creates new pods with new model image, waits for model load+health checks, drains in-flight connections via preStop hook, then terminates old pods
 - **GPU-aware scheduling**: enforces GPU type (A100/H100/L40S), GPU topology (NVLink/NUMA for multi-GPU TP), and MIG partitioning for fine-grained allocation
-### High-yield exam signals
+### What to recognize
 - **Kubernetes-native NIM lifecycle management** → scenario describes automating NIM deployment, autoscaling, and rolling updates on Kubernetes; NIM Operator manages NIM via the NIMService custom resource
 - **Model-aware rolling updates** → scenario about updating a deployed model version without downtime; NIM Operator waits for the new model to fully load on GPU before routing traffic, then drains old connections
 - **Health checks beyond container liveness** → scenario about a pod being "ready" but the model not yet loaded into GPU memory (taking 30-120s); NIM Operator's four-layer health model prevents premature traffic routing
@@ -178,8 +194,8 @@ Manual deployment requires: crafting Deployment YAML, configuring the correct NG
 - Write one scenario where this service is correct and one where it is a tempting but wrong distractor.
 ## Exam tips from mocks
 - Mock-style questions test whether **NIM Operator** matches **Deployment operations**, not whether the product name sounds familiar.
-- Choose it when the scenario signal matches this boundary: Use when NIM endpoints must be managed on Kubernetes with CRDs, autoscaling, model profiles, health checks, or rolling updates.
-- Reject it when the problem is actually about another layer: Do not use it as the inference microservice itself; it manages NIM deployments rather than performing inference.
+- Boundary cue: choose it when NIM endpoints must be managed on Kubernetes with CRDs, autoscaling, model profiles, health checks, or rolling updates.
+- Adjacent-service cue: not as the inference microservice itself; it manages NIM deployments rather than performing inference.
 - The common trap pattern is: Confusing the Kubernetes operator that manages NIM with the NIM container that serves model requests.
 - Expect distractors around nearby services such as **TensorRT-LLM**. Decide by lifecycle first, product name second.
 - Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.

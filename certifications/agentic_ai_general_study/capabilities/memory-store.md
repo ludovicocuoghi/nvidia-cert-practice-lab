@@ -6,9 +6,28 @@ source_lens: general-study
 
 # Memory Store
 
+## What to study first
+
+- **Core idea:** You are building scoped memory for agent/user state: current task state, session facts, reusable preferences, episodic history, semantic facts, expirations, and deletion controls.
+- **Study first:** Classify memory type: working, session, episodic, semantic, preference, audit.
+- Decide what may be stored, for whom, why, and for how long.
+- Extract candidate memories from interactions or tool results.
+- Validate usefulness, consent, sensitivity, and freshness.
+- Store with scope, source, timestamp, expiration, and deletion key.
+
 ## What You Are Building
 
 You are building scoped memory for agent/user state: current task state, session facts, reusable preferences, episodic history, semantic facts, expirations, and deletion controls.
+
+## Lifecycle Lane Playbooks
+
+| Lane | What this page means there | Output |
+|---|---|---|
+| Train model from zero | Not used. Memory is runtime state, not pretraining data. | No memory store |
+| Fine-tune existing model | User memories should not be dumped into tuning. Only curated, consented, de-identified examples may become training data. | Optional curated examples |
+| Use existing model/API | Use for scoped preferences or session state when a simple app needs continuity. | Preference/session memory |
+| Build agent/RAG application | Main lane: working/session/long-term/audit memory boundaries, consent, freshness, deletion. | Scoped memory records |
+| Operate, govern, and improve | Monitor stale recall, privacy incidents, deletion success, and harmful memory injection. | Memory policy fixes |
 
 ## Pipeline
 
@@ -106,6 +125,46 @@ Every memory write should answer:
 - How is it corrected, deleted, and audited?
 
 The exam trap is "store all conversation history." The better answer is scoped, consent-aware, freshness-aware memory.
+
+### Memory write examples
+
+| Candidate fact | Store where | Why |
+|---|---|---|
+| "The user asked to compare two invoices in this run" | Working memory | Needed only until the task finishes |
+| "The user prefers concise answers" | Long-term preference memory, if consented | Useful across sessions and low sensitivity |
+| "The user pasted an access token" | Do not store as memory; handle as secret | Sensitive and not useful personalization |
+| "The current task already submitted refund request R-17" | Working/session state plus audit log | Prevents duplicate side effects |
+| "The company vacation policy changed today" | RAG knowledge index | External document, not personal memory |
+| "Reviewer Alice approved the refund" | Audit/governance log | Compliance evidence, not user preference |
+
+Good memory systems are selective. They write facts only when they are useful, scoped, supported by a source, allowed by policy, and retrievable without violating privacy or freshness.
+
+### Implementation card: memory write policy
+
+```python
+def maybe_write_memory(candidate, user, task):
+    checks = {
+        "consented": user.memory_enabled,
+        "useful_later": usefulness_score(candidate, task) >= 0.8,
+        "not_secret": not contains_secret(candidate.text),
+        "not_high_risk_pii": not contains_high_risk_pii(candidate.text),
+        "supported": candidate.source is not None,
+    }
+    if not all(checks.values()):
+        return {"stored": False, "reason": failed_checks(checks)}
+
+    return memory_store.upsert({
+        "user_id": user.id,
+        "scope": candidate.scope,
+        "text": candidate.normalized_text,
+        "source": candidate.source,
+        "created_at": now(),
+        "expires_at": candidate.expires_at,
+        "deletion_key": f"user:{user.id}:memory",
+    })
+```
+
+Memory evals measure helpful recall rate, irrelevant-memory injection rate, stale-memory rate, deletion success, consent compliance, and privacy incidents. There is no generic "memory loss" unless you are training an extractor or retriever; the application gate is behavioral.
 
 ## Exam Signals
 

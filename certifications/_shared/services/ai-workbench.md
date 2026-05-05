@@ -6,6 +6,22 @@ status: populated
 
 # AI Workbench
 
+## What to study first
+
+- **Core idea:** Desktop application — containerized, reproducible AI development environment
+- **Use it when:** Use when a developer needs a reproducible local or remote containerized workspace for prototyping, fine-tuning experiments, or RAG experiments before production.
+- **Choose another path when:** Choose the neighboring service for production serving, Kubernetes rollout, or distributed training at scale.
+- **Concrete surface:** Access: Download installer (`.dmg`/`.exe`/`.deb`) from NVIDIA Developer site, launch the app I/O: Project template (NGC) or Git repo + container specification -> Containerized workspace with IDE, pre-installed packages, mounted code
+- **Study first:** Containerized reproducible workspaces: each AI Workbench project defines a container spec (base image, Python packages, system deps)
+- sharing the spec reproduces the identical environment
+- Development/prototyping lifecycle stage: earliest hands-on stage — local experimentation before production-scale training (NeMo Framework) and serving (NIM/Triton)
+- AI Workbench vs NIM/Triton: Workbench = prototyping on local workstation with IDE/Jupyter
+- NIM/Triton = production serving on Kubernetes with OpenAI-compatible API, Prometheus metrics, and horizontal scaling
+- Workbench is the environment, not the toolkit: Workbench hosts tools (NeMo, NIM) inside its containers but is itself the shell, not the tools inside
+- a common exam misconception
+- LLM lifecycle pipeline: AI Workbench (prototype) → NeMo Framework (scale training) → NIM (serving) → NIM Operator (K8s deployment)
+- **Real trap:** Confusing a development environment with the actual training or serving tool running inside it.
+
 ## At a glance
 
 | | |
@@ -46,7 +62,7 @@ NVIDIA's desktop development environment for AI/ML projects. AI Workbench provid
 - "Where does a developer start experimenting with NVIDIA AI tools?"
 - Reproducible, containerized development environments for AI
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
 - **Production model serving**: That's NIM or Triton.
 - **Production training at scale**: That's NeMo Framework or DGX Cloud.
@@ -134,19 +150,19 @@ Workbench does not include NeMo Framework, NIM, or Triton. It is an environment 
 - **Relevant exams:** GenAI LLMs, Agentic AI
 - **What it is:** Desktop application — containerized, reproducible AI development environment
 - **Use it when:** Use when a developer needs a reproducible local or remote containerized workspace for prototyping, fine-tuning experiments, or RAG experiments before production.
-- **Do not use it when:** Do not use it for production serving, Kubernetes rollout, or distributed training at scale.
+- **Do not use it when:** Choose the neighboring service for production serving, Kubernetes rollout, or distributed training at scale.
 - **Common trap:** Confusing a development environment with the actual training or serving tool running inside it.
-- **Scenario signal:** A developer needs a reproducible local workspace to prototype a fine-tuning or RAG experiment before moving to DGX Cloud.
+- **Recognition clues:** A developer needs a reproducible local workspace to prototype a fine-tuning or RAG experiment before moving to DGX Cloud.
 ### Study notes
 - Place **AI Workbench** at **Development / prototyping**: the local desktop app that gives you a pre-configured, containerized Jupyter/VS Code environment for prototyping models on your workstation.
-- Choose it when: Use when a developer needs a reproducible local or remote containerized workspace for prototyping, fine-tuning experiments, or RAG experiments before production. Reject it when: Do not use it for production serving, Kubernetes rollout, or distributed training at scale.
+- Boundary cue: choose it when a developer needs a reproducible local or remote containerized workspace for prototyping, fine-tuning experiments, or RAG experiments before production. Adjacent-service cue: not for production serving, Kubernetes rollout, or distributed training at scale.
 ### Must know
 - **Containerized reproducible workspaces**: each AI Workbench project defines a container spec (base image, Python packages, system deps); sharing the spec reproduces the identical environment
 - **Development/prototyping lifecycle stage**: earliest hands-on stage — local experimentation before production-scale training (NeMo Framework) and serving (NIM/Triton)
 - **AI Workbench vs NIM/Triton**: Workbench = prototyping on local workstation with IDE/Jupyter; NIM/Triton = production serving on Kubernetes with OpenAI-compatible API, Prometheus metrics, and horizontal scaling
 - **Workbench is the environment, not the toolkit**: Workbench hosts tools (NeMo, NIM) inside its containers but is itself the shell, not the tools inside; a common exam misconception
 - **LLM lifecycle pipeline**: AI Workbench (prototype) → NeMo Framework (scale training) → NIM (serving) → NIM Operator (K8s deployment)
-### High-yield exam signals
+### What to recognize
 - **Local prototyping before production** → scenario describes a developer experimenting with fine-tuning or RAG on a workstation before scaling to DGX Cloud; AI Workbench is the containerized development environment for this stage
 - **Container reproducibility across team** → scenario mentions sharing or replicating an AI development environment across team members; AI Workbench's container spec is the unit of reproducibility
 - **Workbench vs production serving trap** → scenario describes deploying a model at scale with Kubernetes and load balancing; AI Workbench is a distractor — NIM or Triton is the correct production serving tool
@@ -155,8 +171,8 @@ Workbench does not include NeMo Framework, NIM, or Triton. It is an environment 
 - Write one scenario where **AI Workbench** is correct and one scenario where it is a tempting but wrong distractor.
 ## Exam tips from mocks
 - Mock-style questions test whether **AI Workbench** matches **Development / prototyping**, not whether the product name sounds familiar.
-- Choose it when the scenario signal matches this boundary: Use when a developer needs a reproducible local or remote containerized workspace for prototyping, fine-tuning experiments, or RAG experiments before production.
-- Reject it when the problem is actually about another layer: Do not use it for production serving, Kubernetes rollout, or distributed training at scale.
+- Boundary cue: choose it when a developer needs a reproducible local or remote containerized workspace for prototyping, fine-tuning experiments, or RAG experiments before production.
+- Adjacent-service cue: not for production serving, Kubernetes rollout, or distributed training at scale.
 - The common trap pattern is: Confusing a development environment with the actual training or serving tool running inside it.
 - If it appears only as a distractor, decide by the required lifecycle phase before choosing a product name.
 - Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.

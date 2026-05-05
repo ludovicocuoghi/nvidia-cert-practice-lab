@@ -6,10 +6,29 @@ status: populated
 
 # NGC (NVIDIA GPU Cloud)
 
+## What to study first
+
+- **Core idea:** Web catalog + container registry (`nvcr.io`) — distribution hub for all NVIDIA GPU software
+- **Use it when:** Use when the scenario asks where NVIDIA containers, model artifacts, Helm charts, SDKs, or NIM images are published and pulled from.
+- **Choose another path when:** Choose NIM/Triton when the scenario asks to run inference, NeMo Framework/Customizer when it asks to train or tune, NeMo Evaluator for scoring, and Agent Toolkit for orchestration.
+- **Concrete surface:** Access: Web: `ngc.nvidia.com`, CLI: `docker login nvcr.io` with API key, `docker pull nvcr.io/..` Inside: Container registry, model registry, Helm chart repo, SDK downloads, private enterprise namespaces I/O: Search/browse on web console or `docker pull` command -> Docker images, model checkpoints, Helm charts, SDK downloads
+- **Study first:** NGC as multi-registry platform: container registry (nvcr.io for Docker images including NIM, NeMo, Triton), model registry (Nemotron, BioNeMo, TAO weights), Helm chart registry (Kubernetes deployments), and SDK/tool downloads
+- NGC Catalog vs private registry: public catalog (ngc.nvidia.com) with free NVIDIA API key for rate limiting
+- enterprise private namespace for staging approved versions, custom images, and team access management
+- Production deployment workflow via NGC: discover container → stage to internal registry (vulnerability scan) → configure env vars → deploy via K8s manifest or NIM Operator CRD → update on new releases
+- Authentication requirements: `docker login nvcr.io` with NVIDIA API key
+- free tier: 10 pulls per 6 hours per image
+- always pull to private registry for auto-scaling to avoid rate limits
+- NGC is the source, not the runtime: the critical exam distinction — NGC distributes artifacts
+- NIM/Triton serve models
+- confusing the catalog with the inference engine is a common trap
+- **Real trap:** Treating NGC as "NVIDIA Cloud Service" runtime. NGC is broader and more generic: the catalog/registry where NIM containers, model artifacts, Helm charts, and SDKs live; NIM is the service you deploy and call.
+
 ## At a glance
 
 | | |
 |---|---|
+| **Full name** | NVIDIA GPU Cloud |
 | **What it is** | Web catalog + container registry (`nvcr.io`) — distribution hub for all NVIDIA GPU software |
 | **How you access it** | Web: `ngc.nvidia.com`, CLI: `docker login nvcr.io` with API key, `docker pull nvcr.io/..` |
 | **Input** | Search/browse on web console or `docker pull` command |
@@ -50,7 +69,7 @@ NVIDIA's catalog and registry of GPU-optimized containers, pre-trained models, S
 - Registry for GPU-optimized software
 - "Where do you get NVIDIA's pre-built containers?"
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
 - **Runtime model serving**: That's NIM or Triton. NGC is the catalog where you get NIM containers.
 - **Agent orchestration**: That's NeMo Agent Toolkit.
@@ -131,19 +150,19 @@ Pulling from `nvcr.io` requires `docker login nvcr.io` with an NVIDIA API key. F
 - **Relevant exams:** GenAI LLMs, Agentic AI
 - **What it is:** Web catalog + container registry (`nvcr.io`) — distribution hub for all NVIDIA GPU software
 - **Use it when:** Use when the scenario asks where NVIDIA containers, model artifacts, Helm charts, SDKs, or NIM images are published and pulled from.
-- **Do not use it when:** Do not use it for runtime inference, training execution, model evaluation, or orchestration.
-- **Common trap:** Confusing the catalog/registry where artifacts live with the service that runs those artifacts.
-- **Scenario signal:** An enterprise needs the NVIDIA catalog or registry location for approved containers, models, Helm charts, or SDK artifacts.
+- **Do not use it when:** Choose NIM/Triton when the scenario asks to run inference, NeMo Framework/Customizer when it asks to train or tune, NeMo Evaluator for scoring, and Agent Toolkit for orchestration.
+- **Common trap:** Treating NGC as "NVIDIA Cloud Service" runtime. NGC is broader and more generic: the catalog/registry where NIM containers, model artifacts, Helm charts, and SDKs live; NIM is the service you deploy and call.
+- **Recognition clues:** An enterprise needs the NVIDIA catalog or registry location for approved containers, models, Helm charts, or SDK artifacts.
 ### Study notes
 - Place **NGC** at **Distribution / deployment source**: Docker Hub for NVIDIA GPU containers — `docker login nvcr.io`, pull any NIM, NeMo, or Triton image.
-- Choose it when: Use when the scenario asks where NVIDIA containers, model artifacts, Helm charts, SDKs, or NIM images are published and pulled from. Reject it when: Do not use it for runtime inference, training execution, model evaluation, or orchestration.
+- Boundary cue: choose it when the scenario asks where NVIDIA containers, model artifacts, Helm charts, SDKs, or NIM images are published and pulled from. Adjacent-service cue: not for runtime inference, training execution, model evaluation, or orchestration.
 ### Must know
 - **NGC as multi-registry platform**: container registry (nvcr.io for Docker images including NIM, NeMo, Triton), model registry (Nemotron, BioNeMo, TAO weights), Helm chart registry (Kubernetes deployments), and SDK/tool downloads
 - **NGC Catalog vs private registry**: public catalog (ngc.nvidia.com) with free NVIDIA API key for rate limiting; enterprise private namespace for staging approved versions, custom images, and team access management
 - **Production deployment workflow via NGC**: discover container → stage to internal registry (vulnerability scan) → configure env vars → deploy via K8s manifest or NIM Operator CRD → update on new releases
 - **Authentication requirements**: `docker login nvcr.io` with NVIDIA API key; free tier: 10 pulls per 6 hours per image; always pull to private registry for auto-scaling to avoid rate limits
 - **NGC is the source, not the runtime**: the critical exam distinction — NGC distributes artifacts; NIM/Triton serve models; confusing the catalog with the inference engine is a common trap
-### High-yield exam signals
+### What to recognize
 - **Container or model acquisition** → scenario asks where to obtain NVIDIA-optimized containers, pre-trained models, or Helm charts; NGC is the catalog and registry platform
 - **Air-gapped deployment staging** → scenario describes an enterprise that needs to pull and stage approved containers for offline use; use NGC to discover, pull to a private registry, then transfer to air-gapped environment
 - **NGC vs NIM/Triton trap** → scenario about serving a model at runtime with NGC as a distractor; NGC is the registry where containers live, NIM/Triton are the serving runtimes
@@ -152,8 +171,8 @@ Pulling from `nvcr.io` requires `docker login nvcr.io` with an NVIDIA API key. F
 - Write one scenario where this service is correct and one where it is a tempting but wrong distractor.
 ## Exam tips from mocks
 - Mock-style questions test whether **NGC** matches **Distribution / deployment source**, not whether the product name sounds familiar.
-- Choose it when the scenario signal matches this boundary: Use when the scenario asks where NVIDIA containers, model artifacts, Helm charts, SDKs, or NIM images are published and pulled from.
-- Reject it when the problem is actually about another layer: Do not use it for runtime inference, training execution, model evaluation, or orchestration.
+- Boundary cue: choose it when the scenario asks where NVIDIA containers, model artifacts, Helm charts, SDKs, or NIM images are published and pulled from.
+- Adjacent-service cue: not for runtime inference, training execution, model evaluation, or orchestration.
 - The common trap pattern is: Confusing the catalog/registry where artifacts live with the service that runs those artifacts.
 - Expect distractors around nearby services such as **NIM**, **TensorRT-LLM**. Decide by lifecycle first, product name second.
 - Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.

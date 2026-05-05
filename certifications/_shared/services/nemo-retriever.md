@@ -6,30 +6,66 @@ status: populated
 
 # NeMo Retriever
 
-## At a glance
+## What to study first
+
+- **Core idea:** NVIDIA Retriever microservice family: NeMo Retriever Library/extraction + Embedding NIM + indexing/search + Reranking NIM.
+- **Use it when:** Use when enterprise knowledge must be parsed, embedded, indexed, searched, reranked, and cited for RAG or agents.
+- **Choose another path when:** Choose Framework/Customizer to teach durable behavior, NIM/Triton to serve models, Guardrails to enforce policy, and Curator to prepare training data.
+- **Concrete surface:** Access: NIM containers from NGC, REST APIs (`/v1/embeddings`, `/v1/ranking`), OpenAI-compatible embedding client, Retriever Library / nv-ingest APIs Inside: NeMo Retriever Library; Embedding NIM models such as `nvidia/llama-nemotron-embed-1b-v2`; Reranking NIM models such as `nvidia/llama-nemotron-rerank-1b-v2`; object detection/OCR NIMs; vector DBs such as LanceDB or Milvus I/O: Raw files (PDF, DOCX, HTML, images, audio) for extraction; text/image chunks for embedding; query + candidate passages for reranking -> Extracted JSON/Markdown metadata, embedding vectors, indexed chunks, ranked passages, and citation-ready context
+- **Study first:** NeMo Retriever is a microservice family, not one model.
+- Library/extraction parses enterprise files
+- Embedding NIM creates vectors
+- vector DB/search returns top-k candidates
+- Reranking NIM improves top-n precision.
+- Embedding endpoint: `/v1/embeddings`
+- reranking endpoint: `/v1/ranking`.
+- For query/passage embedding models, use `input_type: query` for user queries and `input_type: passage` for indexed document chunks.
+- Hybrid search = dense semantic + sparse keyword, often fused via RRF.
+- **Real trap:** Confusing inference-time retrieval over documents with pretraining data curation or fine-tuning.
+
+## Actual implementation / How you use it
 
 | | |
 |---|---|
-| **What it is** | NIM-based API microservices — document extraction → embedding → indexing → retrieval → re-ranking |
-| **How you access it** | NIM containers from NGC, REST API (`/v1/embeddings`, `/v1/rerank`), OpenAI SDK client |
-| **Input** | Raw documents (PDF, HTML, text) / query string + candidate documents |
-| **Output** | Embedding vectors / top-k retrieved + re-ranked passages with relevance scores |
-| **Inside** | NV-Embed-QA (embedding NIM), NV-Rerank-QA (cross-encoder NIM), chunking, hybrid search |
+| **What it is technically** | A family of Retriever microservices: document extraction/library, embedding NIM, indexing/retrieval, and reranking NIM |
+| **How you access it** | NIM containers from NGC, REST APIs (`/v1/embeddings`, `/v1/ranking`), OpenAI-compatible embedding client, Retriever Library / nv-ingest APIs |
+| **Input** | Raw files (PDF, DOCX, HTML, images, audio) for extraction; text/image chunks for embedding; query + candidate passages for reranking |
+| **Output** | Extracted JSON/Markdown metadata, embedding vectors, indexed chunks, ranked passages, and citation-ready context |
+| **Inside** | NeMo Retriever Library; Embedding NIM models such as `nvidia/llama-nemotron-embed-1b-v2`; Reranking NIM models such as `nvidia/llama-nemotron-rerank-1b-v2`; object detection/OCR NIMs; vector DBs such as LanceDB or Milvus |
 
-```python
-from openai import OpenAI
-client = OpenAI(base_url="http://retriever-nim:8000/v1")
-emb = client.embeddings.create(model="nv-embed-qa", input=["What is NIM?"])
-# Re-rank: query + candidate documents processed jointly for precise scoring
+```bash
+# Embedding NIM: create vectors for document chunks or queries.
+curl -X POST http://embedding-nim:8000/v1/embeddings \
+  -H "Content-Type: application/json" \
+  -d '{"model":"nvidia/llama-nemotron-embed-1b-v2","input":["What is NIM?"],"input_type":"query","modality":"text"}'
+
+# Reranking NIM: score a query against candidate passages.
+curl -X POST http://rerank-nim:8000/v1/ranking \
+  -H "Content-Type: application/json" \
+  -d '{"model":"nvidia/llama-nemotron-rerank-1b-v2","query":{"text":"What is NIM?"},"passages":[{"text":"NIM packages models as optimized inference microservices."}]}'
 ```
 
-**Mental model**: deploy embedding + re-ranker NIM containers, call `/v1/embeddings` and `/v1/rerank` with the OpenAI SDK.
+**Mental model**: NeMo Retriever is not one model. It is the NVIDIA retrieval family: extract documents, embed chunks, search/index them, then rerank candidate passages before the LLM writes the answer.
 
 ---
 
 ## What it is, in one paragraph
 
-NVIDIA's retrieval component for RAG (Retrieval-Augmented Generation) pipelines. NeMo Retriever provides embedding-based document search and retrieval, enabling agents to find semantically relevant context from large document collections before generating responses. It is the **knowledge retrieval layer** for agentic AI systems. It handles the full retrieval pipeline: document extraction (PDFs, tables, charts via OCR/parsing), text chunking, embedding generation, vector indexing, semantic and hybrid search, re-ranking of results, and citation grounding.
+NVIDIA's retrieval component for RAG (Retrieval-Augmented Generation) pipelines. NeMo Retriever is a **collection of microservices**, not a single "retriever model": the Library/extraction layer parses enterprise files, Embedding NIM turns chunks and queries into vectors, indexing/search stores and finds candidates, and Reranking NIM reorders candidates by query-document relevance. It is the **knowledge retrieval layer** for agentic AI systems: use it to connect proprietary documents, tables, charts, images, and fresh enterprise knowledge to a generator without changing the generator's weights.
+
+---
+
+## Actual NVIDIA service/model map
+
+| Layer | NVIDIA component names to recognize | What it does | Exam cue |
+|-------|-------------------------------------|--------------|----------|
+| Document extraction / ingestion | **NeMo Retriever Library** (formerly NVIDIA Ingest / `nv-ingest`) | Splits files into pages, extracts text/tables/charts/images, emits structured JSON/Markdown metadata, can chunk/embed/store results | "PDFs, tables, charts, OCR, metadata extraction" |
+| Extraction support models | `nemotron-page-elements-v3`, `nemotron-table-structure-v1`, `nemotron-graphic-elements-v1`, `nemotron-ocr-v1`; advanced: `nemotron-parse`, `nemotron-nano-12b-v2-vl`, `parakeet-1-1b-ctc-en-us` | Detects page elements, table structure, chart graphics, OCR text, optional visual parsing/captioning/audio extraction | "multimodal enterprise documents" |
+| Embedding | **NeMo Retriever Embedding NIM** with models such as `nvidia/llama-nemotron-embed-300m-v2`, `nvidia/llama-nemotron-embed-1b-v2`, `nvidia/llama-nemotron-embed-vl-1b-v2`, `nvidia/nv-embedqa-e5-v5` | Converts text or multimodal content into vectors for semantic search | "embed documents/query", "vector similarity", "`/v1/embeddings`" |
+| Indexing / search | Retriever Library retrieval stage with LanceDB by default or Milvus; GPU acceleration via cuVS in NVIDIA examples | Stores vectors plus metadata and returns first-stage candidates with semantic or hybrid search | "top-k candidates", "metadata filters", "vector DB" |
+| Reranking | **NeMo Retriever Reranking NIM** with `nvidia/llama-nemotron-rerank-500m-v2`, `nvidia/llama-nemotron-rerank-1b-v2`, `nvidia/llama-nemotron-rerank-vl-1b-v2` | Cross-encoder-style scoring of query + candidate passages, then reorders to higher precision | "rerank citations", "`/v1/ranking`", "better precision after retrieval" |
+
+**Do not memorize every model ID first.** For certification decisions, memorize the layer boundary: extraction parses documents, embedding creates vectors, indexing/search finds candidates, reranking improves precision, and the LLM generation step happens outside Retriever.
 
 ---
 
@@ -99,12 +135,12 @@ Final context (top-5 after re-ranking) → sent to LLM
 
 **Why re-ranking matters for the exam**: Without re-ranking, irrelevant documents that happen to have high embedding similarity can pollute the LLM's context, causing hallucinations. A bigger context window does NOT solve this — it just lets more noise in. Re-ranking is the precision filter.
 
-### Common re-ranker models
+### NVIDIA re-ranker services to recognize
 
-- **Cohere Rerank**: Commercial API, strong performance
-- **BGE-Reranker (BAAI)**: Open-source, based on BERT-like cross-encoder
-- **NVIDIA NV-Embed-QA + reranker**: NVIDIA's embedding + re-ranking microservices via NIM
-- **Cross-encoder MS MARCO models**: Fine-tuned on MS MARCO passage ranking dataset
+- **NeMo Retriever Reranking NIM** is the NVIDIA service family.
+- Current supported model IDs include `nvidia/llama-nemotron-rerank-500m-v2`, `nvidia/llama-nemotron-rerank-1b-v2`, and the multimodal `nvidia/llama-nemotron-rerank-vl-1b-v2`.
+- The API shape is query + candidate passages -> ranked passages, exposed through `/v1/ranking`.
+- Older docs and questions might mention NV-Rerank-QA / NV-RerankQA-Mistral naming. Treat that as the same NVIDIA reranking role: cross-encoder-style relevance scoring after first-stage retrieval.
 
 ### Exam signal
 
@@ -240,17 +276,21 @@ An embedding is a dense vector (list of floating-point numbers) that represents 
 "Quantum mechanics is complex"  → [-0.67, 0.31, -0.22, .., 0.89] (far away — low cosine similarity)
 ```
 
-### Bi-encoder models (for retrieval)
+### NVIDIA embedding services to recognize
 
-These produce fixed-size embeddings for entire sentences/paragraphs:
+NeMo Retriever Embedding NIM packages embedding models as NIM containers behind `/v1/embeddings`.
 
 | Model | Dimensions | Max tokens | Notes |
 |-------|-----------|------------|-------|
-| **Sentence-BERT (SBERT)** | 768 | 512 | Siamese BERT fine-tuned for sentence similarity; uses mean pooling |
-| **BGE (BAAI General Embedding)** | 768–1024 | 512–8192 | Open-source; strong on MTEB benchmark |
-| **E5 (EmbEddings from bidirEctional Encoder rEpresentations)** | 768–1024 | 512 | Microsoft; prefix prompts ("query: ", "passage: ") |
-| **NV-Embed (NVIDIA)** | 4096 | 32768 | NVIDIA's embedding model; available via NIM |
-| **OpenAI text-embedding-3** | 256–3072 | 8192 | Commercial API; variable dimensions |
+| `nvidia/llama-nemotron-embed-300m-v2` | 2048 | 8192 optimized / 4096 non-optimized | Smaller NVIDIA embedding model; supports dynamic embeddings and compressed embedding types |
+| `nvidia/llama-nemotron-embed-1b-v2` | 2048 | 8192 optimized / 4096 non-optimized | Main text embedding model to recognize for Retriever examples |
+| `nvidia/llama-nemotron-embed-vl-1b-v2` | 2048 | 8192 optimized / 4096 non-optimized | Vision-language embedding model for text/image retrieval paths |
+| `nvidia/nv-embedqa-e5-v5` | 1024 | 512 | E5-style NVIDIA QA embedding model; text only |
+| `baai/bge-m3` / `baai/bge-large-zh-v1.5` | 1024 | 8192 / 512 | Non-NVIDIA publisher models also supported by the Embedding NIM support matrix |
+
+### General bi-encoder idea
+
+These models produce fixed-size embeddings for sentences, paragraphs, or multimodal content. A document chunk and a query are encoded independently, then compared with cosine similarity or dot product in a vector index.
 
 ### Sentence-BERT vs traditional BERT for embeddings
 
@@ -321,7 +361,7 @@ The exam tests this distinction: "Apply tenant/user authorization filters before
 - Multimodal document extraction (PDFs with tables, charts, images)
 - Tenant-isolated retrieval with metadata-enforced access control
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
 - **Safety filtering**: That's NeMo Guardrails.
 - **Model serving**: That's NIM or Triton Inference Server.
@@ -340,7 +380,10 @@ The exam tests this distinction: "Apply tenant/user authorization filters before
 
 ## Numbers, defaults, knobs you should recognize
 
-- **Embedding dimensions**: 768 (BERT-base), 1024 (BGE-large), 1536 (OpenAI ada-002), 3072 (OpenAI text-embedding-3-large), 4096 (NV-Embed)
+- **Retriever is a family**: Library/extraction, Embedding NIM, indexing/search, Reranking NIM.
+- **Embedding dimensions in current Retriever NIMs**: 2048 for Llama Nemotron Embed v2 models; 1024 for `nvidia/nv-embedqa-e5-v5` and BGE support-matrix examples.
+- **Embedding API**: `/v1/embeddings`; use `input_type: "passage"` while indexing documents and `input_type: "query"` while embedding queries when the model expects query/passage modes.
+- **Reranking API**: `/v1/ranking`; input is a query plus candidate passages; output is ranked passage indexes/scores.
 - **Typical top-K for first stage**: 50–200 candidates retrieved from ANN index
 - **Typical top-N after re-ranking**: 3–10 chunks sent to LLM context
 - **Chunk sizes**: 256–512 tokens (general purpose), 128–256 (factoid Q&A), 1024–2048 (summarization/long-form)
@@ -503,45 +546,42 @@ A complete RAG pipeline has two phases:
 ## Study card data
 - **Lifecycle:** Knowledge integration / RAG
 - **Relevant exams:** GenAI LLMs, Agentic AI
-- **What it is:** **NIM**-based API microservices — document extraction → embedding → indexing → **retrieval** → **re-ranking**
-- **Use it when:** Use when enterprise knowledge must be extracted, chunked, embedded, indexed, retrieved, reranked, and cited for RAG or agents.
-- **Do not use it when:** Do not use it to teach the model new behavior, serve the model, enforce policy, or curate training data.
+- **What it is:** NVIDIA Retriever microservice family: NeMo Retriever Library/extraction + Embedding NIM + indexing/search + Reranking NIM.
+- **Use it when:** Use when enterprise knowledge must be parsed, embedded, indexed, searched, reranked, and cited for RAG or agents.
+- **Do not use it when:** Choose Framework/Customizer to teach durable behavior, NIM/Triton to serve models, Guardrails to enforce policy, and Curator to prepare training data.
 - **Common trap:** Confusing inference-time retrieval over documents with pretraining data curation or fine-tuning.
-- **Scenario signal:** A regulated enterprise wants secure retrieval over PDFs, tables, charts, and internal knowledge for RAG.
+- **Recognition clues:** A regulated enterprise wants secure retrieval over PDFs, tables, charts, and internal knowledge for RAG.
 
 ### Study notes
-- Use this for enterprise **RAG** data pipelines: document extraction, OCR/table/chart parsing, embeddings, indexing, semantic or hybrid search, and **re-ranking**.
-- Retriever quality is a system property: chunking, metadata, access filtering, embedding model, vector store, hybrid search, **re-ranking**, and citation grounding all matter.
+- **NeMo Retriever Library** (formerly `nv-ingest`) is the extraction/ingestion layer: files -> pages -> text/tables/charts/images -> structured metadata, chunks, optional embeddings/storage.
+- **Embedding NIM** creates vectors for document chunks and queries. Recognize `nvidia/llama-nemotron-embed-1b-v2`, `nvidia/llama-nemotron-embed-vl-1b-v2`, and `nvidia/nv-embedqa-e5-v5`.
+- **Reranking NIM** reorders candidate passages after first-stage retrieval. Recognize `nvidia/llama-nemotron-rerank-1b-v2`, `nvidia/llama-nemotron-rerank-500m-v2`, and `nvidia/llama-nemotron-rerank-vl-1b-v2`.
+- Retrieval quality is a pipeline property: extraction, chunking, metadata, access filtering, embedding model, vector store, hybrid search, reranking, and citation grounding all matter.
 - A bigger context window is not the same as better **retrieval**. Bad extraction or weak **re-ranking** still causes unsupported answers.
-- **Re-ranking** uses a cross-encoder (query+document processed jointly) to reorder first-stage results for higher precision — this is the key concept the exam tests. The first stage (bi-encoder) is fast but imprecise; the re-ranker is slower but accurate.
-- **Hybrid search** combines dense (embedding-based semantic) and sparse (BM25 keyword) retrieval, fused via Reciprocal Rank Fusion (RRF), to handle both natural language and exact codes/IDs.
-- **Chunking strategy** directly determines retrieval quality: fixed-size is simple but splits mid-thought; semantic respects boundaries; parent-child uses small chunks for search and large chunks for context delivery.
-- **Metadata filtering** is a security boundary in multi-tenant systems: apply tenant/access filters BEFORE vector search, never after.
+- **Metadata filtering** is a security boundary in multi-tenant systems: apply tenant/access filters before vector search, never after.
 
 ### Must know
-- extraction vs embedding vs **re-ranking** (three distinct pipeline stages)
-- cross-encoder (re-ranker) vs bi-encoder (first-stage retriever) — how they differ
-- hybrid search = dense + sparse, fused via RRF
-- metadata filtering — pre-filtering is a security requirement for multi-tenant
-- citation grounding — each claim linked to a retrieved passage
-- multimodal document parsing — PDFs, tables, charts, images
-- ANN algorithms: HNSW (graph-based), IVF (cluster-based)
-- cosine similarity for embedding comparison
+- NeMo Retriever is a microservice family, not one model.
+- Library/extraction parses enterprise files; Embedding NIM creates vectors; vector DB/search returns top-k candidates; Reranking NIM improves top-n precision.
+- Embedding endpoint: `/v1/embeddings`; reranking endpoint: `/v1/ranking`.
+- For query/passage embedding models, use `input_type: query` for user queries and `input_type: passage` for indexed document chunks.
+- Hybrid search = dense semantic + sparse keyword, often fused via RRF.
+- Metadata pre-filtering is required for tenant/document permissions.
 
-### High-yield exam signals
-- proprietary docs → NeMo Retriever for secure enterprise RAG
-- PDF tables/charts → multimodal extraction capability
-- fresh knowledge → RAG provides up-to-date information without retraining
-- rerank citations → cross-encoder re-ranking + citation grounding
-- tenant filtering → metadata-enforced access control before retrieval
-- bad retrieval → check chunking, re-ranking, embedding model, metadata — not just "bigger model"
+### What to recognize
+- "proprietary docs" + "RAG" -> NeMo Retriever, not NeMo Framework or NeMo Curator.
+- "PDF tables/charts/images/OCR" -> NeMo Retriever Library / extraction models.
+- "embed documents/query" or "`/v1/embeddings`" -> NeMo Retriever Embedding NIM.
+- "rerank citations", "query + candidate passages", or "`/v1/ranking`" -> NeMo Retriever Reranking NIM.
+- "tenant filtering" -> metadata-enforced access control before retrieval.
+- "bad retrieval" -> check extraction, chunking, reranking, embedding model, metadata, and index freshness, not just "bigger model".
 
 ### Related services
 
-- **NIM** embedding/**re-ranking** microservices (hosts the actual embedding and re-ranker models)
-- **NeMo Guardrails** (validates retrieved context grounds the LLM's output)
-- cuVS/Milvus/LanceDB (vector storage and ANN indexing)
-- **NeMo Curator** (TRAINING data curation — don't confuse with inference-time retrieval)
+- **NIM** (packages the embedding and reranking models as optimized microservices)
+- **NeMo Guardrails** (policy/grounding checks around retrieval and generation)
+- LanceDB/Milvus/cuVS (vector storage, ANN indexing, and GPU-accelerated retrieval pieces)
+- **NeMo Curator** (training-data curation — do not confuse with inference-time retrieval)
 - **NeMo Agent Toolkit** (orchestrates agent use of retriever as a tool)
 
 ### Hands-on checks
@@ -553,8 +593,8 @@ A complete RAG pipeline has two phases:
 
 ## Exam tips from mocks
 - Mock-style questions test whether **NeMo Retriever** matches **Knowledge integration / RAG**, not whether the product name sounds familiar.
-- Choose it when the scenario signal matches this boundary: Use when enterprise knowledge must be extracted, chunked, embedded, indexed, retrieved, reranked, and cited for RAG or agents.
-- Reject it when the problem is actually about another layer: Do not use it to teach the model new behavior, serve the model, enforce policy, or curate training data.
+- Boundary cue: choose it when enterprise knowledge must be extracted, chunked, embedded, indexed, retrieved, reranked, and cited for RAG or agents.
+- Adjacent-service cue: do not use it to teach the model new behavior, serve the model, enforce policy, or curate training data.
 - The common trap pattern is: Confusing inference-time retrieval over documents with pretraining data curation or fine-tuning.
 - Expect distractors around nearby services such as **RAPIDS**, **NIM**, **NeMo Guardrails**, **NCCL**. Decide by lifecycle first, product name second.
 - Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.

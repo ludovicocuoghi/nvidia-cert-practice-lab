@@ -6,6 +6,23 @@ status: populated
 
 # Evaluation
 
+## What to study first
+
+- **Core idea:** Assess LLM quality with quantitative **metrics**, qualitative review, benchmarking, and **error analysis**.
+- **Use it when:** Study this when comparing models, prompts, **RAG** variants, or tuning runs.
+- **Study first:** perplexity: — exponentiated **cross-entropy** (exp(-1/N sum log P(token)))
+- intrinsic LM confidence
+- **tokenizer**-dependent scale
+- ROUGE-1/2/L: — n-gram **recall** (unigram, bigram, LCS) for summarization
+- punishes valid paraphrase
+- BLEU: — n-gram **precision** with brevity penalty for translation
+- punishes concise novelty
+- BERTScore: — embedding cosine similarity between candidate and reference tokens
+- better semantic correlation than n-gram **metrics**
+- faithfulness: — claims in answer must be entailed by retrieved context
+- detected via NLI or **LLM-as-judge**
+- **Real trap:** A single automatic metric is rarely enough for open-ended generation or grounded **RAG**.
+
 ## Certification boundary
 
 This page is the NCP-GENL exam lens for LLM evaluation. Keep general LLM metrics, validation, benchmarks, and contamination concepts here when they are tested by the GenAI LLMs blueprint. Agent trajectory evaluation and vendor-neutral agent safety belong in Agentic AI General Study; NVIDIA NeMo Evaluator cues stay here or in the shared service page.
@@ -125,7 +142,7 @@ Production     → Business metrics, drift detection, user feedback
 
 **NeMo Evaluator**: NVIDIA's framework for running standard benchmarks at scale with **GPU** acceleration.
 
-## Common exam traps
+## Decision traps worth remembering
 
 1. **Accuracy for imbalanced data** — For imbalanced datasets (1% positive class), a model that always predicts negative has 99% accuracy and is useless. Use **F1**, **precision**-**recall**, or AUC-ROC.
 
@@ -187,7 +204,7 @@ Production     → Business metrics, drift detection, user feedback
 - **NeMo Evaluator** — NVIDIA **GPU**-accelerated **evaluation** framework
 - **LLM-as-judge** — using another model to score generation quality
 
-### Top exam traps
+### Top decision traps
 - "95% accuracy is great" → meaningless for imbalanced data; check class distribution
 - "Metric went up → model is better" → need statistical significance; could be noise
 - "Grid search is the best HPO" → random search explores more; Bayesian even better
@@ -217,7 +234,7 @@ Evidence source: `mock_1` through `mock_5`, especially LLM **metrics**, **retrie
 - **What it covers:** Assess LLM quality with quantitative **metrics**, qualitative review, benchmarking, and **error analysis**.
 - **Use this section when:** Study this when comparing models, prompts, **RAG** variants, or tuning runs.
 - **Common trap:** A single automatic metric is rarely enough for open-ended generation or grounded **RAG**.
-- **Scenario signal:** A model improves **ROUGE** but produces unsupported claims in a source-grounded workflow.
+- **Recognition clues:** A model improves **ROUGE** but produces unsupported claims in a source-grounded workflow.
 
 ### Study notes
 
@@ -286,7 +303,7 @@ Evidence source: `mock_1` through `mock_5`, especially LLM **metrics**, **retrie
    Best answer pattern: Test verbosity bias, control response length, randomize option order, and calibrate against human labels.
    Trap: Assuming the judge is unbiased because it is a stronger model.
 
-### High-yield exam signals
+### What to recognize
 
 - **Benchmark score spike**: Sudden improvement on a public benchmark → suspect data **contamination**; run **contamination** check before declaring genuine improvement.
 - **Model comparison inconclusive**: Two models have similar average scores → use statistical significance testing (bootstrap, t-test) with confidence intervals; single-run differences may be noise.

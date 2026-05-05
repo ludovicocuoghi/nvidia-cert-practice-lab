@@ -6,6 +6,14 @@ status: populated
 
 # Knowledge Retrieval Pipeline
 
+## What to study first
+
+- **Core idea:** The runtime layer for bringing private or changing knowledge into context.
+- **Use it when:** The scenario mentions proprietary documents, fresh facts, citations, vector search, hybrid retrieval, reranking, or tenant filtering.
+- **Choose another path when:** Choose a neighboring capability when the requirement is durable behavior/style; use customization.
+- **Concrete surface:** Access: Managed knowledge bases, retriever services, vector/search databases, RAG frameworks Inside: Parsing, chunking, embeddings, hybrid search, metadata filtering, reranking, citation validation, freshness checks I/O: User query, identity, metadata filters, document index, embedding/reranker models -> Ranked, permission-safe evidence chunks and citations for generation
+- **Real trap:** Applying access control after chunks are already in the prompt.
+
 ## At a glance
 
 | | |
@@ -16,6 +24,13 @@ status: populated
 | **Output** | Ranked, permission-safe evidence chunks and citations for generation |
 | **Inside** | Parsing, chunking, embeddings, hybrid search, metadata filtering, reranking, citation validation, freshness checks |
 
+```python
+query_vec = embed(query, input_type="query")
+candidates = vector_db.search(query_vec, filter={"tenant_id": tenant}, top_k=50)
+ranked = rerank(query=query, passages=[doc.text for doc in candidates])[:8]
+answer = generate_with_citations(query, evidence=ranked)
+```
+
 **Mental model**: the evidence supply chain for answers grounded in external knowledge.
 
 ## Study card data
@@ -24,9 +39,9 @@ status: populated
 - **Lifecycle:** RAG and retrieval
 - **Relevant exams:** Agentic AI General Study
 - **Use it when:** The scenario mentions proprietary documents, fresh facts, citations, vector search, hybrid retrieval, reranking, or tenant filtering.
-- **Do not use it when:** The requirement is durable behavior/style; use customization.
+- **Do not use it when:** Choose a neighboring capability when the requirement is durable behavior/style; use customization.
 - **Common trap:** Applying access control after chunks are already in the prompt.
-- **Scenario signal:** "A support agent must answer from current policy docs with citations and tenant isolation."
+- **Recognition clues:** "A support agent must answer from current policy docs with citations and tenant isolation."
 
 ## Related service map
 

@@ -63,3 +63,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+## Project-Specific Study Content
+
+When adding or revising certification study cards, NVIDIA service pages, General Study capability pages, or new certificate sections, read `skills/capability-card-authoring/SKILL.md` first. It defines the expected structure for complete capability/service cards: concrete implementation surface, actual code/calls/model names, adjacent-service decision boundaries, useful traps, and UI verification.

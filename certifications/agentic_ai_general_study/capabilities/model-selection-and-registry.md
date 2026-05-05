@@ -6,9 +6,44 @@ source_lens: general-study
 
 # Model Selection and Registry
 
+## What to study first
+
+- **Core idea:** You are building the decision and governance layer for choosing, approving, versioning, comparing, and rolling back model artifacts. This is where the team decides whether to use a hosted API, open-weight model, self-hosted endpoint, base checkpoint, tuned adapter, embedding model, reranker, reasoning model, or multimodal model.
+- **Study first:** Start from the job: generation, retrieval embedding, reranking, classification, extraction, tool reasoning, code, vision, speech, or multimodal reasoning.
+- Identify constraints: data residency, latency, p95/p99, cost, context length, accuracy, safety, license, deployment environment, auditability.
+- Choose model access pattern: hosted API, vendor-managed private endpoint, open-weight self-hosted, or internal trained model.
+- Choose model type: small/fast, large/reasoning, dense, MoE, embedding, reranker, code, multimodal, domain-specific.
+- Choose deployment variant: FP16/BF16, FP8, INT8/INT4 quantized, long-context, distilled, adapter-backed, or tool-specialized.
+
 ## What You Are Building
 
 You are building the decision and governance layer for choosing, approving, versioning, comparing, and rolling back model artifacts. This is where the team decides whether to use a hosted API, open-weight model, self-hosted endpoint, base checkpoint, tuned adapter, embedding model, reranker, reasoning model, or multimodal model.
+
+## Lifecycle Lane Playbooks
+
+The name of this playbook is easy to misread. **Model selection** is only the main work in lanes that start from an existing model or API. In the train-from-zero lane, selection mostly happened before training; the registry step is about publishing the checkpoint you just created.
+
+| Lane | What you are selecting | What you are registering | Concrete evidence |
+|---|---|---|---|
+| Train model from zero | Architecture, tokenizer, config, and training recipe before the run; after the run, you are not shopping for a new model | Newly trained checkpoint, tokenizer, config, dataset card, eval report, model card, serving profile, rollback target | Training run ID, corpus lineage, contamination report, safety/capability evals, checkpoint restore test |
+| Fine-tune existing model | Base checkpoint/API that is closest to the target behavior and supports the tuning method | Base + adapter or tuned checkpoint, tuning dataset, hyperparameters, eval delta, safety approval | Baseline eval, target-task gain, regression suite, overfit check, adapter compatibility |
+| Use existing model/API | Hosted API, open-weight model, internal endpoint, embedding model, reranker, generator, small router, or large reasoner | Approved model/API version plus prompt/index/tool coupling and route policy | Quality/latency/cost comparison, license/data residency review, retention policy, fallback target |
+| Build agent/RAG application | Portfolio of generator, embedding, reranker, and sometimes small-router/large-reasoner models | Endpoint versions coupled to retrieval index, prompt, tools, memory, policy, and eval suite | Retrieval recall, groundedness, tool trajectory eval, ACL/security review, cost by component |
+| Operate, govern, and improve | Promote, keep, canary, deprecate, or roll back a version based on live evidence | Registry state, incident links, deprecation dates, approval changes, rollout history | Regression report, live drift metrics, review/audit evidence, rollback test |
+
+### Train-from-zero registry card
+
+For a newly trained model, the final publish step should read like a release record, not like a product comparison page.
+
+| Registry field | Example | Why it matters |
+|---|---|---|
+| `artifact_type` | `new_foundation_checkpoint` | Separates newly trained checkpoints from adapters and hosted APIs |
+| `checkpoint` | Sharded or merged weight URI | Serving must load the exact approved weights |
+| `tokenizer` and `config` | Tokenizer JSON, special tokens, context length, architecture config | Mismatches can break generation or corrupt token accounting |
+| `training_corpus` | Dataset card/version | Explains what the model learned from |
+| `eval_report` | Capability, safety, bias, contamination, serving smoke tests | Justifies release approval |
+| `serving_profile` | BF16, FP8-validated, max context, engine/runtime | Tells endpoint owners how the model should run |
+| `rollback_target` | Previous approved model or route | Makes production rollback concrete |
 
 ## Pipeline
 
@@ -135,6 +170,79 @@ A registry turns model choice into a reproducible release. It should answer:
 - Which **adapter**, prompt version, retrieval index, and tool schema are coupled to the release?
 - Which **eval set**, safety approval, latency/cost result, and known limitation justify it?
 - Which **endpoint**, serving profile, route, and rollback target run it in production?
+
+### Lane-specific registry meaning
+
+The phrase "model selection and registry" changes meaning by lane. In a train-from-zero lane, you are **not choosing a different model after training**. You are registering and approving the newly trained checkpoint. In an existing-model lane, selection is the main work.
+
+| Lane | What selection means | What registry means |
+|---|---|---|
+| Train model from zero | Architecture/config was chosen before training; after training, do not re-select a model here | Register checkpoint, tokenizer, config, corpus lineage, eval report, model card, serving profile, and rollback target |
+| Fine-tune existing model | Choose the base model/checkpoint that is closest to the target behavior | Register base + adapter, tuning dataset, hyperparameters, eval deltas, safety approval, and rollback path |
+| Use existing model/API | Choose hosted API, open-weight model, catalog artifact, internal endpoint, embedding model, reranker, or generator | Record approved model/API version, prompt/index/tool coupling, eval evidence, endpoint, and route policy |
+| Build agent/RAG application | Choose generator, embedding model, reranker, and sometimes small router/large reasoner portfolio | Track which model endpoints are coupled to retrieval index, prompt, tools, memory policy, and guardrails |
+| Operate and improve | Choose whether to keep, roll back, canary, or promote a version based on live evidence | Update approval state, deprecations, incident links, eval regressions, and production route version |
+
+For the **train-from-zero publish step**, the concrete registry payload looks like this:
+
+```python
+registry.register({
+    "artifact_type": "new_foundation_checkpoint",
+    "checkpoint": checkpoint_uri,
+    "tokenizer": tokenizer_uri,
+    "config": config_uri,
+    "training_corpus": dataset_card_id,
+    "training_run": experiment_id,
+    "eval_report": eval_report_id,
+    "model_card": model_card_id,
+    "serving_profile": "bf16-or-fp8-validated",
+    "rollback_target": previous_approved_model_id,
+})
+```
+
+That is a publishing and governance record. It is not the same decision as selecting a hosted model/API for a product feature.
+
+### License, access, and precision details
+
+| Decision | What to inspect | Why it can decide the answer |
+|---|---|---|
+| Hosted API | Retention, region, private endpoint, SLA, customization limits | Private data or latency may rule it out |
+| Open weights | License terms, commercial rights, redistribution, model card, safety notes | Available weights are not automatically open-source or approved |
+| Self-hosted | GPU budget, serving runtime, patching, monitoring, data locality | Gives control but adds operational burden |
+| Dense vs MoE | Active parameters, router behavior, serving support | MoE can be efficient but has routing/serving complexity |
+| FP16/BF16/FP8 | Supported hardware/runtime and eval results | Lower precision can improve throughput but must preserve quality |
+| INT8/INT4 | Quantization method and calibration workload | Memory/cost win with possible edge-case regression |
+
+Model selection is an evidence table, not a popularity contest. A strong registry entry explains why this model family, checkpoint, adapter, precision, endpoint, and route were approved for this task.
+
+### Implementation card: model utility score
+
+```python
+def utility(candidate, weights):
+    return (
+        weights["quality"] * candidate.eval_score
+        - weights["latency"] * normalize(candidate.p95_ms)
+        - weights["cost"] * normalize(candidate.cost_per_1k_calls)
+        - weights["risk"] * candidate.risk_score
+        + weights["context"] * normalize(candidate.context_tokens)
+        + weights["hosting"] * candidate.hosting_fit
+    )
+
+best = max(candidates, key=lambda model: utility(model, weights))
+
+registry_entry = {
+    "model_family": best.family,
+    "checkpoint": best.checkpoint,
+    "adapter": best.adapter_id,
+    "precision": best.precision,
+    "eval_report": best.eval_report_id,
+    "license": best.license_id,
+    "serving_profile": best.nim_profile,
+    "rollback_target": current_production_model,
+}
+```
+
+The utility function is not universal; it encodes business priorities. A regulated workload may weight data residency and audit risk higher than raw quality. A high-volume router may weight p95 latency and cost higher than deep reasoning score.
 
 ## Exam Signals
 

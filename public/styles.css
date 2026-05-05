@@ -1390,12 +1390,14 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   border-collapse: collapse;
   margin: 12px 0;
   font-size: 14px;
+  table-layout: fixed;
 }
 .md-table th, .md-table td {
   border: 1px solid var(--line);
   padding: 8px 10px;
   text-align: left;
   vertical-align: top;
+  overflow-wrap: anywhere;
 }
 .md-table th { background: #f4faec; color: #2c5d12; font-weight: 800; }
 .md-table tr:nth-child(even) td { background: #fbfdfb; }
@@ -2138,6 +2140,77 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   margin-top: 14px;
 }
 
+.study-first-panel {
+  margin-bottom: 14px;
+}
+
+.study-first-body {
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--green);
+  border-radius: 8px;
+  background: #fbfff5;
+  padding: 12px 16px;
+  line-height: 1.5;
+}
+
+.study-first-body > *:first-child {
+  margin-top: 0;
+}
+
+.study-first-body > *:last-child {
+  margin-bottom: 0;
+}
+
+.study-first-body ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.study-first-body li + li {
+  margin-top: 6px;
+}
+
+.study-first-body .md-table {
+  margin: 8px 0 0;
+}
+
+.study-first-row {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.18fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding-top: 10px;
+  border-top: 1px solid rgba(110, 128, 110, 0.2);
+}
+
+.study-first-row:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.study-first-row > strong {
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.study-first-row p,
+.study-first-row ul {
+  margin: 0;
+}
+
+.study-first-row ul {
+  padding-left: 18px;
+}
+
+.study-first-row li + li {
+  margin-top: 4px;
+}
+
+.study-first-prose + .study-first-row {
+  border-top: 1px solid rgba(110, 128, 110, 0.2);
+  padding-top: 10px;
+}
+
 .service-section-heading {
   display: flex;
   align-items: baseline;
@@ -2343,7 +2416,7 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   border-radius: 8px;
   padding: 12px 14px;
   background: #2f3432;
-  margin-bottom: 4px;
+  margin-bottom: 10px;
 }
 
 .impl-code > span {
@@ -2357,11 +2430,15 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 }
 
 .impl-code pre {
-  margin: 0;
+  margin: 0 0 12px;
   background: transparent;
   padding: 0;
   font-size: 0.78rem;
   overflow-x: auto;
+}
+
+.impl-code pre:last-child {
+  margin-bottom: 0;
 }
 
 .impl-code code {
@@ -2372,6 +2449,10 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 
 @media (max-width: 680px) {
   .impl-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .study-first-row {
     grid-template-columns: 1fr;
   }
 }
@@ -2947,7 +3028,7 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 }
 .scenario-trap strong { color: #a32e1f; }
 
-/* High-yield exam signals: tag chips */
+/* Recognition cue tag chips */
 .section-signals > h4 { color: #4a9e4a; }
 .signal-tags {
   display: flex;

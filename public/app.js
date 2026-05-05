@@ -1946,7 +1946,7 @@ function SuiteTopicDetail({ topic, studyStatus }) {
     ),
     h("div", { className: "study-map suite-study-map" },
       h("section", { className: "identity" },
-        h("span", null, "Exam signal"),
+      h("span", null, "Recognition clue"),
         h("p", null, topic.examSignal)
       ),
       h("section", { className: "use" },
@@ -1954,14 +1954,14 @@ function SuiteTopicDetail({ topic, studyStatus }) {
         h("p", null, topic.keyIdeas[0] ? renderInline(topic.keyIdeas[0]) : "")
       ),
       h("section", { className: "trap" },
-        h("span", null, "Common trap"),
+        h("span", null, "Decision trap"),
         h("p", null, topic.traps[0] || "")
       )
     ),
     h("div", { className: "suite-knowledge-grid" },
       h(SuiteKnowledgeCard, { title: "Key ideas", items: topic.keyIdeas }),
       h(SuiteKnowledgeCard, { title: "Must know", items: topic.mustKnow }),
-      h(SuiteKnowledgeCard, { title: "Exam traps", items: topic.traps }),
+      h(SuiteKnowledgeCard, { title: "Decision traps", items: topic.traps }),
       h(SuiteKnowledgeCard, { title: "Related NVIDIA terms", items: topic.related })
     ),
     h("details", { className: "suite-reference" },
@@ -1981,13 +1981,78 @@ function SuiteKnowledgeCard({ title, items }) {
   );
 }
 
+function StudyFirstPanel({ markdown }) {
+  const content = markdownSections(markdown)[normalizeHeadingName("What to study first")]?.content;
+  if (!content?.trim()) return null;
+  return h("section", { className: "study-first-panel service-section" },
+    h("div", { className: "service-section-heading" },
+      h("span", null, "Start here"),
+      h("h4", null, "What to study first")
+    ),
+    h("div", { className: "study-first-body" }, renderStudyFirstContent(content))
+  );
+}
+
+function splitStudyFirstParts(label, value) {
+  const text = String(value || "").trim().replace(/\.;/g, ";").replace(/\s+/g, " ");
+  if (!text) return [];
+  if (/^concrete surface$/i.test(label)) {
+    return text
+      .split(/\s+(?=(?:Access|Inside|I\/O|Input|Output):)/g)
+      .map((part) => part.trim())
+      .filter(Boolean);
+  }
+  if (/^(study first|must know)$/i.test(label)) {
+    const parts = text.split(/;\s+/).map((part) => part.trim().replace(/[.;]\s*$/, "")).filter(Boolean);
+    return parts.length > 1 ? parts : [text];
+  }
+  return [text];
+}
+
+function renderStudyFirstContent(content) {
+  const lines = String(content || "").split("\n");
+  const nodes = [];
+  let prose = [];
+  const renderOptions = { autoHighlight: true, highlightSeen: new Set(), highlightCount: { value: 0 }, maxHighlights: 8 };
+  function flushProse() {
+    const text = prose.join("\n").trim();
+    prose = [];
+    if (text) nodes.push(h("div", { className: "study-first-prose", key: `p-${nodes.length}` }, renderMarkdown(text, renderOptions)));
+  }
+  for (const line of lines) {
+    const match = line.match(/^-\s+\*\*(.+?)\*\*:?\s*(.+)$/);
+    if (!match) {
+      prose.push(line);
+      continue;
+    }
+    flushProse();
+    const label = match[1].trim().replace(/:\s*$/, "");
+    const parts = splitStudyFirstParts(label, match[2]);
+    nodes.push(h("div", { className: `study-first-row study-first-${topicSlug(label)}`, key: `${label}-${nodes.length}` },
+      h("strong", null, label),
+      parts.length > 1
+        ? h("ul", null, parts.map((part) => h("li", { key: part }, renderInline(part, renderOptions))))
+        : h("p", null, renderInline(parts[0] || "", renderOptions))
+    ));
+  }
+  flushProse();
+  return nodes.length ? nodes : renderMarkdown(content, renderOptions);
+}
+
 function ImplementationCards({ impl }) {
   if (!impl) return null;
+  const codePanel = impl.codeBlocks.length ? h("div", { className: "impl-code" },
+    h("span", null, "Code and calls to recognize"),
+    ...impl.codeBlocks.map(function(cb) {
+      return h("pre", { key: cb.code.slice(0, 20) }, h("code", null, cb.code));
+    })
+  ) : null;
   return h("div", { className: "implementation-cards service-section" },
     h("div", { className: "service-section-heading" },
       h("span", null, "Start here"),
       h("h4", null, "Actual implementation / How you use it")
     ),
+    codePanel,
     h("div", { className: "impl-grid" },
       h("section", { className: "impl-what" },
         h("span", null, "What it is technically"),
@@ -2007,21 +2072,15 @@ function ImplementationCards({ impl }) {
         h("span", null, "One-line mental model"),
         h("p", null, renderInline(impl.mentalModel))
       )
-    ),
-    impl.codeBlocks.length ? h("div", { className: "impl-code" },
-      h("span", null, "Minimal conceptual usage"),
-      ...impl.codeBlocks.map(function(cb) {
-        return h("pre", { key: cb.code.slice(0, 20) }, h("code", null, cb.code));
-      })
-    ) : null
+    )
   );
 }
 
 function ExamDecisionCards({ study }) {
   return h("div", { className: "exam-decision service-section" },
     h("div", { className: "service-section-heading" },
-      h("span", null, "Exam decision guide"),
-      h("h4", null, "When to choose it")
+      h("span", null, "Decision guide"),
+      h("h4", null, "Choose by adjacent-service clues")
     ),
     h("div", { className: "study-map" },
       h("section", { className: "identity" },
@@ -2030,19 +2089,19 @@ function ExamDecisionCards({ study }) {
         h("p", null, renderInline(study.where))
       ),
       h("section", { className: "use" },
-        h("span", null, "Use it when"),
+        h("span", null, "Choose this when"),
         h("p", null, renderInline(study.use))
       ),
       h("section", { className: "avoid" },
-        h("span", null, "Do not use it for"),
+        h("span", null, "Choose another service when"),
         h("p", null, renderInline(study.avoid))
       ),
       h("section", { className: "trap" },
-        h("span", null, "Exam trap"),
+        h("span", null, "Real trap"),
         h("p", null, renderInline(study.traps))
       ),
       h("section", { className: "scenario" },
-        h("span", null, "Scenario signal"),
+        h("span", null, "Recognition clues"),
         h("p", null, renderInline(study.scenario))
       )
     )
@@ -2064,6 +2123,7 @@ function ServiceDetail({ service, certSlug, quickQuiz, generateStudyQuiz, quizDi
       implementation?.mentalModel ? h("p", { className: "service-mental-model" }, renderInline(implementation.mentalModel)) : null
     ),
     h(ImplementationCards, { impl: implementation }),
+    h(StudyFirstPanel, { markdown: markdownState.markdown }),
     h(ExamDecisionCards, { study }),
     h(StudyDeepDive, { item: study }),
     h(StudyMarkdown, {
@@ -2088,6 +2148,7 @@ function SectionDetail({ section, certSlug, quickQuiz, generateStudyQuiz, quizDi
       h("h3", null, study.name || section.name),
       h("p", null, renderInline(study.description))
     ),
+    h(StudyFirstPanel, { markdown: markdownState.markdown }),
     h("div", { className: "study-map section-map" },
       h("section", { className: "identity" },
         h("span", null, "Key ideas"),
@@ -2098,11 +2159,11 @@ function SectionDetail({ section, certSlug, quickQuiz, generateStudyQuiz, quizDi
         h("p", null, renderInline(study.use))
       ),
       h("section", { className: "avoid" },
-        h("span", null, "Exam trap"),
+        h("span", null, "Real trap"),
         h("p", null, renderInline(study.traps))
       ),
       h("section", { className: "scenario" },
-        h("span", null, "Scenario signal"),
+        h("span", null, "Recognition clues"),
         h("p", null, renderInline(study.scenario))
       )
     ),
@@ -2157,7 +2218,7 @@ function SectionDetail({ section, certSlug, quickQuiz, generateStudyQuiz, quizDi
       )
     ) : null,
     study.examSignals.length ? h("section", { className: "section-block section-signals" },
-      h("h4", null, "High-yield exam signals"),
+      h("h4", null, "What to recognize"),
       h("div", { className: "signal-tags" }, study.examSignals.map((sig) =>
         h("span", { className: "signal-tag", key: sig }, renderInline(sig))
       ))
@@ -2347,13 +2408,14 @@ function scenariosFromCardData(block, heading) {
 }
 
 const STRUCTURED_STUDY_HEADINGS = [
+  "What to study first",
   "Study card data",
   "Study notes",
   "Must know",
   "Decision guide",
   "Common confusions",
   "Mini scenario drill",
-  "High-yield exam signals",
+  "What to recognize",
   "Hands-on checks"
 ];
 
@@ -2467,11 +2529,11 @@ function parseStudyContent(markdown, fallback, kind) {
     use: valueFromCardData(block, isService ? "Use it when" : "Use this section when") || fallback.use || "",
     avoid: valueFromCardData(block, "Do not use it when") || fallback.avoid || "",
     traps: valueFromCardData(block, "Common trap") || fallback.traps || "",
-    scenario: valueFromCardData(block, "Scenario signal") || fallback.scenario || "",
+    scenario: valueFromCardData(block, "Recognition clues") || fallback.scenario || "",
     studyNotes: listFromCardData(block, "Study notes").length ? listFromCardData(block, "Study notes") : (fallback.studyNotes || []),
     mustKnow: mustKnow.length ? mustKnow : (fallback.mustKnow || fallback.keyIdeas || []),
     keyIdeas: compactKeyIdeas.length ? compactKeyIdeas : (fallback.keyIdeas || fallback.mustKnow || []),
-    examSignals: listFromCardData(block, "High-yield exam signals").length ? listFromCardData(block, "High-yield exam signals") : (fallback.examSignals || []),
+    examSignals: listFromCardData(block, "What to recognize").length ? listFromCardData(block, "What to recognize") : (fallback.examSignals || []),
     handsOn: listFromCardData(block, "Hands-on checks").length ? listFromCardData(block, "Hands-on checks") : (fallback.handsOn || []),
     relatedServices: listFromCardData(block, "Related services").length ? listFromCardData(block, "Related services") : (fallback.relatedServices || []),
     decisionGuide,
@@ -2656,7 +2718,10 @@ function renderInline(text) {
   let lastIdx = 0;
   let key = 0;
   let m;
-  const source = String(text || "");
+  const source = String(text || "")
+    .replace(/;\.{2,}/g, "...")
+    .replace(/\.;/g, ".")
+    .replace(/,;/g, ",");
   while ((m = re.exec(source)) !== null) {
     if (m.index > lastIdx) out.push(source.slice(lastIdx, m.index));
     const tok = m[0];
@@ -2756,11 +2821,11 @@ function TopicMarkdown({ certSlug, sectionName }) {
 
 function StudyDeepDive({ item }) {
   const groups = [
-      ["Study notes", item.studyNotes],
+      ["How to think about it", item.studyNotes],
       ["Must know", item.mustKnow],
-      ["Exam signals", item.examSignals],
+      ["Recognition cues", item.examSignals],
       ["Hands-on checks", item.handsOn],
-      ["Related NVIDIA services", item.relatedServices]
+      ["Adjacent services", item.relatedServices]
   ].filter(([, values]) => Array.isArray(values) && values.length);
 
   if (!groups.length) return null;
@@ -2768,8 +2833,8 @@ function StudyDeepDive({ item }) {
     "div",
     { className: "study-deep-dive service-section" },
     h("div", { className: "service-section-heading" },
-      h("span", null, "Memory layer"),
-      h("h4", null, "Study notes and exam signals")
+      h("span", null, "Service memory"),
+      h("h4", null, "What to remember")
     ),
     h("div", { className: "study-deep-dive-grid" },
       groups.map(([label, values]) => h(

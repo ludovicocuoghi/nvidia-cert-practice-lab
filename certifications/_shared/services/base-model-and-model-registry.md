@@ -6,6 +6,14 @@ status: populated
 
 # Base Model and Model Registry
 
+## What to study first
+
+- **Core idea:** A vendor-neutral layer for choosing, tracking, approving, and releasing model artifacts.
+- **Use it when:** The scenario mentions model choice, versioning, approval status, lineage, rollback, model cards, or artifact governance.
+- **Choose another path when:** Choose a neighboring service when the task is serving tokens, orchestrating tools, retrieving knowledge, or runtime safety enforcement.
+- **Concrete surface:** Access: Model catalogs, registries, artifact stores, model hubs, CI/CD release gates, and approval workflows Inside: Model cards, lineage, semantic versions, approval states, reproducibility metadata, release aliases, rollback links I/O: Base model, adapter, tokenizer, prompt version, eval report, dataset lineage, risk approval, deployment target -> Versioned and approved model artifact ready for customization, evaluation, or deployment
+- **Real trap:** Treating "model registry" as the inference endpoint. The registry records and approves artifacts; serving infrastructure runs them.
+
 ## At a glance
 
 | | |
@@ -16,6 +24,17 @@ status: populated
 | **Output** | Versioned and approved model artifact ready for customization, evaluation, or deployment |
 | **Inside** | Model cards, lineage, semantic versions, approval states, reproducibility metadata, release aliases, rollback links |
 
+```yaml
+model_release:
+  name: support-agent
+  base_model: nvidia/llama-nemotron-super
+  adapter: support-lora-v7
+  tokenizer: base
+  eval_report: evals/2026-05-04.json
+  approval: approved
+  rollback_to: support-lora-v6
+```
+
 **Mental model**: the inventory and approval desk for "which model are we allowed to use, why, and how do we roll it back?"
 
 ## Study card data
@@ -24,9 +43,9 @@ status: populated
 - **Lifecycle:** Model selection
 - **Relevant exams:** Agentic AI General Study
 - **Use it when:** The scenario mentions model choice, versioning, approval status, lineage, rollback, model cards, or artifact governance.
-- **Do not use it when:** The task is serving tokens, orchestrating tools, retrieving knowledge, or runtime safety enforcement.
+- **Do not use it when:** Choose a neighboring service when the task is serving tokens, orchestrating tools, retrieving knowledge, or runtime safety enforcement.
 - **Common trap:** Treating "model registry" as the inference endpoint. The registry records and approves artifacts; serving infrastructure runs them.
-- **Scenario signal:** "We need to know which adapter, prompt, dataset, and eval report produced the model currently in production."
+- **Recognition clues:** "We need to know which adapter, prompt, dataset, and eval report produced the model currently in production."
 
 ## Related service map
 

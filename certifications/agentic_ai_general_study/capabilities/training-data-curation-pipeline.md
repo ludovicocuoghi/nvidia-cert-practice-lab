@@ -6,6 +6,15 @@ source_lens: general-study
 
 # Training Data Curation Pipeline
 
+## What to study first
+
+- **Core idea:** You are building the offline data pipeline that decides which raw text, code, documents, labels, traces, synthetic examples, and holdouts are safe and useful enough for a model to learn from or be evaluated against. The output is not a chatbot, a retriever, or an endpoint. The output is a curated dataset with provenance, quality controls, splits, and lineage.
+- **Study first:** Inventory sources: web crawls, internal docs, code, logs, human labels, synthetic examples, licenses, owners, and retention rules.
+- Normalize text without destroying useful structure. Preserve code indentation, tables, math, headings, and multilingual signals where they matter.
+- Run cheap filters first: encoding validation, language ID, empty/short/truncated text checks, source allow/deny lists.
+- Run exact dedupe with normalized hashes such as SHA-256 or MD5 over document or chunk text. A hash is a fixed-length fingerprint of the normalized content. If two fingerprints match, the examples are treated as exact duplicates.
+- Run fuzzy dedupe for copied pages, mirrors, boilerplate, lightly edited articles, and repeated templates. This usually means turning documents into overlapping shingles, estimating similarity with MinHash, and using LSH to avoid comparing every pair.
+
 ## What You Are Building
 
 You are building the offline data pipeline that decides which raw text, code, documents, labels, traces, synthetic examples, and holdouts are safe and useful enough for a model to learn from or be evaluated against. The output is not a chatbot, a retriever, or an endpoint. The output is a curated dataset with provenance, quality controls, splits, and lineage.
@@ -21,33 +30,47 @@ The first question is always: what will this data become?
 | Evaluation holdout | Produce trustworthy evidence | benchmark leakage, train/test overlap, edited-after-release tests |
 | RAG ingestion | Prepare runtime knowledge | this belongs to the knowledge ingestion pipeline, not weight-changing training data |
 
+## Lifecycle Lane Playbooks
+
+| Lane | What this page means there | Output |
+|---|---|---|
+| Train model from zero | Build the large pretraining corpus. Emphasize source blend, license/provenance, exact/fuzzy dedupe, PII/secrets handling, contamination checks, tokenizer impact, and document-level splits. | Versioned training corpus + validation/test holdouts + dataset card |
+| Fine-tune existing model | Curate smaller, label-heavy examples: SFT prompt/response rows, preference pairs, tool traces, rubrics, duplicate prompt removal, and regression holdouts. | Tuning dataset + validation/regression split + label-quality notes |
+| Use existing model/API | Usually no training-data curation. Use prompt evals and runtime logging unless you decide to tune later. | Evaluation examples or prompt test cases, not weight-changing corpus |
+| Build agent/RAG application | Use the knowledge ingestion/RAG pages for runtime documents. Use this page only if agent incidents become curated eval/tuning examples. | Incident/eval/tuning candidates after privacy and holdout checks |
+| Operate, govern, and improve | Convert reviewed failures into eval cases, prompt fixes, retrieval fixes, or tuning data. Do not dump raw production logs into training. | Curated feedback dataset with PII, consent, and leakage controls |
+
 ## Pipeline
 
 1. Inventory sources: web crawls, internal docs, code, logs, human labels, synthetic examples, licenses, owners, and retention rules.
 2. Normalize text without destroying useful structure. Preserve code indentation, tables, math, headings, and multilingual signals where they matter.
 3. Run cheap filters first: encoding validation, language ID, empty/short/truncated text checks, source allow/deny lists.
-4. Run exact dedupe with normalized hashes such as SHA-256 or MD5 over document or chunk text.
-5. Run fuzzy dedupe for copied pages, mirrors, boilerplate, lightly edited articles, and repeated templates.
-6. Detect PII, secrets, regulated data, toxicity, unsafe examples, and license conflicts.
-7. Run contamination checks against validation, test, public benchmark, and private canary sets.
+4. Run exact dedupe with normalized hashes such as SHA-256 or MD5 over document or chunk text. A hash is a fixed-length fingerprint of the normalized content; if two fingerprints match, the examples are treated as exact duplicates.
+5. Run fuzzy dedupe for copied pages, mirrors, boilerplate, lightly edited articles, and repeated templates. This usually means turning documents into overlapping shingles, estimating similarity with MinHash, and using LSH to avoid comparing every pair.
+6. Detect PII, secrets, regulated data, toxicity, unsafe examples, and license conflicts. Use cheap pattern checks for obvious forms, NER/classifiers for contextual spans, and sampling/audit for high-risk sources.
+7. Run contamination checks against validation, test, public benchmark, and private canary sets so the training corpus does not contain the answers used to measure the model.
 8. Blend sources intentionally: general text, domain text, code, math, safety, synthetic data, human-labeled data.
 9. Split by document, source, user, time, or task so leakage cannot cross train/validation/test boundaries.
 10. Emit dataset cards and lineage records: source mix, filter rates, known gaps, risk decisions, and version.
 
 ## Core Concepts
 
-- **Exact dedupe** removes byte-identical or normalized-text-identical examples with hashes. It is cheap and should usually happen before fuzzy methods.
-- **NeMo Curator** is the NVIDIA cue for GPU-accelerated corpus cleanup, dedupe, filtering, PII handling, and preparation before training/tuning.
-- **RAPIDS/cuDF** can accelerate dataframe-scale preprocessing, filtering, joins, and analytics over large corpora.
+- **Exact dedupe** removes byte-identical or normalized-text-identical examples with hashes. **SHA-256** and **MD5** are hash functions: they convert text into a compact fingerprint. They do not understand meaning, so they catch "same text after normalization," not paraphrases.
+- **Fuzzy dedupe** catches near-duplicates: copied pages with a changed header, mirrored articles, repeated boilerplate, code forks, legal templates, or lightly edited benchmark answers. It usually depends on shingles, Jaccard similarity, MinHash, and LSH.
+- **Shingles** are overlapping pieces of text, often word or character n-grams. A sentence like "NVIDIA GPUs accelerate training" could become word shingles such as "NVIDIA GPUs accelerate" and "GPUs accelerate training."
 - **Jaccard similarity** measures set overlap: `|A intersection B| / |A union B|`. For documents, A and B are usually shingle sets.
-- **MinHash** compresses shingle sets into signatures whose collision rate estimates Jaccard similarity.
-- **LSH** buckets MinHash signatures so likely near-duplicates can be found without all-pairs comparison.
-- **Fuzzy dedupe** catches near-duplicates above a tuned similarity threshold, often around 0.8 for web-corpus cleanup.
-- **Contamination** means training data overlaps with validation, test, or benchmark data. It invalidates metrics.
-- **PII handling** should combine regex, NER/classifiers, replacement tokens, sampling, audit logs, and risk policy.
-- **Synthetic data** can improve coverage and format consistency, but it needs independent filtering, factual checks, diversity checks, and regression tests.
+- **MinHash** compresses shingle sets into short signatures whose collision rate estimates Jaccard similarity. It gives a cheap approximation of "how similar are these documents?"
+- **LSH** buckets MinHash signatures so likely near-duplicates land together. That avoids an impossible all-pairs comparison across millions or billions of documents.
+- **PII** means personally identifiable information: data that can identify, contact, locate, or single out a person. Examples include names tied to addresses, emails, phone numbers, government IDs, account numbers, medical record numbers, exact locations, face/voice data, and free-text combinations that identify someone.
+- **NER** means named entity recognition. It tags spans such as person, organization, location, date, product, or ID-like entities. For PII, NER is useful because regex finds obvious patterns like emails, while NER/classifiers can catch contextual spans such as "Dr. Mina Shah at North Clinic."
+- **PII handling** is not only deletion. Common actions are replace spans with tokens like `<PERSON>` or `<EMAIL>`, drop high-risk records, quarantine for review, aggregate values, or keep restricted records out of training while logging the decision.
+- **License conflicts** happen when a source's terms do not permit the intended model use. In practice, this can look like copied proprietary docs, web pages with no training rights, code with incompatible terms, datasets limited to research-only use, or missing source provenance.
+- **Contamination** means training or tuning data overlaps with validation, test, benchmark, answer-key, or private canary data. It can be exact text, near-duplicate wording, copied solution explanations, or examples generated from the test set. It inflates scores because the model has effectively seen the exam.
+- **Synthetic data** can improve coverage and format consistency, but it needs independent filtering, factual checks, diversity checks, dedupe, contamination checks, and regression tests.
 - **Data blending** is part of model behavior. Too much narrow domain data can cause forgetting; too little domain data may not move the model.
 - **Tokenization** is part of data preparation. Vocabulary size, domain terms, multilingual balance, and special tokens change compression and training behavior.
+- **NeMo Curator** is the NVIDIA cue for GPU-accelerated corpus cleanup, dedupe, filtering, PII handling, and preparation before training/tuning.
+- **RAPIDS/cuDF** can accelerate dataframe-scale preprocessing, filtering, joins, and analytics over large corpora.
 
 ## Decision Guide
 
@@ -99,6 +122,8 @@ Training data curation is the **dataset preparation layer** before pretraining, 
 
 Raw online data is not training data. It contains mirrors, boilerplate, spam, duplicated code, toxic text, hidden personal data, unclear licenses, and benchmark leakage.
 
+The repeated exam pattern is: **do not train on raw data just because it is available**. Make the destination explicit, then decide what to keep, redact, quarantine, split, or reject.
+
 ### NVIDIA service boundary
 
 | Scenario cue | Think | Avoid |
@@ -122,17 +147,77 @@ Raw online data is not training data. It contains mirrors, boilerplate, spam, du
 
 Candidate near-duplicates should still be checked against removal policy so valuable boilerplate, code, legal clauses, or templates are not accidentally erased.
 
+### What the risk terms look like
+
+| Risk term | What it looks like in a corpus | Typical handling |
+|---|---|---|
+| PII | Emails, phone numbers, customer names with addresses, IDs, case notes, medical or financial identifiers | Regex + NER/classifier, redaction tokens, quarantine, review sampling, audit |
+| Secret | API keys, passwords, private keys, access tokens, internal URLs with credentials | Drop or quarantine; do not mask and train unless policy explicitly allows safe transformed examples |
+| License issue | Research-only dataset used for commercial model, copied proprietary docs, source URL missing, incompatible code license | Exclude, seek approval, or keep in a restricted dataset with provenance |
+| Contamination | Benchmark prompt/answer pairs, public leaderboard examples, validation documents, near-duplicate eval items | Remove from training/tuning, protect holdouts, document leakage report |
+| Toxic/unsafe example | Harassment, violent instructions, self-harm content, unsafe tool traces | Filter, rebalance, or keep only in controlled safety-training/eval lanes |
+
+Replacement tokens are useful when the surrounding language still teaches structure. For example, "Email Maria at maria@example.com" can become "Email `<PERSON>` at `<EMAIL>`." That keeps the task shape while removing the identifying spans.
+
 ### Filtering, synthetic data, and contamination
 
 Quality filters should be content-aware. A single perplexity cutoff can remove code, math, tables, logs, and multilingual text because they do not look like generic prose.
 
 Synthetic data helps with rare cases, controlled formats, tool traces, and instruction diversity, but it can repeat teacher-model bias, invent facts, collapse style, or contaminate evals. Human labels can also be noisy or policy-ambiguous. Both need validation and holdouts.
 
-Contamination checks protect benchmark trust: exact hashes, n-gram overlap, MinHash, embedding similarity, and private canary sets all catch different leakage patterns.
+Contamination checks protect benchmark trust. Use multiple detectors because each catches a different leakage pattern:
+
+| Check | Catches |
+|---|---|
+| Exact hash | Direct copied eval items |
+| N-gram overlap | Shared long phrases and copied answer explanations |
+| MinHash/LSH | Near-duplicate documents at corpus scale |
+| Embedding similarity | Paraphrases and semantically copied examples |
+| Private canaries | Protected strings or examples that should never appear in training |
 
 ### Dataset release record
 
 The final dataset needs a dataset card: source mix, license notes, filtering rules, removal rates, PII policy, split method, contamination report, known limitations, approval owner, and version. Without that record, no one can reproduce why a model changed.
+
+### Implementation card: corpus filters
+
+```python
+import hashlib
+
+def normalized_text(doc: str) -> str:
+    return " ".join(doc.lower().split())
+
+def sha256_fingerprint(doc: str) -> str:
+    return hashlib.sha256(normalized_text(doc).encode("utf-8")).hexdigest()
+
+def exact_dedupe(docs):
+    seen = set()
+    kept = []
+    for doc in docs:
+        fp = sha256_fingerprint(doc["text"])
+        if fp not in seen:
+            seen.add(fp)
+            kept.append({**doc, "sha256": fp})
+    return kept
+
+def shingles(text: str, n: int = 5) -> set[tuple[str, ...]]:
+    tokens = normalized_text(text).split()
+    return {tuple(tokens[i:i+n]) for i in range(max(0, len(tokens) - n + 1))}
+
+def jaccard(a: set, b: set) -> float:
+    return len(a & b) / len(a | b) if a or b else 0.0
+
+def should_keep(doc, pii_spans, license_ok, overlaps_eval):
+    if not license_ok:
+        return False, "license_block"
+    if overlaps_eval:
+        return False, "contamination"
+    if pii_spans.high_risk:
+        return False, "pii_quarantine"
+    return True, "keep"
+```
+
+At web scale, replace the direct `jaccard()` comparison with MinHash signatures and LSH buckets so you only compare likely near-duplicate candidates. The release metric is not a loss; it is filter evidence such as duplicate rate removed, PII hit rate, license rejection rate, contamination hit rate, and source-blend percentages.
 
 ## Exam Signals
 

@@ -6,6 +6,14 @@ status: populated
 
 # Memory Store
 
+## What to study first
+
+- **Core idea:** The lifecycle component for state and recall.
+- **Use it when:** The scenario mentions prior tool results, user preferences, repeated failures, stale memory, or cross-session recall.
+- **Choose another path when:** Choose a knowledge retrieval/RAG pipeline when the system needs source-grounded enterprise documents with citations and ACL filtering.
+- **Concrete surface:** Access: Agent runtime state, checkpoints, databases, vector stores, key-value stores, profile services Inside: Working memory, episodic memory, semantic memory, profile memory, retention, consent, deletion I/O: Observations, tool results, user-approved preferences, session summaries, expiration rules -> Relevant state recalled into the agent workflow with provenance and freshness constraints
+- **Real trap:** Storing every observation forever.
+
 ## At a glance
 
 | | |
@@ -16,6 +24,17 @@ status: populated
 | **Output** | Relevant state recalled into the agent workflow with provenance and freshness constraints |
 | **Inside** | Working memory, episodic memory, semantic memory, profile memory, retention, consent, deletion |
 
+```python
+memory.put(
+    user_id=user.id,
+    key="seat_preference",
+    value="aisle",
+    ttl_days=365,
+    consent=True,
+)
+state = memory.recall(user_id=user.id, purpose="booking", max_items=5)
+```
+
 **Mental model**: what the agent is allowed to remember, for how long, and why.
 
 ## Study card data
@@ -24,9 +43,9 @@ status: populated
 - **Lifecycle:** Memory and state
 - **Relevant exams:** Agentic AI General Study
 - **Use it when:** The scenario mentions prior tool results, user preferences, repeated failures, stale memory, or cross-session recall.
-- **Do not use it when:** The system needs source-grounded enterprise documents; that is retrieval.
+- **Do not use it when:** Choose a knowledge retrieval/RAG pipeline when the system needs source-grounded enterprise documents with citations and ACL filtering.
 - **Common trap:** Storing every observation forever.
-- **Scenario signal:** "The assistant should remember a user's seating preference but forget one-time trip details."
+- **Recognition clues:** "The assistant should remember a user's seating preference but forget one-time trip details."
 
 ## Related service map
 

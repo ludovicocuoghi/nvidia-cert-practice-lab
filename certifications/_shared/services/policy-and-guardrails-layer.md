@@ -6,6 +6,14 @@ status: populated
 
 # Policy and Guardrails Layer
 
+## What to study first
+
+- **Core idea:** The policy layer for model and agent behavior.
+- **Use it when:** The scenario mentions unsafe requests, prompt injection, PII, policy refusal, sensitive tools, or content filtering.
+- **Choose another path when:** Choose the neighboring control when the actual missing control is IAM, document ACL filtering, or human approval.
+- **Concrete surface:** Access: Guardrail services, policy engines, validators, moderation APIs, schema checks, approval gates Inside: Content filters, denied topics, PII filters, prompt-injection checks, tool policy, output validation I/O: User message, retrieved chunks, proposed tool call, model output, policy config, identity/risk context -> Allow, block, rewrite, redact, ask for approval, escalate, or log
+- **Real trap:** Only checking final output after unsafe retrieval or tool execution already happened.
+
 ## At a glance
 
 | | |
@@ -16,6 +24,17 @@ status: populated
 | **Output** | Allow, block, rewrite, redact, ask for approval, escalate, or log |
 | **Inside** | Content filters, denied topics, PII filters, prompt-injection checks, tool policy, output validation |
 
+```python
+decision = guardrails.check(
+    user_message=user_msg,
+    retrieved_chunks=chunks,
+    proposed_tool_call=tool_call,
+    policy="refund_policy",
+)
+if decision.action == "approval_required":
+    queue_review(decision)
+```
+
 **Mental model**: runtime rules that keep the agent from saying or doing unsafe things.
 
 ## Study card data
@@ -24,9 +43,9 @@ status: populated
 - **Lifecycle:** Safety and guardrails
 - **Relevant exams:** Agentic AI General Study
 - **Use it when:** The scenario mentions unsafe requests, prompt injection, PII, policy refusal, sensitive tools, or content filtering.
-- **Do not use it when:** The actual missing control is IAM, document ACL filtering, or human approval.
+- **Do not use it when:** Choose the neighboring control when the actual missing control is IAM, document ACL filtering, or human approval.
 - **Common trap:** Only checking final output after unsafe retrieval or tool execution already happened.
-- **Scenario signal:** "A retrieved document tells the agent to ignore policy and issue a refund."
+- **Recognition clues:** "A retrieved document tells the agent to ignore policy and issue a refund."
 
 ## Related service map
 

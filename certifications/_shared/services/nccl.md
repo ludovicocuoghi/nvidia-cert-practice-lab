@@ -6,10 +6,25 @@ status: populated
 
 # NCCL (NVIDIA Collective Communications Library)
 
+## What to study first
+
+- **Core idea:** C shared library (`.so`) — GPU-to-GPU collective communication (**all-reduce**, all-gather, broadcast)
+- **Use it when:** Use when multi-GPU or multi-node training is bottlenecked by collectives such as all-reduce, all-gather, reduce-scatter, or all-to-all.
+- **Choose another path when:** Choose NIM/Triton for serving APIs, RAPIDS/Curator for data pipelines, TensorRT/TensorRT-LLM for inference optimization, and Agent Toolkit for application orchestration.
+- **Concrete surface:** Access: Installed with CUDA Toolkit (`/usr/lib/libnccl.so`), used via PyTorch: `dist.all_reduce(backend="nccl")` I/O: Tensors on GPU (gradients, activations, parameters) -> Reduced/gathered/broadcast tensors across GPU group
+- **Study first:** all-reduce: sums values across all GPUs, result on every GPU — the workhorse of gradient sync in data parallelism
+- all-gather: each GPU contributes a chunk, result is full concatenation on all GPUs — used in FSDP/ZeRO-3 to gather sharded parameters before each layer
+- reduce-scatter: reduce (sum) then scatter — each GPU gets a different chunk of the reduced result
+- inverse of all-gather, used in ZeRO-3 gradient distribution
+- topology: NVLink (900 GB/s H100, intra-node) vs InfiniBand/RoCE (400 GB/s NDR, inter-node) — intra-node bandwidth is ~18× faster, so minimize cross-node collectives
+- communication/computation overlap: async NCCL operations interleaved with GEMM compute to hide communication latency behind useful work
+- **Real trap:** Seeing "multi-GPU" and picking NCCL for every scale problem. NCCL is specifically the collective-communication layer, not the scheduler, model server, or profiler.
+
 ## At a glance
 
 | | |
 |---|---|
+| **Full name** | NVIDIA Collective Communications Library |
 | **What it is** | C shared library (`.so`) — GPU-to-GPU collective communication (all-reduce, all-gather, broadcast) |
 | **How you access it** | Installed with CUDA Toolkit (`/usr/lib/libnccl.so`), used via PyTorch: `dist.all_reduce(backend="nccl")` |
 | **Input** | Tensors on GPU (gradients, activations, parameters) |
@@ -47,7 +62,7 @@ NVIDIA's GPU-to-GPU communication library providing optimized collective primiti
 - "How do GPUs communicate during distributed training/inference?"
 - When the question mentions collective operations (all-reduce, all-gather, broadcast)
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
 - **Model serving API**: That's NIM or Triton. NCCL handles GPU communication, not API endpoints.
 - **Agent orchestration**: That's NeMo Agent Toolkit. NCCL has nothing to do with agent workflows.
@@ -194,9 +209,9 @@ Modern distributed training kernels issue NCCL operations **asynchronously** -- 
 - **Relevant exams:** GenAI LLMs
 - **What it is:** C shared library (`.so`) — GPU-to-GPU collective communication (**all-reduce**, all-gather, broadcast)
 - **Use it when:** Use when multi-GPU or multi-node training is bottlenecked by collectives such as all-reduce, all-gather, reduce-scatter, or all-to-all.
-- **Do not use it when:** Do not use it for serving APIs, data processing, model optimization, or application-level orchestration.
-- **Common trap:** Confusing low-level GPU collective communication with higher-level training, serving, or profiling tools.
-- **Scenario signal:** A multi-node training job slows or hangs around gradient all-reduce or other GPU collective communication.
+- **Do not use it when:** Choose NIM/Triton for serving APIs, RAPIDS/Curator for data pipelines, TensorRT/TensorRT-LLM for inference optimization, and Agent Toolkit for application orchestration.
+- **Common trap:** Seeing "multi-GPU" and picking NCCL for every scale problem. NCCL is specifically the collective-communication layer, not the scheduler, model server, or profiler.
+- **Recognition clues:** A multi-node training job slows or hangs around gradient all-reduce or other GPU collective communication.
 ### Study notes
 - **NCCL** is the collective communication library behind many multi-GPU and multi-node training patterns.
 - Use it when the scenario mentions **all-reduce**, all-gather, reduce-scatter, tensor parallel communication, scaling efficiency, or distributed hangs.
@@ -206,7 +221,7 @@ Modern distributed training kernels issue NCCL operations **asynchronously** -- 
 - **reduce-scatter**: reduce (sum) then scatter — each GPU gets a different chunk of the reduced result; inverse of all-gather, used in ZeRO-3 gradient distribution
 - **topology**: NVLink (900 GB/s H100, intra-node) vs InfiniBand/RoCE (400 GB/s NDR, inter-node) — intra-node bandwidth is ~18× faster, so minimize cross-node collectives
 - **communication/computation overlap**: async NCCL operations interleaved with GEMM compute to hide communication latency behind useful work
-### High-yield exam signals
+### What to recognize
 - multi-node scaling → NCCL communication overhead limits scaling efficiency beyond 64-256 GPUs
 - collective hang → stalled all-reduce with no error; set `NCCL_DEBUG=INFO` and `NCCL_ASYNC_ERROR_HANDLING=1`
 - gradient synchronization → all-reduce after backward pass in data-parallel training
@@ -221,8 +236,8 @@ Modern distributed training kernels issue NCCL operations **asynchronously** -- 
 - Estimate whether adding GPUs helps when communication grows faster than compute savings.
 ## Exam tips from mocks
 - Mock-style questions test whether **NCCL** matches **Infrastructure / communication**, not whether the product name sounds familiar.
-- Choose it when the scenario signal matches this boundary: Use when multi-GPU or multi-node training is bottlenecked by collectives such as all-reduce, all-gather, reduce-scatter, or all-to-all.
-- Reject it when the problem is actually about another layer: Do not use it for serving APIs, data processing, model optimization, or application-level orchestration.
+- Boundary cue: choose it when multi-GPU or multi-node training is bottlenecked by collectives such as all-reduce, all-gather, reduce-scatter, or all-to-all.
+- Adjacent-service cue: not for serving APIs, data processing, model optimization, or application-level orchestration.
 - The common trap pattern is: Confusing low-level GPU collective communication with higher-level training, serving, or profiling tools.
 - Expect distractors around nearby services such as **NeMo Guardrails**, **Nsight Compute**, **NIM**, **Nsight Systems**. Decide by lifecycle first, product name second.
 - Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.

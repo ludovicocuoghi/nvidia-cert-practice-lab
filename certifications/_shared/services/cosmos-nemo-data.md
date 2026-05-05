@@ -6,6 +6,21 @@ status: populated
 
 # Cosmos / NeMo Data
 
+## What to study first
+
+- **Core idea:** Data pipeline framework — synthetic data generation + reward-model quality filtering
+- **Use it when:** Use when the scenario is about generating, scoring, filtering, or curating synthetic or multimodal training data.
+- **Choose another path when:** Choose the neighboring service for production serving, inference-time retrieval, or runtime safety policy enforcement.
+- **Concrete surface:** Access: Nemotron-4 Reward model via NGC/Hugging Face/NIM, Cosmos via NGC container I/O: Seed prompts + teacher model / text prompts for video -> Quality-scored synthetic training examples (top-k after filtering) / synthetic video
+- **Study first:** Nemotron-4 340B Reward Model: scores generated content across dimensions (helpfulness, correctness, coherence, safety) on a 0-5 scale
+- used to filter and rank synthetic training examples
+- Synthetic data pipeline (Seed → Generate → Reward Score → Filter → Deduplicate → Augment): six-stage pipeline generating training data from teacher models, with quality control via reward model (may remove 90%+ of generated examples)
+- Cosmos for synthetic video: platform for generating physically plausible synthetic video sequences for world model training (autonomous vehicles, robotics)
+- NeMo Curator vs Cosmos Nemotron Data distinction: Curator processes existing data (dedup, filter, clean)
+- Cosmos Nemotron Data generates new data from scratch — both in data preparation lifecycle
+- Curriculum design via synthetic data: generate examples at increasing difficulty levels for staged training (easy first, hard later)
+- **Real trap:** Confusing synthetic data generation with NeMo Curator cleaning existing data or NeMo Retriever finding documents at inference time.
+
 ## At a glance
 
 | | |
@@ -48,7 +63,7 @@ Cosmos / NeMo Data notes represent NVIDIA data tooling around large-scale data p
 - The question focuses on data pipelines rather than model architecture or serving endpoints.
 - The task mentions synthetic or multimodal data preparation.
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
 - **Serving a model as an API**: use NIM or Triton Inference Server.
 - **LLM engine optimization**: use TensorRT-LLM.
@@ -133,19 +148,19 @@ When the question describes "generating synthetic training data to improve model
 - **Relevant exams:** GenAI LLMs, Agentic AI
 - **What it is:** Data pipeline framework — synthetic data generation + reward-model quality filtering
 - **Use it when:** Use when the scenario is about generating, scoring, filtering, or curating synthetic or multimodal training data.
-- **Do not use it when:** Do not use it for production serving, inference-time retrieval, or runtime safety policy enforcement.
+- **Do not use it when:** Choose the neighboring service for production serving, inference-time retrieval, or runtime safety policy enforcement.
 - **Common trap:** Confusing synthetic data generation with NeMo Curator cleaning existing data or NeMo Retriever finding documents at inference time.
-- **Scenario signal:** A team wants to generate synthetic training examples, score them with a reward model, and keep only high-quality data.
+- **Recognition clues:** A team wants to generate synthetic training examples, score them with a reward model, and keep only high-quality data.
 ### Study notes
 - Place **Cosmos / NeMo Data** at **Data preparation and synthetic data**: "AI that writes training data for AI" — large teacher generates examples, Nemotron Reward scores them, only the best survive.
-- Choose it when: Use when the scenario is about generating, scoring, filtering, or curating synthetic or multimodal training data. Reject it when: Do not use it for production serving, inference-time retrieval, or runtime safety policy enforcement.
+- Boundary cue: choose it when the scenario is about generating, scoring, filtering, or curating synthetic or multimodal training data. Adjacent-service cue: not for production serving, inference-time retrieval, or runtime safety policy enforcement.
 ### Must know
 - **Nemotron-4 340B Reward Model**: scores generated content across dimensions (helpfulness, correctness, coherence, safety) on a 0-5 scale; used to filter and rank synthetic training examples
 - **Synthetic data pipeline (Seed → Generate → Reward Score → Filter → Deduplicate → Augment)**: six-stage pipeline generating training data from teacher models, with quality control via reward model (may remove 90%+ of generated examples)
 - **Cosmos for synthetic video**: platform for generating physically plausible synthetic video sequences for world model training (autonomous vehicles, robotics)
 - **NeMo Curator vs Cosmos Nemotron Data distinction**: Curator processes existing data (dedup, filter, clean); Cosmos Nemotron Data generates new data from scratch — both in data preparation lifecycle
 - **Curriculum design via synthetic data**: generate examples at increasing difficulty levels for staged training (easy first, hard later)
-### High-yield exam signals
+### What to recognize
 - **Synthetic data generation for LLM training** → scenario describes generating training examples for math reasoning or instruction following using a teacher model and scoring them for quality; Cosmos Nemotron Data with reward model filtering is the pipeline
 - **Synthetic video for world models** → scenario describes generating physically plausible video sequences for AV or robotics training; Cosmos platform generates synthetic video adhering to physical laws
 - **Reward model scoring and filtering** → scenario mentions scoring generated responses (helpfulness, correctness) and keeping only top-k examples; Nemotron-4 Reward Model provides the scalar scores for quality filtering
@@ -155,8 +170,8 @@ When the question describes "generating synthetic training data to improve model
 - Write one scenario where **Cosmos / NeMo Data** is correct and one scenario where it is a tempting but wrong distractor.
 ## Exam tips from mocks
 - Mock-style questions test whether **Cosmos / NeMo Data** matches **Data preparation and synthetic data**, not whether the product name sounds familiar.
-- Choose it when the scenario signal matches this boundary: Use when the scenario is about generating, scoring, filtering, or curating synthetic or multimodal training data.
-- Reject it when the problem is actually about another layer: Do not use it for production serving, inference-time retrieval, or runtime safety policy enforcement.
+- Boundary cue: choose it when the scenario is about generating, scoring, filtering, or curating synthetic or multimodal training data.
+- Adjacent-service cue: not for production serving, inference-time retrieval, or runtime safety policy enforcement.
 - The common trap pattern is: Confusing synthetic data generation with NeMo Curator cleaning existing data or NeMo Retriever finding documents at inference time.
 - If it appears only as a distractor, decide by the required lifecycle phase before choosing a product name.
 - Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.

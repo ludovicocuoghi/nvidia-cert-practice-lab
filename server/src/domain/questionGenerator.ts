@@ -1,23 +1,49 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import type { Question } from "../../../shared/src/types";
 
 const FETCH_TIMEOUT_MS = Number(process.env.LLM_TIMEOUT_MS || process.env.DEEPSEEK_TIMEOUT_MS) || 120000;
 function getLLMUrl() { return process.env.LLM_API_URL || "https://api.moonshot.ai/v1/chat/completions"; }
 function getLLMModel() { return process.env.LLM_MODEL || "kimi-k2.6"; }
+function getLLMThinkingMode() { return process.env.LLM_THINKING || ""; }
 
-function normalizeSystemContent(system) {
+type ChatMessage = {
+  role: string;
+  content: string;
+};
+
+type ChatBody = {
+  model: string;
+  max_tokens: number;
+  messages: ChatMessage[];
+  temperature?: number;
+  thinking?: { type: string };
+};
+
+type LlmUsage = {
+  input_tokens: number;
+  output_tokens: number;
+} | null;
+
+type LlmResponse = {
+  text: string;
+  usage: LlmUsage;
+  stopReason: string | null;
+};
+
+function normalizeSystemContent(system: string | Array<{ type?: string; text?: string }> | null | undefined) {
   if (!system) return "";
   if (typeof system === "string") return system;
   if (Array.isArray(system)) {
     return system
       .filter((b) => b.type === "text" || typeof b.text === "string")
-      .map((b) => b.text)
+      .map((b) => b.text || "")
       .join("\n\n");
   }
   return String(system);
 }
 
-function normalizeLLMResponse(result) {
+function normalizeLLMResponse(result: any): LlmResponse {
   const msg = result.choices?.[0]?.message || {};
   const text = msg.content || msg.reasoning_content || "";
   const usage = result.usage
@@ -30,18 +56,42 @@ function normalizeLLMResponse(result) {
   return { text, usage, stopReason };
 }
 
-async function callLLM({ apiKey, model, maxTokens, temperature, system, messages, signal, timeoutMs = FETCH_TIMEOUT_MS, errorPrefix = "LLM" }) {
+async function callLLM({
+  apiKey,
+  model,
+  maxTokens,
+  temperature,
+  system,
+  messages,
+  signal,
+  timeoutMs = FETCH_TIMEOUT_MS,
+  errorPrefix = "LLM"
+}: {
+  apiKey: string;
+  model: string;
+  maxTokens: number;
+  temperature?: number;
+  system: string | Array<{ type?: string; text?: string }>;
+  messages: ChatMessage[];
+  signal?: AbortSignal | null;
+  timeoutMs?: number;
+  errorPrefix?: string;
+}) {
   if (!apiKey) {
-    throw Object.assign(new Error("LLM_API_KEY is not set in the server environment."), { httpStatus: 503 });
+    throw Object.assign(
+      new Error("LLM_API_KEY is not configured. Create .env from .env.example, set LLM_API_KEY, then restart the dev server."),
+      { httpStatus: 503 }
+    );
   }
 
-  const openaiMessages = [];
+  const openaiMessages: ChatMessage[] = [];
   const systemText = normalizeSystemContent(system);
   if (systemText) openaiMessages.push({ role: "system", content: systemText });
   openaiMessages.push(...messages);
 
-  const body = { model, max_tokens: maxTokens, messages: openaiMessages, thinking: { type: "disabled" } };
+  const body: ChatBody = { model, max_tokens: maxTokens, messages: openaiMessages };
   if (temperature !== undefined) body.temperature = temperature;
+  if (getLLMThinkingMode()) body.thinking = { type: getLLMThinkingMode() };
 
   const response = await fetch(getLLMUrl(), {
     method: "POST",
@@ -55,15 +105,16 @@ async function callLLM({ apiKey, model, maxTokens, temperature, system, messages
 
   if (!response.ok) {
     const errorText = await response.text().catch(() => "");
-    const err = new Error(`${errorPrefix} API error ${response.status}: ${errorText.slice(0, 500)}`);
-    err.httpStatus = response.status >= 500 ? 502 : 400;
+    const err = Object.assign(new Error(`${errorPrefix} API error ${response.status}: ${errorText.slice(0, 500)}`), {
+      httpStatus: response.status >= 500 ? 502 : 400
+    });
     throw err;
   }
 
   return normalizeLLMResponse(await response.json());
 }
 
-function abortSignal(timeoutMs = FETCH_TIMEOUT_MS, externalSignal = null) {
+function abortSignal(timeoutMs = FETCH_TIMEOUT_MS, externalSignal: AbortSignal | null = null) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   if (externalSignal) {
@@ -88,7 +139,7 @@ const QUESTION_FORMAT_INSTRUCTIONS = `You generate scenario-based, Professional-
 
 1. **Scenario, not definition.** Every stem sets up a real engineering trade-off with concrete constraints — latency budget, GPU memory, accuracy floor, throughput SLA, distribution shift, cost cap, safety requirement. NEVER write "what is X?" or definitional stems.
 2. **All four distractors are real, plausible techniques.** Wrong answers must fail the *specific* constraint stated in the scenario — they should solve the wrong layer, optimize the wrong bottleneck, miss a safety boundary, or ignore a production constraint. No nonsense options.
-3. **NVIDIA-specific tooling, used correctly.** TensorRT-LLM, NIM, NeMo Framework/Curator/Evaluator/Guardrails/Customizer, Triton Inference Server, NCCL, Nsight Systems/Compute, NGC, RAPIDS, Riva, TAO, BioNeMo, Dynamo. For NCP-AAI add NeMo Agent Toolkit, NeMo Retriever, Nemotron. Never invent product names, flags, or parameters.
+3. **NVIDIA-specific tooling, used correctly.** TensorRT-LLM, NIM, NeMo Framework/Curator/Evaluator/Guardrails/Customizer, Triton Inference Server, NCCL, Nsight Systems/Compute, NGC, RAPIDS, Riva, TAO, BioNeMo, Dynamo. For NCP-AAI add NeMo Agent Toolkit, NeMo Retriever, Nemotron. Never invent product names, flags, or parameters. On first mention of acronym-only services, include the expansion when it is part of the tested concept: NIM (NVIDIA Inference Microservice), NGC (NVIDIA GPU Cloud), NCCL (NVIDIA Collective Communications Library), TAO (Train, Adapt, Optimize).
 4. **Vary the correct letter.** Do NOT default to C. Within a batch, distribute the correct letter across A/B/C/D.
 5. **A "Why X is wrong" line for EVERY wrong option.** Four-option question = exactly three "Why X is wrong" lines.
 6. **Output ONLY the markdown question blocks** — no preamble, no closing remarks, no code fences.
@@ -134,9 +185,10 @@ Review each question block on these criteria:
 1. SCENARIO: Sets up a real engineering trade-off with concrete numbers/constraints. Reject if it's a "what is X?" / definitional / textbook-recall stem.
 2. DISTRACTORS: All four options are real, plausible NVIDIA techniques/tools. Wrong answers fail the *specific* stated constraint, not by being made up.
 3. NVIDIA TOOLING: Tool/product names, flags, parameters are real and used correctly. Reject if the question invents an NVIDIA feature.
-4. CALIBRATION: Difficulty matches Professional level (engineer with 2–3 years LLM/agent experience). Reject if it's associate-level recall.
-5. WHY-WRONG: Has a "Why <letter> is wrong" line for every wrong option. Four-option question = exactly three "Why X is wrong" lines.
-6. ANSWER VARIANCE: Within the batch, correct letters should vary across A/B/C/D. Flag if all answers in the batch are the same letter.
+4. ACRONYM CLARITY: If NIM, NGC, NCCL, or TAO is central to the question, the stem, answer, or explanation expands it on first mention.
+5. CALIBRATION: Difficulty matches Professional level (engineer with 2–3 years LLM/agent experience). Reject if it's associate-level recall.
+6. WHY-WRONG: Has a "Why <letter> is wrong" line for every wrong option. Four-option question = exactly three "Why X is wrong" lines.
+7. ANSWER VARIANCE: Within the batch, correct letters should vary across A/B/C/D. Flag if all answers in the batch are the same letter.
 
 For each block return:
 - verdict: "accept" | "fix" | "reject"
@@ -159,7 +211,7 @@ ${question.choices.map((c, i) => `  ${String.fromCharCode(65 + i)}. ${c}`).join(
 ${includeAnswer ? `Correct answer: ${correctLetter}
 Official explanation: ${question.explanation || "(none provided)"}` : "The learner has not revealed the answer yet. Give hints, explain the concept, and ask guiding questions, but do not identify the correct option or eliminate choices unless the learner explicitly asks to reveal the answer."}
 
-Help the learner understand the underlying concept. Explain *why* the right approach wins on the stated constraint, the mental model an engineer should use, and 1–2 adjacent concepts worth solidifying. Use NVIDIA-specific tooling correctly. Keep replies under ~200 words unless the learner asks for more depth. Don't restate the question. Don't moralize. If asked something off-topic, briefly redirect to the certification material.`;
+Help the learner understand the underlying concept. Explain *why* the right approach wins on the stated constraint, the mental model an engineer should use, and 1–2 adjacent concepts worth solidifying. Use NVIDIA-specific tooling correctly, and expand acronym-only services such as NIM, NGC, NCCL, or TAO on first mention when they matter. Keep replies under ~200 words unless the learner asks for more depth. Don't restate the question. Don't moralize. If asked something off-topic, briefly redirect to the certification material.`;
 
 function buildContextBlock(blueprint, learnerProfileMarkdown, recentMistakes, existingStems = []) {
   const domainSummary = (blueprint.domains || [])
@@ -208,7 +260,7 @@ function buildUserMessage({ count, focusDomains, difficulty, topic, weakOnly, la
     : "Pick fresh IDs that don't collide with the existing bank.";
 
   const serviceLine = serviceContext?.name
-    ? `\n## Service-specific focus\nGenerate questions specifically about this NVIDIA service:\n- Name: ${serviceContext.name}\n- Exams: ${(serviceContext.exams || []).join(", ")}\n- Lifecycle: ${serviceContext.lifecycle || ""}\n- When to use: ${serviceContext.use || ""}\n- When not to use: ${serviceContext.avoid || ""}\n- Common traps: ${serviceContext.traps || ""}\n- Example scenario: ${serviceContext.scenario || ""}\n\nAt least one distractor should reflect the common trap, but do not make it obvious.`
+    ? `\n## Service-specific focus\nGenerate questions specifically about this NVIDIA service:\n- Name: ${serviceContext.name}\n- Full name: ${serviceContext.fullName || serviceContext.name}\n- Exams: ${(serviceContext.exams || []).join(", ")}\n- Lifecycle: ${serviceContext.lifecycle || ""}\n- When to use: ${serviceContext.use || ""}\n- When not to use: ${serviceContext.avoid || ""}\n- Common traps: ${serviceContext.traps || ""}\n- Example scenario: ${serviceContext.scenario || ""}\n\nAt least one distractor should reflect the common trap, but do not make it obvious.`
     : "";
 
   return `Generate ${count} new scenario MCQs.
@@ -462,7 +514,7 @@ export async function loadGeneratorContext(certDir) {
 
 export async function runStudyChat({ apiKey, certName, topic, history = [], userMessage, signal = null }) {
   const topicLine = topic ? ` Current study topic: ${topic}.` : "";
-  const system = `You are a concise NVIDIA ${certName} exam study tutor.${topicLine} Answer questions about NVIDIA tools, LLMs, agent frameworks, and certification topics. Keep replies under 120 words. Use accurate NVIDIA terminology (NIM, TensorRT-LLM, NeMo, etc.). If off-topic, briefly redirect to certification material.`;
+  const system = `You are a concise NVIDIA ${certName} exam study tutor.${topicLine} Answer questions about NVIDIA tools, LLMs, agent frameworks, and certification topics. Keep replies under 120 words. Use accurate NVIDIA terminology (NIM, TensorRT-LLM, NeMo, etc.) and expand acronym-only services such as NIM, NGC, NCCL, or TAO on first mention when they matter. If off-topic, briefly redirect to certification material.`;
 
   const messages = [
     ...history.slice(-8).map((turn) => ({

@@ -6,6 +6,24 @@ status: populated
 
 # TensorRT
 
+## What to study first
+
+- **Core idea:** C++ SDK + Python bindings — offline compiler that turns trained models into optimized GPU engines
+- **Use it when:** Use when a trained non-LLM model needs lower-latency GPU inference through engine building, precision calibration, or layer fusion.
+- **Choose another path when:** Choose the neighboring service for LLM-specific serving problems like paged KV cache, in-flight batching, or token scheduling; use TensorRT-LLM instead.
+- **Concrete surface:** Access: `pip install tensorrt`, CLI: `trtexec`, NGC container: `nvcr.io/nvidia/tensorrt` Inside: Layer fusion, INT8/FP8 calibration, kernel auto-tuning, memory reuse, constant folding I/O: Trained model (ONNX, PyTorch, TF) + precision config + calibration dataset -> Serialized TensorRT engine (`.engine`/`.plan`) — hardware-specific, 2-4x faster
+- **Study first:** TensorRT engine build pipeline: model import (ONNX, TF SavedModel, torch-tensorrt) → graph parsing → optimization passes (layer fusion, precision calibration, kernel auto-tuning, memory reuse, constant folding) → serialized `.engine` file (not portable across GPU architectures)
+- Precision modes and calibration: FP32 (baseline), FP16 (2x memory, no calibration needed), INT8 (4x, requires 500-1000 sample calibration via KL-divergence), INT4 (8x weight-only), FP8 (H100, E4M3/E5M2)
+- calibration dataset must match production distribution
+- Layer fusion types: vertical fusion (sequential layers like Conv→BiasAdd→ReLU → single FusedConv), horizontal fusion (parallel branches that merge into multi-output kernel)
+- Dynamic shapes and optimization profiles: min/opt/max dimensions per dynamic input
+- kernel selection tuned for `opt` shape
+- multiple profiles for different shape ranges
+- shape re-binding overhead (hundreds of microseconds to low milliseconds)
+- TensorRT vs TensorRT-LLM distinction: TensorRT for vision/audio/recommender non-autoregressive models
+- TensorRT-LLM for LLMs with autoregressive decoding, paged KV cache, in-flight batching, and optimized attention
+- **Real trap:** Choosing general TensorRT for LLM decode throughput when the exam signal points to TensorRT-LLM.
+
 ## At a glance
 
 | | |
@@ -49,7 +67,7 @@ NVIDIA's general-purpose inference optimization toolkit for neural networks on N
 - Vision models, recommender systems, audio models — any neural network on GPU
 - Questions about FP16/INT8/INT4 optimization of non-LLM models
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
 - **LLM-specific throughput issues**: That's TensorRT-LLM (in-flight batching, paged KV cache are TensorRT-LLM specific, not general TensorRT).
 - **Model training**: TensorRT is inference-only, not training.
@@ -218,19 +236,19 @@ ONNX (Open Neural Network Exchange) is the primary interchange format for Tensor
 - **Relevant exams:** GenAI LLMs, Agentic AI
 - **What it is:** C++ SDK + Python bindings — offline compiler that turns trained models into optimized GPU engines
 - **Use it when:** Use when a trained non-LLM model needs lower-latency GPU inference through engine building, precision calibration, or layer fusion.
-- **Do not use it when:** Do not use it for LLM-specific serving problems like paged KV cache, in-flight batching, or token scheduling; use TensorRT-LLM instead.
+- **Do not use it when:** Choose the neighboring service for LLM-specific serving problems like paged KV cache, in-flight batching, or token scheduling; use TensorRT-LLM instead.
 - **Common trap:** Choosing general TensorRT for LLM decode throughput when the exam signal points to TensorRT-LLM.
-- **Scenario signal:** A trained non-LLM model needs a TensorRT engine for lower-latency GPU inference in production.
+- **Recognition clues:** A trained non-LLM model needs a TensorRT engine for lower-latency GPU inference in production.
 ### Study notes
 - Place **TensorRT** at **Inference optimization**: take a PyTorch/ONNX model, run `trtexec --fp16`, get a `.engine` file that runs 2-4x faster on GPU.
-- Choose it when: Use when a trained non-LLM model needs lower-latency GPU inference through engine building, precision calibration, or layer fusion. Reject it when: Do not use it for LLM-specific serving problems like paged KV cache, in-flight batching, or token scheduling; use TensorRT-LLM instead.
+- Boundary cue: choose it when a trained non-LLM model needs lower-latency GPU inference through engine building, precision calibration, or layer fusion. Adjacent-service cue: not for LLM-specific serving problems like paged KV cache, in-flight batching, or token scheduling; use TensorRT-LLM instead.
 ### Must know
 - **TensorRT engine build pipeline**: model import (ONNX, TF SavedModel, torch-tensorrt) → graph parsing → optimization passes (layer fusion, precision calibration, kernel auto-tuning, memory reuse, constant folding) → serialized `.engine` file (not portable across GPU architectures)
 - **Precision modes and calibration**: FP32 (baseline), FP16 (2x memory, no calibration needed), INT8 (4x, requires 500-1000 sample calibration via KL-divergence), INT4 (8x weight-only), FP8 (H100, E4M3/E5M2); calibration dataset must match production distribution
 - **Layer fusion types**: vertical fusion (sequential layers like Conv→BiasAdd→ReLU → single FusedConv), horizontal fusion (parallel branches that merge into multi-output kernel)
 - **Dynamic shapes and optimization profiles**: min/opt/max dimensions per dynamic input; kernel selection tuned for `opt` shape; multiple profiles for different shape ranges; shape re-binding overhead (hundreds of microseconds to low milliseconds)
 - **TensorRT vs TensorRT-LLM distinction**: TensorRT for vision/audio/recommender non-autoregressive models; TensorRT-LLM for LLMs with autoregressive decoding, paged KV cache, in-flight batching, and optimized attention
-### High-yield exam signals
+### What to recognize
 - **General inference optimization on NVIDIA GPUs** → scenario about optimizing a trained model (PyTorch, TF, ONNX) for production inference with lower latency and memory; TensorRT compiles and optimizes via layer fusion, precision calibration, and kernel auto-tuning
 - **Precision calibration for INT8 quantization** → scenario about INT8 quantization requiring a calibration dataset (500-1000 representative samples) to determine optimal clipping thresholds via KL-divergence minimization
 - **TensorRT vs TensorRT-LLM distinction** → scenario about LLM-specific throughput issues (in-flight batching, paged KV cache) with TensorRT as a distractor; TensorRT-LLM is the correct answer for LLMs, TensorRT for non-autoregressive models
@@ -240,8 +258,8 @@ ONNX (Open Neural Network Exchange) is the primary interchange format for Tensor
 - Write one scenario where **TensorRT** is correct and one scenario where it is a tempting but wrong distractor.
 ## Exam tips from mocks
 - Mock-style questions test whether **TensorRT** matches **Inference optimization**, not whether the product name sounds familiar.
-- Choose it when the scenario signal matches this boundary: Use when a trained non-LLM model needs lower-latency GPU inference through engine building, precision calibration, or layer fusion.
-- Reject it when the problem is actually about another layer: Do not use it for LLM-specific serving problems like paged KV cache, in-flight batching, or token scheduling; use TensorRT-LLM instead.
+- Boundary cue: choose it when a trained non-LLM model needs lower-latency GPU inference through engine building, precision calibration, or layer fusion.
+- Adjacent-service cue: not for LLM-specific serving problems like paged KV cache, in-flight batching, or token scheduling; use TensorRT-LLM instead.
 - The common trap pattern is: Choosing general TensorRT for LLM decode throughput when the exam signal points to TensorRT-LLM.
 - Expect distractors around nearby services such as **TensorRT-LLM**, **NIM**, **Triton Inference Server**, **NeMo Guardrails**. Decide by lifecycle first, product name second.
 - Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.

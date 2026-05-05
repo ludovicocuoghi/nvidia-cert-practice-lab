@@ -6,6 +6,17 @@ status: populated
 
 # Deployment and Scaling
 
+## What to study first
+
+- **Core idea:** Deploy agent systems with model endpoints, tools, memory, **RAG**, queues, scaling, reliability, and rollout controls.
+- **Use it when:** Study this when questions ask how to productionize a multi-step agent workflow.
+- **Study first:** Distributed tracing by span: instrument classification, **retrieval** embedding, vector DB search, reranker, LLM inference, each tool call, guardrail checks, response generation — identify bottleneck before optimizing
+- Span-level latency breakdown: model inference time vs **retrieval** time vs tool API time vs guardrail time vs queue wait time — you can't fix what you don't measure
+- Separate serving lanes: real-time (low **latency**, small batch) vs batch (high throughput, large batch) — different batching/queueing/priority policies — prevents head-of-line blocking
+- Queue depth: monitored per lane — rising queue depth for real-time lane signals batch jobs bleeding in
+- Head-of-line blocking: batch jobs in a shared queue delay real-time responses — fixed by workload isolation and **serving** lanes, not simply adding GPUs
+- **Real trap:** Scaling the LLM alone may not fix **latency** if sequential tools or **retrieval** calls dominate.
+
 ## Certification boundary
 
 This page is the NCP-AAI exam lens for deployment. Keep general deployment patterns only when they are needed to choose the correct NVIDIA-oriented architecture. The reusable concept home is `Agentic AI General Study -> Inference Serving and Deployment` and `Observability, Operations, and Cost`; NVIDIA product cues stay here.
@@ -134,7 +145,7 @@ Deployment and Scaling sits at the **operationalization** stage:
 - **Centralized model registry**: Consistent versioning, auditing, compliance
 - **Blue-green deployment**: Zero-downtime updates, safe **rollback**
 
-## Common exam traps
+## Decision traps worth remembering
 
 1. **"Add more GPUs"** as first response to **latency**. Agent **latency** often comes from tool calls, **retrieval**, or queueing — not GPU saturation. Trace first, then decide.
 
@@ -193,7 +204,7 @@ Evidence source: `mock_1` through `mock_5`, especially **latency** tracing, Kube
 - **What it covers:** Deploy agent systems with model endpoints, tools, memory, **RAG**, queues, scaling, reliability, and rollout controls.
 - **Use this section when:** Study this when questions ask how to productionize a multi-step agent workflow.
 - **Common trap:** Scaling the LLM alone may not fix **latency** if sequential tools or **retrieval** calls dominate.
-- **Scenario signal:** End-to-end **latency** or rollout risk comes from the whole agent chain: model calls, tools, **retrieval**, queues, caches, and quality gates.
+- **Recognition clues:** End-to-end **latency** or rollout risk comes from the whole agent chain: model calls, tools, **retrieval**, queues, caches, and quality gates.
 
 ### Study notes
 
@@ -271,7 +282,7 @@ Evidence source: `mock_1` through `mock_5`, especially **latency** tracing, Kube
    Best answer pattern: Per-component timeouts (prevent blocking), **bounded retries** with **exponential backoff**, a circuit breaker (stop calling after N failures, test periodically), and bulkheads (isolated thread pool so one tool doesn't exhaust all workers).
    Trap: Increasing the global timeout or retrying infinitely — both tie up more resources and worsen the cascade.
 
-### High-yield exam signals
+### What to recognize
 
 - **Production rollout failure**: new agent version passes infrastructure checks but degrades answer quality because no **canary evaluation** compared **task success** against baseline
 - **Tool bottleneck misdiagnosis**: **latency** is dominated by a slow external API call, but the team blames GPU inference and adds more GPUs

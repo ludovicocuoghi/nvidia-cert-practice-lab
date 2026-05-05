@@ -6,6 +6,19 @@ status: populated
 
 # NeMo Evaluator
 
+## What to study first
+
+- **Core idea:** Python library + API microservice — automated LLM/agent quality benchmarking and regression detection
+- **Use it when:** Use when model or agent outputs need benchmark scoring, LLM-as-judge evaluation, regression checks, or release-quality comparisons.
+- **Choose another path when:** Choose NIM/Triton for serving, Nsight for GPU/runtime profiling, NeMo Guardrails for runtime policy enforcement, and NeMo Curator for dataset preparation.
+- **Concrete surface:** Access: `pip install nvidia-nemo-evaluator`, REST API, Python: `from nemo_evaluator import evaluate` Inside: MMLU/HELM/BIG-Bench harness, LLM-as-Judge (rubric, position-bias correction), RAG metrics I/O: Model endpoint URL + benchmark selection (MMLU, HELM) / generated answers + references -> Evaluation report (per-task scores, faithfulness, ROUGE, BERTScore) / drift alerts
+- **Study first:** ROUGE, BLEU, BERTScore — n-gram overlap and embedding-based metrics with known blind spots
+- faithfulness/groundedness — whether claims are entailed by retrieved context, distinct from answer relevance
+- LLM-as-Judge — position bias, verbosity bias, self-enhancement bias, and rubric-guided scoring
+- recall@k, precision@k, MRR, nDCG — retrieval-side evaluation metrics
+- contamination checks — n-gram overlap, embedding similarity, temporal separation, canary strings
+- **Real trap:** Treating "evaluation" as a dashboard or profiler. Evaluator owns repeatable quality/regression scoring; observability and Nsight explain live behavior and performance after or during execution.
+
 ## At a glance
 
 | | |
@@ -46,7 +59,7 @@ NVIDIA's evaluation tool for measuring model and agent performance. NeMo Evaluat
 - Systematic benchmarking and comparison of agent versions
 - Measuring accuracy, groundedness, safety metrics with NVIDIA tools
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
 - **Model serving**: That's NIM or Triton Inference Server.
 - **Performance profiling (GPU level)**: That's Nsight Systems / Nsight Compute. Evaluator measures quality, not GPU performance.
@@ -227,19 +240,19 @@ The most common LLM knowledge test in the industry. Key facts:
 - **Relevant exams:** GenAI LLMs, Agentic AI
 - **What it is:** Python library + API microservice — automated LLM/agent quality benchmarking and regression detection
 - **Use it when:** Use when model or agent outputs need benchmark scoring, LLM-as-judge evaluation, regression checks, or release-quality comparisons.
-- **Do not use it when:** Do not use it for serving the model, profiling GPU kernels, enforcing runtime guardrails, or curating training data.
-- **Common trap:** Confusing quality evaluation before/after release with production monitoring or low-level profiling.
-- **Scenario signal:** A release needs repeatable benchmark, LLM-as-judge, or regression evaluation before shipping a model or agent.
+- **Do not use it when:** Choose NIM/Triton for serving, Nsight for GPU/runtime profiling, NeMo Guardrails for runtime policy enforcement, and NeMo Curator for dataset preparation.
+- **Common trap:** Treating "evaluation" as a dashboard or profiler. Evaluator owns repeatable quality/regression scoring; observability and Nsight explain live behavior and performance after or during execution.
+- **Recognition clues:** A release needs repeatable benchmark, LLM-as-judge, or regression evaluation before shipping a model or agent.
 ### Study notes
 - Place **NeMo Evaluator** at **Evaluation**: the automated test suite for your LLM — run MMLU + LLM-as-Judge against a model endpoint and get a quality report before release.
-- Choose it when: Use when model or agent outputs need benchmark scoring, LLM-as-judge evaluation, regression checks, or release-quality comparisons. Reject it when: Do not use it for serving the model, profiling GPU kernels, enforcing runtime guardrails, or curating training data.
+- Boundary cue: choose it when model or agent outputs need benchmark scoring, LLM-as-judge evaluation, regression checks, or release-quality comparisons. Adjacent-service cue: not for serving the model, profiling GPU kernels, enforcing runtime guardrails, or curating training data.
 ### Must know
 - ROUGE, BLEU, BERTScore — n-gram overlap and embedding-based metrics with known blind spots
 - faithfulness/groundedness — whether claims are entailed by retrieved context, distinct from answer relevance
 - LLM-as-Judge — position bias, verbosity bias, self-enhancement bias, and rubric-guided scoring
 - recall@k, precision@k, MRR, nDCG — retrieval-side evaluation metrics
 - contamination checks — n-gram overlap, embedding similarity, temporal separation, canary strings
-### High-yield exam signals
+### What to recognize
 - model quality → NeMo Evaluator benchmarks accuracy, groundedness, and safety metrics
 - LLM-as-Judge → scalable evaluation with position bias as the most commonly controlled-for artifact
 - RAG evaluation → faithfulness (claims grounded in retrieved context) vs relevance (answer on-topic)
@@ -248,8 +261,8 @@ The most common LLM knowledge test in the industry. Key facts:
 - Write one scenario where this service is correct and one where it is a tempting but wrong distractor.
 ## Exam tips from mocks
 - Mock-style questions test whether **NeMo Evaluator** matches **Evaluation**, not whether the product name sounds familiar.
-- Choose it when the scenario signal matches this boundary: Use when model or agent outputs need benchmark scoring, LLM-as-judge evaluation, regression checks, or release-quality comparisons.
-- Reject it when the problem is actually about another layer: Do not use it for serving the model, profiling GPU kernels, enforcing runtime guardrails, or curating training data.
+- Boundary cue: choose it when model or agent outputs need benchmark scoring, LLM-as-judge evaluation, regression checks, or release-quality comparisons.
+- Adjacent-service cue: not for serving the model, profiling GPU kernels, enforcing runtime guardrails, or curating training data.
 - The common trap pattern is: Confusing quality evaluation before/after release with production monitoring or low-level profiling.
 - Expect distractors around nearby services such as **NIM**, **Nsight Systems**, **RAPIDS**. Decide by lifecycle first, product name second.
 - Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.

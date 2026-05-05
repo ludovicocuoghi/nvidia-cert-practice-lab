@@ -6,6 +6,17 @@ status: populated
 
 # Model Deployment
 
+## What to study first
+
+- **Core idea:** Deploy LLMs with containerized **serving**, orchestration, model APIs, and scalable inference paths.
+- **Use it when:** Study this when the question asks how to expose, scale, update, or operate an inference endpoint.
+- **Study first:** NIM: Pre-packaged, optimized model microservice with **OpenAI-compatible API**. Containerized. Fastest path to a production **model endpoint**. Available from **NGC**. NOT the model itself — it's the **serving** packaging.
+- Triton Inference Server: Multi-model, multi-framework **serving** platform. Supports TensorRT, PyTorch, ONNX, Python backends. Model ensembling chains multiple models. **Dynamic batching** with configurable queue delay. The flexible but more-configuration-required option.
+- Dynamic batching: Server-side request grouping. max_queue_delay_microseconds (100-500µs for interactive) controls **latency**/**throughput** trade-off. preferred_batch_size aligns with **GPU** efficiency. NOT the same as continuous/**in-flight batching** (**TensorRT-LLM** engine-level).
+- Kubernetes deployment: **NIM** containers on K8s with **GPU** node pools. HPA (Horizontal Pod **Autoscaling**) scales pod count based on **metrics**. **NIM Operator** simplifies lifecycle management. Standard enterprise **deployment** pattern.
+- Canary/Rollback: **Canary** = gradual traffic shift to new version with quality **monitoring**. **Rollback** = instant switch back to previous version via K8s **deployment** revision or load balancer redirect. Critical for LLM deployments where quality regressions are the primary risk.
+- **Real trap:** **Deployment** packaging is not the same as model optimization or **fine-tuning**.
+
 ## Certification boundary
 
 This page is the NCP-GENL exam lens for deploying LLMs on NVIDIA. Keep NIM, Triton, TensorRT-LLM, NGC, NIM Operator, rollout strategy, API shape, and production-serving traps here. The vendor-neutral model-serving lifecycle belongs in Agentic AI General Study; this page should explain the NVIDIA implementation and certification answer choices.
@@ -142,7 +153,7 @@ Model **deployment** is the bridge between a trained/optimized model and users:
 - **Smoke tests after deployment**: Basic inference request to verify the model is **serving** correctly
 - **Infrastructure as Code (IaC)**: Terraform/CloudFormation for reproducible **GPU** infrastructure
 
-## Common exam traps
+## Decision traps worth remembering
 
 1. **NIM vs Triton** — **NIM** is for single-model LLM **deployment** (built on **TensorRT-LLM**). **Triton** is for multi-model, multi-framework **serving**. Different use cases.
 
@@ -204,7 +215,7 @@ Model **deployment** is the bridge between a trained/optimized model and users:
 - **Service mesh** — sidecar proxies for mTLS, observability, traffic control
 - **NGC (NVIDIA GPU Cloud)** — **container** registry for NVIDIA-optimized containers
 
-### Top exam traps
+### Top decision traps
 - "**NIM** = **Triton**" → **NIM** is single-model LLM; **Triton** is multi-model multi-framework
 - "Blue-green is gradual" → it's INSTANT; **canary** is gradual
 - "Shadow mode affects users" → old model still responds; new model is observation only
@@ -234,7 +245,7 @@ Evidence source: `mock_1` through `mock_5`, especially **NIM**, **Triton**, **Te
 - **What it covers:** Deploy LLMs with containerized **serving**, orchestration, model APIs, and scalable inference paths.
 - **Use this section when:** Study this when the question asks how to expose, scale, update, or operate an inference endpoint.
 - **Common trap:** **Deployment** packaging is not the same as model optimization or **fine-tuning**.
-- **Scenario signal:** A team needs a self-hosted endpoint with **health checks**, batching, and predictable rollout behavior.
+- **Recognition clues:** A team needs a self-hosted endpoint with **health checks**, batching, and predictable rollout behavior.
 
 ### Study notes
 
@@ -316,7 +327,7 @@ Evidence source: `mock_1` through `mock_5`, especially **NIM**, **Triton**, **Te
    Best answer pattern: Run shadow/canary, monitor LLM-specific quality metrics, then roll forward or rollback.
    Trap: Relying only on CPU/GPU health and HTTP error rate.
 
-### High-yield exam signals
+### What to recognize
 
 - **Endpoint**: The question asks about exposing a model as an API → **NIM** or **Triton**. **NIM** for "fastest supported way." **Triton** for multi-model pipelines.
 - **Container**: The question mentions **Docker**/**Kubernetes** packaging → **NIM** containers from **NGC**. Pre-built, optimized, supported.
@@ -350,7 +361,7 @@ Evidence source: `mock_1` through `mock_5`, especially **NIM**, **Triton**, **Te
 - **deploy-005** / `deploy-005`: Cold-start **latency** is killing your autoscaled LLM endpoint. Which mitigation is most effective? Correct idea: Maintain a small minimum-replica pool (warm pool) and pre-load model weights/engine at **container** start (model_warmup), with pre....
 - **deploy-006** / `deploy-006`: **A/B testing** two LLM variants on production traffic — what is the most robust **evaluation** approach? Correct idea: Stratified traffic split with both online business **metrics** (e.g., task completion, retention, deflection) and offline quality e....
 - **deploy-007** / `deploy-007`: An ONNX model exported from PyTorch fails with a `gather` opset mismatch when building a TensorRT engine. What is the appropriate fix? Correct idea: Re-export with a TensorRT-compatible opset version, or apply a graph transformation to replace the unsupported op.
-- **deploy-008** / `deploy-008`: A 70B model is deployed on H100s with **Triton**. Profiling shows **GPU** utilization at 35% under load. What is the most useful first investigation? Correct idea: Inspect **Triton** **metrics** (queue time, batch size distribution, instance group **occupancy**) and the engine's preferred batch sizes;....
+- **deploy-008** / `deploy-008`: A 70B model is deployed on H100s with **Triton**. Profiling shows **GPU** utilization at 35% under load. What is the most useful first investigation? Correct idea: Inspect **Triton** **metrics** (queue time, batch size distribution, instance group **occupancy**) and the engine's preferred batch sizes...
 - **deploy-009** / `deploy-009`: Which **deployment** scenario most justifies running on Jetson/edge instead of cloud? Correct idea: Strict offline operation, sub-30 ms response budget under unreliable connectivity, or hard data-locality constraints.
 - **mock_2 Q16** / `m1-016`: What is the primary purpose of NVIDIA **NIM**? Correct idea: To provide optimized microservices for deploying and **serving** AI models with industry-standard APIs. Trap: **GPU**-accelerated data preprocessing and augmentation are capabilities of libraries like NVIDIA DALI or RAPIDS, not NVI...
 - **mock_2 Q17** / `m1-017`: Multiple answers: Which of the following accurately describe **TensorRT-LLM**'s optimization techniques for improving LLM inference performance? Select two. Correct idea: Compiling and optimizing model graphs into highly efficient **GPU** execution plans with support for **tensor parallelism** across mult.... Trap: **Kernel fusion**, **quantization**, **in-flight batching**, and paged **attention** are indeed optimization techniques used by Tenso...

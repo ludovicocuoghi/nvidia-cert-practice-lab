@@ -6,9 +6,28 @@ source_lens: general-study
 
 # Observability and Trace Monitor
 
+## What to study first
+
+- **Core idea:** You are building the live monitoring layer for model calls, retrieval, tools, guardrails, routing, latency, cost, errors, quality signals, incidents, and replay.
+- **Study first:** Instrument spans for model inference, retrieval, reranking, tools, guardrails, queues, and output generation.
+- Attach versions: model, prompt, retrieval index, tools, policy, route.
+- Track p50/p95/p99 latency, cost, token usage, errors, empty retrieval, tool failures, safety blocks.
+- Add alerts for quality, safety, cost, and reliability.
+- Support trace replay and incident investigation.
+
 ## What You Are Building
 
 You are building the live monitoring layer for model calls, retrieval, tools, guardrails, routing, latency, cost, errors, quality signals, incidents, and replay.
+
+## Lifecycle Lane Playbooks
+
+| Lane | What this page means there | Output |
+|---|---|---|
+| Train model from zero | During training use training logs; after publish trace the new endpoint and route behavior. | Serving traces for trained checkpoint |
+| Fine-tune existing model | Compare tuned route vs baseline route and detect regressions by adapter/profile. | Adapter-specific traces |
+| Use existing model/API | Trace endpoint calls, prompt versions, route, latency, token cost, and quality proxies. | Model/API operation trace |
+| Build agent/RAG application | Main lane: trace retrieval, rerank, tool calls, memory, guardrails, model calls, and final answer. | Replayable agent trajectory |
+| Operate, govern, and improve | Main lane: incidents, route drift, cost spikes, safety drift, replay, and regression creation. | Incident and monitoring loop |
 
 ## Pipeline
 
@@ -101,6 +120,46 @@ Without span-level traces, adding hardware or changing models is guesswork.
 ### NVIDIA diagnostic boundary
 
 Use application traces first to locate the failing layer. Use **Nsight Systems** when the issue is CPU/GPU/system timeline interaction. Use **Nsight Compute** after a hot kernel is identified and kernel-level detail is needed. Neither replaces agent trace monitoring.
+
+### Trace anatomy
+
+| Span | Useful fields | Failure it explains |
+|---|---|---|
+| Gateway route | route, model profile, tenant, risk tier, fallback reason | Wrong model or expensive route selected |
+| Retrieval | query, filters, index version, top-k, empty-result state | Missing or unauthorized evidence |
+| Rerank | candidate count, top-N, reranker version, latency | Good source buried or reranker too slow |
+| Prefill/decode | input tokens, output tokens, time to first token, tokens/sec | Context bloat or slow generation |
+| Tool call | schema version, arguments, auth result, external status | HTTP 200 final answer but failed action |
+| Guardrail | policy version, block/allow reason, PII/prompt-injection hits | Safety drift or false blocks |
+| Human review | risk tier, reviewer action, reason, SLA | Governance backlog or inconsistent review |
+
+Operational traces should be connected to evals. A production incident is most valuable when it can be replayed with the exact versions that caused it, then added to a regression suite.
+
+### Implementation card: span instrumentation
+
+```python
+def handle_request(request):
+    trace = Trace(request_id=request.id, tenant=request.tenant)
+    with trace.span("route") as s:
+        route = gateway.choose_route(request)
+        s.set("route", route)
+
+    with trace.span("retrieval") as s:
+        chunks = retriever.search(request.query, filters=request.auth_filters)
+        s.set("top_k", len(chunks))
+        s.set("empty", len(chunks) == 0)
+
+    with trace.span("model") as s:
+        answer = llm.generate(build_prompt(request, chunks))
+        s.set("input_tokens", answer.input_tokens)
+        s.set("output_tokens", answer.output_tokens)
+
+    trace.set_outcome(task_success=score_task(answer), cost_usd=estimate_cost(trace))
+    trace_store.write(trace)
+    return answer
+```
+
+Trace-derived evaluation functions include task success rate, empty retrieval rate, unsupported citation rate, tool failure rate, guardrail false block/allow rate, p95/p99 by span, and cost per completed task.
 
 ## Exam Signals
 

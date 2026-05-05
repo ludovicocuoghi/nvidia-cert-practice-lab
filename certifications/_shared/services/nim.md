@@ -6,10 +6,25 @@ status: populated
 
 # NIM (NVIDIA Inference Microservice)
 
+## What to study first
+
+- **Core idea:** Docker container (microservice) — pre-optimized model + inference runtime + OpenAI-compatible API
+- **Use it when:** Use when a supported model must be exposed quickly as an optimized, containerized, OpenAI-compatible API endpoint.
+- **Choose another path when:** Choose NeMo Framework/Customizer when weights/adapters must change, NeMo Curator for training data prep, Agent Toolkit for workflow control, and Nsight/TensorRT-LLM when the question is lower-level profiling or engine tuning.
+- **Concrete surface:** Access: `docker pull nvcr.io/nim/..` from NGC, `docker run --gpus all`, HTTP at `localhost:8000/v1` Inside: TensorRT-LLM/Triton runtime, model weights, health/metrics endpoints, OpenAI API surface I/O: HTTP POST with chat messages (OpenAI format) / text for embedding / query for re-rank -> Streaming JSON with generated tokens / embedding vector / re-ranked documents
+- **Study first:** OpenAI-compatible APIs: NIM exposes `/v1/chat/completions`, `/v1/embeddings`, `/v1/rerank` — same client SDKs work, zero code changes to switch from OpenAI to self-hosted NIM
+- model profiles: pre-tuned TensorRT-LLM configurations (batch size, TP degree, precision) validated per model architecture + GPU combination — the "just works" configuration
+- container/Kubernetes deployment: NIM is distributed as a Docker container from NGC
+- deploy on K8s with GPU node pools, HPA autoscaling, and NIM Operator for lifecycle management
+- security updates: NVIDIA ships patched NIM containers for CVEs — part of NVIDIA AI Enterprise support/SLA, not just open-source best-effort
+- NIM Operator: Kubernetes operator for managing NIM at scale — handles GPU-aware scheduling, rolling updates with model-load awareness, auto-scaling, health monitoring
+- **Real trap:** Confusing the model, the microservice, and the catalog. Nemotron is a model family; NGC distributes artifacts; NIM packages a supported model as an optimized callable API.
+
 ## At a glance
 
 | | |
 |---|---|
+| **Full name** | NVIDIA Inference Microservice |
 | **What it is** | Docker container (microservice) — pre-optimized model + inference runtime + OpenAI-compatible API |
 | **How you access it** | `docker pull nvcr.io/nim/..` from NGC, `docker run --gpus all`, HTTP at `localhost:8000/v1` |
 | **Input** | HTTP POST with chat messages (OpenAI format) / text for embedding / query for re-rank |
@@ -22,7 +37,7 @@ docker run --gpus all -p 8000:8000 nvcr.io/nim/meta/llama-3.1-8b-instruct:latest
 ```
 ```python
 from openai import OpenAI
-client = OpenAI(base_url="http://localhost:8000/v1", API_key="not-needed")
+client = OpenAI(base_url="http://localhost:8000/v1", api_key="not-needed")
 client.chat.completions.create(model="meta/llama-3.1-8b", messages=[{"role":"user","content":"Hi"}])
 ```
 
@@ -54,7 +69,7 @@ NVIDIA's pre-built, optimized, containerized inference microservice layer. NIM p
 - Any question about **packaged, production-ready model API endpoints**
 - Questions about serving models at scale with minimal configuration
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
 - **Model training/customization**: That's NeMo Framework or NeMo Customizer. NIM serves trained models.
 - **Data processing acceleration**: That's RAPIDS.
@@ -106,7 +121,7 @@ docker run --gpus all \
   nvcr.io/nim/meta/llama-3.1-70b-instruct:latest
 
 # Kubernetes Deployment
-APIVersion: apps/v1
+apiVersion: apps/v1
 kind: Deployment
 spec:
   template:
@@ -280,9 +295,9 @@ The agent workflow: embed the query via Embedding NIM → retrieve candidates fr
 - **Relevant exams:** GenAI LLMs, Agentic AI
 - **What it is:** Docker container (microservice) — pre-optimized model + inference runtime + OpenAI-compatible API
 - **Use it when:** Use when a supported model must be exposed quickly as an optimized, containerized, OpenAI-compatible API endpoint.
-- **Do not use it when:** Do not use it for training, fine-tuning, data curation, agent orchestration, or deep kernel profiling.
-- **Common trap:** Confusing NIM serving with NeMo training/customization or TensorRT-LLM engine-level optimization.
-- **Scenario signal:** A team wants to expose a supported model as an optimized OpenAI-compatible API endpoint using an NVIDIA container.
+- **Do not use it when:** Choose NeMo Framework/Customizer when weights/adapters must change, NeMo Curator for training data prep, Agent Toolkit for workflow control, and Nsight/TensorRT-LLM when the question is lower-level profiling or engine tuning.
+- **Common trap:** Confusing the model, the microservice, and the catalog. Nemotron is a model family; NGC distributes artifacts; NIM packages a supported model as an optimized callable API.
+- **Recognition clues:** A team wants to expose a supported model as an optimized OpenAI-compatible API endpoint using an NVIDIA container.
 ### Study notes
 - **NIM** is the production microservice layer for optimized foundation-model inference with supported containers, APIs, profiles, and deployment patterns.
 - Choose **NIM** when the scenario wants a model endpoint quickly with production runtime behavior, not when it asks how to train or customize model weights.
@@ -293,7 +308,7 @@ The agent workflow: embed the query via Embedding NIM → retrieve candidates fr
 - **container/Kubernetes deployment**: NIM is distributed as a Docker container from NGC; deploy on K8s with GPU node pools, HPA autoscaling, and NIM Operator for lifecycle management
 - **security updates**: NVIDIA ships patched NIM containers for CVEs — part of NVIDIA AI Enterprise support/SLA, not just open-source best-effort
 - **NIM Operator**: Kubernetes operator for managing NIM at scale — handles GPU-aware scheduling, rolling updates with model-load awareness, auto-scaling, health monitoring
-### High-yield exam signals
+### What to recognize
 - production endpoint → NIM provides the fastest supported path to a production model API
 - API serving → NIM exposes OpenAI-compatible `/v1/chat/completions`, `/v1/embeddings`, `/v1/rerank` endpoints
 - containerized model → NIM packages model + runtime as a Docker container from NGC
@@ -310,8 +325,8 @@ The agent workflow: embed the query via Embedding NIM → retrieve candidates fr
 - Write the difference between model, runtime, container, endpoint, and client API.
 ## Exam tips from mocks
 - Mock-style questions test whether **NIM** matches **Serving / deployment**, not whether the product name sounds familiar.
-- Choose it when the scenario signal matches this boundary: Use when a supported model must be exposed quickly as an optimized, containerized, OpenAI-compatible API endpoint.
-- Reject it when the problem is actually about another layer: Do not use it for training, fine-tuning, data curation, agent orchestration, or deep kernel profiling.
+- Boundary cue: choose it when a supported model must be exposed quickly as an optimized, containerized, OpenAI-compatible API endpoint.
+- Adjacent-service cue: not for training, fine-tuning, data curation, agent orchestration, or deep kernel profiling.
 - The common trap pattern is: Confusing NIM serving with NeMo training/customization or TensorRT-LLM engine-level optimization.
 - Expect distractors around nearby services such as **TensorRT-LLM**, **RAPIDS**, **NeMo Evaluator**, **Nsight Systems**. Decide by lifecycle first, product name second.
 - Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.

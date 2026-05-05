@@ -36,7 +36,7 @@ status: stub
 - <Concrete scenario triggering this tool>
 - <…>
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
 - <Confused with which other tool? Why?>
 - <…>

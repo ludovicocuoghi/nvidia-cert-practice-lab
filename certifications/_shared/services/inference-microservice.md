@@ -6,6 +6,14 @@ status: populated
 
 # Inference Microservice
 
+## What to study first
+
+- **Core idea:** The serving unit for model inference.
+- **Use it when:** The scenario mentions endpoints, model APIs, serving containers, health checks, autoscaling, auth, or production inference.
+- **Choose another path when:** Choose a neighboring service when the problem is training, RAG, orchestration, or runtime policy design.
+- **Concrete surface:** Access: Managed model APIs, containers, self-hosted model servers, endpoint services Inside: Runtime container, model weights, tokenizer, scheduler, batching, health checks, telemetry I/O: Prompt/messages, model name, generation parameters, auth, request metadata -> Generated tokens, embeddings, classifications, or model responses with runtime metrics
+- **Real trap:** Confusing the model with the microservice.
+
 ## At a glance
 
 | | |
@@ -16,6 +24,17 @@ status: populated
 | **Output** | Generated tokens, embeddings, classifications, or model responses with runtime metrics |
 | **Inside** | Runtime container, model weights, tokenizer, scheduler, batching, health checks, telemetry |
 
+```python
+from openai import OpenAI
+
+client = OpenAI(base_url="http://model-endpoint/v1", api_key="...")
+client.chat.completions.create(
+    model="approved-model",
+    messages=[{"role": "user", "content": "Summarize this case."}],
+    stream=True,
+)
+```
+
 **Mental model**: the API wrapper that turns an approved model into a service.
 
 ## Study card data
@@ -24,9 +43,9 @@ status: populated
 - **Lifecycle:** Serving and deployment
 - **Relevant exams:** Agentic AI General Study
 - **Use it when:** The scenario mentions endpoints, model APIs, serving containers, health checks, autoscaling, auth, or production inference.
-- **Do not use it when:** The problem is training, RAG, orchestration, or runtime policy design.
+- **Do not use it when:** Choose a neighboring service when the problem is training, RAG, orchestration, or runtime policy design.
 - **Common trap:** Confusing the model with the microservice.
-- **Scenario signal:** "The team needs an OpenAI-compatible endpoint for an approved model on its own infrastructure."
+- **Recognition clues:** "The team needs an OpenAI-compatible endpoint for an approved model on its own infrastructure."
 
 ## Related service map
 

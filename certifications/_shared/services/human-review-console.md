@@ -6,6 +6,14 @@ status: populated
 
 # Human Review Console
 
+## What to study first
+
+- **Core idea:** The governance layer for human judgment and feedback.
+- **Use it when:** The scenario mentions approval, escalation, reviewer load, regulated actions, sampled QA, or audit evidence.
+- **Choose another path when:** Let low-risk actions run automatically or use sampled review when full approval would overload reviewers.
+- **Concrete surface:** Access: Case queues, moderation/review UIs, labeling tools, approval workflows, governance systems Inside: Risk tiers, assignment, SLA, reviewer rubric, audit log, feedback export, sampling strategy I/O: Risk score, proposed action, trace, retrieved evidence, model output, policy result, reviewer rubric -> Approved action, rejected action, escalation, label, correction, policy update, eval case
+- **Real trap:** Collecting review comments that never become evals, policy fixes, or training data.
+
 ## At a glance
 
 | | |
@@ -16,6 +24,15 @@ status: populated
 | **Output** | Approved action, rejected action, escalation, label, correction, policy update, eval case |
 | **Inside** | Risk tiers, assignment, SLA, reviewer rubric, audit log, feedback export, sampling strategy |
 
+```yaml
+review_case:
+  risk: high
+  proposed_action: issue_refund
+  evidence: [trace_id, policy_result, retrieved_sources]
+  required_decision: [approve, reject, escalate]
+  exports_to: [eval_queue, policy_backlog]
+```
+
 **Mental model**: humans review the right work at the right risk level, and their feedback improves the system.
 
 ## Study card data
@@ -24,9 +41,9 @@ status: populated
 - **Lifecycle:** Human oversight
 - **Relevant exams:** Agentic AI General Study
 - **Use it when:** The scenario mentions approval, escalation, reviewer load, regulated actions, sampled QA, or audit evidence.
-- **Do not use it when:** Every low-risk action can safely run automatically.
+- **Do not use it when:** Let low-risk actions run automatically or use sampled review when full approval would overload reviewers.
 - **Common trap:** Collecting review comments that never become evals, policy fixes, or training data.
-- **Scenario signal:** "Only high-risk refund decisions need approval; low-risk answers are sampled for QA."
+- **Recognition clues:** "Only high-risk refund decisions need approval; low-risk answers are sampled for QA."
 
 ## Related service map
 

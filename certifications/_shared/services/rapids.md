@@ -6,6 +6,25 @@ status: populated
 
 # RAPIDS
 
+## What to study first
+
+- **Core idea:** Python library suite — GPU-accelerated pandas/scikit-learn equivalents
+- **Use it when:** Use when dataframe, graph, classical ML, feature engineering, or ETL work should move from CPU-style pandas/scikit-learn workflows to GPU acceleration.
+- **Choose another path when:** Choose NIM/Triton for LLM serving, TensorRT/TensorRT-LLM for engine optimization, NeMo Guardrails for runtime policy, and Agent Toolkit for workflow orchestration.
+- **Concrete surface:** Access: `pip install cudf-cu12 cuml-cu12` or `nvcr.io/nvidia/rAPIdsai/base` container Inside: `cudf` (DataFrames), `cuml` (ML), `cugraph` (graphs), `cuspatial` (geo), `cucim` (images) I/O: CSV, Parquet, NumPy arrays, pandas DataFrames -> GPU-resident DataFrames, embeddings, trained classical ML models
+- **Study first:** RAPIDS ecosystem components: cuDF (GPU DataFrames with pandas-compatible API), cuML (GPU ML with scikit-learn-compatible API), cuGraph (GPU graph analytics), cuSpatial (geospatial), cuCIM (image processing)
+- GPU data processing eliminates CPU-GPU bottleneck: data loaded directly into GPU memory via cuDF.read_csv (CUDA kernels) without CPU intermediate step
+- eliminates PCIe transfer overhead for LLM-scale data
+- cuDF architecture: columnar GPU memory with Apache Arrow format
+- CUDA kernels for groupby (CUB radix sort), join (GPU hash join), filter (parallel predicate evaluation), sort (CUB radix sort)
+- CPU fallback for unsupported operations
+- RAPIDS Memory Manager (RMM): pool allocation to avoid cudaMalloc/cudaFree overhead
+- spill-to-host-memory for datasets exceeding GPU VRAM
+- Unified Memory support
+- cuML threshold (~100k rows x 100 features): below this threshold, PCIe transfer overhead dominates and CPU sklearn is competitive
+- above it, GPU acceleration becomes significant (20-30x speedup for 1M x 1000 PCA)
+- **Real trap:** Seeing "GPU acceleration" and picking RAPIDS for decode throughput. RAPIDS accelerates dataframe, graph, and classical ML/data pipelines; it does not make an LLM token scheduler faster.
+
 ## At a glance
 
 | | |
@@ -45,7 +64,7 @@ NVIDIA's suite of GPU-accelerated data science libraries. RAPIDS includes cuDF (
 - "Accelerates data processing" — key exam phrase
 - Replacing pandas/scikit-learn workflows with GPU-accelerated equivalents
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
 - **Model inference optimization**: That's TensorRT-LLM or TensorRT. RAPIDS handles data, not model inference (mock_1 platform-003, platform-004).
 - **Model serving as API**: That's NIM. RAPIDS cuDF is a data library, not a serving platform.
@@ -207,19 +226,19 @@ The key exam insight: cuML for LLM workflows is about **data exploration, qualit
 - **Relevant exams:** GenAI LLMs, Agentic AI
 - **What it is:** Python library suite — GPU-accelerated pandas/scikit-learn equivalents
 - **Use it when:** Use when dataframe, graph, classical ML, feature engineering, or ETL work should move from CPU-style pandas/scikit-learn workflows to GPU acceleration.
-- **Do not use it when:** Do not use it for LLM serving, model engine building, guardrails, or agent orchestration.
-- **Common trap:** Confusing GPU-accelerated data processing with inference optimization.
-- **Scenario signal:** A data pipeline needs pandas/scikit-learn-style ETL, dataframe, graph, or classical ML operations accelerated on GPUs.
+- **Do not use it when:** Choose NIM/Triton for LLM serving, TensorRT/TensorRT-LLM for engine optimization, NeMo Guardrails for runtime policy, and Agent Toolkit for workflow orchestration.
+- **Common trap:** Seeing "GPU acceleration" and picking RAPIDS for decode throughput. RAPIDS accelerates dataframe, graph, and classical ML/data pipelines; it does not make an LLM token scheduler faster.
+- **Recognition clues:** A data pipeline needs pandas/scikit-learn-style ETL, dataframe, graph, or classical ML operations accelerated on GPUs.
 ### Study notes
 - Place **RAPIDS** at **Data processing**: swap `import pandas` for `import cudf` — same API, runs on GPU.
-- Choose it when: Use when dataframe, graph, classical ML, feature engineering, or ETL work should move from CPU-style pandas/scikit-learn workflows to GPU acceleration. Reject it when: Do not use it for LLM serving, model engine building, guardrails, or agent orchestration.
+- Boundary cue: choose it when dataframe, graph, classical ML, feature engineering, or ETL work should move from CPU-style pandas/scikit-learn workflows to GPU acceleration. Adjacent-service cue: not for LLM serving, model engine building, guardrails, or agent orchestration.
 ### Must know
 - **RAPIDS ecosystem components**: cuDF (GPU DataFrames with pandas-compatible API), cuML (GPU ML with scikit-learn-compatible API), cuGraph (GPU graph analytics), cuSpatial (geospatial), cuCIM (image processing)
 - **GPU data processing eliminates CPU-GPU bottleneck**: data loaded directly into GPU memory via cuDF.read_csv (CUDA kernels) without CPU intermediate step; eliminates PCIe transfer overhead for LLM-scale data
 - **cuDF architecture**: columnar GPU memory with Apache Arrow format; CUDA kernels for groupby (CUB radix sort), join (GPU hash join), filter (parallel predicate evaluation), sort (CUB radix sort); CPU fallback for unsupported operations
 - **RAPIDS Memory Manager (RMM)**: pool allocation to avoid cudaMalloc/cudaFree overhead; spill-to-host-memory for datasets exceeding GPU VRAM; Unified Memory support
 - **cuML threshold (~100k rows x 100 features)**: below this threshold, PCIe transfer overhead dominates and CPU sklearn is competitive; above it, GPU acceleration becomes significant (20-30x speedup for 1M x 1000 PCA)
-### High-yield exam signals
+### What to recognize
 - **GPU-accelerated ETL and data processing** → scenario describes accelerating pandas or scikit-learn workflows on NVIDIA GPUs; RAPIDS cuDF/cuML provide familiar APIs running on GPU with minimal code changes
 - **Eliminating CPU-GPU data movement** → scenario about slow training data pipelines where data moves CPU → GPU across PCIe; RAPIDS loads data directly into GPU memory, keeping the entire pipeline on GPU
 - **RAPIDS vs inference optimization trap** → scenario about poor LLM token throughput or model inference latency with RAPIDS as a distractor; RAPIDS accelerates data processing, not model inference — answer is TensorRT-LLM
@@ -229,8 +248,8 @@ The key exam insight: cuML for LLM workflows is about **data exploration, qualit
 - Write one scenario where this service is correct and one where it is a tempting but wrong distractor.
 ## Exam tips from mocks
 - Mock-style questions test whether **RAPIDS** matches **Data processing**, not whether the product name sounds familiar.
-- Choose it when the scenario signal matches this boundary: Use when dataframe, graph, classical ML, feature engineering, or ETL work should move from CPU-style pandas/scikit-learn workflows to GPU acceleration.
-- Reject it when the problem is actually about another layer: Do not use it for LLM serving, model engine building, guardrails, or agent orchestration.
+- Boundary cue: choose it when dataframe, graph, classical ML, feature engineering, or ETL work should move from CPU-style pandas/scikit-learn workflows to GPU acceleration.
+- Adjacent-service cue: not for LLM serving, model engine building, guardrails, or agent orchestration.
 - The common trap pattern is: Confusing GPU-accelerated data processing with inference optimization.
 - Expect distractors around nearby services such as **NIM**, **NeMo Evaluator**, **Nsight Systems**, **NeMo Curator**. Decide by lifecycle first, product name second.
 - Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.

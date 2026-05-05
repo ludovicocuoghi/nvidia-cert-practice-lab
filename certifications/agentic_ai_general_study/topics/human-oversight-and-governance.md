@@ -6,6 +6,17 @@ status: populated
 
 # Human Oversight and Governance
 
+## What to study first
+
+- **Core idea:** Risk-tiered approval, escalation, review queues, feedback loops, audit evidence, and governance operations.
+- **Use it when:** The scenario mentions human-in-the-loop, human-on-the-loop, regulated actions, review overload, auditability, or reviewer feedback.
+- **Study first:** Human-in-the-loop: blocks selected actions until a reviewer approves, rejects, edits, or escalates.
+- Human-on-the-loop: lets automation proceed but samples, monitors, or interrupts when risk or drift appears.
+- Risk tiers: usually map to auto-allow, sample-review, approval-required, and block. Reviewing every case is usually a design failure.
+- Audit evidence: is more than chat text: it includes model, prompt, tool, retrieval index, policy, route, reviewer, timestamp, and decision reason.
+- Reviewer feedback: becomes training or evaluation data only after privacy review, dedupe, label-quality checks, and holdout protection.
+- **Real trap:** Reviewing everything manually or collecting feedback that never improves the system.
+
 ## Concept ownership
 
 This is the vendor-neutral home for human approval, review queues, escalation, audit evidence, risk tiers, and feedback loops. Vendor pages should mention the workflow or service that implements review, but the reusable governance pattern belongs here.
@@ -16,7 +27,7 @@ This is the vendor-neutral home for human approval, review queues, escalation, a
 - **Lifecycle:** Governance
 - **Use this section when:** The scenario mentions human-in-the-loop, human-on-the-loop, regulated actions, review overload, auditability, or reviewer feedback.
 - **Common trap:** Reviewing everything manually or collecting feedback that never improves the system.
-- **Scenario signal:** High-risk actions require approval; low-risk outputs are sampled for review.
+- **Recognition clues:** High-risk actions require approval; low-risk outputs are sampled for review.
 
 ### Key ideas
 
@@ -25,6 +36,31 @@ This is the vendor-neutral home for human approval, review queues, escalation, a
 - **Risk tiers** decide auto-allow, sample-review, approval-required, or block.
 - **Audit evidence** includes prompt/model/tool/retrieval/policy versions and human decisions.
 - **Feedback loops** turn reviewer labels into eval cases, policy updates, and training data.
+
+### Must know
+
+- **Human-in-the-loop** blocks selected actions until a reviewer approves, rejects, edits, or escalates.
+- **Human-on-the-loop** lets automation proceed but samples, monitors, or interrupts when risk or drift appears.
+- **Risk tiers** usually map to auto-allow, sample-review, approval-required, and block. Reviewing every case is usually a design failure.
+- **Audit evidence** is more than chat text: it includes model, prompt, tool, retrieval index, policy, route, reviewer, timestamp, and decision reason.
+- **Reviewer feedback** becomes training or evaluation data only after privacy review, dedupe, label-quality checks, and holdout protection.
+
+### Code anchor
+
+```python
+def oversight_action(risk, confidence, authorized):
+    if not authorized:
+        return "block"
+    if risk == "high":
+        return "approval_required"
+    if confidence < 0.70:
+        return "escalate"
+    if risk == "low":
+        return "sample_review"
+    return "auto_allow"
+```
+
+Governance scorecards track approval precision, reviewer agreement, escalation rate, SLA, false allow/block, audit completeness, and feedback-to-eval conversion.
 
 ### Related services
 

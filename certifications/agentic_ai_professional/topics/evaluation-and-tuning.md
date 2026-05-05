@@ -6,6 +6,17 @@ status: populated
 
 # Evaluation and Tuning
 
+## What to study first
+
+- **Core idea:** Evaluate full agent trajectories, tool correctness, **task success**, **latency**, cost, safety, and feedback loops.
+- **Use it when:** Study this when final-answer metrics are insufficient and the agent's steps matter.
+- **Study first:** Trajectory evaluation: score each step — **tool selection**, arguments, **observation usage**, policy compliance, reasoning quality — NOT final-answer alone
+- Final-answer evaluation limits: exact match, BLEU, ROUGE — these miss wrong-tool-right-answer, unsafe intermediate steps, and trajectory quality
+- Faithfulness/groundedness: whether each claim is entailed by retrieved evidence — measured via NLI-based **entailment checking** — NOT topical similarity or embedding distance
+- Faithfulness vs topicality: a **RAG** answer can be on-topic but unsupported (hallucinated). Topical similarity = embedding closeness to query. **Faithfulness** = entailment from evidence. Distinct metrics.
+- Citation-support score: per-claim entailment check against cited sources — catches plausible-sounding unsupported statements
+- **Real trap:** A correct final answer can hide unsafe or inefficient tool behavior. Evaluate the trajectory, not only the response.
+
 ## Certification boundary
 
 This page is the NCP-AAI exam lens for agent evaluation and tuning. Keep trajectory, groundedness, safety, and cost metrics at certification depth. The reusable concept home is `Agentic AI General Study -> Evaluation and Safety`; NVIDIA evaluator and exam-distractor knowledge stays here.
@@ -99,7 +110,7 @@ The key shift from LLM eval to agent eval: **you're evaluating a process, not a 
 - **Smaller distilled model**: Maintains acceptable accuracy with faster inference for tight **latency** budgets
 - **Not**: larger model for **latency** problems, beam search with wide beam (increases **latency**)
 
-## Common exam traps
+## Decision traps worth remembering
 
 1. **"Final-answer exact match is sufficient."** It misses lucky guesses, wrong trajectories, and unsafe intermediate steps. The exam expects **trajectory evaluation** for agents.
 
@@ -157,7 +168,7 @@ Evidence source: `mock_1` through `mock_5`, especially **trajectory evaluation**
 - **What it covers:** Evaluate full agent trajectories, tool correctness, **task success**, **latency**, cost, safety, and feedback loops.
 - **Use this section when:** Study this when final-answer metrics are insufficient and the agent's steps matter.
 - **Common trap:** A correct final answer can hide unsafe or inefficient tool behavior. Evaluate the trajectory, not only the response.
-- **Scenario signal:** Final answers look correct, but the trajectory reveals wrong tools, unsupported claims, unsafe actions, or cost/regression problems.
+- **Recognition clues:** Final answers look correct, but the trajectory reveals wrong tools, unsupported claims, unsafe actions, or cost/regression problems.
 
 ### Study notes
 
@@ -230,7 +241,7 @@ Evidence source: `mock_1` through `mock_5`, especially **trajectory evaluation**
    Best answer pattern: Decompose the judge rubric into separate dimensions (correctness, evidence support, conciseness, safety). Provide **calibrated examples** at each score level. Randomize answer order.
    Trap: A single vague prompt like "rate the answer quality" — amplifies verbosity bias.
 
-### High-yield exam signals
+### What to recognize
 
 - **Agent benchmark gap**: benchmark score improves but production escalation rate increases because workflow-impact metrics were not in the eval set
 - **Unsafe intermediate step**: agent reaches the correct final answer but called a privileged tool unnecessarily, creating audit and **privacy** risk

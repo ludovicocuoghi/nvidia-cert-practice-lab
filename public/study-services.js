@@ -20,21 +20,21 @@ export const nvidiaServices = [
     lifecycle: "Training and customization",
     filters: ["GenAI LLMs", "Agentic AI", "Training and customization"],
     use: "Use when the scenario is about SFT, PEFT, LoRA/QLoRA, continued pretraining, model customization, or large-scale model recipes.",
-    avoid: "Do not pick it when the question is only asking for a packaged inference API or generic serving endpoint.",
+    avoid: "Choose NIM or Triton when an already-trained model only needs a production API; choose NeMo Customizer for managed PEFT when the full training stack is unnecessary.",
     traps: "Confusing NeMo Framework with NIM. NeMo customizes/builds models; NIM packages and serves optimized model microservices.",
     scenario: "A team has domain instructions and needs LoRA tuning while preserving base-model behavior.",
     quizPrompt: "Which NVIDIA component is most appropriate for PEFT customization before deployment?"
   },
   {
     name: "NeMo Agent Toolkit",
-    description: "Framework-agnostic toolkit for connecting enterprise agents, workflows, tools, retrievers, memory, and observability.",
+    description: "Config-driven NAT workflow runtime for agent control flow across tools, retrievers, memory, MCP, tracing, eval, and serving.",
     exams: ["Agentic AI"],
     lifecycle: "Agent orchestration",
     filters: ["Agentic AI", "Agent orchestration", "RAG and retrieval", "Monitoring and profiling"],
-    use: "Use when the scenario is about building, composing, testing, profiling, or observing agent workflows across tools and frameworks.",
-    avoid: "Do not pick it for low-level GPU kernel profiling or pure TensorRT-LLM engine optimization.",
-    traps: "Thinking it replaces LangChain/LlamaIndex/CrewAI. It can work with existing agent frameworks instead of forcing a rewrite.",
-    scenario: "A company wants a router agent, tool-calling agent, and memory wrapper around an existing enterprise agent stack.",
+    use: "Choose it when a workflow must route requests, call tools/retrievers/memory, run sequential or parallel branches, expose an API/MCP server, or evaluate/profile agent traces.",
+    avoid: "Choose the neighboring layer when the problem is only retrieval, runtime policy, model serving, model customization, or tool-gateway authorization.",
+    traps: "Adding an agent toolkit when the real failure is an unowned tool boundary: missing schema validation, bad retrieval, missing access control, or no deterministic state owner.",
+    scenario: "A workflow YAML uses functions, llms, retrievers, memory, and a _type such as tool_calling_agent, react_agent, reasoning_agent, rewoo_agent, router_agent, parallel_executor, sequential_executor, or auto_memory_agent.",
     quizPrompt: "What tool fits a framework-agnostic agent workflow with tool execution and observability?"
   },
   {
@@ -44,22 +44,22 @@ export const nvidiaServices = [
     lifecycle: "Safety and guardrails",
     filters: ["GenAI LLMs", "Agentic AI", "Safety and guardrails", "Agent orchestration"],
     use: "Use when the scenario requires policy flows, safe dialog behavior, prompt-injection defenses, tool restrictions, or output checks.",
-    avoid: "Do not treat it as a replacement for IAM, document permissions, secure tool design, or offline evaluation.",
+    avoid: "Choose IAM/document ACLs for access control, a tool gateway for execution security, human approval for high-risk actions, and Evaluator for offline quality scoring.",
     traps: "Choosing guardrails to fix unauthorized retrieval after sensitive data is already in context. Access control must happen before retrieval.",
     scenario: "A customer assistant must refuse out-of-policy requests and prevent unsafe tool calls.",
     quizPrompt: "Where do guardrails fit in a tool-using customer support assistant?"
   },
   {
     name: "NeMo Retriever",
-    description: "Microservices for enterprise extraction, embedding, indexing, reranking, and retrieval pipelines built with NIM.",
+    description: "NVIDIA Retriever microservice family for document extraction, embeddings, indexing/search, and reranking in enterprise RAG.",
     exams: ["GenAI LLMs", "Agentic AI"],
     lifecycle: "RAG and retrieval",
     filters: ["GenAI LLMs", "Agentic AI", "RAG and retrieval", "Serving and deployment"],
-    use: "Use when the scenario is about connecting proprietary data to RAG, multimodal document extraction, embedding, indexing, semantic/hybrid search, or reranking.",
-    avoid: "Do not pick it when the model needs new behavior learned from examples; that is customization/fine-tuning.",
+    use: "Use when the scenario is about connecting proprietary data to RAG: parse documents, embed chunks/queries, index/search, apply permissions, or rerank candidate passages.",
+    avoid: "Choose Framework/Customizer when behavior must be learned from examples, Curator when preparing training data, and Guardrails when policy enforcement is the issue.",
     traps: "Assuming a larger context window replaces retrieval quality. Bad chunks and weak reranking still cause bad answers.",
     scenario: "A regulated enterprise wants secure retrieval over PDFs, tables, charts, and internal knowledge.",
-    quizPrompt: "What service handles extraction, embedding, indexing, and reranking for enterprise RAG?"
+    quizPrompt: "Which NVIDIA Retriever layer handles extraction, embedding, indexing/search, and reranking for enterprise RAG?"
   },
   {
     name: "NIM",
@@ -68,8 +68,8 @@ export const nvidiaServices = [
     lifecycle: "Serving and deployment",
     filters: ["GenAI LLMs", "Agentic AI", "Serving and deployment", "Inference optimization"],
     use: "Use when the scenario asks for packaged, supported, optimized model serving with APIs, profiles, observability, and Kubernetes/container deployment.",
-    avoid: "Do not choose NIM for training a model from scratch or debugging a single CUDA kernel.",
-    traps: "Confusing NIM with the model itself. NIM is the deployment/service packaging around models.",
+    avoid: "Choose Framework/Customizer when weights or adapters must change, Nsight/TensorRT-LLM for lower-level performance work, Agent Toolkit for workflow control, and Curator for training data.",
+    traps: "Confusing the model, the microservice, and the catalog. Nemotron is a model family; NGC distributes artifacts; NIM packages a supported model as an optimized callable API.",
     scenario: "A team wants an OpenAI-compatible endpoint for a supported LLM on their own GPUs.",
     quizPrompt: "Which NVIDIA layer gives a production microservice API for optimized model inference?"
   },
@@ -80,8 +80,8 @@ export const nvidiaServices = [
     lifecycle: "Model selection",
     filters: ["GenAI LLMs", "Agentic AI", "Training and customization", "Agent orchestration"],
     use: "Use when the scenario asks which model family to choose for NVIDIA-aligned reasoning, reward, instruction, or agentic workflows.",
-    avoid: "Do not choose a model family when the question asks for serving infrastructure, retrieval services, or profiling tools.",
-    traps: "Answering with Nemotron when the constraint is actually deployment packaging, scheduling, or GPU profiling.",
+    avoid: "Choose NIM/Triton for serving, Retriever for RAG, Nsight/TensorRT-LLM for performance, and Framework/Customizer when the question is about changing weights.",
+    traps: "Answering with a model family when the constraint is actually deployment packaging, retrieval quality, scheduling, or GPU profiling.",
     scenario: "An agent needs a reasoning-capable model and a reward model for preference evaluation.",
     quizPrompt: "When is Nemotron the model choice rather than the serving stack?"
   },
@@ -92,7 +92,7 @@ export const nvidiaServices = [
     lifecycle: "Serving and deployment",
     filters: ["GenAI LLMs", "Serving and deployment", "Inference optimization"],
     use: "Use when the scenario is about multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.",
-    avoid: "Do not pick it as the model customization framework or as the low-level LLM engine builder.",
+    avoid: "Choose NIM for the fastest supported model microservice, TensorRT-LLM for LLM engine optimization, and Framework/Customizer for model development.",
     traps: "Increasing instance count blindly. More instances on one GPU can worsen p99 latency through contention.",
     scenario: "A pipeline needs preprocessing, TensorRT model inference, and postprocessing behind one endpoint.",
     quizPrompt: "Which service composes preprocessing, inference, and postprocessing as an ensemble?"
@@ -104,7 +104,7 @@ export const nvidiaServices = [
     lifecycle: "Inference optimization",
     filters: ["GenAI LLMs", "Inference optimization", "Serving and deployment"],
     use: "Use when the scenario asks about building optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT.",
-    avoid: "Do not choose it for data preparation, human evaluation, or high-level agent workflow orchestration.",
+    avoid: "Choose Curator for data prep, Retriever for RAG, Evaluator for quality scoring, Agent Toolkit for workflow orchestration, and Guardrails for runtime policy.",
     traps: "Using weight quantization to solve a long-context KV-cache bottleneck. Those are different memory terms.",
     scenario: "A 70B chat model needs high concurrency with variable-length prompts and low TTFT.",
     quizPrompt: "What NVIDIA stack optimizes LLM generation with paged KV cache and continuous batching?"
@@ -116,8 +116,8 @@ export const nvidiaServices = [
     lifecycle: "Serving and deployment",
     filters: ["GenAI LLMs", "Agentic AI", "Serving and deployment"],
     use: "Use when the scenario references pulling NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.",
-    avoid: "Do not choose it as the inference runtime or training algorithm.",
-    traps: "Treating NGC as a serving server. NGC distributes artifacts; NIM/Triton serve models.",
+    avoid: "Choose NIM/Triton to run inference, Framework/Customizer to train or tune, Evaluator to score quality, and Agent Toolkit to orchestrate workflows.",
+    traps: "Treating NGC as an NVIDIA cloud runtime. NGC is broader and more generic: the catalog/registry where NIM containers, model artifacts, Helm charts, and SDKs live; NIM is the service you deploy and call.",
     scenario: "An air-gapped enterprise needs approved containers and model artifacts staged from an NVIDIA registry.",
     quizPrompt: "What NVIDIA service is the catalog/registry for containers and model assets?"
   },
@@ -128,7 +128,7 @@ export const nvidiaServices = [
     lifecycle: "Monitoring and profiling",
     filters: ["GenAI LLMs", "Agentic AI", "Monitoring and profiling", "Inference optimization"],
     use: "Use first when the question asks where time is going across CPU, GPU, launches, waits, and communication.",
-    avoid: "Do not choose it when the question asks for detailed metrics inside one CUDA kernel; that is Nsight Compute.",
+    avoid: "Choose Nsight Compute after Systems identifies a hot kernel and the question asks for occupancy, warp stalls, memory bandwidth, or roofline detail.",
     traps: "Jumping to kernel optimization when the real issue is CPU launch overhead or synchronization gaps.",
     scenario: "An inference trace has long gaps between CUDA kernels and low GPU occupancy.",
     quizPrompt: "Which profiler shows CPU/GPU timeline gaps and CUDA launch overhead?"
@@ -140,7 +140,7 @@ export const nvidiaServices = [
     lifecycle: "Monitoring and profiling",
     filters: ["GenAI LLMs", "Monitoring and profiling", "Inference optimization"],
     use: "Use after a specific kernel is identified and the question asks why that kernel is memory-bound, compute-bound, or inefficient.",
-    avoid: "Do not choose it to diagnose whole-application queueing, CPU stalls, or distributed training hangs.",
+    avoid: "Choose Nsight Systems first for whole-application queueing, CPU stalls, data movement, service waits, or distributed timelines before kernel drilldown.",
     traps: "Using Nsight Compute before knowing which kernel matters. Start with Nsight Systems for the timeline.",
     scenario: "A fused attention kernel has low achieved occupancy and high memory stalls.",
     quizPrompt: "Which profiler diagnoses detailed CUDA kernel bottlenecks?"
@@ -152,8 +152,8 @@ export const nvidiaServices = [
     lifecycle: "Training and customization",
     filters: ["GenAI LLMs", "Training and customization", "Monitoring and profiling"],
     use: "Use when the scenario is about distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.",
-    avoid: "Do not pick NCCL for serving a single model endpoint or optimizing prompt templates.",
-    traps: "Assuming more GPUs always speeds training. Communication volume and topology can dominate.",
+    avoid: "Choose NIM/Triton for serving APIs, RAPIDS/Curator for data pipelines, TensorRT/TensorRT-LLM for inference optimization, and Agent Toolkit for application orchestration.",
+    traps: "Seeing multi-GPU and picking NCCL for every scale problem. NCCL is specifically the collective-communication layer, not the scheduler, model server, or profiler.",
     scenario: "A 64-node training job hangs intermittently during gradient all-reduce.",
     quizPrompt: "Which library is central to multi-GPU collective communication?"
   },
@@ -164,22 +164,22 @@ export const nvidiaServices = [
     lifecycle: "Data preparation",
     filters: ["GenAI LLMs", "Agentic AI", "Training and customization", "RAG and retrieval"],
     use: "Use when the scenario is about accelerating pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.",
-    avoid: "Do not choose RAPIDS for LLM serving, guardrails, or TensorRT engine building.",
-    traps: "Confusing RAPIDS data acceleration with inference optimization. It helps data pipelines, not LLM decode kernels.",
+    avoid: "Choose NIM/Triton for LLM serving, TensorRT/TensorRT-LLM for engine optimization, Guardrails for runtime policy, and Agent Toolkit for workflow orchestration.",
+    traps: "Seeing GPU acceleration and picking RAPIDS for decode throughput. RAPIDS accelerates dataframe, graph, and classical ML/data pipelines; it does not make an LLM token scheduler faster.",
     scenario: "A data science team needs to clean and join large tabular datasets before training or indexing.",
     quizPrompt: "Which NVIDIA stack accelerates dataframe-style preprocessing on GPUs?"
   },
   {
     name: "NeMo Curator",
-    description: "GPU-accelerated data curation toolkit: dedupe, quality filtering, classifiers, and synthetic data for LLM and agent training.",
+    description: "Pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.",
     exams: ["GenAI LLMs", "Agentic AI"],
     lifecycle: "Data preparation",
     filters: ["GenAI LLMs", "Agentic AI", "Data preparation", "Training and customization"],
-    use: "Use when scenarios involve curating, deduping, filtering, or synthesizing training data at scale on GPUs.",
-    avoid: "Do not pick it for inference-time RAG retrieval or document chunking inside production serving.",
-    traps: "Confusing NeMo Curator (training-data curation) with NeMo Retriever (inference-time retrieval).",
-    scenario: "A team must dedupe and quality-filter terabytes of web text before pretraining a domain LLM.",
-    quizPrompt: "Which NVIDIA tool curates and dedupes pretraining data at GPU scale?"
+    use: "Choose it when raw data must become training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation.",
+    avoid: "Choose Retriever when documents feed live RAG; choose Framework/Customizer when curated data is ready for training; choose NIM/Triton when the resulting model must be served.",
+    traps: "Curator and Retriever can both touch documents, but Curator emits curated datasets and duplicate IDs before training; Retriever emits chunks, vectors, ranked passages, and citations at query time.",
+    scenario: "Raw JSONL/Parquet/image/video/audio corpus -> Pipeline -> ScoreFilter/classifiers -> exact or fuzzy duplicate IDs -> curated output.",
+    quizPrompt: "Which NVIDIA toolkit provides Pipeline stages, classifiers, and dedup workflows for training-data curation?"
   },
   {
     name: "NeMo Customizer",
@@ -188,8 +188,8 @@ export const nvidiaServices = [
     lifecycle: "Training and customization",
     filters: ["GenAI LLMs", "Agentic AI", "Training and customization"],
     use: "Use when the scenario is API-driven LoRA/PEFT customization without standing up a full training stack.",
-    avoid: "Do not pick it for full pretraining or low-level training research; that is NeMo Framework territory.",
-    traps: "Treating Customizer as a substitute for full SFT or alignment recipes; it focuses on PEFT-style customization.",
+    avoid: "Choose NeMo Framework for full pretraining, custom training recipes, or low-level training research; choose NIM/Triton when the model is ready to serve.",
+    traps: "Treating a managed PEFT customization service as a replacement for NeMo Framework training or NIM serving.",
     scenario: "An enterprise wants a hosted service that fine-tunes a base model on domain instructions via API.",
     quizPrompt: "Which NVIDIA microservice provides API-driven PEFT customization?"
   },
@@ -200,8 +200,8 @@ export const nvidiaServices = [
     lifecycle: "Evaluation",
     filters: ["GenAI LLMs", "Agentic AI", "Monitoring and profiling"],
     use: "Use when the scenario asks about standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge.",
-    avoid: "Do not pick it for low-level GPU profiling or system metrics; that is Nsight / Triton metrics.",
-    traps: "Conflating Evaluator (model-quality evaluation) with monitoring infrastructure (logs, dashboards).",
+    avoid: "Choose NIM/Triton for serving, Nsight for GPU/runtime profiling, Guardrails for runtime policy enforcement, and Curator for dataset preparation.",
+    traps: "Treating evaluation as a dashboard or profiler. Evaluator owns repeatable quality/regression scoring; observability and Nsight explain live behavior and performance.",
     scenario: "A team needs reproducible LLM benchmarks plus LLM-as-judge scoring before each release.",
     quizPrompt: "Which NVIDIA microservice runs LLM evaluation pipelines and judge models?"
   },
@@ -212,7 +212,7 @@ export const nvidiaServices = [
     lifecycle: "Serving and deployment",
     filters: ["GenAI LLMs", "Agentic AI", "Serving and deployment"],
     use: "Use when the scenario is K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.",
-    avoid: "Do not pick it as a substitute for Triton or NIM itself; it manages NIM, it is not the inference engine.",
+    avoid: "Choose plain NIM for a single container endpoint, Triton for general model serving, and the Operator when Kubernetes lifecycle management is the actual requirement.",
     traps: "Choosing Operator when a single NIM container is enough, or vice versa.",
     scenario: "An ops team must autoscale NIM endpoints with version pinning and zero-downtime upgrades on K8s.",
     quizPrompt: "Which NVIDIA component owns NIM lifecycle on Kubernetes?"
@@ -224,7 +224,7 @@ export const nvidiaServices = [
     lifecycle: "Serving and deployment",
     filters: ["GenAI LLMs", "Agentic AI", "Serving and deployment", "Inference optimization"],
     use: "Use when scenarios involve disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale.",
-    avoid: "Do not pick it for single-GPU dev serving; it is overkill compared to a basic NIM endpoint.",
+    avoid: "Choose a basic NIM or Triton deployment for a simple single-node endpoint; choose TensorRT-LLM when the question is engine-level LLM optimization.",
     traps: "Confusing Dynamo (multi-node LLM serving orchestration) with TensorRT-LLM (engine-level optimization).",
     scenario: "A team must serve a 405B model with disaggregated prefill/decode across many H100 nodes.",
     quizPrompt: "Which NVIDIA stack handles disaggregated multi-node LLM inference?"
@@ -448,14 +448,15 @@ const serviceDeepDive = {
   },
   "NeMo Agent Toolkit": {
     studyNotes: [
-      "Treat this as the agent workflow layer: composing agents, tools, retrievers, memory, evaluators, and observability without forcing a single agent framework.",
-      "It is useful when an enterprise already has LangChain, LlamaIndex, CrewAI, Semantic Kernel, MCP tools, or custom Python agents and wants instrumentation, workflow configuration, tests, and evaluation.",
-      "Do not confuse agent orchestration with safety enforcement. Pair it with NeMo Guardrails when tool use or user-facing responses need policy checks."
+      "Start from the YAML surface: llms chooses providers such as NIM/OpenAI; functions and function_groups define callable work; workflow chooses the agent or executor pattern.",
+      "Pattern choice is the top study target: tool-calling is for clean structured calls; ReAct is for observation-dependent loops; reasoning_agent and rewoo_agent plan first; router agents pick one branch; sequential executors chain known steps; parallel executors fan out independent work; auto_memory_agent wraps another agent with memory.",
+      "MCP is not the agent. It is a tool/context protocol. Agent Toolkit can consume MCP tools as functions or publish workflows/tools through MCP server runtimes.",
+      "Use it beside existing LangChain, LlamaIndex, CrewAI, Semantic Kernel, Google ADK, or custom Python agents when the value is instrumentation, workflow configuration, evaluation, and deployment around them."
     ],
-    mustKnow: ["ReAct vs routing vs sequential/parallel execution", "tool schemas and validation", "memory wrappers", "workflow tracing and evaluation"],
-    examSignals: ["multi-agent workflow", "tool orchestration", "observability", "existing agent framework", "MCP"],
-    handsOn: ["Draw a router -> specialist tool agent -> retriever -> final response workflow and mark where tracing/evaluation happens."],
-    relatedServices: ["NeMo Guardrails", "NeMo Retriever", "NIM", "Nemotron models"]
+    mustKnow: ["nvidia-nat package and nat CLI", "functions / function_groups / llms / retrievers / memory / workflow YAML", "tool_calling_agent / react_agent / reasoning_agent / rewoo_agent", "router_agent / parallel_executor / sequential_executor", "auto_memory_agent memory wrapper", "MCP client/server boundary", "nat eval for workflow evaluation"],
+    examSignals: ["workflow YAML", "tool_calling_agent structured tool schema", "react_agent reason-action-observation loop", "reasoning_agent augmented_fn planning", "rewoo_agent plan/evidence/solution flow", "router_agent branches", "parallel_executor fan-out/fan-in", "sequential_executor deterministic chain", "auto_memory_agent memory wrapper", "MCP tools as functions", "existing framework needs traces/evals"],
+    handsOn: ["Draw a router_agent -> specialist react_agent -> Retriever function -> Guardrails check -> final response workflow and mark which pieces are Toolkit-owned versus neighboring services."],
+    relatedServices: ["NeMo Guardrails", "NeMo Retriever", "NIM", "MCP / tool gateway", "LangChain/LlamaIndex/CrewAI", "Nemotron models"]
   },
   "NeMo Guardrails": {
     studyNotes: [
@@ -470,14 +471,26 @@ const serviceDeepDive = {
   },
   "NeMo Retriever": {
     studyNotes: [
-      "Use this for enterprise RAG data pipelines: document extraction, OCR/table/chart parsing, embeddings, indexing, semantic or hybrid search, and reranking.",
-      "Retriever quality is a system property: chunking, metadata, access filtering, embedding model, vector store, hybrid search, reranking, and citation grounding all matter.",
-      "A bigger context window is not the same as better retrieval. Bad extraction or weak reranking still causes unsupported answers."
+      "Treat NeMo Retriever as a family: Library/extraction for files, Embedding NIM for vectors, search/indexing for first-stage candidates, and Reranking NIM for precision.",
+      "Recognize concrete model cues: llama-nemotron-embed-* for embeddings, llama-nemotron-rerank-* for reranking, and nemotron OCR/page/table/graphic models for extraction.",
+      "Retriever quality is a system property: extraction, chunking, metadata, access filtering, embedding model, vector store, hybrid search, reranking, and citation grounding all matter."
     ],
-    mustKnow: ["extraction vs embedding vs reranking", "hybrid search", "metadata filtering", "citation grounding", "multimodal document parsing"],
-    examSignals: ["proprietary docs", "PDF tables/charts", "fresh knowledge", "rerank citations", "tenant filtering"],
+    mustKnow: ["NeMo Retriever Library / nv-ingest", "Embedding NIM /v1/embeddings", "Reranking NIM /v1/ranking", "hybrid search", "metadata pre-filtering", "multimodal document parsing"],
+    examSignals: ["proprietary docs", "PDF tables/charts/OCR", "embed documents or queries", "rerank citations", "tenant filtering"],
     handsOn: ["Trace a document from ingestion -> extraction -> chunks -> embeddings -> index -> retrieval -> rerank -> answer."],
-    relatedServices: ["NIM embedding/reranking microservices", "NeMo Guardrails", "cuVS/Milvus/LanceDB"]
+    relatedServices: ["NIM embedding/reranking microservices", "NeMo Guardrails", "LanceDB/Milvus/cuVS", "NeMo Curator"]
+  },
+  "NeMo Curator": {
+    studyNotes: [
+      "Think of Curator as concrete pipeline code, not just a vague data-cleaning box: Pipeline plus reader/filter/classifier/dedup/writer stages.",
+      "Recognize text API cues such as JsonlReader, JsonlWriter, ScoreFilter, WordCountFilter, NonAlphaNumericFilter, QualityClassifier, DomainClassifier, AegisClassifier, and FineWebEduClassifier.",
+      "Dedup is a workflow pair: ExactDeduplicationWorkflow writes ExactDuplicateIds, FuzzyDeduplicationWorkflow writes FuzzyDuplicateIds, and TextDuplicatesRemovalWorkflow applies those IDs to the original corpus.",
+      "Ask what the output feeds. If it feeds training/tuning/eval data, think Curator. If it feeds a live answer with retrieved passages, think Retriever."
+    ],
+    mustKnow: ["Pipeline.add_stage + pipeline.run", "JsonlReader / JsonlWriter", "ScoreFilter and heuristic filters", "Quality/domain/safety/FineWeb classifiers", "ExactDeduplicationWorkflow", "FuzzyDeduplicationWorkflow", "TextDuplicatesRemovalWorkflow"],
+    examSignals: ["training corpus cleanup", "ScoreFilter", "QualityClassifier", "MD5 exact dedup", "MinHash/LSH fuzzy dedup", "Cosmos-Embed1 video embeddings", "curated output before training", "live RAG is Retriever, not Curator"],
+    handsOn: ["Sketch a Curator pipeline from raw JSONL -> filters/classifiers -> dedup ID workflow -> duplicate removal -> curated output."],
+    relatedServices: ["NeMo Framework", "NeMo Customizer", "NeMo Retriever", "RAPIDS/cuDF/Ray", "NGC containers"]
   },
   "NIM": {
     studyNotes: [
@@ -494,7 +507,7 @@ const serviceDeepDive = {
     studyNotes: [
       "This is the LLM inference engine optimization layer: kernels, quantization, KV-cache handling, batching, and serving performance for generation workloads.",
       "Use it when the bottleneck is decode throughput, TTFT, GPU memory, long context, or concurrency rather than application orchestration.",
-      "Common trap: weight quantization reduces model-weight memory, but long-context serving can be dominated by KV-cache memory."
+      "Decision trap: weight quantization reduces model-weight memory, but long-context serving can be dominated by KV-cache memory."
     ],
     mustKnow: ["paged KV cache", "in-flight batching", "attention kernels", "quantization", "tensor parallelism"],
     examSignals: ["TTFT", "tokens/sec", "concurrency", "long context", "GPU memory during decode"],
@@ -525,7 +538,7 @@ const serviceDeepDive = {
   "Nsight Compute": {
     studyNotes: [
       "Use Nsight Compute after you know which CUDA kernel matters. It provides kernel metrics such as occupancy, memory throughput, warp behavior, and instruction efficiency.",
-      "Exam trap: do not start here when the problem is whole-pipeline queueing, CPU stalls, or network communication."
+      "Decision trap: do not start here when the problem is whole-pipeline queueing, CPU stalls, or network communication."
     ],
     mustKnow: ["occupancy", "memory-bound vs compute-bound", "warp stalls", "SM utilization"],
     examSignals: ["specific kernel", "low occupancy", "memory stalls", "kernel bottleneck"],
@@ -744,12 +757,12 @@ for (const service of nvidiaServices) {
     ],
     mustKnow: [
       "Lifecycle: " + service.lifecycle + " — identify the bottleneck phase before picking the product",
-      "Right vs wrong: " + (service.use || "").substring(0, 100) + "...",
-      "Common trap: " + (service.traps || "")
+      "Boundary: " + (service.use || "").substring(0, 100) + "...",
+      "Decision trap: " + (service.traps || "")
     ],
     examSignals: [
       service.lifecycle + " bottleneck → " + service.name,
-      "Know when NOT to pick it: " + (service.avoid || "").substring(0, 100) + "..."
+      "Adjacent-service cue: " + (service.avoid || "").substring(0, 100) + "..."
     ],
     handsOn: ["Write one scenario where this service is correct and one where it is a tempting but wrong distractor."]
   });
@@ -758,8 +771,8 @@ for (const service of nvidiaServices) {
 for (const section of studySections) {
   Object.assign(section, sectionDeepDive[section.name] || {
     studyNotes: [
-      "Use this section as a blueprint checklist: know the vocabulary, the engineering trade-offs, and the common wrong answers.",
-      "Practice recognizing the scenario signal before memorizing product names."
+      "Use this section as a blueprint checklist: know the vocabulary, the engineering trade-offs, and the traps that change the right design.",
+      "Practice recognizing the concrete service cue before memorizing product names."
     ],
     mustKnow: section.keyIdeas,
     examSignals: section.keyIdeas,

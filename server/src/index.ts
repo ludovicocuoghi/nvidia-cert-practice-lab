@@ -1,4 +1,4 @@
-import { createServer } from "node:http";
+import { createServer, type IncomingMessage } from "node:http";
 import { readFile, writeFile, appendFile, readdir } from "node:fs/promises";
 import { readFileSync, existsSync } from "node:fs";
 import { extname, join, normalize } from "node:path";
@@ -50,6 +50,19 @@ loadDotenv(join(root, ".env"));
 const defaultCertSlug = process.env.CERT_SLUG || "agentic_ai_professional";
 const port = Number(process.env.PORT || 4273);
 const host = process.env.HOST || "127.0.0.1";
+const maxBodyBytes = Number(process.env.MAX_BODY_BYTES || 1024 * 1024);
+const missingLlmApiKeyMessage = "Coach chat and AI question generation need an LLM API key. Create .env from .env.example, set LLM_API_KEY, then restart the dev server.";
+
+function getLlmApiKey() {
+  return process.env.LLM_API_KEY || "";
+}
+
+function sendMissingLlmApiKey(res) {
+  send(res, 503, {
+    code: "missing_llm_api_key",
+    error: missingLlmApiKeyMessage
+  });
+}
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -132,7 +145,7 @@ async function readExam(certDir) {
 
   // Generated questions are merged into the full pool so mock_N.json IDs and the adaptive coach
   // can still resolve every question, but only approved ones go into practicePoolIds.
-  const generatedIds = new Set();
+  const generatedIds = new Set<string>();
   try {
     const generatedRaw = await readFile(join(certDir, "generated-questions.md"), "utf8");
     // parseExamMarkdown splits on "## Questions" then on /### Q\d+:/. Strip any preamble so the
@@ -187,10 +200,26 @@ async function readExam(certDir) {
   return exam;
 }
 
-async function readBody(req) {
-  const chunks = [];
-  for await (const chunk of req) chunks.push(chunk);
-  return JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
+async function readBody(req: IncomingMessage) {
+  const chunks: Buffer[] = [];
+  let totalBytes = 0;
+
+  for await (const chunk of req) {
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    totalBytes += buffer.length;
+    if (totalBytes > maxBodyBytes) {
+      throw Object.assign(new Error(`Request body exceeds ${maxBodyBytes} bytes`), { httpStatus: 413 });
+    }
+    chunks.push(buffer);
+  }
+
+  const raw = Buffer.concat(chunks).toString("utf8").trim();
+  if (!raw) return {};
+  try {
+    return JSON.parse(raw);
+  } catch {
+    throw Object.assign(new Error("Invalid JSON request body"), { httpStatus: 400 });
+  }
 }
 
 function send(res, status, body, type = "application/json; charset=utf-8") {
@@ -284,7 +313,9 @@ function localQuestionDrafts({ blueprint, count, focusDomains = [], weakOnly = f
   const pool = focusSet.size ? domains.filter((domain) => focusSet.has(domain.name)) : domains;
   const usable = pool.length ? pool : domains;
   const stamp = Date.now().toString(36);
-  const targetName = serviceContext?.name || blueprint?.name || "the selected NVIDIA topic";
+  const targetName = serviceContext?.name
+    ? (serviceContext.fullName ? `${serviceContext.name} (${serviceContext.fullName})` : serviceContext.name)
+    : blueprint?.name || "the selected NVIDIA topic";
   const useText = serviceContext?.use || "Map the scenario to the correct lifecycle phase and NVIDIA platform capability.";
   const avoidText = serviceContext?.avoid || "Avoid choosing a tool that solves a different lifecycle phase.";
   const trapText = serviceContext?.traps || "The trap is selecting a plausible NVIDIA tool that does not match the stated bottleneck.";
@@ -530,7 +561,7 @@ const server = createServer(async (req, res) => {
       const context = await loadGeneratorContext(dir);
       const count = Math.min(Math.max(Number(body.count) || 5, 1), 10);
       const useFastMode = url.searchParams.get("mode") === "fast";
-      const apiKey = process.env.LLM_API_KEY || process.env.ANTHROPIC_API_KEY;
+      const apiKey = getLlmApiKey();
       const difficulty = ["easier", "medium", "hard", "advanced", "expert"].includes(body.difficulty)
         ? body.difficulty
         : "hard";
@@ -555,12 +586,15 @@ const server = createServer(async (req, res) => {
       let qcVerdicts = [];
       let stopReason = "local-draft";
 
-      if (!apiKey || useFastMode) {
+      if (!apiKey) {
+        sendMissingLlmApiKey(res);
+        return;
+      }
+
+      if (useFastMode) {
         send(res, 503, {
-          error: apiKey
-            ? "Fast local placeholder generation is disabled. Use the LLM generator instead."
-            : "LLM_API_KEY is not set.",
-          stopReason: apiKey ? "fast-mode-disabled" : "no-api-key"
+          error: "Fast local placeholder generation is disabled. Use the LLM generator instead.",
+          stopReason: "fast-mode-disabled"
         });
         return;
       }
@@ -718,9 +752,9 @@ const server = createServer(async (req, res) => {
 
     if (req.method === "POST" && url.pathname === "/api/question-helper") {
       const { dir } = certFromUrl(url);
-      const apiKey = process.env.LLM_API_KEY || process.env.ANTHROPIC_API_KEY;
+      const apiKey = getLlmApiKey();
       if (!apiKey) {
-        send(res, 503, { error: "LLM_API_KEY is not set." });
+        sendMissingLlmApiKey(res);
         return;
       }
       const body = await readBody(req);
@@ -753,9 +787,9 @@ const server = createServer(async (req, res) => {
 
     if (req.method === "POST" && url.pathname === "/api/study-chat") {
       const { dir } = certFromUrl(url);
-      const apiKey = process.env.LLM_API_KEY || process.env.ANTHROPIC_API_KEY;
+      const apiKey = getLlmApiKey();
       if (!apiKey) {
-        send(res, 503, { error: "LLM_API_KEY is not set." });
+        sendMissingLlmApiKey(res);
         return;
       }
       const body = await readBody(req);
@@ -823,11 +857,16 @@ const server = createServer(async (req, res) => {
         return;
       }
       const body = await readBody(req);
-      const grade = body.grade;
-      if (!grade || typeof grade !== "object") {
+      if (!body.grade || typeof body.grade !== "object") {
         send(res, 400, { error: "Missing grade payload" });
         return;
       }
+      const grade = body.grade as {
+        percent: number;
+        correct: number;
+        total: number;
+        byDomain?: Record<string, { correct: number; total: number }>;
+      };
       const now = new Date().toISOString();
       const passing = body.passingScorePercent ?? 70;
       const passed = grade.percent >= passing;
@@ -939,9 +978,9 @@ const server = createServer(async (req, res) => {
 
     if (req.method === "POST" && url.pathname === "/api/adaptive/coach") {
       const { dir } = certFromUrl(url);
-      const apiKey = process.env.LLM_API_KEY || process.env.ANTHROPIC_API_KEY;
+      const apiKey = getLlmApiKey();
       if (!apiKey) {
-        send(res, 503, { error: "LLM_API_KEY is not set." });
+        sendMissingLlmApiKey(res);
         return;
       }
       const body = await readBody(req);

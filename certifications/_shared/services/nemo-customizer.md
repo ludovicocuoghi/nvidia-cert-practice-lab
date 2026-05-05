@@ -6,6 +6,21 @@ status: populated
 
 # NeMo Customizer
 
+## What to study first
+
+- **Core idea:** Managed API microservice + Python SDK — **PEFT**/**LoRA** fine-tuning without managing GPUs
+- **Use it when:** Use when an enterprise wants API-driven LoRA/PEFT customization of a supported base model without managing a full training stack.
+- **Choose another path when:** Choose the neighboring service for full pretraining, low-level training research, or production inference serving.
+- **Concrete surface:** Access: REST API (`POST /v1/fine-tuning/jobs`) or `pip install nvidia-ai-endpoints` Inside: LoRA/QLoRA, supervised fine-tuning (SFT), RLHF/DPO alignment recipes I/O: Base model ID + training dataset (JSONL) + fine-tuning config (rank, alpha, epochs) -> LoRA adapter weights or merged model checkpoint
+- **Study first:** LoRA/QLoRA — low-rank adaptation with zero inference overhead after merging
+- PEFT vs full fine-tuning — ~0.1-1% of parameters updated vs 100%
+- ~2-50 MB storage per task vs ~14 GB
+- SFT dataset quality — 500-1000 high-quality examples beat 5000+ noisy ones (LIMA principle)
+- RLHF/DPO pipeline — reward model training on preference pairs, then policy optimization with KL penalty
+- continued pre-training vs fine-tuning — CPT injects knowledge (billions of tokens)
+- SFT teaches format/style (thousands of examples)
+- **Real trap:** Treating a managed PEFT customization service as a replacement for NeMo Framework training or NIM serving.
+
 ## At a glance
 
 | | |
@@ -44,7 +59,7 @@ NVIDIA's simplified fine-tuning and customization tool for language models. NeMo
 - Lightweight customization without full training infrastructure
 - "How to customize an NVIDIA model for enterprise-specific needs?"
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
 - **Full-scale model training from scratch**: That's NeMo Framework.
 - **Model serving**: That's NIM or Triton.
@@ -425,19 +440,19 @@ where l_k, l_v, and l_ff are learned vectors (length = hidden dimension), and �
 - **Relevant exams:** GenAI LLMs, Agentic AI
 - **What it is:** Managed API microservice + Python SDK — **PEFT**/**LoRA** fine-tuning without managing GPUs
 - **Use it when:** Use when an enterprise wants API-driven LoRA/PEFT customization of a supported base model without managing a full training stack.
-- **Do not use it when:** Do not use it for full pretraining, low-level training research, or production inference serving.
+- **Do not use it when:** Choose the neighboring service for full pretraining, low-level training research, or production inference serving.
 - **Common trap:** Treating a managed PEFT customization service as a replacement for NeMo Framework training or NIM serving.
-- **Scenario signal:** An enterprise wants API-driven LoRA/PEFT customization of a base model without managing distributed training infrastructure.
+- **Recognition clues:** An enterprise wants API-driven LoRA/PEFT customization of a base model without managing distributed training infrastructure.
 ### Study notes
 - Place **NeMo Customizer** at **Customization / fine-tuning**: upload training data via API, download a LoRA adapter — no training loop to write, no GPU cluster to manage.
-- Choose it when: Use when an enterprise wants API-driven LoRA/PEFT customization of a supported base model without managing a full training stack. Reject it when: Do not use it for full pretraining, low-level training research, or production inference serving.
+- Boundary cue: choose it when an enterprise wants API-driven LoRA/PEFT customization of a supported base model without managing a full training stack. Adjacent-service cue: not for full pretraining, low-level training research, or production inference serving.
 ### Must know
 - LoRA/QLoRA — low-rank adaptation with zero inference overhead after merging
 - PEFT vs full fine-tuning — ~0.1-1% of parameters updated vs 100%; ~2-50 MB storage per task vs ~14 GB
 - SFT dataset quality — 500-1000 high-quality examples beat 5000+ noisy ones (LIMA principle)
 - RLHF/DPO pipeline — reward model training on preference pairs, then policy optimization with KL penalty
 - continued pre-training vs fine-tuning — CPT injects knowledge (billions of tokens); SFT teaches format/style (thousands of examples)
-### High-yield exam signals
+### What to recognize
 - PEFT customization → NeMo Customizer provides API-driven LoRA/QLoRA without standing up a full training stack
 - domain adaptation → fine-tune a base model on domain instructions for legal, medical, or enterprise use cases
 - QLoRA on single GPU → 4-bit quantization enables fine-tuning 70B models on one A100-80GB
@@ -446,8 +461,8 @@ where l_k, l_v, and l_ff are learned vectors (length = hidden dimension), and �
 - Write one scenario where this service is correct and one where it is a tempting but wrong distractor.
 ## Exam tips from mocks
 - Mock-style questions test whether **NeMo Customizer** matches **Customization / fine-tuning**, not whether the product name sounds familiar.
-- Choose it when the scenario signal matches this boundary: Use when an enterprise wants API-driven LoRA/PEFT customization of a supported base model without managing a full training stack.
-- Reject it when the problem is actually about another layer: Do not use it for full pretraining, low-level training research, or production inference serving.
+- Boundary cue: choose it when an enterprise wants API-driven LoRA/PEFT customization of a supported base model without managing a full training stack.
+- Adjacent-service cue: not for full pretraining, low-level training research, or production inference serving.
 - The common trap pattern is: Treating a managed PEFT customization service as a replacement for NeMo Framework training or NIM serving.
 - If it appears only as a distractor, decide by the required lifecycle phase before choosing a product name.
 - Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.

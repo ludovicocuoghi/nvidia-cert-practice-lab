@@ -6,6 +6,22 @@ status: populated
 
 # Triton Inference Server
 
+## What to study first
+
+- **Core idea:** Compiled C++ inference server binary — multi-framework model serving over HTTP/gRPC
+- **Use it when:** Use when production serving needs HTTP/gRPC endpoints, model repositories, dynamic batching, ensembles, multi-framework backends, or Prometheus metrics.
+- **Choose another path when:** Choose NeMo Framework/Customizer for model development, Curator for data prep, Guardrails for policy, Nemotron/model registry for model choice, and TensorRT-LLM when the question is specifically LLM engine optimization.
+- **Concrete surface:** Access: Docker: `nvcr.io/nvidia/tritonserver`, CLI: `tritonserver --model-repository=/models` Inside: Model repository, dynamic batching, model ensembles (DAG), TensorRT/PyTorch/ONNX backends I/O: HTTP/gRPC inference request with tensors / model files in repository directory -> Inference response tensors / health and Prometheus metrics
+- **Study first:** dynamic batching: groups individual inference requests into optimal batch sizes on the fly
+- `max_queue_delay_microseconds` (100-500µs for interactive, 1-10ms for batch) controls the latency-throughput trade-off
+- `preferred_batch_size` aligns with GPU efficiency sweet spots
+- ensemble models: chains multiple models into a DAG pipeline (tokenizer → LLM → safety classifier → detokenizer) — Triton manages data flow between models without client round-trips
+- model repository: directory structure where Triton discovers and loads models
+- supports versioning (subdirectories named 1, 2, 3..) for seamless model updates without restart
+- concurrent model execution: multiple different models run simultaneously on the same GPU — unlike single-model servers where only one model occupies the GPU
+- readiness/liveness/metrics: Kubernetes-compatible health endpoints (`/v2/health/ready`, `/v2/health/live`) plus Prometheus metrics (queue time, batch size, latency percentiles, GPU utilization)
+- **Real trap:** Treating Triton as "the NVIDIA LLM product." Triton is a general multi-framework inference server; NIM is the packaged supported model microservice, and TensorRT-LLM is the LLM optimization engine.
+
 ## At a glance
 
 | | |
@@ -53,7 +69,7 @@ NVIDIA's multi-framework, multi-modal model serving platform. Triton serves mode
 - Multi-model serving with different frameworks, dynamic batching for throughput
 - Production serving where multiple models (embedding, LLM, reranker) need to run concurrently
 
-## When it is the wrong answer (common trap)
+## Adjacent-service decision boundary
 
 - **Model training**: Triton serves models, doesn't train them.
 - **Safety filtering**: That's NeMo Guardrails.
@@ -206,7 +222,7 @@ parameters {
 }
 parameters {
   key: "gpt_model_path"
-  value: { string_value: "/models/llama-70b/1/tensorrt_LLM" }
+  value: { string_value: "/models/llama-70b/1/tensorrt_llm" }
 }
 ```
 
@@ -270,9 +286,9 @@ The Triton dynamic batching layer still queues incoming requests before they ent
 - **Relevant exams:** GenAI LLMs
 - **What it is:** Compiled C++ inference server binary — multi-framework model serving over HTTP/gRPC
 - **Use it when:** Use when production serving needs HTTP/gRPC endpoints, model repositories, dynamic batching, ensembles, multi-framework backends, or Prometheus metrics.
-- **Do not use it when:** Do not use it for training, fine-tuning, data curation, safety policy definition, or model-family selection.
-- **Common trap:** Confusing the server that hosts models with the tool that trains, optimizes, or evaluates them.
-- **Scenario signal:** A production service needs to host one or many models behind HTTP/gRPC with batching, ensembles, and metrics.
+- **Do not use it when:** Choose NeMo Framework/Customizer for model development, Curator for data prep, Guardrails for policy, Nemotron/model registry for model choice, and TensorRT-LLM when the question is specifically LLM engine optimization.
+- **Common trap:** Treating Triton as "the NVIDIA LLM product." Triton is a general multi-framework inference server; NIM is the packaged supported model microservice, and TensorRT-LLM is the LLM optimization engine.
+- **Recognition clues:** A production service needs to host one or many models behind HTTP/gRPC with batching, ensembles, and metrics.
 ### Study notes
 - Triton is a general production inference server for many frameworks and model formats, with model repositories, HTTP/gRPC APIs, dynamic batching, ensembles, and metrics.
 - Use it for multi-model or pipeline serving, especially when preprocessing, model inference, and postprocessing must be deployed as one endpoint.
@@ -283,7 +299,7 @@ The Triton dynamic batching layer still queues incoming requests before they ent
 - **model repository**: directory structure where Triton discovers and loads models; supports versioning (subdirectories named 1, 2, 3..) for seamless model updates without restart
 - **concurrent model execution**: multiple different models run simultaneously on the same GPU — unlike single-model servers where only one model occupies the GPU
 - **readiness/liveness/metrics**: Kubernetes-compatible health endpoints (`/v2/health/ready`, `/v2/health/live`) plus Prometheus metrics (queue time, batch size, latency percentiles, GPU utilization)
-### High-yield exam signals
+### What to recognize
 - multi-framework serving → Triton hosts TensorRT, PyTorch, ONNX, and custom backends concurrently on one GPU
 - pre/postprocessing pipeline → model ensembles chain tokenizer → LLM → detokenizer as a single inference graph
 - HTTP/gRPC endpoint → Triton serves models via REST or gRPC with health and metrics endpoints
@@ -298,8 +314,8 @@ The Triton dynamic batching layer still queues incoming requests before they ent
 - Map an ensemble with preprocess -> model -> postprocess and identify where batching is configured.
 ## Exam tips from mocks
 - Mock-style questions test whether **Triton Inference Server** matches **Serving / deployment**, not whether the product name sounds familiar.
-- Choose it when the scenario signal matches this boundary: Use when production serving needs HTTP/gRPC endpoints, model repositories, dynamic batching, ensembles, multi-framework backends, or Prometheus metrics.
-- Reject it when the problem is actually about another layer: Do not use it for training, fine-tuning, data curation, safety policy definition, or model-family selection.
+- Boundary cue: choose it when production serving needs HTTP/gRPC endpoints, model repositories, dynamic batching, ensembles, multi-framework backends, or Prometheus metrics.
+- Adjacent-service cue: not for training, fine-tuning, data curation, safety policy definition, or model-family selection.
 - The common trap pattern is: Confusing the server that hosts models with the tool that trains, optimizes, or evaluates them.
 - Expect distractors around nearby services such as **NIM**, **TensorRT-LLM**, **Nsight Systems**, **NeMo Guardrails**. Decide by lifecycle first, product name second.
 - Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.
@@ -313,7 +329,7 @@ The Triton dynamic batching layer still queues incoming requests before they ent
 - **mock_3 Q38** / `m2-038` (Model Deployment): Multiple answers: How can you optimize batch inference for LLMs to maximize throughput? Select two. Correct idea: Implementing KV cache optimization techniques such as PagedAttention for efficient memory management, which reduces memory wast.. Trap: Absolute claims are rarely correct in ML — this option overstates its case with an extreme qualifier that does not re..
 - **mock_1 Q36** / `deploy-002` (Model Deployment): NIM (NVIDIA Inference Microservice) provides which combination out of the box? Correct idea: A standardized OpenAI-compatible API surface, optimized engines (TensorRT-LLM/Triton), and a containerized deployable artifact..
 - **mock_1 Q38** / `deploy-004` (Model Deployment): Triton model ensembles are best used for: Correct idea: Composing multiple models/preprocessors (e.g., tokenizer → LLM → safety classifier → detokenizer) into a single inference graph..
-- **deploy-008** / `deploy-008` (Model Deployment): A 70B model is deployed on H100s with Triton. Profiling shows GPU utilization at 35% under load. What is the most useful first investigation? Correct idea: Inspect Triton metrics (queue time, batch size distribution, instance group occupancy) and the engine's preferred batch sizes;..
+- **deploy-008** / `deploy-008` (Model Deployment): A 70B model is deployed on H100s with Triton. Profiling shows GPU utilization at 35% under load. What is the most useful first investigation? Correct idea: Inspect Triton metrics (queue time, batch size distribution, instance group occupancy) and the engine's preferred batch sizes...
 - **mock_2 Q47** / `m1-047` (Data Preparation): What is Byte Pair Encoding in tokenization? Correct idea: A subword tokenization algorithm that iteratively merges the most frequent pairs of characters or tokens to build a vocabulary. Trap: BPE is a subword tokenization algorithm that builds a vocabulary by iteratively merging the most frequent adjacent ch..
 - **mock_3 Q25** / `m2-025` (Prompt Engineering): What is the key difference between few-shot and zero-shot prompting techniques? Correct idea: Few-shot prompting includes examples of the desired input-output behavior in the prompt, while zero-shot relies only on task in.. Trap: Absolute claims are rarely correct in ML — this option overstates its case with an extreme qualifier that does not re..
 - **mock_6 Q40** / `m5-040` (LLM Architecture): Multiple answers: What is dropout regularization and how is it typically applied in transformer models? Select two. Correct idea: Dropout forces the network to learn redundant, distributed representations rather than relying on individual neurons, effective.. Trap: Option A describes "A method to permanently remove less important neurons after training" but the question asks about..

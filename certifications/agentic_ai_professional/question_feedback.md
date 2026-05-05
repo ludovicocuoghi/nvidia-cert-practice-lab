@@ -2,6 +2,10 @@
 
 Latest notes and ratings from practice/test sessions.
 
+### aai-hf-svc-nim-operator-024 — 2026-05-04T08:19:08.969Z
+- **Domain:** Cognition, Planning, and Memory
+- **Question quality:** bad
+- **Flow:** practice-section
 ### arch-004 — 2026-04-30T07:38:40.172Z
 - **Domain:** Agent Architecture and Design
 - **Question quality:** bad

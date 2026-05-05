@@ -5,6 +5,7 @@ export type Certification = {
   questionRange: string;
   level: string;
   source?: string;
+  note?: string;
   passingScorePercent?: number | null;
 };
 

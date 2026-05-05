@@ -6,6 +6,23 @@ status: populated
 
 # Data Preparation
 
+## What to study first
+
+- **Core idea:** Prepare, clean, curate, tokenize, and organize data for pretraining, tuning, or **RAG**.
+- **Use it when:** Study this when data quality, **contamination**, vocabulary, or corpus construction is central.
+- **Study first:** deduplication: — exact (SHA-256) + fuzzy (MinHash, Jaccard threshold 0.8, sig size 128-256)
+- LSH bands for efficient candidate pair search
+- contamination: — eval/train overlap invalidates **metrics**
+- check via **exact match**, 13-gram overlap, embedding similarity, MinHash
+- use post-cutoff private eval sets
+- tokenization: — **BPE** (frequent pair merge), **WordPiece** (likelihood-based merge), **SentencePiece** (language-agnostic, no pre-**tokenization**)
+- vocabulary 32-256K
+- quality filtering: — avoid **perplexity** threshold alone (drops code/technical)
+- use multi-dimension classifiers (informativeness, coherence, factuality)
+- data mixing: — **SFT** ratios: 30-50% domain + 10-30% general instruction to prevent forgetting
+- 20% code/math + 10% **safety** as optional supplements
+- **Real trap:** Bad data cannot be rescued by a bigger model or a more aggressive training schedule.
+
 ## Certification boundary
 
 This page is the NCP-GENL exam lens for LLM data preparation. General LLM data concepts stay here when the GenAI LLMs blueprint tests them directly. Cross-vendor agentic lifecycle framing belongs in Agentic AI General Study, while NVIDIA implementation cues such as NeMo Curator, RAPIDS, and GPU-accelerated preprocessing stay here or in shared NVIDIA service pages.
@@ -129,7 +146,7 @@ NVIDIA RAPIDS eliminates the CPU bottleneck in data pipelines:
 
 **Exam signal**: "How to speed up data preprocessing for large-scale LLM training" → **GPU**-accelerated processing with RAPIDS/**NeMo Curator** keeps data on **GPU** and avoids CPU-**GPU** transfers.
 
-## Common exam traps
+## Decision traps worth remembering
 
 1. **LLM preprocessing** — Stopword removal, stemming, and lemmatization STRIP information. Modern LLMs benefit from keeping all linguistic signals.
 
@@ -188,7 +205,7 @@ NVIDIA RAPIDS eliminates the CPU bottleneck in data pipelines:
 - **cuDF** — **GPU** DataFrame; pandas API on **GPU**; no CPU round-trip
 - **PII redaction** — remove personally identifiable information; regex + NER-based detection
 
-### Top exam traps
+### Top decision traps
 - "Remove stopwords and lemmatize for LLMs" → these STRIP learnable information from the data
 - "More data always > cleaner data" → **quality filtering** + dedup beats adding noisy data
 - "Random split always works" → temporal data needs time-based splits; imbalanced data needs stratification
@@ -226,7 +243,7 @@ Evidence source: `mock_1` through `mock_5`, especially **tokenization**, **embed
 - **What it covers:** Prepare, clean, curate, tokenize, and organize data for pretraining, tuning, or **RAG**.
 - **Use this section when:** Study this when data quality, **contamination**, vocabulary, or corpus construction is central.
 - **Common trap:** Bad data cannot be rescued by a bigger model or a more aggressive training schedule.
-- **Scenario signal:** **Fine-tuning** improves **examples** from one source but fails on held-out tasks due to duplicated and biased data.
+- **Recognition clues:** **Fine-tuning** improves **examples** from one source but fails on held-out tasks due to duplicated and biased data.
 
 ### Study notes
 
@@ -288,7 +305,7 @@ Evidence source: `mock_1` through `mock_5`, especially **tokenization**, **embed
    Best answer pattern: Add tenant_id, permission, sensitivity, and freshness **metadata** before indexing and enforce filters before retrieval.
    Trap: Asking the model to ignore unauthorized chunks after they are already in context.
 
-### High-yield exam signals
+### What to recognize
 
 - **Bad corpus**: Training data has high duplication, noise, or off-target content → run dedup (MinHash + exact), quality filter, and language ID pipeline before training.
 - **PII detected in corpus**: Names, emails, SSNs in training data → multi-stage **PII** detection (regex + NER ensemble) and **redaction** with placeholder tokens; never train on raw **PII**.
