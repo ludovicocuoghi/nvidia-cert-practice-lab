@@ -3810,6 +3810,12 @@ function MarkdownOutline({ markdown }) {
 // Tiny markdown renderer (no deps). Handles: # h1-h4, paragraphs, bullet/numbered
 // lists, blockquote, fenced code, inline `code`, **bold**, *italic*, [text](url), and
 // pipe tables. Output is a tree of React elements — no innerHTML.
+function isMarkdownTableStart(lines, index) {
+  const line = lines[index] || "";
+  const next = lines[index + 1] || "";
+  return line.includes("|") && /^\s*\|?\s*-{2,}/.test(next);
+}
+
 function renderMarkdown(text, options = {}) {
   const lines = String(text || "").replace(/\r\n/g, "\n").split("\n");
   const renderOptions = options.autoHighlight
@@ -3873,7 +3879,7 @@ function renderMarkdown(text, options = {}) {
       continue;
     }
     // Table (line + separator + rows)
-    if (line.includes("|") && lines[i + 1] && /^\s*\|?\s*-{2,}/.test(lines[i + 1])) {
+    if (isMarkdownTableStart(lines, i)) {
       const header = line.split("|").map((s) => s.trim()).filter(Boolean);
       i += 2;
       const rows = [];
@@ -3910,7 +3916,7 @@ function renderMarkdown(text, options = {}) {
     // Paragraph (collect until blank or block-y line)
     const buf = [line];
     i += 1;
-    while (i < lines.length && lines[i].trim() && !/^(#{1,4}\s|>\s?|\s*[-*]\s|\s*\d+\.\s|```)/.test(lines[i])) {
+    while (i < lines.length && lines[i].trim() && !isMarkdownTableStart(lines, i) && !/^(#{1,4}\s|>\s?|\s*[-*]\s|\s*\d+\.\s|```)/.test(lines[i])) {
       buf.push(lines[i]);
       i += 1;
     }

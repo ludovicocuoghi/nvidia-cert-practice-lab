@@ -159,6 +159,7 @@ Building a DIY serving stack requires: exporting the model to a TensorRT engine,
 - **Synthetic data generation**: NIM supports `/v1/synthetic-data-generation` for generating training, evaluation, or benchmarking data from served models without additional infrastructure.
 
 **Production readiness checklist — NIM handles all of these**:
+
 | Requirement | NIM Support |
 |---|---|
 | Health endpoints | `/v1/health/ready`, `/v1/health/live`, `/v1/health/model` |
