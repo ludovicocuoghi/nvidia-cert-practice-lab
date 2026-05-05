@@ -5765,7 +5765,7 @@ function GeneratePanel({ exam, generateQuestions, generationStatus }) {
     "details",
     { className: "generate-panel-collapsible", open: false },
     h("summary", null, "Generate practice questions (LLM, with QC)"),
-    h("p", { className: "muted" }, "Drafts pass through a quality-check pass before appending to generated-questions.md. Accepted questions appear immediately in your practice pool."),
+    h("p", { className: "muted" }, "Drafts pass through a quality-check pass before appending to generated/drafts.md. Accepted questions appear immediately in your practice pool."),
     h("div", { className: "filter-block" },
       h("div", { className: "filter-block-head" }, h("span", { className: "filter-label" }, "Domain (optional)")),
       h("select", {

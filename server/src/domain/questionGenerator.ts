@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import type { Question } from "../../../shared/src/types";
 
@@ -491,17 +491,26 @@ export async function loadGeneratorContext(certDir) {
     .join("\n")
     .trim();
 
-  const questionsMd = await readFile(join(certDir, "questions.md"), "utf8").catch((err) => {
+  async function readFolderMarkdown(folder, matcher) {
+    const files = await readdir(folder).catch((err) => {
+      if (err.code === "ENOENT") return [];
+      throw err;
+    });
+    const parts = [];
+    for (const file of files.filter(matcher).sort()) {
+      parts.push(await readFile(join(folder, file), "utf8"));
+    }
+    return parts.join("\n\n");
+  }
+  const originalMd = await readFolderMarkdown(join(certDir, "mocks", "original"), (file) => file.endsWith(".questions.md"));
+  const highFidelityMd = await readFolderMarkdown(join(certDir, "generated"), (file) => /^high_fidelity_\d+\.md$/.test(file));
+  const draftsMd = await readFile(join(certDir, "generated", "drafts.md"), "utf8").catch((err) => {
     if (err.code === "ENOENT") return "";
     throw err;
   });
-  const generatedMd = await readFile(join(certDir, "generated-questions.md"), "utf8").catch((err) => {
-    if (err.code === "ENOENT") return "";
-    throw err;
-  });
+  const questionsMd = [originalMd, highFidelityMd, draftsMd].filter(Boolean).join("\n\n");
   const allIds = [
-    ...questionsMd.matchAll(/^- ID:\s*([\w-]+)$/gm),
-    ...generatedMd.matchAll(/^- ID:\s*([\w-]+)$/gm)
+    ...questionsMd.matchAll(/^- ID:\s*([\w-]+)$/gm)
   ].map((m) => m[1]);
   const lastQuestionIdHints = allIds.slice(-8);
 
@@ -509,8 +518,7 @@ export async function loadGeneratorContext(certDir) {
   // doesn't regenerate trivial variants of bank questions.
   const stemPattern = /^###\s*Q\d+:\s*(.+)$/gm;
   const existingStems = [
-    ...[...questionsMd.matchAll(stemPattern)].map((m) => m[1]),
-    ...[...generatedMd.matchAll(stemPattern)].map((m) => m[1])
+    ...[...questionsMd.matchAll(stemPattern)].map((m) => m[1])
   ].map((s) => s.trim().slice(0, 80));
 
   return { blueprint, learnerProfileMarkdown, recentMistakes, lastQuestionIdHints, existingStems };

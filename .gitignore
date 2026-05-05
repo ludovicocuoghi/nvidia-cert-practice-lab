@@ -19,6 +19,10 @@ coverage/
 # Mock exams and generated mock-derived study data
 certifications/**/archive/
 certifications/**/mocks/*
+!certifications/**/mocks/original/
+!certifications/**/mocks/original/*.json
+!certifications/**/mocks/original/*.questions.md
+certifications/**/mocks/original/source/
 !certifications/**/mocks/generated/
 !certifications/**/mocks/generated/*.json
 certifications/**/mock_results.md

@@ -1,5 +1,5 @@
 import { createServer, type IncomingMessage } from "node:http";
-import { readFile, writeFile, appendFile, readdir } from "node:fs/promises";
+import { readFile, writeFile, appendFile, readdir, mkdir } from "node:fs/promises";
 import { readFileSync, existsSync } from "node:fs";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -91,7 +91,7 @@ async function readJson(path) {
 
 async function readApprovals(certDir) {
   try {
-    const raw = await readFile(join(certDir, "generated-approvals.json"), "utf8");
+    const raw = await readFile(join(certDir, "generated", "approvals.json"), "utf8");
     const parsed = JSON.parse(raw);
     return {
       approved: Array.isArray(parsed.approved) ? parsed.approved : [],
@@ -104,8 +104,9 @@ async function readApprovals(certDir) {
 }
 
 async function writeApprovals(certDir, approvals) {
+  await mkdir(join(certDir, "generated"), { recursive: true });
   await writeFile(
-    join(certDir, "generated-approvals.json"),
+    join(certDir, "generated", "approvals.json"),
     JSON.stringify({ approved: approvals.approved, rejected: approvals.rejected }, null, 2),
     "utf8"
   );
@@ -120,59 +121,120 @@ async function readBlueprint(certDir) {
   }
 }
 
+function examHeaderMarkdown(blueprint) {
+  return [
+    `- Name: ${blueprint?.name || "Certification"}`,
+    `- Code: ${blueprint?.code || "CERT"}`,
+    `- Duration Minutes: ${blueprint?.format?.durationMinutes || 120}`,
+    `- Question Range: ${blueprint?.format?.questionCount ? `${blueprint.format.questionCount.min}-${blueprint.format.questionCount.max}` : "60-70"}`,
+    `- Level: ${blueprint?.level || "Professional"}`,
+    `- Source: ${blueprint?.homepage || "https://www.nvidia.com/en-us/learn/certification/"}`,
+    "",
+    "## Blueprint Domains",
+    ...(blueprint?.domains || []).map((domain) => `- ${domain.name}: ${domain.weight}%`),
+    "",
+    "## Questions",
+    ""
+  ].join("\n");
+}
+
+function questionBlocks(markdown) {
+  const firstQ = markdown.search(/^###\s*Q\d+:/m);
+  return firstQ === -1 ? "" : markdown.slice(firstQ).trim();
+}
+
+function parseQuestionFile(markdown, source) {
+  const blocks = questionBlocks(markdown);
+  if (!blocks) return [];
+  return parseExamMarkdown(`## Questions\n\n${blocks}`).questions.map((question) => ({
+    ...question,
+    source
+  }));
+}
+
+async function readQuestionFiles(folder, matcher, source) {
+  const files = await readdir(folder).catch((err) => {
+    if (err.code === "ENOENT") return [];
+    throw err;
+  });
+  const questions = [];
+  for (const file of files.filter(matcher).sort()) {
+    const markdown = await readFile(join(folder, file), "utf8");
+    questions.push(...parseQuestionFile(markdown, source));
+  }
+  return questions;
+}
+
+function questionToMarkdown(question, ordinal) {
+  const letters = ["A", "B", "C", "D"];
+  const lines = [
+    `### Q${ordinal}: ${question.question}`,
+    `- ID: ${question.id}`,
+    `- Domain: ${question.domain}`
+  ];
+  if (question.topic) lines.push(`- Topic: ${question.topic}`);
+  lines.push(`- Difficulty: ${question.difficulty || "medium"}`);
+  question.choices.forEach((choice, index) => lines.push(`- ${letters[index]}. ${choice}`));
+  lines.push(`- Answer: ${letters[question.answer]}`);
+  if (question.explanation) lines.push(`- Explanation: ${question.explanation}`);
+  question.choices.forEach((_, index) => {
+    if (index !== question.answer && question.whyWrong?.[index]) {
+      lines.push(`- Why ${letters[index]} is wrong: ${question.whyWrong[index]}`);
+    }
+  });
+  lines.push("");
+  return lines.join("\n");
+}
+
+function examToMarkdown(exam) {
+  return [
+    `- Name: ${exam.certification.name}`,
+    `- Code: ${exam.certification.code}`,
+    `- Duration Minutes: ${exam.certification.durationMinutes}`,
+    `- Question Range: ${exam.certification.questionRange}`,
+    `- Level: ${exam.certification.level}`,
+    `- Source: ${exam.certification.source || ""}`,
+    "",
+    "## Blueprint Domains",
+    ...exam.domains.map((domain) => `- ${domain.name}: ${domain.weight}%`),
+    "",
+    "## Questions",
+    "",
+    ...exam.questions.map((question, index) => questionToMarkdown(question, index + 1))
+  ].join("\n").trimEnd() + "\n";
+}
+
 async function readExam(certDir) {
   const blueprint = await readBlueprint(certDir);
-  const markdown = await readFile(join(certDir, "questions.md"), "utf8").catch((error) => {
-    if (error.code !== "ENOENT") throw error;
-    return [
-      `- Name: ${blueprint?.name || "Certification"}`,
-      `- Code: ${blueprint?.code || "CERT"}`,
-      `- Duration Minutes: ${blueprint?.format?.durationMinutes || 120}`,
-      `- Question Range: ${blueprint?.format?.questionCount ? `${blueprint.format.questionCount.min}-${blueprint.format.questionCount.max}` : "60-70"}`,
-      `- Level: ${blueprint?.level || "Professional"}`,
-      `- Source: ${blueprint?.homepage || "https://www.nvidia.com/en-us/learn/certification/"}`,
-      "",
-      "## Blueprint Domains",
-      ...(blueprint?.domains || []).map((domain) => `- ${domain.name}: ${domain.weight}%`),
-      "",
-      "## Questions",
-      ""
-    ].join("\n");
-  });
-  const exam = parseExamMarkdown(markdown);
-  const questionIds = new Set(exam.questions.map((q) => q.id));
-  const originalBankIds = new Set(
-    exam.questions.filter((q) => q.source !== "high_fidelity_generated").map((q) => q.id)
+  const exam = parseExamMarkdown(examHeaderMarkdown(blueprint));
+  const originalQuestions = await readQuestionFiles(
+    join(certDir, "mocks", "original"),
+    (file) => file.endsWith(".questions.md"),
+    "original"
   );
-  const highFidelityGeneratedIds = new Set(
-    exam.questions.filter((q) => q.source === "high_fidelity_generated").map((q) => q.id)
+  const highFidelityQuestions = await readQuestionFiles(
+    join(certDir, "generated"),
+    (file) => /^high_fidelity_\d+\.md$/.test(file),
+    "high_fidelity_generated"
+  );
+  const draftQuestions = parseQuestionFile(
+    await readFile(join(certDir, "generated", "drafts.md"), "utf8").catch((err) => {
+      if (err.code === "ENOENT") return "";
+      throw err;
+    }),
+    "generated_draft"
   );
 
-  // Draft generated questions are merged into the full pool so saved IDs and the adaptive coach
-  // can still resolve every question, but only approved drafts go into generatedPracticeIds.
-  const generatedIds = new Set<string>();
-  try {
-    const generatedRaw = await readFile(join(certDir, "generated-questions.md"), "utf8");
-    // parseExamMarkdown splits on "## Questions" then on /### Q\d+:/. Strip any preamble so the
-    // header/comment lines don't get parsed as a malformed first question.
-    const firstQ = generatedRaw.search(/^###\s*Q\d+:/m);
-    const blocksMd = firstQ === -1 ? "" : generatedRaw.slice(firstQ);
-    if (blocksMd) {
-      const generatedExam = parseExamMarkdown(`## Questions\n\n${blocksMd}`);
-      for (const q of generatedExam.questions) {
-        q.source = "generated_draft";
-        generatedIds.add(q.id);
-        if (!questionIds.has(q.id)) {
-          exam.questions.push(q);
-          questionIds.add(q.id);
-        }
-      }
-    }
-  } catch (err) {
-    if (err.code !== "ENOENT") {
-      console.warn(`Skipping generated-questions.md (${err.message})`);
-    }
+  const questionIds = new Set<string>();
+  exam.questions = [];
+  for (const question of [...originalQuestions, ...highFidelityQuestions, ...draftQuestions]) {
+    if (questionIds.has(question.id)) continue;
+    exam.questions.push(question);
+    questionIds.add(question.id);
   }
+  const originalBankIds = new Set(originalQuestions.map((q) => q.id));
+  const highFidelityGeneratedIds = new Set(highFidelityQuestions.map((q) => q.id));
+  const generatedIds = new Set(draftQuestions.map((q) => q.id));
 
   const approvals = await readApprovals(certDir);
   const approvedSet = new Set(approvals.approved);
@@ -295,7 +357,7 @@ async function readMockDefinitions(certDir) {
     );
   }
 
-  const original = await fromFolder("original", join(certDir, "mocks"));
+  const original = await fromFolder("original", join(certDir, "mocks", "original"));
   const generated = await fromFolder("generated", join(certDir, "mocks", "generated"));
   return [...original, ...generated];
 }
@@ -449,8 +511,7 @@ const server = createServer(async (req, res) => {
 
     if (req.method === "GET" && url.pathname === "/api/questions.md") {
       const { dir } = certFromUrl(url);
-      const markdown = await readFile(join(dir, "questions.md"), "utf8");
-      send(res, 200, markdown, "text/markdown; charset=utf-8");
+      send(res, 200, examToMarkdown(await readExam(dir)), "text/markdown; charset=utf-8");
       return;
     }
 
@@ -658,13 +719,14 @@ const server = createServer(async (req, res) => {
       }
       const newBlocks = qcPassed.map(reassignId);
       const summaries = newBlocks.map(summarizeBlock);
-      const generatedPath = join(dir, "generated-questions.md");
+      const generatedPath = join(dir, "generated", "drafts.md");
       const header = `\n\n<!-- generated ${new Date().toISOString()} cert=${slug} count=${newBlocks.length} difficulty=${difficulty}${topic ? ` topic="${topic}"` : ""} mode=${stopReason} qcSkipped=${qcSkipped} -->\n`;
       const payload = newBlocks.length ? header + newBlocks.join("\n\n") + "\n" : "";
       let autoApprovedIds = [];
       if (payload) {
         if (!existsSync(generatedPath)) {
-          await writeFile(generatedPath, "# Generated Practice Questions\n\n> Reviewed by automated QC pass before append. Approve in the Review Queue to drill them.\n\n", "utf8");
+          await mkdir(join(dir, "generated"), { recursive: true });
+          await writeFile(generatedPath, "# Generated Draft Questions\n\n> Reviewed by automated QC pass before append. Approve in the Review Queue to drill them.\n\n## Questions\n", "utf8");
         }
         await appendFile(generatedPath, payload, "utf8");
         if (isMistakesMode || isStudyMode || body.service) {
@@ -688,7 +750,7 @@ const server = createServer(async (req, res) => {
         autoApprovedIds,
         usage: { generation: genUsage, qc: qcUsage },
         stopReason,
-        appendedTo: newBlocks.length ? `certifications/${slug}/generated-questions.md` : null
+        appendedTo: newBlocks.length ? `certifications/${slug}/generated/drafts.md` : null
       });
       return;
     }
@@ -813,7 +875,7 @@ const server = createServer(async (req, res) => {
         send(res, 400, { error: "Invalid mock id" });
         return;
       }
-      const mockDir = mockSource === "generated" ? join(dir, "mocks", "generated") : join(dir, "mocks");
+      const mockDir = mockSource === "generated" ? join(dir, "mocks", "generated") : join(dir, "mocks", "original");
       const mockDef = await readJson(join(mockDir, `${mockId}.json`));
       const exam = await readExam(dir);
 
