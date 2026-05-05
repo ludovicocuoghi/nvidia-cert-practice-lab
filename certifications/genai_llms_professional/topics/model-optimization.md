@@ -57,7 +57,7 @@ Trained Model
 Deployable Model (via NIM / Triton)
 ```
 
-Target constraints: **Latency** | **Throughput** | Memory | Accuracy | Cost
+Target constraints: **latency**, **throughput**, memory, accuracy, and cost.
 
 ## Quantization: the precision ladder
 
