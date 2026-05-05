@@ -890,11 +890,11 @@ export const studySections = [
     exam: "Agentic AI",
     name: "NVIDIA Platform Implementation",
     weight: 7,
-    description: "Map agentic workloads to NVIDIA services such as NIM, NeMo Agent Toolkit, NeMo Guardrails, NeMo Retriever, Triton, and TensorRT-LLM.",
-    keyIdeas: ["NIM", "NeMo Agent Toolkit", "NeMo Guardrails", "NeMo Retriever", "Triton", "TensorRT-LLM"],
-    use: "Study this when the question asks which NVIDIA component fits a production agent requirement.",
+    description: "Map agentic workloads and latency/scale clues to NVIDIA services such as NIM, NeMo Agent Toolkit, NeMo Guardrails, NeMo Retriever, Triton, TensorRT-LLM, and Nsight.",
+    keyIdeas: ["NIM", "NIM Operator", "Triton", "TensorRT-LLM", "Nsight Systems", "NeMo Retriever"],
+    use: "Study this when the question asks which NVIDIA component fits a production agent requirement, user-volume constraint, or latency bottleneck.",
     traps: "Do not answer with a model when the question asks for orchestration, serving, retrieval, or guardrails.",
-    scenario: "A team wants to wrap existing LangChain agents with NVIDIA workflow evaluation and observability."
+    scenario: "A NIM-hosted agent has high p99 latency; decide whether the issue is serving queue, TensorRT-LLM decode, Retriever/tool spans, or Nsight-level profiling."
   },
   {
     exam: "Agentic AI",
@@ -1215,12 +1215,14 @@ const sectionDeepDive = {
   "NVIDIA Platform Implementation": {
     studyNotes: [
       "Map each NVIDIA component to lifecycle: NeMo Framework customizes, NeMo Agent Toolkit orchestrates, NeMo Retriever retrieves, NeMo Guardrails governs, NIM serves, TensorRT-LLM optimizes LLM inference, Triton serves multi-framework pipelines.",
+      "For user-count or latency scenarios, translate the clue into queue depth, TTFT, p95/p99, tokens/sec, GPU utilization, and traced spans before choosing the NVIDIA product.",
+      "NIM serves endpoints; NIM Operator manages NIM on Kubernetes; Triton handles multi-model serving, queues, batching, and ensembles; TensorRT-LLM optimizes LLM decode/KV-cache/runtime behavior; Nsight Systems finds where time goes before Nsight Compute explains one hot kernel.",
       "Expand acronym-only service names in your mental map: NIM = NVIDIA Inference Microservice; NGC = NVIDIA GPU Cloud; NCCL = NVIDIA Collective Communications Library; TAO = Train, Adapt, Optimize.",
       "When a question says 'which NVIDIA service', identify the lifecycle phase before choosing the product name."
     ],
-    mustKnow: ["NIM", "NeMo Agent Toolkit", "NeMo Guardrails", "NeMo Retriever", "TensorRT-LLM", "Triton"],
-    examSignals: ["NVIDIA component selection", "agent workflow", "RAG", "serving", "guardrails"],
-    handsOn: ["Make a one-line purpose statement for every NVIDIA service in the Study Services tab."]
+    mustKnow: ["NIM", "NIM Operator", "Triton", "TensorRT-LLM", "Nsight Systems", "Nsight Compute"],
+    examSignals: ["NVIDIA component selection", "high p99", "slow TTFT", "low tokens/sec", "serving queue", "GPU timeline"],
+    handsOn: ["Map a slow NVIDIA agent request to one first tool: NIM metrics, Triton queue/batching, TensorRT-LLM runtime, NeMo Retriever/tool spans, Nsight Systems, or Nsight Compute."]
   },
   "Run, Monitor, and Maintain": {
     studyNotes: [

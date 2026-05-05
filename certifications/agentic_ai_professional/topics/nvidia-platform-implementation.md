@@ -27,6 +27,7 @@ This page is intentionally NVIDIA-specific. It should map NIM, NeMo Agent Toolki
 - **NeMo Guardrails** is a safety/policy middleware layer around LLM applications, not a training tool and not an inference optimizer. It intercepts input/output and applies rules.
 - **Triton Inference Server** serves multiple models across frameworks with dynamic batching; **TensorRT-LLM** optimizes LLM inference specifically. Triton can host **TensorRT-LLM** engines — they're complementary, not alternatives.
 - **Nsight Systems** = system-level timeline (CPU+GPU); **Nsight Compute** = kernel-level analysis. The exam tests this distinction: **Nsight Systems** for "where is the bottleneck?" and **Nsight Compute** for "why is this kernel slow?"
+- **User-count and latency clues** map to NVIDIA layers only after you identify the bottleneck: **NIM/NIM Operator** for endpoint serving and Kubernetes lifecycle, **Triton** for serving queues/batching/multi-model pipelines, **TensorRT-LLM** for LLM decode/KV-cache/runtime optimization, **Nsight Systems** for timeline diagnosis, and **Nsight Compute** for kernel detail.
 
 ## Mental model
 
@@ -93,6 +94,24 @@ These can appear in Agentic AI questions, especially deployment/scaling or NVIDI
 | **TensorRT** | General neural-network **inference optimization** | **TensorRT-LLM** is the LLM-specific stack |
 | **Triton Dynamo** | Distributed LLM inference scheduling and multi-node **serving** | Not agent task planning |
 
+## NVIDIA suite map for user count and latency
+
+When a question says "1,000 users," "1 million users," "slow first token," or "high p99," first decide which layer is slow. Then choose the NVIDIA component at that layer.
+
+| Scenario clue | Think NVIDIA layer | Best NVIDIA answer pattern | Avoid this trap |
+| ---- | ---- | ---- | ---- |
+| Need the fastest supported LLM/embedding/reranker API | **NIM** | Deploy separate NIM microservices for LLM, embedding, and reranker endpoints | Pick NeMo Framework just because a model is involved |
+| Many users require Kubernetes lifecycle and autoscaling | **NIM Operator** | Manage NIM deployments, warm replicas, health checks, rolling updates, and GPU-aware scheduling | Treat one manual `docker run` as the scale answer |
+| p99 rises with concurrent users and queue depth grows | **Triton / serving gateway / NIM metrics** | Inspect queue time, dynamic batching, instance groups, route policy, and serving lanes | Tune prompts before checking the serving queue |
+| Slow first token in chat | **NIM/Triton + prefill/queue metrics** | Check TTFT, queue time, prompt length, streaming, and warm readiness | Measure only total response time |
+| Good TTFT but poor tokens/sec | **TensorRT-LLM** | Look for in-flight batching, paged KV cache, precision, attention kernels, and model profile issues | Use NeMo Retriever for a decode bottleneck |
+| GPU utilization low but agent is slow | **NeMo Agent Toolkit / Retriever / tool spans first** | Trace retrieval, reranking, tools, guardrails, and orchestration before GPU tuning | Buy more GPUs for a non-GPU bottleneck |
+| GPU busy but root cause unclear | **Nsight Systems first** | Get CPU/GPU/system timeline, then decide if kernel drilldown is needed | Start with Nsight Compute before knowing the hot kernel |
+| One CUDA kernel dominates after timeline analysis | **Nsight Compute** | Inspect occupancy, memory bandwidth, tensor core use, and kernel stalls | Use dashboard snapshots as a profiler |
+| Multi-node LLM serving or distributed inference scheduling | **Triton Dynamo** | Coordinate larger distributed serving workloads | Confuse inference scheduling with agent planning |
+
+Exam shorthand: **NIM serves**, **NIM Operator operates NIM on Kubernetes**, **Triton schedules and batches serving**, **TensorRT-LLM optimizes LLM execution**, **Nsight Systems finds where time goes**, and **Nsight Compute explains the hot kernel**.
+
 ## Real NVIDIA boundary traps
 
 1. **Mixing lifecycle stages:** **NIM** isn't for training; **NeMo Framework** isn't for **serving**; **Guardrails** isn't for optimization. The exam constructs answer choices that are correct tools in wrong stages.
@@ -118,6 +137,7 @@ These can appear in Agentic AI questions, especially deployment/scaling or NVIDI
 - **NeMo Guardrails:** safety/policy middleware outside the LLM — safety stage
 - **Triton Inference Server:** multi-framework, multi-modal model **serving** with dynamic batching
 - **TensorRT-LLM:** LLM-specific **inference optimization** (in-flight batching, paged KV cache, kernel fusion, quantization)
+- **Latency/user-count map:** raw user count is not the NVIDIA answer; translate it into queue depth, TTFT, p95/p99, tokens/sec, GPU utilization, and traced spans, then pick the layer.
 - **Nsight Systems:** system-level CPU+GPU timeline; **Nsight Compute:** kernel-level deep dive
 - **NeMo Framework:** trains/customizes; **Nemotron:** the model family; **NIM:** serves them
 - **NCCL:** GPU-to-GPU communication only — not **serving**, not safety, not **orchestration**
