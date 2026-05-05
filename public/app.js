@@ -1711,6 +1711,7 @@ function StudyModePanel({
     .map((group) => ({ ...group, services: sortServices(filteredServices.filter((service) => serviceGroupName(service) === group.name)) }))
     .filter((group) => group.services.length);
   const otherServices = filteredServices.filter((service) => !SERVICE_GROUPS.some((group) => group.name === serviceGroupName(service)));
+  const serviceSelectValue = filteredServices.some((service) => service.name === selectedService.name) ? selectedService.name : "";
 
   function quickServiceQuiz() {
     // Search bank by service name and any related framework keywords (e.g. "NeMo", "TensorRT").
@@ -1815,6 +1816,29 @@ function StudyModePanel({
                     if (first) setSelectedServiceName(first.name);
                   }
                 }, filter))
+              )
+            ),
+            h("div", { className: "filter-group service-selector-group" },
+              h("label", { htmlFor: "service-jump-select" }, "Select service"),
+              h("div", { className: "service-jump-row" },
+                h("select", {
+                  id: "service-jump-select",
+                  className: "service-jump-select",
+                  value: serviceSelectValue,
+                  disabled: !filteredServices.length,
+                  onChange: (event) => {
+                    if (event.target.value) setSelectedServiceName(event.target.value);
+                  }
+                },
+                  h("option", { value: "", disabled: true }, filteredServices.length ? "Choose a service..." : "No services match these filters"),
+                  groupedServices.map((group) => h("optgroup", { key: group.name, label: group.name },
+                    group.services.map((service) => h("option", { key: service.name, value: service.name }, service.name))
+                  )),
+                  otherServices.length ? h("optgroup", { key: "other", label: "Other capabilities" },
+                    otherServices.map((service) => h("option", { key: service.name, value: service.name }, service.name))
+                  ) : null
+                ),
+                h("span", { className: "service-jump-meta" }, `${filteredServices.length} services visible`)
               )
             )
           ),

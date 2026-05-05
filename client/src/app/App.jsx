@@ -2785,6 +2785,32 @@ function StudyModePanel({
       }, filter))
     )
   );
+  const serviceSelectValue = filteredServices.some((service) => service.name === selectedService.name) ? selectedService.name : "";
+  const serviceSelectorGroup = h("div", { key: "selector", className: "filter-group service-selector-group" },
+    h("label", { htmlFor: "service-jump-select" }, isGenericStudy ? "Select study playbook" : "Select service"),
+    h("div", { className: "service-jump-row" },
+      h("select", {
+        id: "service-jump-select",
+        className: "service-jump-select",
+        value: serviceSelectValue,
+        disabled: !filteredServices.length,
+        onChange: (event) => {
+          if (event.target.value) setSelectedServiceName(event.target.value);
+        }
+      },
+        h("option", { value: "", disabled: true }, filteredServices.length ? "Choose a service..." : "No services match these filters"),
+        groupedServices.map((group) => h("optgroup", { key: group.name, label: group.name },
+          group.services.map((service) => h("option", { key: service.name, value: service.name }, service.name))
+        )),
+        otherServices.length ? h("optgroup", { key: "other", label: "Other capabilities" },
+          otherServices.map((service) => h("option", { key: service.name, value: service.name }, service.name))
+        ) : null
+      ),
+      h("span", { className: "service-jump-meta" },
+        `${filteredServices.length} ${isGenericStudy ? "playbooks" : "services"} visible`
+      )
+    )
+  );
 
   return h(
     "div",
@@ -2831,8 +2857,8 @@ function StudyModePanel({
       ? h(React.Fragment, null,
           h("div", { className: "service-filter-panel" },
             isGenericStudy
-              ? lifecycleContextFilterGroup
-              : isLifecycleAwareNvidia ? [lifecycleContextFilterGroup, familyFilterGroup] : [familyFilterGroup, lifecycleContextFilterGroup]
+              ? [lifecycleContextFilterGroup, serviceSelectorGroup]
+              : isLifecycleAwareNvidia ? [lifecycleContextFilterGroup, familyFilterGroup, serviceSelectorGroup] : [familyFilterGroup, lifecycleContextFilterGroup, serviceSelectorGroup]
           ),
           h(
             "div",
@@ -4121,6 +4147,7 @@ function renderHighlightedPlain(text, options = {}) {
   const out = [];
   let lastIdx = 0;
   let key = 0;
+  const keyPrefix = options.highlightKeyPrefix || "hl";
   let match;
   PLAYBOOK_HIGHLIGHT_PATTERN.lastIndex = 0;
   while ((match = PLAYBOOK_HIGHLIGHT_PATTERN.exec(source)) !== null) {
@@ -4129,7 +4156,7 @@ function renderHighlightedPlain(text, options = {}) {
     if (options.highlightSeen?.has(normalized)) continue;
     if (options.highlightCount && options.highlightCount.value >= (options.maxHighlights ?? 6)) continue;
     if (match.index > lastIdx) out.push(source.slice(lastIdx, match.index));
-    out.push(h("mark", { key: `hl${key++}`, className: playbookHighlightClass(match[0]) }, match[0]));
+    out.push(h("mark", { key: `${keyPrefix}${key++}`, className: playbookHighlightClass(match[0]) }, match[0]));
     options.highlightSeen?.add(normalized);
     if (options.highlightCount) options.highlightCount.value += 1;
     lastIdx = match.index + match[0].length;
@@ -4179,7 +4206,7 @@ function renderInline(text, options = {}) {
   while ((m = re.exec(source)) !== null) {
     if (m.index > lastIdx) {
       const plain = source.slice(lastIdx, m.index);
-      out.push(...(options.autoHighlight ? renderHighlightedPlain(plain, options) : [plain]));
+      out.push(...(options.autoHighlight ? renderHighlightedPlain(plain, { ...options, highlightKeyPrefix: `h${key++}-` }) : [plain]));
     }
     const tok = m[0];
     if (tok.startsWith("**")) out.push(h("strong", { key: `i${key++}` }, tok.slice(2, -2)));
@@ -4196,7 +4223,7 @@ function renderInline(text, options = {}) {
   }
   if (lastIdx < source.length) {
     const plain = source.slice(lastIdx);
-    out.push(...(options.autoHighlight ? renderHighlightedPlain(plain, options) : [plain]));
+    out.push(...(options.autoHighlight ? renderHighlightedPlain(plain, { ...options, highlightKeyPrefix: `h${key++}-` }) : [plain]));
   }
   return out;
 }
