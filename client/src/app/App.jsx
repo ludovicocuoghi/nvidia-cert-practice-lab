@@ -1670,17 +1670,25 @@ const LIFECYCLE_FLOWS = {
   "Agentic AI General": {
     title: "Agentic AI general study paths",
     lanes: {
-      "Train model from zero": "Rare but useful anchor path: prepare corpora, run distributed training, evaluate the new artifact, then publish it for serving.",
+      "Build agent/RAG application": "Most exam and product work starts here: choose workflow vs RAG vs bounded agent, wire tools/memory, add policy, and evaluate trajectories.",
+      "Use existing model or API": "Default product path when no weight change is needed: choose a model/API, adapt with prompts/context, wrap it in a serving layer, then measure it.",
       "Fine-tune existing model": "Use when an existing model is close, but durable behavior, style, rubric-following, or preference alignment must change.",
-      "Use existing model or API": "Default path for many products: choose a model/API, adapt with prompts/context, wrap it in a serving layer, then measure it.",
-      "Build agent/RAG application": "Keep runtime knowledge, tools, memory, policy, and trajectories separate from model training.",
+      "Train model from zero": "Rare anchor path: prepare corpora, run distributed training, evaluate the new artifact, then publish it for serving.",
       "Operate, govern, and improve": "After release, observe behavior, evaluate regressions, optimize cost/latency, and turn feedback into fixes."
     },
     stages: [
-      { id: "gen-train-data", lane: "Train model from zero", context: "Training data", name: "Curate model corpus", tools: ["Training Data Curation Pipeline"], note: "Dedupe, filter, license-check, redact PII, control contamination, split holdouts" },
-      { id: "gen-train-run", lane: "Train model from zero", context: "Training", name: "Run foundation training", tools: ["Foundation Model Training Stack"], note: "Training recipe, distributed jobs, checkpoints, experiment tracking, model card inputs" },
-      { id: "gen-train-eval", lane: "Train model from zero", context: "Evaluation", name: "Evaluate trained model", tools: ["Evaluation and Regression Harness"], note: "Quality, safety, regression, bias, capability, and readiness evidence" },
-      { id: "gen-train-serve", lane: "Train model from zero", context: "Publish trained checkpoint", name: "Register and serve trained artifact", tools: ["Model Inference Endpoint", "Model Serving Gateway"], note: "Register the newly trained checkpoint, package it as an endpoint, route traffic, and keep rollback path" },
+      { id: "gen-agent-architecture", lane: "Build agent/RAG application", context: "Architecture", name: "Choose workflow, RAG, or ReAct agent", tools: ["Agent Orchestration Runtime", "Prompt and Context Design"], note: "Start with the smallest runtime: direct answer, deterministic workflow, RAG workflow, bounded ReAct loop, router, or supervisor." },
+      { id: "gen-agent-ingest", lane: "Build agent/RAG application", context: "Knowledge prep", name: "Ingest private knowledge", tools: ["Knowledge Ingestion and Permission Pipeline"], note: "Extract, chunk, enrich metadata, preserve ACLs, source lineage, retention rules" },
+      { id: "gen-agent-rag", lane: "Build agent/RAG application", context: "Grounding", name: "Build retrieval path", tools: ["Knowledge and RAG Pipeline"], note: "Search, filter, rerank, assemble context, cite sources, evaluate groundedness" },
+      { id: "gen-agent-react", lane: "Build agent/RAG application", context: "ReAct loop", name: "Use ReAct only for dynamic tool loops", tools: ["Agent Orchestration Runtime", "Tool Gateway and Function Runtime"], note: "ReAct = Reason -> Act -> Observe -> decide next step. Use it when tool observations change the path; avoid it for fixed audited workflows." },
+      { id: "gen-agent-workflow", lane: "Build agent/RAG application", context: "Workflow", name: "Orchestrate tools and memory", tools: ["Agent Orchestration Runtime", "Tool Gateway and Function Runtime", "Memory Store"], note: "State, routing, tool schemas, permissions, idempotency, memory scopes" },
+      { id: "gen-agent-policy", lane: "Build agent/RAG application", context: "Runtime safety", name: "Apply policy controls", tools: ["Policy and Guardrails Layer"], note: "Input, retrieved content, tool proposal, tool result, and output checks" },
+      { id: "gen-agent-eval", lane: "Build agent/RAG application", context: "Trajectory eval", name: "Evaluate agent behavior", tools: ["Evaluation and Regression Harness"], note: "Final answer, groundedness, tool correctness, safety, latency, and cost" },
+
+      { id: "gen-api-select", lane: "Use existing model or API", context: "Model/API", name: "Choose existing model", tools: ["Model Selection and Registry"], note: "Pick hosted API, open model, catalog artifact, or approved internal model for the job" },
+      { id: "gen-api-prompt", lane: "Use existing model or API", context: "No weight change", name: "Design prompt and context", tools: ["Prompt and Context Design"], note: "Instructions, examples, output schema, context packing, prompt versions, rollback" },
+      { id: "gen-api-serve", lane: "Use existing model or API", context: "Runtime", name: "Expose and route calls", tools: ["Model Inference Endpoint", "Model Serving Gateway"], note: "Endpoint/API, auth, rate limits, fallback, canary, batching, traffic policy" },
+      { id: "gen-api-measure", lane: "Use existing model or API", context: "Check", name: "Measure quality and cost", tools: ["Evaluation and Regression Harness", "Cost/Latency Optimizer"], note: "Prompt evals, latency, token cost, model routing, cache/context discipline" },
 
       { id: "gen-tune-select", lane: "Fine-tune existing model", context: "Base model", name: "Select base model", tools: ["Model Selection and Registry"], note: "Choose the base model/API or checkpoint; record lineage and constraints" },
       { id: "gen-tune-data", lane: "Fine-tune existing model", context: "Tuning data", name: "Curate examples", tools: ["Training Data Curation Pipeline"], note: "Prepare SFT examples, preference pairs, tool traces, PII cleanup, validation holdouts" },
@@ -1688,19 +1696,14 @@ const LIFECYCLE_FLOWS = {
       { id: "gen-tune-eval", lane: "Fine-tune existing model", context: "Release gate", name: "Compare against baseline", tools: ["Evaluation and Regression Harness", "Model Selection and Registry"], note: "Measure gains, regressions, safety, overfitting, and adapter/version approval" },
       { id: "gen-tune-serve", lane: "Fine-tune existing model", context: "Deploy", name: "Deploy tuned endpoint", tools: ["Model Inference Endpoint", "Model Serving Gateway"], note: "Serve the tuned model or adapter-backed endpoint with rollout controls" },
 
-      { id: "gen-api-select", lane: "Use existing model or API", context: "Model/API", name: "Choose existing model", tools: ["Model Selection and Registry"], note: "Pick hosted API, open model, catalog artifact, or approved internal model for the job" },
-      { id: "gen-api-prompt", lane: "Use existing model or API", context: "No weight change", name: "Design prompt and context", tools: ["Prompt and Context Design"], note: "Instructions, examples, output schema, context packing, prompt versions, rollback" },
-      { id: "gen-api-serve", lane: "Use existing model or API", context: "Runtime", name: "Expose and route calls", tools: ["Model Inference Endpoint", "Model Serving Gateway"], note: "Endpoint/API, auth, rate limits, fallback, canary, batching, traffic policy" },
-      { id: "gen-api-measure", lane: "Use existing model or API", context: "Check", name: "Measure quality and cost", tools: ["Evaluation and Regression Harness", "Cost/Latency Optimizer"], note: "Prompt evals, latency, token cost, model routing, cache/context discipline" },
-
-      { id: "gen-agent-ingest", lane: "Build agent/RAG application", context: "Knowledge prep", name: "Ingest private knowledge", tools: ["Knowledge Ingestion and Permission Pipeline"], note: "Extract, chunk, enrich metadata, preserve ACLs, source lineage, retention rules" },
-      { id: "gen-agent-rag", lane: "Build agent/RAG application", context: "Grounding", name: "Build retrieval path", tools: ["Knowledge and RAG Pipeline"], note: "Search, filter, rerank, assemble context, cite sources, evaluate groundedness" },
-      { id: "gen-agent-workflow", lane: "Build agent/RAG application", context: "Workflow", name: "Orchestrate tools and memory", tools: ["Agent Orchestration Runtime", "Tool Gateway and Function Runtime", "Memory Store"], note: "State, routing, tool schemas, permissions, idempotency, memory scopes" },
-      { id: "gen-agent-policy", lane: "Build agent/RAG application", context: "Runtime safety", name: "Apply policy controls", tools: ["Policy and Guardrails Layer"], note: "Input, retrieved content, tool proposal, tool result, and output checks" },
-      { id: "gen-agent-eval", lane: "Build agent/RAG application", context: "Trajectory eval", name: "Evaluate agent behavior", tools: ["Evaluation and Regression Harness"], note: "Final answer, groundedness, tool correctness, safety, latency, and cost" },
+      { id: "gen-train-data", lane: "Train model from zero", context: "Training data", name: "Curate model corpus", tools: ["Training Data Curation Pipeline"], note: "Dedupe, filter, license-check, redact PII, control contamination, split holdouts" },
+      { id: "gen-train-run", lane: "Train model from zero", context: "Training", name: "Run foundation training", tools: ["Foundation Model Training Stack"], note: "Training recipe, distributed jobs, checkpoints, experiment tracking, model card inputs" },
+      { id: "gen-train-eval", lane: "Train model from zero", context: "Evaluation", name: "Evaluate trained model", tools: ["Evaluation and Regression Harness"], note: "Quality, safety, regression, bias, capability, and readiness evidence" },
+      { id: "gen-train-serve", lane: "Train model from zero", context: "Publish trained checkpoint", name: "Register and serve trained artifact", tools: ["Model Inference Endpoint", "Model Serving Gateway"], note: "Register the newly trained checkpoint, package it as an endpoint, route traffic, and keep rollback path" },
 
       { id: "gen-ops-observe", lane: "Operate, govern, and improve", context: "Live traces", name: "Observe production runs", tools: ["Observability and Trace Monitor"], note: "Trace model, retrieval, tool, guardrail, route, cost, failure, and task success" },
       { id: "gen-ops-optimize", lane: "Operate, govern, and improve", context: "Efficiency", name: "Optimize serving path", tools: ["Cost/Latency Optimizer", "Model Serving Gateway"], note: "Batching, caching, routing, context discipline, model size, queueing, prefill/decode" },
+      { id: "gen-ops-scale-users", lane: "Operate, govern, and improve", context: "Traffic scale", name: "Plan for 100, 10k, or 1M users", tools: ["Latency, Throughput, and Traffic Control", "Model Serving Gateway"], note: "User count is only the start; convert it into request rate, concurrency, token shape, queue depth, p95/p99, and failure isolation." },
       { id: "gen-ops-review", lane: "Operate, govern, and improve", context: "Oversight", name: "Review and govern risk", tools: ["Human Review and Governance Console", "Policy and Guardrails Layer"], note: "Approval gates, sampled review, escalation, audit evidence, policy updates" },
       { id: "gen-ops-feedback", lane: "Operate, govern, and improve", context: "Improvement loop", name: "Feed fixes back", tools: ["Evaluation and Regression Harness", "Training Data Curation Pipeline", "Prompt and Context Design"], note: "Turn incidents and review labels into evals, prompts, data fixes, or tuning work" }
     ]
@@ -2340,6 +2343,18 @@ const GENERAL_LIFECYCLE_STAGE_DETAILS = {
       "if scores.quality < target: choose_next_fix(prompt_or_rag_or_tuning)"
     ].join("\n")
   },
+  "gen-agent-architecture": {
+    focus: "This is the first agentic design decision. Do not start by choosing a product; choose the control pattern that matches task uncertainty, evidence need, tool risk, and auditability.",
+    checks: ["Direct chat for simple low-risk answers", "RAG workflow when private or fresh evidence is needed", "Deterministic graph when steps and approvals are known", "Bounded ReAct only when tool observations change the next step", "Supervisor/multi-agent only when roles or permissions are truly separable"],
+    metrics: ["task success", "route accuracy", "approval correctness", "unnecessary-agent rate", "tool-call count", "p95 latency"],
+    code: [
+      "if simple_low_risk: direct_model_call()",
+      "elif needs_private_evidence: rag_workflow()",
+      "elif fixed_audited_process: state_graph_with_approvals()",
+      "elif observations_change_next_step: bounded_react_loop()",
+      "else: router_or_supervisor_if_roles_are_separable()"
+    ].join("\n")
+  },
   "gen-agent-ingest": {
     focus: "This prepares runtime knowledge for RAG/agents. It does not change model weights.",
     checks: ["Parse PDFs/tables/code with structure", "Chunk by sections and preserve source metadata", "Propagate ACL/tenant/sensitivity fields", "Delete/update path proven"],
@@ -2360,6 +2375,18 @@ const GENERAL_LIFECYCLE_STAGE_DETAILS = {
       "sparse = bm25_search(query, filters=acl)",
       "candidates = rrf([dense, sparse])",
       "context = pack(cross_encoder_rerank(query, candidates)[:8])"
+    ].join("\n")
+  },
+  "gen-agent-react": {
+    focus: "ReAct means Reason -> Act -> Observe -> Reason again. It belongs in agent/RAG applications only when each tool result can change the next action.",
+    checks: ["Use ReAct for dynamic tool feedback, not known fixed processes", "Validate every tool call outside the model", "Set max steps, token budget, timeout budget, retry limits, and explicit stop criteria", "Trace thought/action/observation state enough to evaluate the trajectory"],
+    metrics: ["tool success rate", "step budget exhaustion rate", "loop termination reason", "trajectory score", "p95 latency per step"],
+    code: [
+      "while budget_left(state):",
+      "    thought = planner.decide_next_need(state)",
+      "    action = tool_gateway.validate_and_execute(thought.proposed_call)",
+      "    state = observe_and_update(state, action.result)",
+      "    if evidence_sufficient(state) or should_escalate(state): break"
     ].join("\n")
   },
   "gen-agent-workflow": {
@@ -2416,6 +2443,17 @@ const GENERAL_LIFECYCLE_STAGE_DETAILS = {
       "fix = choose_fix(bottleneck)",
       "candidate = apply_optimization(fix)",
       "approve = eval(candidate).quality_ok and p95(candidate) < p95(baseline)"
+    ].join("\n")
+  },
+  "gen-ops-scale-users": {
+    focus: "The mindset changes as load grows: user count must become active concurrency, request rate, token shape, workflow fan-out, queue depth, p95/p99 SLOs, and isolation policy.",
+    checks: ["100 users: correctness, traces, simple limits, and one reliable rollback path may be enough", "10k users: calculate peak RPS/concurrency, separate real-time and batch lanes, and autoscale on queue/span signals", "1M+ users: add tenant isolation, priority queues, backpressure, bulkheads, regional/cell isolation, canaries, and incident replay"],
+    metrics: ["active concurrency", "requests/sec", "TTFT", "p95/p99", "queue depth", "tokens/sec", "tool timeout rate", "cost per completed task"],
+    code: [
+      "rps = active_users * requests_per_user_per_minute / 60",
+      "inflight = rps * average_latency_seconds",
+      "if p99_bad or queue_depth_rising: isolate_lanes_and_apply_backpressure()",
+      "if rollout_regresses_quality_or_tail: rollback_version()"
     ].join("\n")
   },
   "gen-ops-review": {
@@ -3092,6 +3130,7 @@ function LifecycleFlow({ examLabel: label, selectedStageId, onSelectStage, onSel
   const visibleGroups = SERVICE_GROUPS.filter((group) => services.some((service) => serviceGroupName(service) === group.name));
   const cardLabel = branding.serviceLabel === "Study Playbooks" ? "study playbook" : (branding.serviceLabel || "service").toLowerCase();
   const conceptFirstAgentic = label === "Agentic AI";
+  const sidePanelLifecycle = conceptFirstAgentic || label === "Agentic AI General";
   const hasLanes = flow.stages.some((stage) => stage.lane);
   const laneGroups = hasLanes
     ? [...new Set(flow.stages.map((stage) => stage.lane || "Shared"))].map((lane) => ({
@@ -3223,8 +3262,8 @@ function LifecycleFlow({ examLabel: label, selectedStageId, onSelectStage, onSel
     conceptFirstAgentic ? null : h("div", { className: "lifecycle-legend" },
       visibleGroups.map((group) => h("span", { key: group.name, className: `legend-chip ${group.className}` }, group.name))
     ),
-    conceptFirstAgentic
-      ? h("div", { className: "lifecycle-concept-layout" },
+    sidePanelLifecycle
+      ? h("div", { className: `lifecycle-concept-layout ${label === "Agentic AI General" ? "lifecycle-concept-layout-general" : ""}` },
           h("div", { className: "lifecycle-concept-map" }, mapNode),
           h("aside", { className: "lifecycle-concept-detail" }, detailNode)
         )
@@ -5260,13 +5299,16 @@ const GENERATE_COUNTS = [1, 5, 10];
 const GENERATE_DIFFICULTIES = ["easier", "medium", "hard", "advanced", "expert"];
 function practiceStudyByOptions(isGenericStudy, currentExamLabel = "Agentic AI") {
   const isAgenticExam = currentExamLabel === "Agentic AI";
-  return [
+  const options = [
     { value: "recommended", label: "Recommended" },
     { value: "section", label: "Exam section" },
-    { value: "service", label: isGenericStudy ? "Playbook" : "NVIDIA service" },
-    { value: "lifecycle", label: isAgenticExam ? "Concept map lane" : "Lifecycle path" },
-    { value: "keyword", label: "Keyword" }
+    { value: "service", label: isGenericStudy ? "Playbook" : "NVIDIA service" }
   ];
+  if (!isAgenticExam) {
+    options.push({ value: "lifecycle", label: "Lifecycle path" });
+  }
+  options.push({ value: "keyword", label: "Keyword" });
+  return options;
 }
 
 function cleanLifecycleLabel(label) {
@@ -6125,7 +6167,7 @@ function PracticePanel(props) {
         h("span", { className: "pp-badge pp-badge-drill" }, "Filter"),
         h("h3", null, `Practice ${target.label}`),
         h("p", null, currentExamLabel === "Agentic AI"
-          ? "Choose an exam section, concept-map lane, NVIDIA service, or keyword, then pick source and scope for the drill."
+          ? "Choose an exam section, NVIDIA service, or keyword, then pick source and scope for the drill."
           : "Choose an exam section, lifecycle path, NVIDIA service, or keyword, then pick source and scope for the drill."),
         h(PracticeScopePanel, {
           studyBy,

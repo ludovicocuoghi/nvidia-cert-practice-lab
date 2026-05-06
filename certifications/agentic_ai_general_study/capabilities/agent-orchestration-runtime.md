@@ -43,10 +43,10 @@ You are building the workflow/runtime that coordinates model calls, tools, retri
 
 | Lane | What this page means there | Output |
 |---|---|---|
-| Train model from zero | Not used. Training jobs have schedulers and distributed runtimes, not agent orchestration. | No agent workflow |
-| Fine-tune existing model | May supply curated tool trajectories, but tuning itself belongs to customization. | Optional trajectory examples |
+| Build agent/RAG application | Main lane: decide direct answer vs workflow vs RAG vs ReAct, then wire state, tools, retrieval, memory, verification, stop conditions. | Traceable agent runtime |
 | Use existing model/API | Use only for multi-step application logic around the model; simple calls may not need an agent. | Bounded workflow or router |
-| Build agent/RAG application | Main lane: state graph, planner/executor, retrieval calls, tool calls, memory, verification, stop conditions. | Traceable agent runtime |
+| Fine-tune existing model | May supply curated tool trajectories, but tuning itself belongs to customization. | Optional trajectory examples |
+| Train model from zero | Rarely relevant. Training jobs have schedulers and distributed runtimes, not agent orchestration. | No agent workflow |
 | Operate, govern, and improve | Replay traces, fix routing/retry/state bugs, and add trajectory regressions. | Improved workflow and eval cases |
 
 ## Pipeline
@@ -132,6 +132,8 @@ It decides what happens before and after a model call: state transitions, tool c
 ### ReAct in one minute
 
 ReAct means **reasoning plus acting**. The runtime lets the model decide the next action, calls a tool, observes the result, and then reasons again. That is useful for dynamic tasks where the next step is unknowable before seeing a search result, API response, sensor value, or document hit.
+
+If you are looking for "where ReAct lives" in this study guide, it lives here: **Agent Orchestration Runtime** owns the control loop, budgets, tool boundary, state updates, and trace. Certificate pages should point back here instead of redefining ReAct every time.
 
 ```text
 Thought: what do I need next?

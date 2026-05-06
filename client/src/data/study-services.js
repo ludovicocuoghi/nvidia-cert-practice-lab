@@ -572,6 +572,7 @@ const vendorNeutralCapabilities = [
     studyNotes: [
       "p95/p99 are percentile latencies: p99 means 99% of requests finish at or below that time. Tail percentiles expose the slow outliers hidden by averages.",
       "Translate user count into request rate, live concurrency, token shape, tool count, retrieval cost, queue depth, and workload mix before scaling.",
+      "A 100-user app can often start with one reliable endpoint, traces, basic limits, and rollback. A 10k-user app needs peak RPS/concurrency, separate realtime and batch lanes, and autoscaling on queue/span signals. A 1M+ app needs tenant isolation, priority queues, backpressure, bulkheads, canaries, and automated rollback.",
       "Interactive chat usually optimizes TTFT and inter-token latency; offline batch jobs usually optimize throughput and cost.",
       "Backpressure, bulkheads, circuit breakers, rate limits, and separate lanes stop one overloaded dependency from hurting every user.",
       "Canary, blue-green, shadow, and rollback are traffic controls only if they include quality, safety, latency, and cost gates."

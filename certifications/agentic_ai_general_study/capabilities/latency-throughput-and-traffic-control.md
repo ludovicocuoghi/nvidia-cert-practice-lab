@@ -71,6 +71,25 @@ You are building the traffic-control layer around model endpoints, retrieval ser
 
 p99 is not "almost the maximum." It means 99% of requests finish at or below that time, so the remaining 1% are worse. That 1% matters when traffic is large: at 100,000 requests/day, 1% is 1,000 bad experiences.
 
+## Scale Mindset: 100 vs 10k vs 1M Users
+
+User count is a clue, not the capacity plan. Convert it into active users, request rate, in-flight concurrency, token shape, tool/RAG fan-out, queue depth, p95/p99 SLOs, and failure isolation.
+
+| Scenario scale | First mindset | Controls to reach for | Common wrong answer |
+|---|---|---|---|
+| Few users / ~100 users | Prove correctness, traces, auth, basic rate limits, and rollback. A single endpoint may be enough. | Clear SLO, task traces, simple queue limits, timeout budget, manual rollback. | Build multi-region autoscaling before the workflow is correct. |
+| ~10,000 users | Convert peak usage into RPS and concurrency. Separate real-time chat, batch jobs, embeddings/rerank, and high-risk actions when they interfere. | Dynamic batching, separate lanes, cache policy, autoscaling on queue/span signals, canary gates. | Scale by registered users alone or put every request in one shared queue. |
+| 1M+ / 2M users | Design for tail risk, noisy tenants, dependency failure, and rollout blast radius. One percent bad at this scale is many users. | Priority queues, backpressure, circuit breakers, bulkheads, tenant/cell isolation, regional routing, shadow/canary, rollback automation. | Add more model replicas without isolating queues, tools, vector DBs, and tenants. |
+
+Use Little's Law as the quick mental model:
+
+```python
+request_rate = active_users * requests_per_user_per_minute / 60
+inflight = request_rate * average_latency_seconds
+```
+
+If latency rises because queues form, `inflight` rises too. That is why a "1 million users" question usually tests queueing, isolation, autoscaling lag, p95/p99, and backpressure rather than only raw model speed.
+
 ## Decision Guide
 
 | Scenario wording | Think first | Avoid |
