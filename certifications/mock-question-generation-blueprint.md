@@ -83,18 +83,21 @@ Recommended mix:
 
 NCP-AAI active unique bank:
 
-- 889 unique questions.
-- 65 downloaded/original unique; 824 generated unique.
-- 432 certificate-concept; 457 NVIDIA-specific.
-- Main issue: NVIDIA Platform Implementation is 431 / 889 active unique questions, about 48.5% of the bank, while the official blueprint weight is 7%.
-- Consequence: good for NVIDIA product drills, not okay for random full-mock sampling.
+- 425 unique questions.
+- 65 downloaded/original unique; 360 generated unique.
+- 312 certificate-concept; 113 NVIDIA-specific.
+- Current scope mix is 73% general / 27% NVIDIA-specific, essentially on the 72/28 target.
+- Generated mocks are 60-question, blueprint-weighted readiness sets with 43 general-concept and 17 NVIDIA-specific questions each.
+- Consequence: use downloaded/original mocks as warmups, and use generated balanced mocks as the stronger exam-readiness checks.
 
 NCP-GENL active unique bank:
 
-- 955 unique questions.
-- 100 downloaded/original unique; 855 generated unique.
-- 386 certificate-concept; 569 NVIDIA-specific.
-- Main issue: Model Deployment, Data Preparation, and service-heavy generated questions are overrepresented; Model Optimization, GPU Acceleration, and Prompt Engineering are underrepresented against official weights.
+- 520 unique questions.
+- 100 downloaded/original unique; 420 generated unique.
+- 287 certificate-concept; 233 NVIDIA-specific.
+- Current scope mix is 55% general / 45% NVIDIA-specific, exactly on the target.
+- Generated mocks are 60-question, blueprint-weighted readiness sets with 33 general-concept and 27 NVIDIA-specific questions each.
+- Consequence: use downloaded/original mocks as warmups, and use generated balanced mocks as the stronger exam-readiness checks.
 
 ## NCP-AAI Mock Target
 
@@ -120,7 +123,7 @@ AAI scope rule:
 - Extra NVIDIA-specific questions can appear in Deployment, Run/Monitor, Knowledge Integration, Evaluation, or Safety when the scenario truly needs a named NVIDIA product.
 - Do not generate more generic service-comparison blocks for NIM/NeMo/Triton unless they fill a specific PDF objective.
 
-AAI next generation priorities:
+AAI next generation priorities, only if a future audit finds a real gap:
 
 1. Agent-to-agent communication, ReAct, and stateful orchestration.
 2. Logic trees, prompt chains, and tool-contract failure modes.
@@ -152,7 +155,7 @@ GENL scope rule:
 - NVIDIA-specific questions should be spread across GPU acceleration, model optimization, deployment, monitoring, and safety.
 - Avoid letting NIM/Triton/NeMo service questions dominate the entire mock.
 
-GENL next generation priorities:
+GENL next generation priorities, only if a future audit finds a real gap:
 
 1. Model Optimization: pruning, sparsity, activation quantization, calibration, KV cache, constrained decoding, distillation.
 2. GPU Acceleration: DDP/FSDP/tensor/pipeline/sequence/expert parallelism, GEMM, gradient accumulation, Tensor Core tradeoffs.
@@ -214,4 +217,4 @@ Use explicit `Scope` instead of relying only on keyword inference. Keyword infer
 
 ## Practical Answer
 
-The current bank is good as a large practice pool, especially for focused drills. It is not good enough to use as a random exam simulator because NVIDIA service-heavy generated questions are overrepresented. The next mock-question work should not simply generate more questions. It should generate underrepresented PDF objectives, then assemble timed mocks through a blueprint-weighted sampler with scope caps.
+The current bank is good as a focused practice pool and the generated mock playlists are now good as fixed readiness simulators. The app should not sample the entire bank uniformly for a realistic exam; it should keep using blueprint-weighted generated mock playlists with topic and scope caps. The next question work should not simply generate more questions. It should start from an audit, add only underrepresented PDF/report objectives, and then rebuild the timed mocks through the same weighted sampler.

@@ -23,6 +23,18 @@ The practice bank and generated mock questions load without an LLM key. Coach ch
 
 Both modes have **Adaptive** (weak-domain biased) and **Full-Bank** variants.
 
+## Study Strategy
+
+Use the app in this order when preparing for NCP-AAI or NCP-GENL:
+
+1. Read **General Study** first for reusable concepts such as ReAct, RAG, KV cache, p95/p99 latency, LoRA/QLoRA, routing, monitoring, and guardrails.
+2. Read the selected certificate's **Exam Concept Map** and **Exam Sections** to map those concepts to the official NVIDIA blueprint.
+3. Open NVIDIA service pages only when the exam wording names a product, platform, hardware family, or deployment stack.
+4. Use downloaded/original mocks as warmup and pattern exposure. They are useful, but the local audit marks them as easier, shorter, and less scenario-heavy than the generated readiness mocks.
+5. Use generated balanced mocks as the stronger readiness check: they are 60-question sets aligned to official domain weights and capped by general-concept vs NVIDIA-specific scope.
+
+Passing only third-party/original mocks is not treated as enough evidence here. A better readiness signal is high scores on both original mocks and generated balanced mocks, plus the ability to explain why the wrong answers solve the wrong layer.
+
 ## Question Bank
 
 Edit active question-bank shards under `certifications/<cert_slug>/mocks/original/*.questions.md` or `certifications/<cert_slug>/generated/high_fidelity_###.md`. Each question:

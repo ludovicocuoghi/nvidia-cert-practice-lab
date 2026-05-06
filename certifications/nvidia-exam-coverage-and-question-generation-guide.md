@@ -1,10 +1,10 @@
 # NVIDIA Exam Coverage and Question Generation Guide
 
-Updated: 2026-05-05
+Updated: 2026-05-06
 
 This guide is the reusable audit layer for the NVIDIA Certified Professional Agentic AI (NCP-AAI) and NVIDIA Certified Professional Generative AI LLMs (NCP-GENL) material in this project. It is grounded in saved OCR text from the local NVIDIA study-guide PDFs, official NVIDIA certification pages, local blueprints, topic pages, question banks, and mock-test evaluators.
 
-The initial OCR/coverage pass did not edit question banks or mocks. The follow-up gap-fill pass added one generated question shard per certification; mock files were still left unchanged.
+The initial OCR/coverage pass did not edit question banks or mocks. Later passes rebuilt the generated practice banks and fixed generated mock playlists so current generated mocks are balanced by official domain weights and scoped as readiness checks.
 
 ## Source Inventory
 
@@ -22,41 +22,40 @@ Primary sources:
 - NVIDIA Generative AI and LLM learning path: https://www.nvidia.com/en-us/learn/learning-path/generative-ai-llm/
 - NCP-AAI OCR source: `certifications/agentic_ai_professional/reference/study-guide-ocr.md`
 - NCP-GENL OCR source: `certifications/genai_llms_professional/reference/study-guide-ocr.md`
-- NCP-AAI gap-fill questions: `certifications/agentic_ai_professional/generated/high_fidelity_010.md`
-- NCP-GENL gap-fill questions: `certifications/genai_llms_professional/generated/high_fidelity_010.md`
+- NCP-AAI generated bank shards: `certifications/agentic_ai_professional/generated/high_fidelity_001.md` through `high_fidelity_004.md`
+- NCP-GENL generated bank shards: `certifications/genai_llms_professional/generated/high_fidelity_001.md` through `high_fidelity_005.md`
 
 ## Plain-English Verdict
 
-The project is related to the official NVIDIA PDF study guides, but the relationship is uneven.
+The project is now strongly aligned to the official NVIDIA PDF study guides, but the source types should be used differently.
 
 | Material | NCP-AAI verdict | NCP-GENL verdict | What to do |
 | --- | --- | --- | --- |
 | Topic/study pages | Strong. Keyword coverage of OCR topic families: 21/21. | Strong. Keyword coverage of OCR topic families: 24/24. | Keep as the main study layer. |
 | Original mock tests | Related, but shallow. Combined OCR keyword coverage: 16/21; individual mocks range 14-16/21. They are also too short/easy. | Related, but shallow. Combined OCR keyword coverage: 20/24; individual mocks range 18-20/24. They are also short and often too easy. | Keep as warmups/diagnostics, not final exam simulators. |
-| Generated question bank | More exam-like, but uneven. OCR keyword coverage: 18/21; heavy NVIDIA Platform overrepresentation. | More exam-like, but uneven. OCR keyword coverage: 20/24; some generated mocks are good, others drift from blueprint weights. | Do targeted gap fills and rebalance generated mocks; do not bulk-rewrite everything. |
-| New OCR gap shard | Adds 8 AAI questions for the clearest uncovered/weak PDF objectives. | Adds 8 GENL questions for the clearest uncovered/weak PDF objectives. | Keep adding small focused shards until OCR gaps are covered in practice. |
+| Generated question bank | Stronger readiness layer. Active bank is 425 unique questions with every domain represented; generated mocks are 60-question, blueprint-weighted, and status `good`. | Stronger readiness layer. Active bank is 520 unique questions with every domain represented; generated mocks are 60-question, blueprint-weighted, and status `good`. | Use for harder readiness checks after studying official/topic material. |
 
 Answer to the original question:
 
 - The original mocks are connected to the official material, but they are not enough by themselves because they are often 50-question sets, too easy, and too short-stemmed for the professional exam style.
-- The generated AI questions are closer to professional exam style, but some generated mocks are not balanced against official domain weights.
-- We do need to add or change questions, but surgically: add targeted OCR/PDF gap questions, rebalance generated mock JSONs, and avoid replacing the whole bank.
+- The generated AI questions are closer to professional exam style and the current generated mock JSONs are now balanced against official domain weights.
+- We do not need another broad question-generation pass right now. Future changes should be surgical: add questions only for newly discovered OCR/report gaps, then rebuild generated mocks with the same blueprint-weighted sampler.
 
 Recommended three-way test/practice split:
 
 | Type | Pool in this project | Best use | Current issue |
 | --- | --- | --- | --- |
-| Mock tests | Fixed downloaded/original mock JSONs plus fixed generated mock JSONs under each cert's `mocks/` folder. | Timed readiness checks, baseline scores, and repeatable progress tracking. | Original mocks are useful but shallow; generated mocks are harder but some need blueprint rebalancing. |
-| NVIDIA-specific questions | Any question with `Scope: nvidia_specific`, or legacy questions inferred by NVIDIA/platform keywords. | Practice NVIDIA product/service decisions: NeMo, NIM, TensorRT-LLM, Triton, Nsight, Guardrails, deployment, profiling, and platform tradeoffs. | The generated bank is already NVIDIA-heavy, so only add more when filling a real PDF/OCR product gap. |
-| Certificate concept questions | Any question with `Scope: general_concept`, or legacy questions with no NVIDIA/platform signal. | Broader cert-related concepts that are not always tied to a named NVIDIA service: transformer basics, agent architecture, memory, RAG, evaluation, tuning, reliability. | This is the current deficit area; generate more general-concept OCR/PDF questions before more NVIDIA-specific ones. |
+| Mock tests | Fixed downloaded/original mock JSONs plus fixed generated mock JSONs under each cert's `mocks/` folder. | Timed readiness checks, baseline scores, and repeatable progress tracking. | Original mocks are useful but shallow; generated mocks are the current balanced readiness checks. |
+| NVIDIA-specific questions | Any question with `Scope: nvidia_specific`, or legacy questions inferred by NVIDIA/platform keywords. | Practice NVIDIA product/service decisions: NeMo, NIM, TensorRT-LLM, Triton, Nsight, Guardrails, deployment, profiling, and platform tradeoffs. | Current generated mocks already hit the target scope mix, so add more only for a real PDF/OCR product gap. |
+| Certificate concept questions | Any question with `Scope: general_concept`, or legacy questions with no NVIDIA/platform signal. | Broader cert-related concepts that are not always tied to a named NVIDIA service: transformer basics, agent architecture, memory, RAG, evaluation, tuning, reliability. | Current generated mocks include enough concept coverage; add more only when a specific objective gap appears. |
 
 Scope is not the same as source. Downloaded/original mocks can contain NVIDIA-specific questions, and generated banks can contain general-concept questions. Future generated or repaired questions should include an explicit `- Scope: general_concept` or `- Scope: nvidia_specific` line; legacy questions can be classified by a conservative keyword audit.
 
 Next recommended work:
 
-1. Add another small AAI shard for remaining generated-bank weak spots, but skew it toward `general_concept`: agent-to-agent communication, multi-agent workflows, knowledge graphs, ReAct/memory tradeoffs, evaluation feedback loops, retry/graceful failure, and deployment/run-monitor weighting.
-2. Add another small GENL shard for remaining generated-bank weak spots, but skew it toward `general_concept`: encoder-decoder distinctions, tokenizers, pruning/sparsity, distillation, hyperparameter tuning, early stopping, sampling, parallelism, GEMM, and monitoring. Add NVIDIA-specific items only for true A100/H100, TensorRT-LLM, Triton, or Dynamo-Triton gaps.
-3. Rebuild or edit generated mock JSONs so they pick from the improved pool while matching the official blueprint weights.
+1. Do not regenerate just because a third-party/original mock feels easy. Treat those mocks as warmups.
+2. Add new questions only when an audit or new official source shows a real objective gap.
+3. When new questions are added, rerun the mock builder so generated mocks keep official weights, per-topic caps, and scope caps.
 
 PDF extraction notes:
 
@@ -228,23 +227,23 @@ Concrete OCR topic coverage:
 | Custom tools, APIs, and functions | Partial | APIs/functions are covered, but "custom tools" as a phrase is light. |
 | Retry logic and graceful failure | Partial | Graceful failure is present; retry logic is light. |
 | Evaluation pipelines | Covered | Present in topics/questions. |
-| Task benchmarks | Gap | Exact concept was not found outside OCR; add future questions. |
-| Structured user feedback | Partial | Present once; needs more scenario coverage. |
+| Task benchmarks | Partial | Present in current evaluation and generated-bank coverage; keep exact wording on audit watch. |
+| Structured user feedback | Partial | Present in generated-bank scenarios; add more only if review shows weak recognition. |
 | Docker, Kubernetes, load balancing | Covered | Kubernetes is especially strong. |
 | Vector databases | Partial | Concept appears lightly under exact wording. |
 | ETL and enterprise data sources | Covered | Good coverage. |
-| NeMo Guardrails, NIM, NeMo Agent Toolkit, TensorRT-LLM, Triton | Covered | Very strong coverage, but watch NVIDIA Platform overrepresentation in generated mocks. |
+| NeMo Guardrails, NIM, NeMo Agent Toolkit, TensorRT-LLM, Triton | Covered | Strong coverage. Current generated mocks keep the platform portion proportional. |
 | Audit trails | Covered | Present enough for safety/compliance. |
 | Human-in-the-loop | Covered | Strong coverage. |
 | Decision traceability | Partial | Present lightly; add governance/oversight scenarios. |
 
 AAI generation priorities:
 
-- Add questions for task benchmarks, structured user feedback, retry logic, prompt chains, vector database operations, and decision traceability.
-- Keep NVIDIA Platform questions proportional. The bank has 431 NVIDIA Platform questions out of 889, while the official domain weight is only 7%.
+- Add questions only if a new audit shows renewed weakness in task benchmarks, structured user feedback, retry logic, prompt chains, vector database operations, or decision traceability.
+- Keep NVIDIA Platform questions proportional. The current active bank has 41 NVIDIA Platform questions out of 425; generated mocks allocate 5 of 60 to the section, matching the official-weight sampler.
 - Prefer scenarios about complete agent systems: tool failure recovery, memory scope, multi-agent coordination, evaluation trajectory quality, production observability, and human escalation.
 
-Gap-fill questions added in `high_fidelity_010.md`:
+Audit watchlist for future AAI generation:
 
 - Task benchmarks and trajectory evaluation.
 - Structured user feedback tied to traces and failure categories.
@@ -289,7 +288,7 @@ Concrete OCR topic coverage:
 | OCR topic | Project status | Notes |
 | --- | --- | --- |
 | Encoder-decoder models, self-attention, embeddings | Covered | Strong in architecture content and bank. |
-| Advanced sampling | Gap | Exact topic is not covered outside OCR; add generation coverage for beam search, temperature, and output sampling. |
+| Advanced sampling | Covered | Prompt-engineering content and mock signals cover top-k, top-p/nucleus sampling, beam search, temperature, greedy decoding, and self-consistency. |
 | Causal language modeling | Covered | Present, though not dominant. |
 | Constrained decoding and validation wrappers | Covered | Good coverage. |
 | BPE and WordPiece tokenization | Covered | Strong coverage. |
@@ -299,27 +298,27 @@ Concrete OCR topic coverage:
 | Hyperparameter tuning and distributed parameter search | Covered | Present. |
 | Sliding-window/streaming attention and key-value caching | Covered | Project uses "KV cache" heavily; consider adding "key-value caching" wording for OCR alignment. |
 | Masked language modeling | Covered | Present. |
-| Next sentence prediction | Gap | Exact topic is missing outside OCR; add architecture/pretraining questions. |
+| Next sentence prediction | Partial | MLM and encoder pretraining are covered; keep NSP as an audit-watch term because it appears explicitly in OCR. |
 | DPO and GRPO | Covered | Strong fine-tuning coverage. |
 | Contrastive loss | Partial | Present lightly; add embedding/fine-tuning scenarios. |
 | LoRA, adapters, P-tuning | Covered/Partial | LoRA and adapters are strong; P-tuning is light. |
 | Early stopping | Covered | Present. |
 | BLEU, ROUGE, perplexity | Covered | Strong evaluation metric coverage. |
-| LLM-as-a-judge | Gap | Add evaluation questions grounded in judge quality, rubrics, and bias controls. |
+| LLM-as-a-judge | Covered | Evaluation content covers judge rubrics, position/verbosity/self-enhancement bias, calibration, and human anchors. |
 | DGX, DDP, FSDP, tensor/pipeline/sequence/expert parallelism | Covered | Strong GPU acceleration coverage. |
 | GEMM and gradient accumulation | Covered | Present. |
 | Dynamo-Triton and dynamic serving | Covered | Present, but ensure it is distinguished from old Triton naming. |
-| Ensemble workflows | Gap | Add model-deployment scenarios using preprocessing/inference/postprocessing or multi-model chains. |
-| Bias and fairness | Gap | Guardrails is strong, but bias/fairness wording and audit scenarios need explicit coverage. |
+| Ensemble workflows | Covered | Generated deployment scenarios and Triton coverage include preprocessing/inference/postprocessing ensembles and multi-framework serving. |
+| Bias and fairness | Covered | GENL safety and evaluation pages now include bias/fairness metrics, audits, and LLM-as-judge bias. |
 | Guardrails | Covered | Strong coverage. |
 
 GENL generation priorities:
 
-- Add questions for advanced sampling, next sentence prediction, LLM-as-a-judge, ensemble workflows, bias/fairness auditing, contrastive loss, and P-tuning.
+- Add questions only if a new audit shows renewed weakness in advanced sampling, next sentence prediction, LLM-as-a-judge, ensemble workflows, bias/fairness auditing, contrastive loss, or P-tuning.
 - Normalize equivalent wording in future content: "KV cache" should also be discoverable as "key-value caching" because that is how the OCR PDF states it.
 - Keep Model Optimization and GPU Acceleration difficult and scenario-heavy, because together they represent 31% of the official blueprint.
 
-Gap-fill questions added in `high_fidelity_010.md`:
+Audit watchlist for future GENL generation:
 
 - Advanced sampling tradeoffs for factuality and diversity.
 - Masked language modeling and next sentence prediction for encoder pretraining.
@@ -342,16 +341,16 @@ Question bank audit:
 
 | Cert | Bank size | Domain coverage | Difficulty mix | Failures |
 | --- | ---: | --- | --- | --- |
-| NCP-AAI | 889 | At least 50 per domain; NVIDIA Platform has 431 | 66 easy, 220 medium, 423 hard, 180 expert | None |
-| NCP-GENL | 955 | At least 50 per domain | 66 easy, 238 medium, 452 hard, 199 expert | None |
-| AAI General Study | 910 | At least 50 per domain | 56 easy, 221 medium, 434 hard, 199 expert | None |
+| NCP-AAI | 425 | Every official domain represented; 35-57 questions per domain | 41 easy, 118 medium, 173 hard, 93 expert | None |
+| NCP-GENL | 520 | Every official domain represented; 35-85 questions per domain | 53 easy, 126 medium, 223 hard, 118 expert | None |
+| AAI General Study | 370 | Every general-study domain represented; 35-55 questions per domain | 22 easy, 106 medium, 150 hard, 92 expert | None |
 
 Scope-mix audit:
 
 | Cert | Target mix | Active practice-bank mix | Active downloaded/original unique mix | Active generated unique mix | Action |
 | --- | --- | --- | --- | --- | --- |
-| NCP-AAI | 72% general / 28% NVIDIA-specific | 432 general / 457 NVIDIA-specific, 889 total | 57 general / 8 NVIDIA-specific | 375 general / 449 NVIDIA-specific | NVIDIA-specific is high by 208 against the target. Generate general-concept OCR gap questions before more NVIDIA-specific items. |
-| NCP-GENL | 55% general / 45% NVIDIA-specific | 386 general / 569 NVIDIA-specific, 955 total | 69 general / 31 NVIDIA-specific | 317 general / 538 NVIDIA-specific | NVIDIA-specific is high by 139 against the target. Generate general-concept OCR gap questions before more NVIDIA-specific items. |
+| NCP-AAI | 72% general / 28% NVIDIA-specific | 312 general / 113 NVIDIA-specific, 425 total | 57 general / 8 NVIDIA-specific | 255 general / 105 NVIDIA-specific | On target within 6 questions; no broad generation needed. |
+| NCP-GENL | 55% general / 45% NVIDIA-specific | 287 general / 233 NVIDIA-specific, 520 total | 69 general / 31 NVIDIA-specific | 218 general / 202 NVIDIA-specific | On target within 1 question; no broad generation needed. |
 
 The active practice-bank counts use the same ID de-duplication order as the app: downloaded/original questions first, then generated shards, then drafts. Fixed mock-test counts below are per mock set, so repeated IDs across downloaded mocks still count inside their timed sets.
 
@@ -359,15 +358,15 @@ Mock scope mix:
 
 | Cert | Downloaded/original mocks | Generated mocks | Interpretation |
 | --- | --- | --- | --- |
-| NCP-AAI | 11-13% NVIDIA-specific per mock. | 20-25% NVIDIA-specific per mock. | Original mocks are mostly general concepts; generated mocks are closer to the 28% NVIDIA-specific target but still should be checked for blueprint domain balance. |
-| NCP-GENL | 26-36% NVIDIA-specific per mock. | 50-67% NVIDIA-specific per mock. | Original mocks are general-heavy relative to the 45% target; generated mocks 1, 2, and 4 are NVIDIA-heavy, while generated mock 3 is closest on scope. |
+| NCP-AAI | 11-13% NVIDIA-specific per mock. | 28% NVIDIA-specific per mock. | Original mocks are mostly general concepts; generated mocks match the target 72/28 scope mix. |
+| NCP-GENL | 26-36% NVIDIA-specific per mock. | 45% NVIDIA-specific per mock. | Original mocks are general-heavy relative to the target; generated mocks match the target 55/45 scope mix. |
 
 Mock evaluator findings:
 
 | Cert | Original mocks | Generated mocks | Use-as-is judgment |
 | --- | --- | --- | --- |
-| NCP-AAI | 5 original mocks. Mostly 50-56 questions except one 65-question mock; only 30-41% hard/expert; 30-38% easy. | 4 generated mocks, all 60 questions and 100% hard/expert, but all have blueprint deviation issues. | Original mocks are useful warmups but too easy/short. Generated mocks need rebalancing, especially reducing NVIDIA Platform overweight. |
-| NCP-GENL | 5 original mocks, all 50 questions; 46-54% hard/expert; 16-24% easy; many short stems; three mocks have high blueprint deviation. | 4 generated mocks, all 60 questions and 100% hard/expert. `balanced_mock_3` and `balanced_mock_4` are good; `balanced_mock_1` and `balanced_mock_2` need rebalancing. | Use generated mocks 3 and 4 first. Original mocks are diagnostic warmups, not final exam simulators. |
+| NCP-AAI | 5 original mocks. Mostly 50-56 questions except one 65-question mock; only 30-41% hard/expert; 30-38% easy. | 4 generated mocks, all 60 questions, 77-83% hard/expert, 0% easy, blueprint deviation <= 0.7, status `good`. | Original mocks are useful warmups but too easy/short. Generated mocks are usable as readiness checks. |
+| NCP-GENL | 5 original mocks, all 50 questions; 46-54% hard/expert; 16-24% easy; many short stems; three mocks have high blueprint deviation. | 4 generated mocks, all 60 questions, 73-77% hard/expert, 0-2% easy, blueprint deviation <= 0.6, status `good`. | Original mocks are diagnostic warmups, not final exam simulators. Generated mocks are usable as readiness checks. |
 
 ## Question Generation Rubric
 
@@ -409,5 +408,5 @@ GENL stem patterns to generate next:
 - Source conflicts are documented before question-generation recommendations.
 - Mock-test quality findings are separated from bank-size audit findings.
 - Scope-mix findings separate content type from source folder: general-concept versus NVIDIA-specific is not the same as original versus generated.
-- Mock files are unchanged.
-- Generated question-bank additions are limited to `high_fidelity_010.md` in NCP-AAI and NCP-GENL.
+- Generated mock files are balanced by official domain weights and should stay generated/readiness-focused.
+- Future generated question-bank additions should be small, topic-specific shards followed by audit and mock rebuild.
