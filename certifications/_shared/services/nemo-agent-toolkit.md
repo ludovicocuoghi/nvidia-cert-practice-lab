@@ -356,7 +356,7 @@ All reasoning patterns can be constrained with budgets:
 Memory in the NeMo Agent Toolkit operates at multiple levels, each with distinct characteristics:
 
 **Short-term memory (conversation context):**
-The immediate conversation history within the current session. This is the LLM context window — all messages in the current interaction (user turns, agent responses, tool calls, observations). Short-term memory is limited by the model's context length (e.g., 128k tokens for Nemotron-4-340B). The toolkit manages context window pressure by:
+The immediate conversation history within the current session. This is the LLM context window — all messages in the current interaction (user turns, agent responses, tool calls, observations). Short-term memory is limited by the selected model/profile context length; do not assume a fixed limit across all Nemotron or NIM deployments. The toolkit manages context window pressure by:
 - **Sliding window:** Dropping oldest messages when context exceeds the limit.
 - **Summarization:** Compressing old conversation turns into a summary, keeping the full recent history but a condensed version of older interactions.
 - **Key message retention:** Preserving important messages (e.g., user preferences established early) while dropping chit-chat.

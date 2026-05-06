@@ -16,6 +16,18 @@ Open http://localhost:5173 for Vite dev. The API runs at http://localhost:4273.
 
 The practice bank and generated mock questions load without an LLM key. Coach chat, per-question hints, adaptive coach selection, and AI question generation show a setup message until `LLM_API_KEY` is configured in `.env` and the dev server is restarted.
 
+## Screenshots
+
+Captured from the local app in Google Chrome.
+
+![Agentic AI exam concept map with General Study jump chips](docs/screenshots/agentic-concept-map.png)
+
+The Agentic AI exam concept map links official sections, General Study prerequisites, and NVIDIA examples only where product wording matters.
+
+![General Study lifecycle page opened from the Agentic AI concept map](docs/screenshots/general-study-jump.png)
+
+Clicking a General Study chip switches into the matching vendor-neutral lifecycle section and selects the relevant study card.
+
 ## Modes
 
 - **Practice** — no timer, immediate feedback after each answer (right/wrong + explanation + why-wrong notes).

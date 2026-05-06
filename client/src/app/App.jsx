@@ -509,6 +509,7 @@ function App() {
   const [selectedSuiteTopicId, setSelectedSuiteTopicId] = useState("platform-map");
   const [activeSectionExam, setActiveSectionExam] = useState("All");
   const [selectedSectionName, setSelectedSectionName] = useState("NVIDIA Platform Implementation");
+  const [pendingStudyJump, setPendingStudyJump] = useState(null);
   const [studyStatus, setStudyStatus] = useState("");
   const [grade, setGrade] = useState(null);
   const [history, setHistory] = useState(() => loadJson("ncp-genl-history", []));
@@ -1332,6 +1333,7 @@ function App() {
       activeServiceFilter, setActiveServiceFilter, selectedServiceName, setSelectedServiceName,
       selectedSuiteTopicId, setSelectedSuiteTopicId,
       activeSectionExam, setActiveSectionExam, selectedSectionName, setSelectedSectionName,
+      pendingStudyJump, setPendingStudyJump,
       studyStatus, setStudyStatus,
       drillRecentMistakes, setExam,
       updateConfidence, startFlow, startTargetedGuidedPractice, startQuestionDrill, startSectionPractice, startKeywordPractice, generateQuestions, generateStudyQuiz, generationStatus, cancelGeneration
@@ -1413,6 +1415,7 @@ function StartScreen(props) {
     activeServiceFilter, setActiveServiceFilter, selectedServiceName, setSelectedServiceName,
     selectedSuiteTopicId, setSelectedSuiteTopicId,
     activeSectionExam, setActiveSectionExam, selectedSectionName, setSelectedSectionName,
+    pendingStudyJump, setPendingStudyJump,
     studyStatus, setStudyStatus,
     drillRecentMistakes, setExam,
     updateConfidence, startFlow, startTargetedGuidedPractice, startQuestionDrill, startSectionPractice, startKeywordPractice, generateQuestions, generateStudyQuiz, generationStatus, cancelGeneration } = props;
@@ -1453,6 +1456,11 @@ function StartScreen(props) {
           setActiveSectionExam,
           selectedSectionName,
           setSelectedSectionName,
+          selectedCertSlug,
+          setSelectedCertSlug,
+          setTrack,
+          pendingStudyJump,
+          setPendingStudyJump,
           studyStatus,
           setStudyStatus,
           generationStatus,
@@ -1709,6 +1717,106 @@ const LIFECYCLE_FLOWS = {
     ]
   }
 };
+
+const STUDY_ROUTE_JUMP_TARGETS = {
+  "Agent Lifecycle and Architecture": {
+    certSlug: "agentic_ai_general_study",
+    studyView: "lifecycle",
+    stageId: "gen-agent-architecture",
+    serviceName: "Agent Orchestration Runtime",
+    serviceFilter: "Build agent/RAG application"
+  },
+  "Data Curation and Knowledge Grounding": {
+    certSlug: "agentic_ai_general_study",
+    studyView: "lifecycle",
+    stageId: "gen-agent-rag",
+    serviceName: "Knowledge and RAG Pipeline",
+    serviceFilter: "Build agent/RAG application"
+  },
+  "Model Selection and Customization": {
+    certSlug: "agentic_ai_general_study",
+    studyView: "lifecycle",
+    stageId: "gen-api-select",
+    serviceName: "Model Selection and Registry",
+    serviceFilter: "Use existing model or API"
+  },
+  "Tooling, Orchestration, and Memory": {
+    certSlug: "agentic_ai_general_study",
+    studyView: "lifecycle",
+    stageId: "gen-agent-workflow",
+    serviceName: "Tool Gateway and Function Runtime",
+    serviceFilter: "Build agent/RAG application"
+  },
+  "Inference Serving and Deployment": {
+    certSlug: "agentic_ai_general_study",
+    studyView: "lifecycle",
+    stageId: "gen-api-serve",
+    serviceName: "Model Inference Endpoint",
+    serviceFilter: "Use existing model or API"
+  },
+  "Latency, Throughput, and Traffic Control": {
+    certSlug: "agentic_ai_general_study",
+    studyView: "lifecycle",
+    stageId: "gen-ops-scale-users",
+    serviceName: "Latency, Throughput, and Traffic Control",
+    serviceFilter: "Operate, govern, and improve"
+  },
+  "Evaluation and Safety": {
+    certSlug: "agentic_ai_general_study",
+    studyView: "lifecycle",
+    stageId: "gen-agent-eval",
+    serviceName: "Evaluation and Regression Harness",
+    serviceFilter: "Build agent/RAG application"
+  },
+  "Observability, Operations, and Cost": {
+    certSlug: "agentic_ai_general_study",
+    studyView: "lifecycle",
+    stageId: "gen-ops-observe",
+    serviceName: "Observability and Trace Monitor",
+    serviceFilter: "Operate, govern, and improve"
+  },
+  "Human Oversight and Governance": {
+    certSlug: "agentic_ai_general_study",
+    studyView: "lifecycle",
+    stageId: "gen-ops-review",
+    serviceName: "Human Review and Governance Console",
+    serviceFilter: "Operate, govern, and improve"
+  },
+  "Prompt and Context Design": {
+    certSlug: "agentic_ai_general_study",
+    studyView: "services",
+    stageId: "gen-api-prompt",
+    serviceName: "Prompt and Context Design",
+    serviceFilter: "Use existing model or API"
+  },
+  "Policy and Guardrails Layer": {
+    certSlug: "agentic_ai_general_study",
+    studyView: "services",
+    stageId: "gen-agent-policy",
+    serviceName: "Policy and Guardrails Layer",
+    serviceFilter: "Build agent/RAG application"
+  },
+  "NVIDIA Platform Implementation": {
+    certSlug: "agentic_ai_professional",
+    studyView: "sections",
+    sectionName: "NVIDIA Platform Implementation",
+    sectionExam: "Agentic AI"
+  },
+  "NVIDIA Suite": {
+    certSlug: "agentic_ai_professional",
+    studyView: "suite",
+    suiteTopicId: "platform-map"
+  }
+};
+
+function studyRouteJumpTarget(studyPage) {
+  const target = STUDY_ROUTE_JUMP_TARGETS[studyPage];
+  if (!target) return null;
+  return {
+    studyPage,
+    ...target
+  };
+}
 
 const AAI_LIFECYCLE_STAGE_DETAILS = {
   "aai-arch-boundary": {
@@ -3062,7 +3170,7 @@ function LifecyclePlaybookCard({ service, stage, selected, onClick }) {
   );
 }
 
-function LifecycleStagePlaybook({ stage, examLabel, onSelectService, onSelectSection }) {
+function LifecycleStagePlaybook({ stage, examLabel, onSelectService, onSelectSection, onSelectStudyPage }) {
   const stageKey = lifecycleStageKey(stage);
   const detail = lifecycleStageDetailFor(examLabel, stageKey);
   if (!stage || !detail) return null;
@@ -3091,7 +3199,16 @@ function LifecycleStagePlaybook({ stage, examLabel, onSelectService, onSelectSec
         ? h("article", null,
             h("strong", null, "General Study first"),
             h("div", { className: "lifecycle-section-chips lifecycle-study-chips" },
-              detail.studyPages.map((item) => h("span", { key: item }, item))
+              detail.studyPages.map((item) => {
+                const target = studyRouteJumpTarget(item);
+                return h("button", {
+                  key: item,
+                  type: "button",
+                  disabled: !target,
+                  onClick: () => onSelectStudyPage?.(item),
+                  title: target?.certSlug === "agentic_ai_general_study" ? `Open ${item} in General Study` : `Open ${item}`
+                }, item);
+              })
             )
           )
         : null,
@@ -3123,7 +3240,7 @@ function LifecycleStagePlaybook({ stage, examLabel, onSelectService, onSelectSec
   );
 }
 
-function LifecycleFlow({ examLabel: label, selectedStageId, onSelectStage, onSelectService, onSelectSection, branding }) {
+function LifecycleFlow({ examLabel: label, selectedStageId, onSelectStage, onSelectService, onSelectSection, onSelectStudyPage, branding }) {
   const flow = LIFECYCLE_FLOWS[label];
   if (!flow) return null;
   const services = nvidiaServices.filter((service) => service.exams.includes(label));
@@ -3235,7 +3352,8 @@ function LifecycleFlow({ examLabel: label, selectedStageId, onSelectStage, onSel
     stage: selectedStage,
     examLabel: label,
     onSelectService,
-    onSelectSection
+    onSelectSection,
+    onSelectStudyPage
   });
 
   return h(
@@ -3286,6 +3404,11 @@ function StudyModePanel({
   setActiveSectionExam,
   selectedSectionName,
   setSelectedSectionName,
+  selectedCertSlug,
+  setSelectedCertSlug,
+  setTrack,
+  pendingStudyJump,
+  setPendingStudyJump,
   studyStatus,
   setStudyStatus,
   generationStatus,
@@ -3299,12 +3422,36 @@ function StudyModePanel({
   const [activeServiceGroup, setActiveServiceGroup] = useState("All");
   const [quizDifficulty, setQuizDifficulty] = useState("hard");
   const currentExamLabel = examLabel(exam);
+  const currentCertSlug = exam.slug || selectedCertSlug || "genai_llms_professional";
   const isGenericStudy = exam.certification.code === "AAI-GEN";
   const isLifecycleAwareNvidia = Boolean(lifecycleContextFiltersForExam(currentExamLabel));
   const effectiveStudyView = isGenericStudy && !["lifecycle", "services"].includes(studyView) ? "lifecycle" : studyView;
   useEffect(() => {
     if (isGenericStudy && !["lifecycle", "services"].includes(studyView)) setStudyView("lifecycle");
   }, [isGenericStudy, studyView, setStudyView]);
+
+  function applyStudyJumpTarget(target) {
+    setStudyView(target.studyView || "lifecycle");
+    setActiveServiceFilter(target.serviceFilter || "All");
+    if (target.serviceName) {
+      setActiveServiceGroup("All");
+      setSelectedServiceName(target.serviceName);
+    }
+    if (target.stageId) setSelectedLifecycleStage(target.stageId);
+    if (target.sectionName) {
+      setActiveSectionExam(target.sectionExam || currentExamLabel);
+      setSelectedSectionName(target.sectionName);
+    }
+    if (target.suiteTopicId) setSelectedSuiteTopicId(target.suiteTopicId);
+    if (target.studyPage) setStudyStatus(`Opened study route: ${target.studyPage}`);
+    scrollToTop();
+  }
+
+  useEffect(() => {
+    if (!pendingStudyJump || currentCertSlug !== pendingStudyJump.certSlug) return;
+    applyStudyJumpTarget(pendingStudyJump);
+    setPendingStudyJump?.(null);
+  }, [pendingStudyJump, currentCertSlug, setPendingStudyJump]);
   const topicFilters = serviceFilters.filter((filter) => !["Agentic AI", "GenAI LLMs", "Agentic AI General"].includes(filter));
   const examServices = sortServices(nvidiaServices.filter((service) => service.exams.includes(currentExamLabel)));
   const availableServiceGroups = SERVICE_GROUPS.filter((group) => examServices.some((service) => serviceGroupName(service) === group.name));
@@ -3404,6 +3551,19 @@ function StudyModePanel({
     setActiveSectionExam(currentExamLabel);
     setSelectedSectionName(sectionName);
     setStudyView("sections");
+  }
+
+  function openStudyRouteFromLifecycle(studyPage) {
+    const target = studyRouteJumpTarget(studyPage);
+    if (!target) return;
+    setPendingStudyJump?.(target);
+    setTrack?.("study");
+    if (currentCertSlug === target.certSlug) {
+      applyStudyJumpTarget(target);
+      setPendingStudyJump?.(null);
+      return;
+    }
+    setSelectedCertSlug?.(target.certSlug);
   }
 
   const familyFilterGroup = h("div", { key: "family", className: "filter-group filter-group-family" },
@@ -3524,6 +3684,7 @@ function StudyModePanel({
             onSelectStage: setSelectedLifecycleStage,
             onSelectService: openServiceFromLifecycle,
             onSelectSection: openSectionFromLifecycle,
+            onSelectStudyPage: openStudyRouteFromLifecycle,
             branding
           })
         )

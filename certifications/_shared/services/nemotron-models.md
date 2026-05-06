@@ -137,7 +137,7 @@ If an exam question mentions "NVIDIA's end-to-end model development and deployme
 Nemotron has shipped in several configurations:
 - **Nemotron-3 8B:** Dense transformer, 8B parameters, for efficient inference.
 - **Nemotron-4 15B:** Dense transformer, 15B parameters, balanced quality/efficiency.
-- **Nemotron-4-340B (and variants):** Dense transformer, 340B parameters, state-of-the-art quality, requires multi-GPU deployment.
+- **Nemotron-4-340B (and variants):** Dense transformer, 340B parameters, high-capability family member used in NVIDIA examples such as reward/instruct workflows; requires multi-GPU deployment.
 - **Nemotron-Mini 4B:** Small dense model optimized for on-device and latency-sensitive use cases.
 
 The trend: NVIDIA offers models at multiple sizes so customers can match the model to the hardware budget. A 4B model runs on a single GPU; a 340B model requires multiple GPUs with model parallelism.
@@ -153,7 +153,7 @@ Choosing the right model for a given task is a core exam skill. The key criteria
 | 4B | 4-8B parameters | Very low | Good for simple tasks | Single consumer GPU |
 | 8-15B | 8-15B parameters | Low | Good for most tasks | Single datacenter GPU |
 | 34-70B | 30-70B parameters | Medium | High quality | 1-2 GPUs |
-| 200B+ | 200-500B parameters | High | State-of-the-art | 4+ GPUs |
+| 200B+ | 200-500B parameters | High | Highest-capability tier for complex reasoning, subject to benchmark/date/version | 4+ GPUs |
 
 The tradeoff: **quality vs latency vs cost.** Larger models produce better reasoning, instruction following, and factual accuracy, but they are slower (more FLOPs per token) and more expensive (more GPU hours). Smaller models are faster and cheaper but may fail at complex reasoning.
 
@@ -166,7 +166,7 @@ For agentic AI, the tradeoff is often a **two-model strategy**: a small, fast mo
 MoE is attractive when you want the quality of a larger model with the inference cost of a smaller one. But MoE requires more GPU memory (all experts must be loaded) and has less predictable latency (routing overhead, expert load imbalance).
 
 **Context length:**
-Longer context windows enable processing larger documents, codebases, or conversation histories in a single pass. Nemotron models support up to 128k tokens in their latest versions. When choosing:
+Longer context windows enable processing larger documents, codebases, or conversation histories in a single pass. Treat context length as a per-model/version deployment property, not a permanent family guarantee. When choosing:
 - 4k-8k: Most common; sufficient for chat, summarization, and standard RAG chunks.
 - 32k-128k: Needed for code repository analysis, long document processing, multi-turn agents with conversation memory.
 - 128k+: Required for book-length analysis, very long conversational agents, comprehensive audit trails.
@@ -213,7 +213,7 @@ Models that take a query and a set of candidate documents and output relevance s
 Re-rankers add latency (they process query + each document pair) but significantly improve retrieval precision. For enterprise RAG where retrieval quality matters, re-rankers are standard.
 
 **Multimodal models:**
-Models that process multiple modalities (text + images + audio + video). Examples: Nemotron-Vision, LLaVA, GPT-4V. These models extend language model capabilities to visual understanding. Use cases:
+Models that process multiple modalities (text + images + audio + video). Examples include NVIDIA vision-language offerings, LLaVA-style open models, and hosted multimodal chat models. These models extend language model capabilities to visual understanding. Use cases:
 - Document analysis: Extract text and layout from PDFs, charts, and forms.
 - Image captioning and description for accessibility.
 - Visual question answering: "What does this chart show?"
@@ -248,7 +248,7 @@ The model runs on NVIDIA's (or a partner's) infrastructure, accessed via REST AP
 | Advantage | Disadvantage |
 |-----------|-------------|
 | No infrastructure: zero GPU management | Data sent to external service (privacy concern) |
-| Always updated: latest model version automatically | API dependency: outages, rate limits, latency |
+| Provider-managed model/profile updates | API dependency: outages, rate limits, latency; updates must still be validated against your eval set |
 | Usage-based pricing: pay for what you use | Variable cost: unpredictable for spiky workloads |
 | Elastic scaling: automatically handles load | Limited customization: cannot fine-tune the hosted model |
 | Fastest time-to-deployment: minutes via API key | Vendor lock-in: integration depends on API compatibility |
@@ -262,7 +262,7 @@ This dual approach means the exam can test **when to choose each path**:
 
 - **Choose open weights when:** Customization is needed (fine-tuning on proprietary data), data cannot leave the premises (regulated industry), the workload is large and predictable (better ROI with owned GPUs), or offline operation is required.
 
-- **Choose NIM API when:** RAPId prototyping, variable or unpredictable workloads, no GPU infrastructure, want automatic updates, or evaluating models before committing to self-hosting.
+- **Choose NIM API when:** rapid prototyping, variable or unpredictable workloads, no GPU infrastructure, provider-managed model/profile updates, or evaluating models before committing to self-hosting.
 
 - **Choose self-hosted NIM (containerized) when:** You want the benefits of NIM (optimized inference, standard API) but on your own infrastructure for data privacy or cost reasons. This is the middle ground: NVIDIA's optimization, your GPUs.
 
@@ -287,10 +287,10 @@ The key exam insight: the question is rarely "open vs API" in isolation. It is a
 - Boundary cue: choose it when the scenario asks for NVIDIA model weights or model families for reasoning, instruction following, reward modeling, or agent workflows. Adjacent-service cue: not as the serving stack, optimizer, evaluator, or training framework; models are the artifact those tools operate on.
 ### Must know
 - **Nemotron family and model sizes**: Nemotron-3 8B, Nemotron-4 15B, Nemotron-4-340B, Nemotron-Mini 4B; models at multiple sizes for different hardware budgets (single GPU to multi-GPU)
-- **Model selection criteria**: quality vs latency vs cost tradeoff; dense (all params active per token) vs MoE (subset active per token); context length (4k-128k+); license compatibility
+- **Model selection criteria**: quality vs latency vs cost tradeoff; dense (all params active per token) vs MoE (subset active per token); per-model context length; license compatibility
 - **Integrated NVIDIA toolchain**: NeMo Framework trains, NeMo Evaluator evaluates, NeMo Customizer fine-tunes, NIM serves, TensorRT-LLM optimizes, NeMo Agent Toolkit orchestrates — all centered on Nemotron
 - **Specialized model types**: code generation models (Code Llama, Nemotron-4-340B-Code), embedding models (NV-Embed-QA, NeMo Retriever), re-ranker models (cross-encoder for retrieval precision), multimodal models (Nemotron-Vision)
-- **Open model vs API trade-offs**: open weights for customization/data privacy/predictable cost; NIM API for rAPId prototyping/elastic scaling/no GPU infra; self-hosted NIM as middle ground
+- **Open model vs API trade-offs**: open weights for customization/data privacy/predictable cost; NIM API for rapid prototyping/elastic scaling/no GPU infra; self-hosted NIM as middle ground
 ### What to recognize
 - **NVIDIA-native model selection** → scenario asks which model family is purpose-built for the NVIDIA stack with NIM-native serving and TensorRT-LLM optimization; Nemotron is NVIDIA's integrated LLM family
 - **Model size selection based on constraints** → scenario describes hardware budget (single GPU vs multi-GPU) and quality requirements; match model size (4B for single consumer GPU, 340B for 4+ GPUs) to the constraint

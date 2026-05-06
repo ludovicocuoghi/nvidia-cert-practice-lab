@@ -88,6 +88,33 @@ from nemo_curator.stages.text.deduplication.removal_workflow import TextDuplicat
 | Video curation | Cosmos-Embed1 models: `cosmos-embed1-224p`, `cosmos-embed1-336p`, `cosmos-embed1-448p` | Split videos into clips, embed clips, then dedupe/search/prepare multimodal training data |
 | Audio curation | `InferenceAsrNemoStage`, `GetPairwiseWerStage`, `GetAudioDurationStage`, `PreserveByValueStage` | Run ASR, compute WER/duration, filter audio-text pairs; example ASR model: `nvidia/stt_hy_fastconformer_hybrid_large_pc` |
 
+## Decision Guide
+
+| Scenario clue | Choose | Avoid |
+|---|---|---|
+| Raw corpus must be cleaned, filtered, deduped, or scored before training/tuning/evaluation | **NeMo Curator** | NeMo Retriever or NIM |
+| Question names `Pipeline`, `JsonlReader`, `ScoreFilter`, classifier stages, exact dedup, fuzzy dedup, MinHash, LSH, or duplicate-ID artifacts | **NeMo Curator** | NeMo Framework alone |
+| Enterprise documents must be embedded, searched, reranked, cited, and used in a live answer | **NeMo Retriever** | NeMo Curator |
+| Dataset is already curated and the task is SFT, PEFT, PTQ, or distributed training | **NeMo Framework / NeMo Customizer** | NeMo Curator |
+| The model must be exposed as `/v1/chat/completions`, `/v1/embeddings`, or another production API | **NIM / Triton** | NeMo Curator |
+| The pipeline is generic GPU dataframe preprocessing without LLM/multimodal dataset curation semantics | **RAPIDS/cuDF** | NeMo Curator by product-name guess |
+
+## Adjacent-service decision boundary
+
+- vs **NeMo Retriever**: Curator prepares training, tuning, and evaluation datasets before the model learns from them. Retriever prepares query-time chunks, embeddings, ranked passages, and citations for live RAG.
+- vs **NeMo Framework / Customizer**: Curator produces cleaner data. Framework and Customizer consume that data to change weights, adapters, or checkpoints.
+- vs **NIM / Triton**: Curator is offline data preparation. NIM and Triton are runtime serving layers.
+- vs **NeMo Guardrails**: Curator can remove unsafe or poisoned examples before training. Guardrails enforces policy at runtime around prompts, retrieved context, tool calls, and outputs.
+- vs **RAPIDS**: RAPIDS is a general GPU data-processing library family. Curator is the NVIDIA LLM/multimodal dataset-curation workflow built on concrete readers, filters, classifiers, dedup workflows, and modality stages.
+
+## How it relates to neighboring services
+
+- **NeMo Framework** trains or customizes models after Curator has produced the corpus.
+- **NeMo Customizer** uses curated task data for adapter or PEFT-style customization.
+- **NeMo Retriever** may ingest documents after Curator or another data-quality process has cleaned source data, but Retriever's exam cue is live RAG.
+- **NIM** can serve the generator, embedding, reranker, or classifier models used around a data pipeline, but it does not curate the dataset.
+- **NGC** supplies containers and model assets used to run Curator workflows.
+
 ## Study card data
 
 - **What it is:** NVIDIA's GPU-accelerated dataset curation toolkit for building training/tuning corpora with concrete Python pipeline stages, classifiers, dedup workflows, and modality-specific processors.

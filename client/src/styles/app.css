@@ -2321,10 +2321,17 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   padding: 9px;
 }
 
-.lifecycle-study-chips span {
+.lifecycle-study-chips span,
+.lifecycle-study-chips button {
   border-color: #cbdcc6;
   background: #f7fbf4;
   color: #315f20;
+}
+
+.lifecycle-study-chips button:hover,
+.lifecycle-study-chips button:focus-visible {
+  border-color: #75a660;
+  outline-color: rgba(49, 95, 32, 0.18);
 }
 
 .lifecycle-detail {

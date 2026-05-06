@@ -229,7 +229,7 @@ A collaborative benchmark with 200+ tasks crowdsourced from hundreds of research
 The most common LLM knowledge test in the industry. Key facts:
 - **57 subjects** spanning STEM, humanities, social sciences, and professional fields.
 - **Format:** 4-choice multiple choice, ~14,000 questions total.
-- **Typical scores:** ~25% (random baseline) to ~90%+ (frontier models like GPT-4, Claude 3.5).
+- **Typical scores:** ~25% is the random baseline for four-choice tasks; strong model scores can exceed 90% on some public academic benchmarks, but the number is benchmark-, model-version-, prompt-, and contamination-dependent. Record model name, date, prompt, and evaluation split instead of memorizing a static leaderboard rank.
 - **Usage:** Industry standard for reporting in LLM technical reports and leaderboards (Open LLM Leaderboard, HELM).
 - **Key limitation:** Data contamination risk is high because MMLU is public and has been included in many training corpora. Temporal separation (questions created before 2020) means models may have memorized answers.
 - **Alternative per-subject breakdown:** Models often show significant variance across subjects (e.g., strong on STEM, weaker on law or ethics), making per-subject scores more informative than the overall average.

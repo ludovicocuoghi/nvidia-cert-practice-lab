@@ -93,7 +93,7 @@ BioNeMo is NVIDIA's framework for developing, customizing, and deploying AI foun
 
 ### Domain-specific LLMs in biology
 
-General-purpose LLMs (GPT-4, Llama) are trained on internet text. BioNeMo models are trained on **biological sequences** — protein amino acid sequences, DNA sequences, and molecular SMILES strings. These are fundamentally different modalities:
+General-purpose chat/code LLMs are trained mostly on natural-language and code corpora. BioNeMo models are trained on **biological sequences** — protein amino acid sequences, DNA sequences, and molecular SMILES strings. These are fundamentally different modalities:
 
 - **ESM-2 (Evolutionary Scale Modeling)**: A transformer trained on 250 million protein sequences. It learns the "language" of protein sequences — which amino acids co-occur, structural motifs, and evolutionary constraints. Like a BERT for proteins, it produces per-residue embeddings that capture structural and functional information.
 - **MolMIM**: A variational autoencoder trained on molecular graphs represented as SMILES strings. It learns a continuous latent space of molecular structures, enabling property optimization by interpolating in latent space.
