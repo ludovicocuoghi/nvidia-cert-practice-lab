@@ -6,6 +6,45 @@ status: populated
 
 # Agent Lifecycle and Architecture
 
+## Actual implementation / Pattern you use
+
+```yaml
+router:
+  classify:
+    inputs: [intent, risk, required_tools, evidence_need]
+    routes:
+      - name: deterministic_workflow
+        when: fixed_path_or_high_risk
+      - name: bounded_agent_loop
+        when: dynamic_steps_and_tool_feedback
+      - name: supervisor_multi_agent
+        when: specialist_roles_with_shared_state
+      - name: human_review
+        when: high_impact_or_low_confidence
+
+orchestrator:
+  owns: [state, approvals, retries, evidence, audit_trace]
+  enforces: [tool_preconditions, memory_write_policy, stopping_criteria]
+```
+
+| Input | Architecture decision | Output |
+|---|---|---|
+| Task goal, risk, tools, evidence, and user context | Choose workflow, router, ReAct loop, plan-and-execute, supervisor, or peer coordination | Bounded execution plan with state owner, approval gates, memory policy, and trace evidence |
+| Fixed regulated process | Deterministic graph with explicit states | Auditable path and controlled LLM use |
+| Dynamic tool feedback | Bounded observe-reason-act loop | Iterative execution with budgets and replanning |
+| Specialist roles | Supervisor with shared state | Clear handoff, permissions, and review trail |
+
+## Exam coverage map
+
+Use this page first for these NCP-AAI sections:
+
+| NCP-AAI section | Why this page matters |
+|---|---|
+| Agent Architecture and Design | Choose workflow vs agent, router, supervisor, ReAct, plan-and-execute, and multi-agent boundaries. |
+| Cognition, Planning, and Memory | Recognize reasoning loops, task decomposition, reflection, state, and memory placement. |
+| Human-AI Interaction and Oversight | Decide when autonomy must become approval, escalation, or review. |
+| Safety, Ethics, and Compliance | Bound agent actions before risky tool use or sensitive decisions. |
+
 ## What to study first
 
 - **Core idea:** How to choose between deterministic workflows, agent loops, routers, supervisors, and multi-agent systems before choosing a vendor product.
@@ -80,6 +119,27 @@ Score the architecture by trajectory success, approval placement, tool-call vali
 | Many intents | Router | Largest model for all |
 | Specialist workers | Supervisor | Peer-to-peer agents with no state owner |
 | High-risk action | Approval gate | Post-action confirmation |
+
+### Deep dive: architecture patterns promoted from service pages
+
+| Pattern | Use it when | Exam signal | Trap |
+|---|---|---|---|
+| ReAct | The next action depends on tool observations | "observe", "tool result changes the next step", "dynamic environment" | No stopping criteria or retry budget |
+| Plan-and-execute | Subgoals are known but observations may invalidate the plan | "plan first", "re-plan when evidence contradicts" | Continue executing an invalidated plan |
+| Router | Mixed intents, risks, or cost tiers | "classify then route", "simple vs complex vs high risk" | Calling the router a full autonomous agent |
+| Supervisor | Multiple specialists need one state owner | "audit", "approval gates", "centralized state" | Peer-to-peer agents in a compliance workflow |
+| Blackboard | Distributed agents share observations asynchronously | "shared workspace", "robots", "loose coupling" | Using it when a single auditable owner is required |
+| BDI | Long-lived agents update beliefs and intentions over time | "beliefs", "goals", "intentions", "adaptive autonomy" | Static rule engine for changing environments |
+
+### Adjacent decision boundaries
+
+| If the question says... | Think first | Do not jump to... |
+|---|---|---|
+| "Must be auditable" | Explicit workflow, supervisor, approval gates | Autonomous peer-to-peer agents |
+| "Unknown intermediate steps" | Bounded agent loop with tools | Static FAQ route |
+| "Different requests need different depth" | Router by intent/risk/complexity | Largest model for every request |
+| "Multiple teams or permissions" | Role decomposition plus state owner | One agent with every tool |
+| "High-risk action" | Human approval before mutation | Post-action notification |
 
 ### Hands-on checks
 

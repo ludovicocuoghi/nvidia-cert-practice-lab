@@ -2,1502 +2,1702 @@
 
 ## Questions
 
-### Q1: A hospital operations team sees prompt changes causing regressions around few-shot examples. The team has been using fine-tuning for a simple format issue; the next change needs to make few-shot examples explicit. Which action best addresses the problem?
-- ID: genl-hf-prompt-engineering-032
-- Domain: Prompt Engineering
-- Topic: few-shot examples; genai_llms_professional
-- Difficulty: medium
-- A. Wait for production incidents before adding a dedicated few-shot examples check.
-- B. Change the design around few-shot examples so the system can teach output shape and edge cases without changing weights.
-- C. Prioritize prompt regression before validating the failure signal around few-shot examples.
-- D. Bundle few-shot examples, context packing, and prompt changes into one release with one aggregate score.
-- Answer: B
-- Explanation: The scenario is about few-shot examples. The strongest answer fixes the failing layer directly: teach output shape and edge cases without changing weights.
-- Why A is wrong: Waiting for incidents postpones the few-shot examples gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making few-shot examples testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether few-shot examples fixed or caused the failure.
-
-### Q2: A logistics planning team sees prompt changes causing regressions around structured output. The team has been using free-form prose for API payloads; the next change needs to make structured output explicit. Which action best addresses the problem?
-- ID: genl-hf-prompt-engineering-033
-- Domain: Prompt Engineering
-- Topic: structured output; genai_llms_professional
-- Difficulty: hard
-- A. Make structured output explicit in the workflow: use schema constraints and validation for machine-consumed responses.
-- B. Bundle structured output, few-shot examples, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated structured output check.
-- D. Use few-shot examples as the main gate even though reviewers are asking for structured output evidence.
-- Answer: A
-- Explanation: The scenario is about structured output. The strongest answer fixes the failing layer directly: use schema constraints and validation for machine-consumed responses.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether structured output fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the structured output gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making structured output testable in the scenario.
-
-### Q3: An automotive support team has a production-readiness review for a prompt-controlled production workflow. The review is focused on context packing, because the system must include only relevant, ordered evidence within token budget. Which choice addresses the root cause?
-- ID: genl-hf-prompt-engineering-034
-- Domain: Prompt Engineering
-- Topic: context packing; genai_llms_professional
-- Difficulty: expert
-- A. Wait for production incidents before adding a dedicated context packing check.
-- B. Use instruction hierarchy as the main gate even though reviewers are asking for context packing evidence.
-- C. Keep dumping every document into context as the primary release control and record only final outputs.
-- D. Use context packing as the control boundary and require the system to include only relevant, ordered evidence within token budget.
-- Answer: D
-- Explanation: The scenario is about context packing. The strongest answer fixes the failing layer directly: include only relevant, ordered evidence within token budget.
-- Why A is wrong: Waiting for incidents postpones the context packing gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making context packing testable in the scenario.
-- Why C is wrong: It keeps dumping every document into context in control instead of adding a measurable context packing decision point.
-
-### Q4: A bank fraud team is comparing two release designs for a prompt-controlled production workflow. One design centers on editing production prompts without evals; the other adds a measurable prompt regression step. Which design is more appropriate for production?
-- ID: genl-hf-prompt-engineering-035
-- Domain: Prompt Engineering
-- Topic: prompt regression; genai_llms_professional
-- Difficulty: medium
-- A. Keep editing production prompts without evals as the primary release control and record only final outputs.
-- B. Prioritize few-shot examples before validating the failure signal around prompt regression.
-- C. Add a release gate for prompt regression: version prompts and test against known failures.
-- D. Use instruction hierarchy as the main gate even though reviewers are asking for prompt regression evidence.
-- Answer: C
-- Explanation: The scenario is about prompt regression. The strongest answer fixes the failing layer directly: version prompts and test against known failures.
-- Why A is wrong: It keeps editing production prompts without evals in control instead of adding a measurable prompt regression decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making prompt regression testable in the scenario.
-- Why D is wrong: It moves attention to a neighboring control instead of making prompt regression testable in the scenario.
-
-### Q5: A hospital operations team is preparing a prompt-controlled production workflow for release. The current design relies on user text overriding system policy, but the release gate needs to separate system policy, task instructions, context, and output schema. Which implementation path is most appropriate?
-- ID: genl-hf-prompt-engineering-036
-- Domain: Prompt Engineering
-- Topic: instruction hierarchy; genai_llms_professional
-- Difficulty: hard
-- A. Bundle instruction hierarchy, structured output, and prompt changes into one release with one aggregate score.
-- B. Change the design around instruction hierarchy so the system can separate system policy, task instructions, context, and output schema.
-- C. Keep user text overriding system policy as the primary release control and record only final outputs.
-- D. Prioritize few-shot examples before validating the failure signal around instruction hierarchy.
-- Answer: B
-- Explanation: The scenario is about instruction hierarchy. The strongest answer fixes the failing layer directly: separate system policy, task instructions, context, and output schema.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether instruction hierarchy fixed or caused the failure.
-- Why C is wrong: It keeps user text overriding system policy in control instead of adding a measurable instruction hierarchy decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making instruction hierarchy testable in the scenario.
-
-### Q6: A logistics planning team has a production-readiness review for a prompt-controlled production workflow. The review is focused on few-shot examples, because the system must teach output shape and edge cases without changing weights. Which action best fits the requirement?
-- ID: genl-hf-prompt-engineering-037
-- Domain: Prompt Engineering
-- Topic: few-shot examples; genai_llms_professional
-- Difficulty: hard
-- A. Make few-shot examples explicit in the workflow: teach output shape and edge cases without changing weights.
-- B. Prioritize instruction hierarchy before validating the failure signal around few-shot examples.
-- C. Bundle few-shot examples, structured output, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated few-shot examples check.
-- Answer: A
-- Explanation: The scenario is about few-shot examples. The strongest answer fixes the failing layer directly: teach output shape and edge cases without changing weights.
-- Why B is wrong: It moves attention to a neighboring control instead of making few-shot examples testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether few-shot examples fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the few-shot examples gate until after users are exposed.
-
-### Q7: A logistics planning team is comparing two release designs for a model adaptation release. One design centers on full pretraining for a narrow style change; the other adds a measurable LoRA/QLoRA step. Which design is more appropriate for production?
-- ID: genl-hf-fine-tuning-001
-- Domain: Fine-Tuning
-- Topic: LoRA/QLoRA; genai_llms_professional
-- Difficulty: medium
-- A. Keep full pretraining for a narrow style change as the primary release control and record only final outputs.
-- B. Prioritize SFT before validating the failure signal around LoRA/QLoRA.
-- C. Bundle LoRA/QLoRA, DPO, and prompt changes into one release with one aggregate score.
-- D. Make LoRA/QLoRA explicit in the workflow: adapt behavior with small trainable adapters.
-- Answer: D
-- Explanation: The scenario is about LoRA/QLoRA. The strongest answer fixes the failing layer directly: adapt behavior with small trainable adapters.
-- Why A is wrong: It keeps full pretraining for a narrow style change in control instead of adding a measurable LoRA/QLoRA decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making LoRA/QLoRA testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether LoRA/QLoRA fixed or caused the failure.
-
-### Q8: An insurance claims group has a production-readiness review for a model adaptation release. The review is focused on SFT, because the system must train on high-quality instruction-response examples. Which design is the best first change?
-- ID: genl-hf-fine-tuning-002
-- Domain: Fine-Tuning
-- Topic: SFT; genai_llms_professional
-- Difficulty: hard
-- A. Use SFT as the control boundary and require the system to train on high-quality instruction-response examples.
-- B. Prioritize LoRA/QLoRA before validating the failure signal around SFT.
-- C. Bundle SFT, DPO, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated SFT check.
-- Answer: A
-- Explanation: The scenario is about SFT. The strongest answer fixes the failing layer directly: train on high-quality instruction-response examples.
-- Why B is wrong: It moves attention to a neighboring control instead of making SFT testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether SFT fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the SFT gate until after users are exposed.
-
-### Q9: A semiconductor design group is reviewing a model adaptation release before rollout. The main risk is DPO: the system must learn preferences from chosen/rejected pairs. Which option keeps the decision at the right layer?
-- ID: genl-hf-fine-tuning-003
-- Domain: Fine-Tuning
-- Topic: DPO; genai_llms_professional
-- Difficulty: hard
-- A. Use LoRA/QLoRA as the main gate even though reviewers are asking for DPO evidence.
-- B. Add a release gate for DPO: learn preferences from chosen/rejected pairs.
-- C. Bundle DPO, LoRA/QLoRA, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated DPO check.
-- Answer: B
-- Explanation: The scenario is about DPO. The strongest answer fixes the failing layer directly: learn preferences from chosen/rejected pairs.
-- Why A is wrong: It moves attention to a neighboring control instead of making DPO testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether DPO fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the DPO gate until after users are exposed.
-
-### Q10: A manufacturing quality team sees model behavior changes that require catastrophic forgetting. The team has been using only testing the new domain; the next change needs to make catastrophic forgetting explicit. Which action best addresses the problem?
-- ID: genl-hf-fine-tuning-004
-- Domain: Fine-Tuning
-- Topic: catastrophic forgetting; genai_llms_professional
-- Difficulty: expert
-- A. Use DPO as the main gate even though reviewers are asking for catastrophic forgetting evidence.
-- B. Keep only testing the new domain as the primary release control and record only final outputs.
-- C. Change the design around catastrophic forgetting so the system can mix representative data and evaluate old capabilities.
-- D. Wait for production incidents before adding a dedicated catastrophic forgetting check.
-- Answer: C
-- Explanation: The scenario is about catastrophic forgetting. The strongest answer fixes the failing layer directly: mix representative data and evaluate old capabilities.
-- Why A is wrong: It moves attention to a neighboring control instead of making catastrophic forgetting testable in the scenario.
-- Why B is wrong: It keeps only testing the new domain in control instead of adding a measurable catastrophic forgetting decision point.
-- Why D is wrong: Waiting for incidents postpones the catastrophic forgetting gate until after users are exposed.
-
-### Q11: A telecom network operations team sees model behavior changes that require continued pretraining. The team has been using RAG for durable language style; the next change needs to make continued pretraining explicit. Which action best addresses the problem?
-- ID: genl-hf-fine-tuning-005
-- Domain: Fine-Tuning
-- Topic: continued pretraining; genai_llms_professional
-- Difficulty: medium
-- A. Use SFT as the main gate even though reviewers are asking for continued pretraining evidence.
-- B. Keep RAG for durable language style as the primary release control and record only final outputs.
-- C. Prioritize LoRA/QLoRA before validating the failure signal around continued pretraining.
-- D. Make continued pretraining explicit in the workflow: adapt broad domain language before instruction tuning.
-- Answer: D
-- Explanation: The scenario is about continued pretraining. The strongest answer fixes the failing layer directly: adapt broad domain language before instruction tuning.
-- Why A is wrong: It moves attention to a neighboring control instead of making continued pretraining testable in the scenario.
-- Why B is wrong: It keeps RAG for durable language style in control instead of adding a measurable continued pretraining decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making continued pretraining testable in the scenario.
-
-### Q12: An automotive support team has a production-readiness review for a model adaptation release. The review is focused on LoRA/QLoRA, because the system must adapt behavior with small trainable adapters. Which choice addresses the root cause?
-- ID: genl-hf-fine-tuning-006
-- Domain: Fine-Tuning
-- Topic: LoRA/QLoRA; genai_llms_professional
-- Difficulty: hard
-- A. Use LoRA/QLoRA as the control boundary and require the system to adapt behavior with small trainable adapters.
-- B. Keep full pretraining for a narrow style change as the primary release control and record only final outputs.
-- C. Prioritize DPO before validating the failure signal around LoRA/QLoRA.
-- D. Bundle LoRA/QLoRA, SFT, and prompt changes into one release with one aggregate score.
-- Answer: A
-- Explanation: The scenario is about LoRA/QLoRA. The strongest answer fixes the failing layer directly: adapt behavior with small trainable adapters.
-- Why B is wrong: It keeps full pretraining for a narrow style change in control instead of adding a measurable LoRA/QLoRA decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making LoRA/QLoRA testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether LoRA/QLoRA fixed or caused the failure.
-
-### Q13: A cybersecurity response team is comparing two release designs for a model adaptation release. One design centers on unlabeled raw documents as SFT data; the other adds a measurable SFT step. Which design is more appropriate for production?
-- ID: genl-hf-fine-tuning-007
-- Domain: Fine-Tuning
-- Topic: SFT; genai_llms_professional
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated SFT check.
-- B. Add a release gate for SFT: train on high-quality instruction-response examples.
-- C. Prioritize continued pretraining before validating the failure signal around SFT.
-- D. Bundle SFT, catastrophic forgetting, and prompt changes into one release with one aggregate score.
-- Answer: B
-- Explanation: The scenario is about SFT. The strongest answer fixes the failing layer directly: train on high-quality instruction-response examples.
-- Why A is wrong: Waiting for incidents postpones the SFT gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making SFT testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether SFT fixed or caused the failure.
-
-### Q14: A public-sector casework team is preparing a model adaptation release for release. The current design relies on single-answer labels for preference alignment, but the release gate needs to learn preferences from chosen/rejected pairs. Which implementation path is most appropriate?
-- ID: genl-hf-fine-tuning-008
-- Domain: Fine-Tuning
-- Topic: DPO; genai_llms_professional
-- Difficulty: medium
-- A. Wait for production incidents before adding a dedicated DPO check.
-- B. Use SFT as the main gate even though reviewers are asking for DPO evidence.
-- C. Change the design around DPO so the system can learn preferences from chosen/rejected pairs.
-- D. Bundle DPO, SFT, and prompt changes into one release with one aggregate score.
-- Answer: C
-- Explanation: The scenario is about DPO. The strongest answer fixes the failing layer directly: learn preferences from chosen/rejected pairs.
-- Why A is wrong: Waiting for incidents postpones the DPO gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making DPO testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether DPO fixed or caused the failure.
-
-### Q15: A telecom network operations team is comparing two release designs for a model adaptation release. One design centers on only testing the new domain; the other adds a measurable catastrophic forgetting step. Which design is more appropriate for production?
-- ID: genl-hf-fine-tuning-009
-- Domain: Fine-Tuning
-- Topic: catastrophic forgetting; genai_llms_professional
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated catastrophic forgetting check.
-- B. Use SFT as the main gate even though reviewers are asking for catastrophic forgetting evidence.
-- C. Keep only testing the new domain as the primary release control and record only final outputs.
-- D. Make catastrophic forgetting explicit in the workflow: mix representative data and evaluate old capabilities.
-- Answer: D
-- Explanation: The scenario is about catastrophic forgetting. The strongest answer fixes the failing layer directly: mix representative data and evaluate old capabilities.
-- Why A is wrong: Waiting for incidents postpones the catastrophic forgetting gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making catastrophic forgetting testable in the scenario.
-- Why C is wrong: It keeps only testing the new domain in control instead of adding a measurable catastrophic forgetting decision point.
-
-### Q16: A pharmaceutical research team sees model behavior changes that require continued pretraining. The team has been using RAG for durable language style; the next change needs to make continued pretraining explicit. Which action best addresses the problem?
-- ID: genl-hf-fine-tuning-010
-- Domain: Fine-Tuning
-- Topic: continued pretraining; genai_llms_professional
-- Difficulty: hard
-- A. Prioritize SFT before validating the failure signal around continued pretraining.
-- B. Use continued pretraining as the control boundary and require the system to adapt broad domain language before instruction tuning.
-- C. Use LoRA/QLoRA as the main gate even though reviewers are asking for continued pretraining evidence.
-- D. Keep RAG for durable language style as the primary release control and record only final outputs.
-- Answer: B
-- Explanation: The scenario is about continued pretraining. The strongest answer fixes the failing layer directly: adapt broad domain language before instruction tuning.
-- Why A is wrong: It moves attention to a neighboring control instead of making continued pretraining testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making continued pretraining testable in the scenario.
-- Why D is wrong: It keeps RAG for durable language style in control instead of adding a measurable continued pretraining decision point.
-
-### Q17: A public-sector casework team is preparing a model adaptation release for release. The current design relies on full pretraining for a narrow style change, but the release gate needs to adapt behavior with small trainable adapters. Which choice addresses the root cause?
-- ID: genl-hf-fine-tuning-011
-- Domain: Fine-Tuning
-- Topic: LoRA/QLoRA; genai_llms_professional
-- Difficulty: expert
-- A. Add a release gate for LoRA/QLoRA: adapt behavior with small trainable adapters.
-- B. Keep full pretraining for a narrow style change as the primary release control and record only final outputs.
-- C. Prioritize continued pretraining before validating the failure signal around LoRA/QLoRA.
-- D. Bundle LoRA/QLoRA, catastrophic forgetting, and prompt changes into one release with one aggregate score.
-- Answer: A
-- Explanation: The scenario is about LoRA/QLoRA. The strongest answer fixes the failing layer directly: adapt behavior with small trainable adapters.
-- Why B is wrong: It keeps full pretraining for a narrow style change in control instead of adding a measurable LoRA/QLoRA decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making LoRA/QLoRA testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether LoRA/QLoRA fixed or caused the failure.
-
-### Q18: A cybersecurity response team is preparing a model adaptation release for release. The current design relies on unlabeled raw documents as SFT data, but the release gate needs to train on high-quality instruction-response examples. Which action best fits the requirement?
-- ID: genl-hf-fine-tuning-012
-- Domain: Fine-Tuning
-- Topic: SFT; genai_llms_professional
-- Difficulty: medium
-- A. Prioritize DPO before validating the failure signal around SFT.
-- B. Bundle SFT, LoRA/QLoRA, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated SFT check.
-- D. Change the design around SFT so the system can train on high-quality instruction-response examples.
-- Answer: D
-- Explanation: The scenario is about SFT. The strongest answer fixes the failing layer directly: train on high-quality instruction-response examples.
-- Why A is wrong: It moves attention to a neighboring control instead of making SFT testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether SFT fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the SFT gate until after users are exposed.
-
-### Q19: An insurance claims group is reviewing a model adaptation release before rollout. The main risk is DPO: the system must learn preferences from chosen/rejected pairs. Which option keeps the decision at the right layer?
-- ID: genl-hf-fine-tuning-013
-- Domain: Fine-Tuning
-- Topic: DPO; genai_llms_professional
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated DPO check.
-- B. Use SFT as the main gate even though reviewers are asking for DPO evidence.
-- C. Make DPO explicit in the workflow: learn preferences from chosen/rejected pairs.
-- D. Bundle DPO, SFT, and prompt changes into one release with one aggregate score.
-- Answer: C
-- Explanation: The scenario is about DPO. The strongest answer fixes the failing layer directly: learn preferences from chosen/rejected pairs.
-- Why A is wrong: Waiting for incidents postpones the DPO gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making DPO testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether DPO fixed or caused the failure.
-
-### Q20: A global retailer is reviewing a model adaptation release before rollout. The main risk is catastrophic forgetting: the system must mix representative data and evaluate old capabilities. Which option keeps the decision at the right layer?
-- ID: genl-hf-fine-tuning-014
-- Domain: Fine-Tuning
-- Topic: catastrophic forgetting; genai_llms_professional
-- Difficulty: expert
-- A. Keep only testing the new domain as the primary release control and record only final outputs.
-- B. Use catastrophic forgetting as the control boundary and require the system to mix representative data and evaluate old capabilities.
-- C. Wait for production incidents before adding a dedicated catastrophic forgetting check.
-- D. Use SFT as the main gate even though reviewers are asking for catastrophic forgetting evidence.
-- Answer: B
-- Explanation: The scenario is about catastrophic forgetting. The strongest answer fixes the failing layer directly: mix representative data and evaluate old capabilities.
-- Why A is wrong: It keeps only testing the new domain in control instead of adding a measurable catastrophic forgetting decision point.
-- Why C is wrong: Waiting for incidents postpones the catastrophic forgetting gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making catastrophic forgetting testable in the scenario.
-
-### Q21: A public-sector casework team has a production-readiness review for a model adaptation release. The review is focused on continued pretraining, because the system must adapt broad domain language before instruction tuning. Which choice addresses the root cause?
-- ID: genl-hf-fine-tuning-015
-- Domain: Fine-Tuning
-- Topic: continued pretraining; genai_llms_professional
-- Difficulty: medium
-- A. Add a release gate for continued pretraining: adapt broad domain language before instruction tuning.
-- B. Use DPO as the main gate even though reviewers are asking for continued pretraining evidence.
-- C. Keep RAG for durable language style as the primary release control and record only final outputs.
-- D. Prioritize catastrophic forgetting before validating the failure signal around continued pretraining.
-- Answer: A
-- Explanation: The scenario is about continued pretraining. The strongest answer fixes the failing layer directly: adapt broad domain language before instruction tuning.
-- Why B is wrong: It moves attention to a neighboring control instead of making continued pretraining testable in the scenario.
-- Why C is wrong: It keeps RAG for durable language style in control instead of adding a measurable continued pretraining decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making continued pretraining testable in the scenario.
-
-### Q22: A cybersecurity response team is comparing two release designs for a model adaptation release. One design centers on full pretraining for a narrow style change; the other adds a measurable LoRA/QLoRA step. Which design is more appropriate for production?
-- ID: genl-hf-fine-tuning-016
-- Domain: Fine-Tuning
-- Topic: LoRA/QLoRA; genai_llms_professional
-- Difficulty: hard
-- A. Keep full pretraining for a narrow style change as the primary release control and record only final outputs.
-- B. Prioritize catastrophic forgetting before validating the failure signal around LoRA/QLoRA.
-- C. Bundle LoRA/QLoRA, continued pretraining, and prompt changes into one release with one aggregate score.
-- D. Change the design around LoRA/QLoRA so the system can adapt behavior with small trainable adapters.
-- Answer: D
-- Explanation: The scenario is about LoRA/QLoRA. The strongest answer fixes the failing layer directly: adapt behavior with small trainable adapters.
-- Why A is wrong: It keeps full pretraining for a narrow style change in control instead of adding a measurable LoRA/QLoRA decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making LoRA/QLoRA testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether LoRA/QLoRA fixed or caused the failure.
-
-### Q23: An insurance claims group is preparing a model adaptation release for release. The current design relies on unlabeled raw documents as SFT data, but the release gate needs to train on high-quality instruction-response examples. Which choice addresses the root cause?
-- ID: genl-hf-fine-tuning-017
-- Domain: Fine-Tuning
-- Topic: SFT; genai_llms_professional
-- Difficulty: hard
-- A. Bundle SFT, continued pretraining, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated SFT check.
-- C. Make SFT explicit in the workflow: train on high-quality instruction-response examples.
-- D. Prioritize catastrophic forgetting before validating the failure signal around SFT.
-- Answer: C
-- Explanation: The scenario is about SFT. The strongest answer fixes the failing layer directly: train on high-quality instruction-response examples.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether SFT fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the SFT gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making SFT testable in the scenario.
-
-### Q24: A logistics planning team has a production-readiness review for a model adaptation release. The review is focused on DPO, because the system must learn preferences from chosen/rejected pairs. Which control should be added before rollout?
-- ID: genl-hf-fine-tuning-018
-- Domain: Fine-Tuning
-- Topic: DPO; genai_llms_professional
-- Difficulty: easy
-- A. Use LoRA/QLoRA as the main gate even though reviewers are asking for DPO evidence.
-- B. Use DPO as the control boundary and require the system to learn preferences from chosen/rejected pairs.
-- C. Bundle DPO, LoRA/QLoRA, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated DPO check.
-- Answer: B
-- Explanation: The scenario is about DPO. The strongest answer fixes the failing layer directly: learn preferences from chosen/rejected pairs.
-- Why A is wrong: It moves attention to a neighboring control instead of making DPO testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether DPO fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the DPO gate until after users are exposed.
-
-### Q25: A manufacturing quality team is comparing two release designs for a model adaptation release. One design centers on only testing the new domain; the other adds a measurable catastrophic forgetting step. Which design is more appropriate for production?
-- ID: genl-hf-fine-tuning-019
-- Domain: Fine-Tuning
-- Topic: catastrophic forgetting; genai_llms_professional
-- Difficulty: hard
-- A. Add a release gate for catastrophic forgetting: mix representative data and evaluate old capabilities.
-- B. Wait for production incidents before adding a dedicated catastrophic forgetting check.
-- C. Use DPO as the main gate even though reviewers are asking for catastrophic forgetting evidence.
-- D. Keep only testing the new domain as the primary release control and record only final outputs.
-- Answer: A
-- Explanation: The scenario is about catastrophic forgetting. The strongest answer fixes the failing layer directly: mix representative data and evaluate old capabilities.
-- Why B is wrong: Waiting for incidents postpones the catastrophic forgetting gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making catastrophic forgetting testable in the scenario.
-- Why D is wrong: It keeps only testing the new domain in control instead of adding a measurable catastrophic forgetting decision point.
-
-### Q26: A cybersecurity response team is preparing a model adaptation release for release. The current design relies on RAG for durable language style, but the release gate needs to adapt broad domain language before instruction tuning. Which control should be added before rollout?
-- ID: genl-hf-fine-tuning-020
-- Domain: Fine-Tuning
-- Topic: continued pretraining; genai_llms_professional
-- Difficulty: expert
-- A. Change the design around continued pretraining so the system can adapt broad domain language before instruction tuning.
-- B. Use catastrophic forgetting as the main gate even though reviewers are asking for continued pretraining evidence.
-- C. Keep RAG for durable language style as the primary release control and record only final outputs.
-- D. Prioritize DPO before validating the failure signal around continued pretraining.
-- Answer: A
-- Explanation: The scenario is about continued pretraining. The strongest answer fixes the failing layer directly: adapt broad domain language before instruction tuning.
-- Why B is wrong: It moves attention to a neighboring control instead of making continued pretraining testable in the scenario.
-- Why C is wrong: It keeps RAG for durable language style in control instead of adding a measurable continued pretraining decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making continued pretraining testable in the scenario.
-
-### Q27: A bank fraud team has a production-readiness review for a model adaptation release. The review is focused on LoRA/QLoRA, because the system must adapt behavior with small trainable adapters. Which control should be added before rollout?
-- ID: genl-hf-fine-tuning-021
-- Domain: Fine-Tuning
-- Topic: LoRA/QLoRA; genai_llms_professional
-- Difficulty: medium
-- A. Bundle LoRA/QLoRA, continued pretraining, and prompt changes into one release with one aggregate score.
-- B. Make LoRA/QLoRA explicit in the workflow: adapt behavior with small trainable adapters.
-- C. Keep full pretraining for a narrow style change as the primary release control and record only final outputs.
-- D. Prioritize catastrophic forgetting before validating the failure signal around LoRA/QLoRA.
-- Answer: B
-- Explanation: The scenario is about LoRA/QLoRA. The strongest answer fixes the failing layer directly: adapt behavior with small trainable adapters.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether LoRA/QLoRA fixed or caused the failure.
-- Why C is wrong: It keeps full pretraining for a narrow style change in control instead of adding a measurable LoRA/QLoRA decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making LoRA/QLoRA testable in the scenario.
-
-### Q28: A manufacturing quality team sees model behavior changes that require SFT. The team has been using unlabeled raw documents as SFT data; the next change needs to make SFT explicit. Which action best addresses the problem?
-- ID: genl-hf-fine-tuning-022
-- Domain: Fine-Tuning
-- Topic: SFT; genai_llms_professional
-- Difficulty: hard
-- A. Bundle SFT, DPO, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated SFT check.
-- C. Use SFT as the control boundary and require the system to train on high-quality instruction-response examples.
-- D. Prioritize LoRA/QLoRA before validating the failure signal around SFT.
-- Answer: C
-- Explanation: The scenario is about SFT. The strongest answer fixes the failing layer directly: train on high-quality instruction-response examples.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether SFT fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the SFT gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making SFT testable in the scenario.
-
-### Q29: A telecom network operations team has a production-readiness review for a model adaptation release. The review is focused on DPO, because the system must learn preferences from chosen/rejected pairs. Which architecture keeps the boundary cleanest?
-- ID: genl-hf-fine-tuning-023
-- Domain: Fine-Tuning
-- Topic: DPO; genai_llms_professional
-- Difficulty: hard
-- A. Bundle DPO, LoRA/QLoRA, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated DPO check.
-- C. Use LoRA/QLoRA as the main gate even though reviewers are asking for DPO evidence.
-- D. Add a release gate for DPO: learn preferences from chosen/rejected pairs.
-- Answer: D
-- Explanation: The scenario is about DPO. The strongest answer fixes the failing layer directly: learn preferences from chosen/rejected pairs.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether DPO fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the DPO gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making DPO testable in the scenario.
-
-### Q30: An automotive support team is preparing a model adaptation release for release. The current design relies on only testing the new domain, but the release gate needs to mix representative data and evaluate old capabilities. Which implementation path is most appropriate?
-- ID: genl-hf-fine-tuning-024
-- Domain: Fine-Tuning
-- Topic: catastrophic forgetting; genai_llms_professional
-- Difficulty: expert
-- A. Change the design around catastrophic forgetting so the system can mix representative data and evaluate old capabilities.
-- B. Wait for production incidents before adding a dedicated catastrophic forgetting check.
-- C. Use LoRA/QLoRA as the main gate even though reviewers are asking for catastrophic forgetting evidence.
-- D. Keep only testing the new domain as the primary release control and record only final outputs.
-- Answer: A
-- Explanation: The scenario is about catastrophic forgetting. The strongest answer fixes the failing layer directly: mix representative data and evaluate old capabilities.
-- Why B is wrong: Waiting for incidents postpones the catastrophic forgetting gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making catastrophic forgetting testable in the scenario.
-- Why D is wrong: It keeps only testing the new domain in control instead of adding a measurable catastrophic forgetting decision point.
-
-### Q31: A semiconductor design group is reviewing a model adaptation release before rollout. The main risk is continued pretraining: the system must adapt broad domain language before instruction tuning. Which option keeps the decision at the right layer?
-- ID: genl-hf-fine-tuning-025
-- Domain: Fine-Tuning
-- Topic: continued pretraining; genai_llms_professional
-- Difficulty: medium
-- A. Prioritize DPO before validating the failure signal around continued pretraining.
-- B. Make continued pretraining explicit in the workflow: adapt broad domain language before instruction tuning.
-- C. Use catastrophic forgetting as the main gate even though reviewers are asking for continued pretraining evidence.
-- D. Keep RAG for durable language style as the primary release control and record only final outputs.
-- Answer: B
-- Explanation: The scenario is about continued pretraining. The strongest answer fixes the failing layer directly: adapt broad domain language before instruction tuning.
-- Why A is wrong: It moves attention to a neighboring control instead of making continued pretraining testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making continued pretraining testable in the scenario.
-- Why D is wrong: It keeps RAG for durable language style in control instead of adding a measurable continued pretraining decision point.
-
-### Q32: A manufacturing quality team is comparing two release designs for a model adaptation release. One design centers on full pretraining for a narrow style change; the other adds a measurable LoRA/QLoRA step. Which design is more appropriate for production?
-- ID: genl-hf-fine-tuning-026
-- Domain: Fine-Tuning
-- Topic: LoRA/QLoRA; genai_llms_professional
-- Difficulty: hard
-- A. Prioritize continued pretraining before validating the failure signal around LoRA/QLoRA.
-- B. Bundle LoRA/QLoRA, catastrophic forgetting, and prompt changes into one release with one aggregate score.
-- C. Use LoRA/QLoRA as the control boundary and require the system to adapt behavior with small trainable adapters.
-- D. Keep full pretraining for a narrow style change as the primary release control and record only final outputs.
-- Answer: C
-- Explanation: The scenario is about LoRA/QLoRA. The strongest answer fixes the failing layer directly: adapt behavior with small trainable adapters.
-- Why A is wrong: It moves attention to a neighboring control instead of making LoRA/QLoRA testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether LoRA/QLoRA fixed or caused the failure.
-- Why D is wrong: It keeps full pretraining for a narrow style change in control instead of adding a measurable LoRA/QLoRA decision point.
-
-### Q33: A global retailer has a production-readiness review for a model adaptation release. The review is focused on SFT, because the system must train on high-quality instruction-response examples. Which control should be added before rollout?
-- ID: genl-hf-fine-tuning-027
-- Domain: Fine-Tuning
-- Topic: SFT; genai_llms_professional
-- Difficulty: hard
-- A. Prioritize continued pretraining before validating the failure signal around SFT.
-- B. Bundle SFT, catastrophic forgetting, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated SFT check.
-- D. Add a release gate for SFT: train on high-quality instruction-response examples.
-- Answer: D
-- Explanation: The scenario is about SFT. The strongest answer fixes the failing layer directly: train on high-quality instruction-response examples.
-- Why A is wrong: It moves attention to a neighboring control instead of making SFT testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether SFT fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the SFT gate until after users are exposed.
-
-### Q34: A pharmaceutical research team sees model behavior changes that require DPO. The team has been using single-answer labels for preference alignment; the next change needs to make DPO explicit. Which action best addresses the problem?
-- ID: genl-hf-fine-tuning-028
-- Domain: Fine-Tuning
-- Topic: DPO; genai_llms_professional
-- Difficulty: medium
-- A. Change the design around DPO so the system can learn preferences from chosen/rejected pairs.
-- B. Bundle DPO, SFT, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated DPO check.
-- D. Use SFT as the main gate even though reviewers are asking for DPO evidence.
-- Answer: A
-- Explanation: The scenario is about DPO. The strongest answer fixes the failing layer directly: learn preferences from chosen/rejected pairs.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether DPO fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the DPO gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making DPO testable in the scenario.
-
-### Q35: A cybersecurity response team sees model behavior changes that require catastrophic forgetting. The team has been using only testing the new domain; the next change needs to make catastrophic forgetting explicit. Which action best addresses the problem?
-- ID: genl-hf-fine-tuning-029
-- Domain: Fine-Tuning
-- Topic: catastrophic forgetting; genai_llms_professional
-- Difficulty: hard
-- A. Keep only testing the new domain as the primary release control and record only final outputs.
-- B. Make catastrophic forgetting explicit in the workflow: mix representative data and evaluate old capabilities.
-- C. Wait for production incidents before adding a dedicated catastrophic forgetting check.
-- D. Use continued pretraining as the main gate even though reviewers are asking for catastrophic forgetting evidence.
-- Answer: B
-- Explanation: The scenario is about catastrophic forgetting. The strongest answer fixes the failing layer directly: mix representative data and evaluate old capabilities.
-- Why A is wrong: It keeps only testing the new domain in control instead of adding a measurable catastrophic forgetting decision point.
-- Why C is wrong: Waiting for incidents postpones the catastrophic forgetting gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making catastrophic forgetting testable in the scenario.
-
-### Q36: A manufacturing quality team has a production-readiness review for a model adaptation release. The review is focused on continued pretraining, because the system must adapt broad domain language before instruction tuning. Which choice addresses the root cause?
-- ID: genl-hf-fine-tuning-030
-- Domain: Fine-Tuning
-- Topic: continued pretraining; genai_llms_professional
-- Difficulty: hard
-- A. Use DPO as the main gate even though reviewers are asking for continued pretraining evidence.
-- B. Keep RAG for durable language style as the primary release control and record only final outputs.
-- C. Prioritize catastrophic forgetting before validating the failure signal around continued pretraining.
-- D. Use continued pretraining as the control boundary and require the system to adapt broad domain language before instruction tuning.
-- Answer: D
-- Explanation: The scenario is about continued pretraining. The strongest answer fixes the failing layer directly: adapt broad domain language before instruction tuning.
-- Why A is wrong: It moves attention to a neighboring control instead of making continued pretraining testable in the scenario.
-- Why B is wrong: It keeps RAG for durable language style in control instead of adding a measurable continued pretraining decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making continued pretraining testable in the scenario.
-
-### Q37: An automotive support team has a production-readiness review for a model adaptation release. The review is focused on LoRA/QLoRA, because the system must adapt behavior with small trainable adapters. Which choice addresses the root cause?
-- ID: genl-hf-fine-tuning-031
-- Domain: Fine-Tuning
-- Topic: LoRA/QLoRA; genai_llms_professional
-- Difficulty: expert
-- A. Prioritize DPO before validating the failure signal around LoRA/QLoRA.
-- B. Bundle LoRA/QLoRA, SFT, and prompt changes into one release with one aggregate score.
-- C. Add a release gate for LoRA/QLoRA: adapt behavior with small trainable adapters.
-- D. Keep full pretraining for a narrow style change as the primary release control and record only final outputs.
-- Answer: C
-- Explanation: The scenario is about LoRA/QLoRA. The strongest answer fixes the failing layer directly: adapt behavior with small trainable adapters.
-- Why A is wrong: It moves attention to a neighboring control instead of making LoRA/QLoRA testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether LoRA/QLoRA fixed or caused the failure.
-- Why D is wrong: It keeps full pretraining for a narrow style change in control instead of adding a measurable LoRA/QLoRA decision point.
-
-### Q38: A logistics planning team is reviewing a model adaptation release before rollout. The main risk is SFT: the system must train on high-quality instruction-response examples. Which option keeps the decision at the right layer?
-- ID: genl-hf-fine-tuning-032
-- Domain: Fine-Tuning
-- Topic: SFT; genai_llms_professional
-- Difficulty: medium
-- A. Wait for production incidents before adding a dedicated SFT check.
-- B. Change the design around SFT so the system can train on high-quality instruction-response examples.
-- C. Prioritize continued pretraining before validating the failure signal around SFT.
-- D. Bundle SFT, catastrophic forgetting, and prompt changes into one release with one aggregate score.
-- Answer: B
-- Explanation: The scenario is about SFT. The strongest answer fixes the failing layer directly: train on high-quality instruction-response examples.
-- Why A is wrong: Waiting for incidents postpones the SFT gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making SFT testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether SFT fixed or caused the failure.
-
-### Q39: A hospital operations team is reviewing a model adaptation release before rollout. The main risk is DPO: the system must learn preferences from chosen/rejected pairs. Which option keeps the decision at the right layer?
-- ID: genl-hf-fine-tuning-033
-- Domain: Fine-Tuning
-- Topic: DPO; genai_llms_professional
-- Difficulty: hard
-- A. Make DPO explicit in the workflow: learn preferences from chosen/rejected pairs.
-- B. Bundle DPO, continued pretraining, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated DPO check.
-- D. Use continued pretraining as the main gate even though reviewers are asking for DPO evidence.
-- Answer: A
-- Explanation: The scenario is about DPO. The strongest answer fixes the failing layer directly: learn preferences from chosen/rejected pairs.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether DPO fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the DPO gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making DPO testable in the scenario.
-
-### Q40: A semiconductor design group is comparing two release designs for a model adaptation release. One design centers on only testing the new domain; the other adds a measurable catastrophic forgetting step. Which design is more appropriate for production?
-- ID: genl-hf-fine-tuning-034
-- Domain: Fine-Tuning
-- Topic: catastrophic forgetting; genai_llms_professional
-- Difficulty: expert
-- A. Wait for production incidents before adding a dedicated catastrophic forgetting check.
-- B. Use continued pretraining as the main gate even though reviewers are asking for catastrophic forgetting evidence.
-- C. Keep only testing the new domain as the primary release control and record only final outputs.
-- D. Use catastrophic forgetting as the control boundary and require the system to mix representative data and evaluate old capabilities.
-- Answer: D
-- Explanation: The scenario is about catastrophic forgetting. The strongest answer fixes the failing layer directly: mix representative data and evaluate old capabilities.
-- Why A is wrong: Waiting for incidents postpones the catastrophic forgetting gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making catastrophic forgetting testable in the scenario.
-- Why C is wrong: It keeps only testing the new domain in control instead of adding a measurable catastrophic forgetting decision point.
-
-### Q41: An automotive support team has a production-readiness review for a model adaptation release. The review is focused on continued pretraining, because the system must adapt broad domain language before instruction tuning. Which design is the best first change?
-- ID: genl-hf-fine-tuning-035
-- Domain: Fine-Tuning
-- Topic: continued pretraining; genai_llms_professional
-- Difficulty: medium
-- A. Keep RAG for durable language style as the primary release control and record only final outputs.
-- B. Prioritize SFT before validating the failure signal around continued pretraining.
-- C. Add a release gate for continued pretraining: adapt broad domain language before instruction tuning.
-- D. Use LoRA/QLoRA as the main gate even though reviewers are asking for continued pretraining evidence.
-- Answer: C
-- Explanation: The scenario is about continued pretraining. The strongest answer fixes the failing layer directly: adapt broad domain language before instruction tuning.
-- Why A is wrong: It keeps RAG for durable language style in control instead of adding a measurable continued pretraining decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making continued pretraining testable in the scenario.
-- Why D is wrong: It moves attention to a neighboring control instead of making continued pretraining testable in the scenario.
-
-### Q42: A global retailer is preparing a model adaptation release for release. The current design relies on full pretraining for a narrow style change, but the release gate needs to adapt behavior with small trainable adapters. Which architecture keeps the boundary cleanest?
-- ID: genl-hf-fine-tuning-036
-- Domain: Fine-Tuning
-- Topic: LoRA/QLoRA; genai_llms_professional
-- Difficulty: hard
-- A. Bundle LoRA/QLoRA, DPO, and prompt changes into one release with one aggregate score.
-- B. Change the design around LoRA/QLoRA so the system can adapt behavior with small trainable adapters.
-- C. Keep full pretraining for a narrow style change as the primary release control and record only final outputs.
-- D. Prioritize SFT before validating the failure signal around LoRA/QLoRA.
-- Answer: B
-- Explanation: The scenario is about LoRA/QLoRA. The strongest answer fixes the failing layer directly: adapt behavior with small trainable adapters.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether LoRA/QLoRA fixed or caused the failure.
-- Why C is wrong: It keeps full pretraining for a narrow style change in control instead of adding a measurable LoRA/QLoRA decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making LoRA/QLoRA testable in the scenario.
-
-### Q43: A manufacturing quality team is preparing a model adaptation release for release. The current design relies on unlabeled raw documents as SFT data, but the release gate needs to train on high-quality instruction-response examples. Which choice addresses the root cause?
-- ID: genl-hf-fine-tuning-037
-- Domain: Fine-Tuning
-- Topic: SFT; genai_llms_professional
-- Difficulty: hard
-- A. Make SFT explicit in the workflow: train on high-quality instruction-response examples.
-- B. Prioritize LoRA/QLoRA before validating the failure signal around SFT.
-- C. Bundle SFT, DPO, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated SFT check.
-- Answer: A
-- Explanation: The scenario is about SFT. The strongest answer fixes the failing layer directly: train on high-quality instruction-response examples.
-- Why B is wrong: It moves attention to a neighboring control instead of making SFT testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether SFT fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the SFT gate until after users are exposed.
-
-### Q44: A pharmaceutical research team has a production-readiness review for a model-data preparation pipeline. The review is focused on MinHash/LSH, because the system must remove near duplicates at corpus scale. Which choice addresses the root cause?
-- ID: genl-hf-data-preparation-001
-- Domain: Data Preparation
-- Topic: MinHash/LSH; genai_llms_professional
-- Difficulty: hard
-- A. Keep all-pairs comparison as the primary release control and record only final outputs.
-- B. Prioritize contamination checks before validating the failure signal around MinHash/LSH.
-- C. Bundle MinHash/LSH, PII redaction, and prompt changes into one release with one aggregate score.
-- D. Make MinHash/LSH explicit in the workflow: remove near duplicates at corpus scale.
-- Answer: D
-- Explanation: The scenario is about MinHash/LSH. The strongest answer fixes the failing layer directly: remove near duplicates at corpus scale.
-- Why A is wrong: It keeps all-pairs comparison in control instead of adding a measurable MinHash/LSH decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making MinHash/LSH testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether MinHash/LSH fixed or caused the failure.
-
-### Q45: A global retailer is preparing a model-data preparation pipeline for release. The current design relies on keyword-only filtering, but the release gate needs to combine regex, NER, classifiers, and manual review for sensitive data. Which architecture keeps the boundary cleanest?
-- ID: genl-hf-data-preparation-002
-- Domain: Data Preparation
-- Topic: PII redaction; genai_llms_professional
-- Difficulty: easy
-- A. Use PII redaction as the control boundary and require the system to combine regex, NER, classifiers, and manual review for sensitive data.
-- B. Prioritize contamination checks before validating the failure signal around PII redaction.
-- C. Bundle PII redaction, MinHash/LSH, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated PII redaction check.
-- Answer: A
-- Explanation: The scenario is about PII redaction. The strongest answer fixes the failing layer directly: combine regex, NER, classifiers, and manual review for sensitive data.
-- Why B is wrong: It moves attention to a neighboring control instead of making PII redaction testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether PII redaction fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the PII redaction gate until after users are exposed.
-
-### Q46: A public-sector casework team has a production-readiness review for a model-data preparation pipeline. The review is focused on contamination checks, because the system must remove benchmark/test overlaps from training data. Which implementation path is most appropriate?
-- ID: genl-hf-data-preparation-003
-- Domain: Data Preparation
-- Topic: contamination checks; genai_llms_professional
-- Difficulty: hard
-- A. Use PII redaction as the main gate even though reviewers are asking for contamination checks evidence.
-- B. Add a release gate for contamination checks: remove benchmark/test overlaps from training data.
-- C. Bundle contamination checks, PII redaction, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated contamination checks check.
-- Answer: B
-- Explanation: The scenario is about contamination checks. The strongest answer fixes the failing layer directly: remove benchmark/test overlaps from training data.
-- Why A is wrong: It moves attention to a neighboring control instead of making contamination checks testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether contamination checks fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the contamination checks gate until after users are exposed.
-
-### Q47: A semiconductor design group sees data quality failures tied to quality filtering. The team has been using bigger model to rescue bad data; the next change needs to make quality filtering explicit. Which action best addresses the problem?
-- ID: genl-hf-data-preparation-004
-- Domain: Data Preparation
-- Topic: quality filtering; genai_llms_professional
-- Difficulty: expert
-- A. Use contamination checks as the main gate even though reviewers are asking for quality filtering evidence.
-- B. Keep bigger model to rescue bad data as the primary release control and record only final outputs.
-- C. Change the design around quality filtering so the system can score content by language, duplication, toxicity, and usefulness.
-- D. Wait for production incidents before adding a dedicated quality filtering check.
-- Answer: C
-- Explanation: The scenario is about quality filtering. The strongest answer fixes the failing layer directly: score content by language, duplication, toxicity, and usefulness.
-- Why A is wrong: It moves attention to a neighboring control instead of making quality filtering testable in the scenario.
-- Why B is wrong: It keeps bigger model to rescue bad data in control instead of adding a measurable quality filtering decision point.
-- Why D is wrong: Waiting for incidents postpones the quality filtering gate until after users are exposed.
-
-### Q48: An automotive support team is comparing two release designs for a model-data preparation pipeline. One design centers on English-only tokenization for multilingual requirements; the other adds a measurable tokenizer coverage step. Which design is more appropriate for production?
-- ID: genl-hf-data-preparation-005
-- Domain: Data Preparation
-- Topic: tokenizer coverage; genai_llms_professional
-- Difficulty: medium
-- A. Use PII redaction as the main gate even though reviewers are asking for tokenizer coverage evidence.
-- B. Keep English-only tokenization for multilingual requirements as the primary release control and record only final outputs.
-- C. Prioritize MinHash/LSH before validating the failure signal around tokenizer coverage.
-- D. Make tokenizer coverage explicit in the workflow: balance vocabulary and sampling across languages/domains.
-- Answer: D
-- Explanation: The scenario is about tokenizer coverage. The strongest answer fixes the failing layer directly: balance vocabulary and sampling across languages/domains.
-- Why A is wrong: It moves attention to a neighboring control instead of making tokenizer coverage testable in the scenario.
-- Why B is wrong: It keeps English-only tokenization for multilingual requirements in control instead of adding a measurable tokenizer coverage decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making tokenizer coverage testable in the scenario.
-
-### Q49: A logistics planning team sees data quality failures tied to MinHash/LSH. The team has been using all-pairs comparison; the next change needs to make MinHash/LSH explicit. Which action best addresses the problem?
-- ID: genl-hf-data-preparation-006
-- Domain: Data Preparation
-- Topic: MinHash/LSH; genai_llms_professional
-- Difficulty: hard
-- A. Use MinHash/LSH as the control boundary and require the system to remove near duplicates at corpus scale.
-- B. Keep all-pairs comparison as the primary release control and record only final outputs.
-- C. Prioritize PII redaction before validating the failure signal around MinHash/LSH.
-- D. Bundle MinHash/LSH, contamination checks, and prompt changes into one release with one aggregate score.
-- Answer: A
-- Explanation: The scenario is about MinHash/LSH. The strongest answer fixes the failing layer directly: remove near duplicates at corpus scale.
-- Why B is wrong: It keeps all-pairs comparison in control instead of adding a measurable MinHash/LSH decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making MinHash/LSH testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether MinHash/LSH fixed or caused the failure.
-
-### Q50: A manufacturing quality team sees data quality failures tied to PII redaction. The team has been using keyword-only filtering; the next change needs to make PII redaction explicit. Which action best addresses the problem?
-- ID: genl-hf-data-preparation-007
-- Domain: Data Preparation
-- Topic: PII redaction; genai_llms_professional
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated PII redaction check.
-- B. Add a release gate for PII redaction: combine regex, NER, classifiers, and manual review for sensitive data.
-- C. Prioritize quality filtering before validating the failure signal around PII redaction.
-- D. Bundle PII redaction, tokenizer coverage, and prompt changes into one release with one aggregate score.
-- Answer: B
-- Explanation: The scenario is about PII redaction. The strongest answer fixes the failing layer directly: combine regex, NER, classifiers, and manual review for sensitive data.
-- Why A is wrong: Waiting for incidents postpones the PII redaction gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making PII redaction testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether PII redaction fixed or caused the failure.
-
-### Q51: A bank fraud team has a production-readiness review for a model-data preparation pipeline. The review is focused on contamination checks, because the system must remove benchmark/test overlaps from training data. Which architecture keeps the boundary cleanest?
-- ID: genl-hf-data-preparation-008
-- Domain: Data Preparation
-- Topic: contamination checks; genai_llms_professional
-- Difficulty: expert
-- A. Wait for production incidents before adding a dedicated contamination checks check.
-- B. Use MinHash/LSH as the main gate even though reviewers are asking for contamination checks evidence.
-- C. Change the design around contamination checks so the system can remove benchmark/test overlaps from training data.
-- D. Bundle contamination checks, MinHash/LSH, and prompt changes into one release with one aggregate score.
-- Answer: C
-- Explanation: The scenario is about contamination checks. The strongest answer fixes the failing layer directly: remove benchmark/test overlaps from training data.
-- Why A is wrong: Waiting for incidents postpones the contamination checks gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making contamination checks testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether contamination checks fixed or caused the failure.
-
-### Q52: An automotive support team is reviewing a model-data preparation pipeline before rollout. The main risk is quality filtering: the system must score content by language, duplication, toxicity, and usefulness. Which option keeps the decision at the right layer?
-- ID: genl-hf-data-preparation-009
-- Domain: Data Preparation
-- Topic: quality filtering; genai_llms_professional
-- Difficulty: medium
-- A. Wait for production incidents before adding a dedicated quality filtering check.
-- B. Use PII redaction as the main gate even though reviewers are asking for quality filtering evidence.
-- C. Keep bigger model to rescue bad data as the primary release control and record only final outputs.
-- D. Make quality filtering explicit in the workflow: score content by language, duplication, toxicity, and usefulness.
-- Answer: D
-- Explanation: The scenario is about quality filtering. The strongest answer fixes the failing layer directly: score content by language, duplication, toxicity, and usefulness.
-- Why A is wrong: Waiting for incidents postpones the quality filtering gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making quality filtering testable in the scenario.
-- Why C is wrong: It keeps bigger model to rescue bad data in control instead of adding a measurable quality filtering decision point.
-
-### Q53: A logistics planning team has a production-readiness review for a model-data preparation pipeline. The review is focused on tokenizer coverage, because the system must balance vocabulary and sampling across languages/domains. Which action best fits the requirement?
-- ID: genl-hf-data-preparation-010
-- Domain: Data Preparation
-- Topic: tokenizer coverage; genai_llms_professional
-- Difficulty: hard
-- A. Prioritize PII redaction before validating the failure signal around tokenizer coverage.
-- B. Use tokenizer coverage as the control boundary and require the system to balance vocabulary and sampling across languages/domains.
-- C. Use MinHash/LSH as the main gate even though reviewers are asking for tokenizer coverage evidence.
-- D. Keep English-only tokenization for multilingual requirements as the primary release control and record only final outputs.
-- Answer: B
-- Explanation: The scenario is about tokenizer coverage. The strongest answer fixes the failing layer directly: balance vocabulary and sampling across languages/domains.
-- Why A is wrong: It moves attention to a neighboring control instead of making tokenizer coverage testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making tokenizer coverage testable in the scenario.
-- Why D is wrong: It keeps English-only tokenization for multilingual requirements in control instead of adding a measurable tokenizer coverage decision point.
-
-### Q54: A logistics planning team sees data quality failures tied to MinHash/LSH. The team has been using all-pairs comparison; the next change needs to make MinHash/LSH explicit. Which action best addresses the problem?
-- ID: genl-hf-data-preparation-011
-- Domain: Data Preparation
-- Topic: MinHash/LSH; genai_llms_professional
-- Difficulty: hard
-- A. Add a release gate for MinHash/LSH: remove near duplicates at corpus scale.
-- B. Keep all-pairs comparison as the primary release control and record only final outputs.
-- C. Prioritize PII redaction before validating the failure signal around MinHash/LSH.
-- D. Bundle MinHash/LSH, contamination checks, and prompt changes into one release with one aggregate score.
-- Answer: A
-- Explanation: The scenario is about MinHash/LSH. The strongest answer fixes the failing layer directly: remove near duplicates at corpus scale.
-- Why B is wrong: It keeps all-pairs comparison in control instead of adding a measurable MinHash/LSH decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making MinHash/LSH testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether MinHash/LSH fixed or caused the failure.
-
-### Q55: An insurance claims group has a production-readiness review for a model-data preparation pipeline. The review is focused on PII redaction, because the system must combine regex, NER, classifiers, and manual review for sensitive data. Which implementation path is most appropriate?
-- ID: genl-hf-data-preparation-012
-- Domain: Data Preparation
-- Topic: PII redaction; genai_llms_professional
-- Difficulty: medium
-- A. Prioritize quality filtering before validating the failure signal around PII redaction.
-- B. Bundle PII redaction, tokenizer coverage, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated PII redaction check.
-- D. Change the design around PII redaction so the system can combine regex, NER, classifiers, and manual review for sensitive data.
-- Answer: D
-- Explanation: The scenario is about PII redaction. The strongest answer fixes the failing layer directly: combine regex, NER, classifiers, and manual review for sensitive data.
-- Why A is wrong: It moves attention to a neighboring control instead of making PII redaction testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether PII redaction fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the PII redaction gate until after users are exposed.
-
-### Q56: A bank fraud team is comparing two release designs for a model-data preparation pipeline. One design centers on using eval sets as training examples; the other adds a measurable contamination checks step. Which design is more appropriate for production?
-- ID: genl-hf-data-preparation-013
-- Domain: Data Preparation
-- Topic: contamination checks; genai_llms_professional
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated contamination checks check.
-- B. Use quality filtering as the main gate even though reviewers are asking for contamination checks evidence.
-- C. Make contamination checks explicit in the workflow: remove benchmark/test overlaps from training data.
-- D. Bundle contamination checks, quality filtering, and prompt changes into one release with one aggregate score.
-- Answer: C
-- Explanation: The scenario is about contamination checks. The strongest answer fixes the failing layer directly: remove benchmark/test overlaps from training data.
-- Why A is wrong: Waiting for incidents postpones the contamination checks gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making contamination checks testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether contamination checks fixed or caused the failure.
-
-### Q57: A manufacturing quality team is preparing a model-data preparation pipeline for release. The current design relies on bigger model to rescue bad data, but the release gate needs to score content by language, duplication, toxicity, and usefulness. Which design is the best first change?
-- ID: genl-hf-data-preparation-014
-- Domain: Data Preparation
-- Topic: quality filtering; genai_llms_professional
-- Difficulty: hard
-- A. Keep bigger model to rescue bad data as the primary release control and record only final outputs.
-- B. Use quality filtering as the control boundary and require the system to score content by language, duplication, toxicity, and usefulness.
-- C. Wait for production incidents before adding a dedicated quality filtering check.
-- D. Use PII redaction as the main gate even though reviewers are asking for quality filtering evidence.
-- Answer: B
-- Explanation: The scenario is about quality filtering. The strongest answer fixes the failing layer directly: score content by language, duplication, toxicity, and usefulness.
-- Why A is wrong: It keeps bigger model to rescue bad data in control instead of adding a measurable quality filtering decision point.
-- Why C is wrong: Waiting for incidents postpones the quality filtering gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making quality filtering testable in the scenario.
-
-### Q58: A global retailer is reviewing a model-data preparation pipeline before rollout. The main risk is tokenizer coverage: the system must balance vocabulary and sampling across languages/domains. Which option keeps the decision at the right layer?
-- ID: genl-hf-data-preparation-015
-- Domain: Data Preparation
-- Topic: tokenizer coverage; genai_llms_professional
-- Difficulty: expert
-- A. Add a release gate for tokenizer coverage: balance vocabulary and sampling across languages/domains.
-- B. Use contamination checks as the main gate even though reviewers are asking for tokenizer coverage evidence.
-- C. Keep English-only tokenization for multilingual requirements as the primary release control and record only final outputs.
-- D. Prioritize quality filtering before validating the failure signal around tokenizer coverage.
-- Answer: A
-- Explanation: The scenario is about tokenizer coverage. The strongest answer fixes the failing layer directly: balance vocabulary and sampling across languages/domains.
-- Why B is wrong: It moves attention to a neighboring control instead of making tokenizer coverage testable in the scenario.
-- Why C is wrong: It keeps English-only tokenization for multilingual requirements in control instead of adding a measurable tokenizer coverage decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making tokenizer coverage testable in the scenario.
-
-### Q59: A pharmaceutical research team has a production-readiness review for a model-data preparation pipeline. The review is focused on MinHash/LSH, because the system must remove near duplicates at corpus scale. Which choice addresses the root cause?
-- ID: genl-hf-data-preparation-016
-- Domain: Data Preparation
-- Topic: MinHash/LSH; genai_llms_professional
-- Difficulty: medium
-- A. Keep all-pairs comparison as the primary release control and record only final outputs.
-- B. Prioritize contamination checks before validating the failure signal around MinHash/LSH.
-- C. Bundle MinHash/LSH, PII redaction, and prompt changes into one release with one aggregate score.
-- D. Change the design around MinHash/LSH so the system can remove near duplicates at corpus scale.
-- Answer: D
-- Explanation: The scenario is about MinHash/LSH. The strongest answer fixes the failing layer directly: remove near duplicates at corpus scale.
-- Why A is wrong: It keeps all-pairs comparison in control instead of adding a measurable MinHash/LSH decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making MinHash/LSH testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether MinHash/LSH fixed or caused the failure.
-
-### Q60: A cybersecurity response team is reviewing a model-data preparation pipeline before rollout. The main risk is PII redaction: the system must combine regex, NER, classifiers, and manual review for sensitive data. Which option keeps the decision at the right layer?
-- ID: genl-hf-data-preparation-017
-- Domain: Data Preparation
-- Topic: PII redaction; genai_llms_professional
-- Difficulty: hard
-- A. Bundle PII redaction, MinHash/LSH, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated PII redaction check.
-- C. Make PII redaction explicit in the workflow: combine regex, NER, classifiers, and manual review for sensitive data.
-- D. Prioritize contamination checks before validating the failure signal around PII redaction.
-- Answer: C
-- Explanation: The scenario is about PII redaction. The strongest answer fixes the failing layer directly: combine regex, NER, classifiers, and manual review for sensitive data.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether PII redaction fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the PII redaction gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making PII redaction testable in the scenario.
-
-### Q61: A hospital operations team sees data quality failures tied to contamination checks. The team has been using using eval sets as training examples; the next change needs to make contamination checks explicit. Which action best addresses the problem?
+### Q1: A hospital operations team passes the happy-path demo for a model-data preparation pipeline, but the current design still relies on using eval sets as training examples. Reviewers need a control that can remove benchmark/test overlaps from training data. Which change should be made before release?
 - ID: genl-hf-data-preparation-018
 - Domain: Data Preparation
 - Topic: contamination checks; genai_llms_professional
 - Difficulty: expert
-- A. Use tokenizer coverage as the main gate even though reviewers are asking for contamination checks evidence.
-- B. Use contamination checks as the control boundary and require the system to remove benchmark/test overlaps from training data.
-- C. Bundle contamination checks, tokenizer coverage, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated contamination checks check.
+- Scope: general_concept
+- Source: generated
+- A. Prioritize quality filtering even though the observed failure is around contamination checks.
+- B. Put contamination checks before rollout so the team can remove benchmark/test overlaps from training data.
+- C. Move the check to post-release monitoring without changing the release path for contamination checks.
+- D. Keep using eval sets as training examples as the main control and add a dashboard for final outputs.
 - Answer: B
-- Explanation: The scenario is about contamination checks. The strongest answer fixes the failing layer directly: remove benchmark/test overlaps from training data.
+- Explanation: Contamination checks is the missing control in this scenario. The right answer makes it explicit so the system can remove benchmark/test overlaps from training data.
 - Why A is wrong: It moves attention to a neighboring control instead of making contamination checks testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether contamination checks fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the contamination checks gate until after users are exposed.
+- Why C is wrong: Monitoring is useful, but this scenario needs contamination checks controlled before release or execution.
+- Why D is wrong: It keeps using eval sets as training examples in control instead of adding a measurable contamination checks decision point.
 
-### Q62: A logistics planning team has a production-readiness review for a model-data preparation pipeline. The review is focused on quality filtering, because the system must score content by language, duplication, toxicity, and usefulness. Which control should be added before rollout?
+### Q2: A logistics planning team is triaging a failed pilot for a model-data preparation pipeline. The current design still relies on bigger model to rescue bad data. Reviewers need a control that can score content by language, duplication, toxicity, and usefulness. Which control addresses the root cause?
 - ID: genl-hf-data-preparation-019
 - Domain: Data Preparation
 - Topic: quality filtering; genai_llms_professional
 - Difficulty: medium
-- A. Add a release gate for quality filtering: score content by language, duplication, toxicity, and usefulness.
-- B. Wait for production incidents before adding a dedicated quality filtering check.
-- C. Use contamination checks as the main gate even though reviewers are asking for quality filtering evidence.
-- D. Keep bigger model to rescue bad data as the primary release control and record only final outputs.
+- Scope: general_concept
+- Source: generated
+- A. Make quality filtering explicit in the workflow: score content by language, duplication, toxicity, and usefulness.
+- B. Keep bigger model to rescue bad data as the main control and add a dashboard for final outputs.
+- C. Prioritize tokenizer coverage even though the observed failure is around quality filtering.
+- D. Release prompt, model, and contamination checks changes together with one aggregate score.
 - Answer: A
-- Explanation: The scenario is about quality filtering. The strongest answer fixes the failing layer directly: score content by language, duplication, toxicity, and usefulness.
-- Why B is wrong: Waiting for incidents postpones the quality filtering gate until after users are exposed.
+- Explanation: Quality filtering is the missing control in this scenario. The right answer makes it explicit so the system can score content by language, duplication, toxicity, and usefulness.
+- Why B is wrong: It keeps bigger model to rescue bad data in control instead of adding a measurable quality filtering decision point.
 - Why C is wrong: It moves attention to a neighboring control instead of making quality filtering testable in the scenario.
-- Why D is wrong: It keeps bigger model to rescue bad data in control instead of adding a measurable quality filtering decision point.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether quality filtering fixed the failure.
 
-### Q63: A pharmaceutical research team is comparing two release designs for a model-data preparation pipeline. One design centers on English-only tokenization for multilingual requirements; the other adds a measurable tokenizer coverage step. Which design is more appropriate for production?
+### Q3: During an architecture review, a pharmaceutical research team finds that the failure is tied to tokenizer coverage. The safer design is the one that can balance vocabulary and sampling across languages/domains. What is the best next step?
 - ID: genl-hf-data-preparation-020
 - Domain: Data Preparation
 - Topic: tokenizer coverage; genai_llms_professional
 - Difficulty: hard
-- A. Change the design around tokenizer coverage so the system can balance vocabulary and sampling across languages/domains.
-- B. Use quality filtering as the main gate even though reviewers are asking for tokenizer coverage evidence.
-- C. Keep English-only tokenization for multilingual requirements as the primary release control and record only final outputs.
-- D. Prioritize contamination checks before validating the failure signal around tokenizer coverage.
+- Scope: general_concept
+- Source: generated
+- A. Use tokenizer coverage as the control boundary and require the system to balance vocabulary and sampling across languages/domains.
+- B. Prioritize contamination checks even though the observed failure is around tokenizer coverage.
+- C. Release prompt, model, and quality filtering changes together with one aggregate score.
+- D. Increase model capacity or context length while leaving tokenizer coverage implicit.
 - Answer: A
-- Explanation: The scenario is about tokenizer coverage. The strongest answer fixes the failing layer directly: balance vocabulary and sampling across languages/domains.
+- Explanation: Tokenizer coverage is the missing control in this scenario. The right answer makes it explicit so the system can balance vocabulary and sampling across languages/domains.
 - Why B is wrong: It moves attention to a neighboring control instead of making tokenizer coverage testable in the scenario.
-- Why C is wrong: It keeps English-only tokenization for multilingual requirements in control instead of adding a measurable tokenizer coverage decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making tokenizer coverage testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether tokenizer coverage fixed the failure.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
 
-### Q64: An insurance claims group is comparing two release designs for a model-data preparation pipeline. One design centers on all-pairs comparison; the other adds a measurable MinHash/LSH step. Which design is more appropriate for production?
+### Q4: During an architecture review, an insurance claims group finds that the failure appears when the system keeps all-pairs comparison as the workaround. The release needs a design step that can remove near duplicates at corpus scale. What is the best next step?
 - ID: genl-hf-data-preparation-021
 - Domain: Data Preparation
 - Topic: MinHash/LSH; genai_llms_professional
 - Difficulty: hard
-- A. Bundle MinHash/LSH, PII redaction, and prompt changes into one release with one aggregate score.
-- B. Make MinHash/LSH explicit in the workflow: remove near duplicates at corpus scale.
-- C. Keep all-pairs comparison as the primary release control and record only final outputs.
-- D. Prioritize contamination checks before validating the failure signal around MinHash/LSH.
+- Scope: general_concept
+- Source: generated
+- A. Use PII redaction as the main gate even though reviewers are asking for MinHash/LSH evidence.
+- B. Add a release gate for MinHash/LSH: remove near duplicates at corpus scale.
+- C. Release prompt, model, and PII redaction changes together with one aggregate score.
+- D. Increase model capacity or context length while leaving MinHash/LSH implicit.
 - Answer: B
-- Explanation: The scenario is about MinHash/LSH. The strongest answer fixes the failing layer directly: remove near duplicates at corpus scale.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether MinHash/LSH fixed or caused the failure.
-- Why C is wrong: It keeps all-pairs comparison in control instead of adding a measurable MinHash/LSH decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making MinHash/LSH testable in the scenario.
+- Explanation: MinHash/LSH is the missing control in this scenario. The right answer makes it explicit so the system can remove near duplicates at corpus scale.
+- Why A is wrong: It moves attention to a neighboring control instead of making MinHash/LSH testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether MinHash/LSH fixed the failure.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
 
-### Q65: A logistics planning team is comparing two release designs for a model-data preparation pipeline. One design centers on keyword-only filtering; the other adds a measurable PII redaction step. Which design is more appropriate for production?
+### Q5: During an architecture review, a logistics planning team finds that the failure is tied to PII redaction. The safer design is the one that can combine regex, NER, classifiers, and manual review for sensitive data. What is the best next step?
 - ID: genl-hf-data-preparation-022
 - Domain: Data Preparation
 - Topic: PII redaction; genai_llms_professional
 - Difficulty: easy
-- A. Bundle PII redaction, quality filtering, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated PII redaction check.
-- C. Use PII redaction as the control boundary and require the system to combine regex, NER, classifiers, and manual review for sensitive data.
-- D. Prioritize tokenizer coverage before validating the failure signal around PII redaction.
+- Scope: general_concept
+- Source: generated
+- A. Use quality filtering as the main gate even though reviewers are asking for PII redaction evidence.
+- B. Move the check to post-release monitoring without changing the release path for PII redaction.
+- C. Change the design around PII redaction so the system can combine regex, NER, classifiers, and manual review for sensitive data.
+- D. Increase model capacity or context length while leaving PII redaction implicit.
 - Answer: C
-- Explanation: The scenario is about PII redaction. The strongest answer fixes the failing layer directly: combine regex, NER, classifiers, and manual review for sensitive data.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether PII redaction fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the PII redaction gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making PII redaction testable in the scenario.
+- Explanation: PII redaction is the missing control in this scenario. The right answer makes it explicit so the system can combine regex, NER, classifiers, and manual review for sensitive data.
+- Why A is wrong: It moves attention to a neighboring control instead of making PII redaction testable in the scenario.
+- Why B is wrong: Monitoring is useful, but this scenario needs PII redaction controlled before release or execution.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
 
-### Q66: A manufacturing quality team is preparing a model-data preparation pipeline for release. The current design relies on using eval sets as training examples, but the release gate needs to remove benchmark/test overlaps from training data. Which choice addresses the root cause?
+### Q6: A manufacturing quality team is building a model-data preparation pipeline. Using eval sets as training examples is being used as the shortcut, but it does not give the team a reliable way to remove benchmark/test overlaps from training data. Which choice addresses the root cause?
 - ID: genl-hf-data-preparation-023
 - Domain: Data Preparation
 - Topic: contamination checks; genai_llms_professional
 - Difficulty: hard
-- A. Bundle contamination checks, tokenizer coverage, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated contamination checks check.
-- C. Use tokenizer coverage as the main gate even though reviewers are asking for contamination checks evidence.
-- D. Add a release gate for contamination checks: remove benchmark/test overlaps from training data.
+- Scope: general_concept
+- Source: generated
+- A. Use tokenizer coverage as the main gate even though reviewers are asking for contamination checks evidence.
+- B. Move the check to post-release monitoring without changing the release path for contamination checks.
+- C. Keep using eval sets as training examples as the main control and add a dashboard for final outputs.
+- D. Instrument and enforce contamination checks; the system must remove benchmark/test overlaps from training data.
 - Answer: D
-- Explanation: The scenario is about contamination checks. The strongest answer fixes the failing layer directly: remove benchmark/test overlaps from training data.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether contamination checks fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the contamination checks gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making contamination checks testable in the scenario.
+- Explanation: Contamination checks is the missing control in this scenario. The right answer makes it explicit so the system can remove benchmark/test overlaps from training data.
+- Why A is wrong: It moves attention to a neighboring control instead of making contamination checks testable in the scenario.
+- Why B is wrong: Monitoring is useful, but this scenario needs contamination checks controlled before release or execution.
+- Why C is wrong: It keeps using eval sets as training examples in control instead of adding a measurable contamination checks decision point.
 
-### Q67: A semiconductor design group has a production-readiness review for a model-data preparation pipeline. The review is focused on quality filtering, because the system must score content by language, duplication, toxicity, and usefulness. Which action best fits the requirement?
+### Q7: A semiconductor design group is triaging a failed pilot for a model-data preparation pipeline. The failure is tied to quality filtering. The safer design is the one that can score content by language, duplication, toxicity, and usefulness. Which control addresses the root cause?
 - ID: genl-hf-data-preparation-024
 - Domain: Data Preparation
 - Topic: quality filtering; genai_llms_professional
 - Difficulty: expert
-- A. Change the design around quality filtering so the system can score content by language, duplication, toxicity, and usefulness.
-- B. Wait for production incidents before adding a dedicated quality filtering check.
-- C. Use MinHash/LSH as the main gate even though reviewers are asking for quality filtering evidence.
-- D. Keep bigger model to rescue bad data as the primary release control and record only final outputs.
+- Scope: general_concept
+- Source: generated
+- A. Put quality filtering before rollout so the team can score content by language, duplication, toxicity, and usefulness.
+- B. Move the check to post-release monitoring without changing the release path for quality filtering.
+- C. Keep bigger model to rescue bad data as the main control and add a dashboard for final outputs.
+- D. Prioritize PII redaction even though the observed failure is around quality filtering.
 - Answer: A
-- Explanation: The scenario is about quality filtering. The strongest answer fixes the failing layer directly: score content by language, duplication, toxicity, and usefulness.
-- Why B is wrong: Waiting for incidents postpones the quality filtering gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making quality filtering testable in the scenario.
-- Why D is wrong: It keeps bigger model to rescue bad data in control instead of adding a measurable quality filtering decision point.
+- Explanation: Quality filtering is the missing control in this scenario. The right answer makes it explicit so the system can score content by language, duplication, toxicity, and usefulness.
+- Why B is wrong: Monitoring is useful, but this scenario needs quality filtering controlled before release or execution.
+- Why C is wrong: It keeps bigger model to rescue bad data in control instead of adding a measurable quality filtering decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making quality filtering testable in the scenario.
 
-### Q68: A pharmaceutical research team sees data quality failures tied to tokenizer coverage. The team has been using English-only tokenization for multilingual requirements; the next change needs to make tokenizer coverage explicit. Which action best addresses the problem?
+### Q8: A pharmaceutical research team passes the happy-path demo for a model-data preparation pipeline, but the team can reproduce the failure around English-only tokenization for multilingual requirements. The missing control is the one that can balance vocabulary and sampling across languages/domains. Which change should be made before release?
 - ID: genl-hf-data-preparation-025
 - Domain: Data Preparation
 - Topic: tokenizer coverage; genai_llms_professional
 - Difficulty: medium
-- A. Prioritize contamination checks before validating the failure signal around tokenizer coverage.
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and quality filtering changes together with one aggregate score.
 - B. Make tokenizer coverage explicit in the workflow: balance vocabulary and sampling across languages/domains.
-- C. Use quality filtering as the main gate even though reviewers are asking for tokenizer coverage evidence.
-- D. Keep English-only tokenization for multilingual requirements as the primary release control and record only final outputs.
+- C. Keep English-only tokenization for multilingual requirements as the main control and add a dashboard for final outputs.
+- D. Prioritize contamination checks even though the observed failure is around tokenizer coverage.
 - Answer: B
-- Explanation: The scenario is about tokenizer coverage. The strongest answer fixes the failing layer directly: balance vocabulary and sampling across languages/domains.
-- Why A is wrong: It moves attention to a neighboring control instead of making tokenizer coverage testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making tokenizer coverage testable in the scenario.
-- Why D is wrong: It keeps English-only tokenization for multilingual requirements in control instead of adding a measurable tokenizer coverage decision point.
+- Explanation: Tokenizer coverage is the missing control in this scenario. The right answer makes it explicit so the system can balance vocabulary and sampling across languages/domains.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether tokenizer coverage fixed the failure.
+- Why C is wrong: It keeps English-only tokenization for multilingual requirements in control instead of adding a measurable tokenizer coverage decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making tokenizer coverage testable in the scenario.
 
-### Q69: A logistics planning team sees data quality failures tied to MinHash/LSH. The team has been using all-pairs comparison; the next change needs to make MinHash/LSH explicit. Which action best addresses the problem?
+### Q9: A logistics planning team passes the happy-path demo for a model-data preparation pipeline, but the failure is tied to MinHash/LSH. The safer design is the one that can remove near duplicates at corpus scale. Which change should be made before release?
 - ID: genl-hf-data-preparation-026
 - Domain: Data Preparation
 - Topic: MinHash/LSH; genai_llms_professional
 - Difficulty: hard
-- A. Prioritize PII redaction before validating the failure signal around MinHash/LSH.
-- B. Bundle MinHash/LSH, contamination checks, and prompt changes into one release with one aggregate score.
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and contamination checks changes together with one aggregate score.
+- B. Increase model capacity or context length while leaving MinHash/LSH implicit.
 - C. Use MinHash/LSH as the control boundary and require the system to remove near duplicates at corpus scale.
-- D. Keep all-pairs comparison as the primary release control and record only final outputs.
+- D. Prioritize PII redaction even though the observed failure is around MinHash/LSH.
 - Answer: C
-- Explanation: The scenario is about MinHash/LSH. The strongest answer fixes the failing layer directly: remove near duplicates at corpus scale.
-- Why A is wrong: It moves attention to a neighboring control instead of making MinHash/LSH testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether MinHash/LSH fixed or caused the failure.
-- Why D is wrong: It keeps all-pairs comparison in control instead of adding a measurable MinHash/LSH decision point.
-
-### Q70: A public-sector casework team has a production-readiness review for a model-data preparation pipeline. The review is focused on PII redaction, because the system must combine regex, NER, classifiers, and manual review for sensitive data. Which implementation path is most appropriate?
-- ID: genl-hf-data-preparation-027
-- Domain: Data Preparation
-- Topic: PII redaction; genai_llms_professional
-- Difficulty: hard
-- A. Prioritize MinHash/LSH before validating the failure signal around PII redaction.
-- B. Bundle PII redaction, contamination checks, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated PII redaction check.
-- D. Add a release gate for PII redaction: combine regex, NER, classifiers, and manual review for sensitive data.
-- Answer: D
-- Explanation: The scenario is about PII redaction. The strongest answer fixes the failing layer directly: combine regex, NER, classifiers, and manual review for sensitive data.
-- Why A is wrong: It moves attention to a neighboring control instead of making PII redaction testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether PII redaction fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the PII redaction gate until after users are exposed.
-
-### Q71: A cybersecurity response team is comparing two release designs for a model-data preparation pipeline. One design centers on using eval sets as training examples; the other adds a measurable contamination checks step. Which design is more appropriate for production?
-- ID: genl-hf-data-preparation-028
-- Domain: Data Preparation
-- Topic: contamination checks; genai_llms_professional
-- Difficulty: expert
-- A. Change the design around contamination checks so the system can remove benchmark/test overlaps from training data.
-- B. Bundle contamination checks, quality filtering, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated contamination checks check.
-- D. Use quality filtering as the main gate even though reviewers are asking for contamination checks evidence.
-- Answer: A
-- Explanation: The scenario is about contamination checks. The strongest answer fixes the failing layer directly: remove benchmark/test overlaps from training data.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether contamination checks fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the contamination checks gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making contamination checks testable in the scenario.
-
-### Q72: A pharmaceutical research team has a production-readiness review for a model-data preparation pipeline. The review is focused on quality filtering, because the system must score content by language, duplication, toxicity, and usefulness. Which design is the best first change?
-- ID: genl-hf-data-preparation-029
-- Domain: Data Preparation
-- Topic: quality filtering; genai_llms_professional
-- Difficulty: medium
-- A. Keep bigger model to rescue bad data as the primary release control and record only final outputs.
-- B. Make quality filtering explicit in the workflow: score content by language, duplication, toxicity, and usefulness.
-- C. Wait for production incidents before adding a dedicated quality filtering check.
-- D. Use tokenizer coverage as the main gate even though reviewers are asking for quality filtering evidence.
-- Answer: B
-- Explanation: The scenario is about quality filtering. The strongest answer fixes the failing layer directly: score content by language, duplication, toxicity, and usefulness.
-- Why A is wrong: It keeps bigger model to rescue bad data in control instead of adding a measurable quality filtering decision point.
-- Why C is wrong: Waiting for incidents postpones the quality filtering gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making quality filtering testable in the scenario.
-
-### Q73: A telecom network operations team is preparing a model-data preparation pipeline for release. The current design relies on English-only tokenization for multilingual requirements, but the release gate needs to balance vocabulary and sampling across languages/domains. Which action best fits the requirement?
-- ID: genl-hf-data-preparation-030
-- Domain: Data Preparation
-- Topic: tokenizer coverage; genai_llms_professional
-- Difficulty: hard
-- A. Use contamination checks as the main gate even though reviewers are asking for tokenizer coverage evidence.
-- B. Keep English-only tokenization for multilingual requirements as the primary release control and record only final outputs.
-- C. Prioritize quality filtering before validating the failure signal around tokenizer coverage.
-- D. Use tokenizer coverage as the control boundary and require the system to balance vocabulary and sampling across languages/domains.
-- Answer: D
-- Explanation: The scenario is about tokenizer coverage. The strongest answer fixes the failing layer directly: balance vocabulary and sampling across languages/domains.
-- Why A is wrong: It moves attention to a neighboring control instead of making tokenizer coverage testable in the scenario.
-- Why B is wrong: It keeps English-only tokenization for multilingual requirements in control instead of adding a measurable tokenizer coverage decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making tokenizer coverage testable in the scenario.
-
-### Q74: A bank fraud team is comparing two release designs for a model-data preparation pipeline. One design centers on all-pairs comparison; the other adds a measurable MinHash/LSH step. Which design is more appropriate for production?
-- ID: genl-hf-data-preparation-031
-- Domain: Data Preparation
-- Topic: MinHash/LSH; genai_llms_professional
-- Difficulty: hard
-- A. Prioritize quality filtering before validating the failure signal around MinHash/LSH.
-- B. Bundle MinHash/LSH, tokenizer coverage, and prompt changes into one release with one aggregate score.
-- C. Add a release gate for MinHash/LSH: remove near duplicates at corpus scale.
-- D. Keep all-pairs comparison as the primary release control and record only final outputs.
-- Answer: C
-- Explanation: The scenario is about MinHash/LSH. The strongest answer fixes the failing layer directly: remove near duplicates at corpus scale.
-- Why A is wrong: It moves attention to a neighboring control instead of making MinHash/LSH testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether MinHash/LSH fixed or caused the failure.
-- Why D is wrong: It keeps all-pairs comparison in control instead of adding a measurable MinHash/LSH decision point.
-
-### Q75: A hospital operations team is reviewing a model-data preparation pipeline before rollout. The main risk is PII redaction: the system must combine regex, NER, classifiers, and manual review for sensitive data. Which option keeps the decision at the right layer?
-- ID: genl-hf-data-preparation-032
-- Domain: Data Preparation
-- Topic: PII redaction; genai_llms_professional
-- Difficulty: medium
-- A. Wait for production incidents before adding a dedicated PII redaction check.
-- B. Change the design around PII redaction so the system can combine regex, NER, classifiers, and manual review for sensitive data.
-- C. Prioritize MinHash/LSH before validating the failure signal around PII redaction.
-- D. Bundle PII redaction, contamination checks, and prompt changes into one release with one aggregate score.
-- Answer: B
-- Explanation: The scenario is about PII redaction. The strongest answer fixes the failing layer directly: combine regex, NER, classifiers, and manual review for sensitive data.
-- Why A is wrong: Waiting for incidents postpones the PII redaction gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making PII redaction testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether PII redaction fixed or caused the failure.
-
-### Q76: A global retailer is comparing two release designs for a model-data preparation pipeline. One design centers on using eval sets as training examples; the other adds a measurable contamination checks step. Which design is more appropriate for production?
-- ID: genl-hf-data-preparation-033
-- Domain: Data Preparation
-- Topic: contamination checks; genai_llms_professional
-- Difficulty: hard
-- A. Make contamination checks explicit in the workflow: remove benchmark/test overlaps from training data.
-- B. Bundle contamination checks, MinHash/LSH, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated contamination checks check.
-- D. Use MinHash/LSH as the main gate even though reviewers are asking for contamination checks evidence.
-- Answer: A
-- Explanation: The scenario is about contamination checks. The strongest answer fixes the failing layer directly: remove benchmark/test overlaps from training data.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether contamination checks fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the contamination checks gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making contamination checks testable in the scenario.
-
-### Q77: An automotive support team is preparing a model-data preparation pipeline for release. The current design relies on bigger model to rescue bad data, but the release gate needs to score content by language, duplication, toxicity, and usefulness. Which choice addresses the root cause?
-- ID: genl-hf-data-preparation-034
-- Domain: Data Preparation
-- Topic: quality filtering; genai_llms_professional
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated quality filtering check.
-- B. Use tokenizer coverage as the main gate even though reviewers are asking for quality filtering evidence.
-- C. Keep bigger model to rescue bad data as the primary release control and record only final outputs.
-- D. Use quality filtering as the control boundary and require the system to score content by language, duplication, toxicity, and usefulness.
-- Answer: D
-- Explanation: The scenario is about quality filtering. The strongest answer fixes the failing layer directly: score content by language, duplication, toxicity, and usefulness.
-- Why A is wrong: Waiting for incidents postpones the quality filtering gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making quality filtering testable in the scenario.
-- Why C is wrong: It keeps bigger model to rescue bad data in control instead of adding a measurable quality filtering decision point.
-
-### Q78: A semiconductor design group has a production-readiness review for a model-data preparation pipeline. The review is focused on tokenizer coverage, because the system must balance vocabulary and sampling across languages/domains. Which architecture keeps the boundary cleanest?
-- ID: genl-hf-data-preparation-035
-- Domain: Data Preparation
-- Topic: tokenizer coverage; genai_llms_professional
-- Difficulty: expert
-- A. Keep English-only tokenization for multilingual requirements as the primary release control and record only final outputs.
-- B. Prioritize PII redaction before validating the failure signal around tokenizer coverage.
-- C. Add a release gate for tokenizer coverage: balance vocabulary and sampling across languages/domains.
-- D. Use MinHash/LSH as the main gate even though reviewers are asking for tokenizer coverage evidence.
-- Answer: C
-- Explanation: The scenario is about tokenizer coverage. The strongest answer fixes the failing layer directly: balance vocabulary and sampling across languages/domains.
-- Why A is wrong: It keeps English-only tokenization for multilingual requirements in control instead of adding a measurable tokenizer coverage decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making tokenizer coverage testable in the scenario.
-- Why D is wrong: It moves attention to a neighboring control instead of making tokenizer coverage testable in the scenario.
-
-### Q79: A manufacturing quality team is preparing a model-data preparation pipeline for release. The current design relies on all-pairs comparison, but the release gate needs to remove near duplicates at corpus scale. Which design is the best first change?
-- ID: genl-hf-data-preparation-036
-- Domain: Data Preparation
-- Topic: MinHash/LSH; genai_llms_professional
-- Difficulty: medium
-- A. Bundle MinHash/LSH, quality filtering, and prompt changes into one release with one aggregate score.
-- B. Change the design around MinHash/LSH so the system can remove near duplicates at corpus scale.
-- C. Keep all-pairs comparison as the primary release control and record only final outputs.
-- D. Prioritize tokenizer coverage before validating the failure signal around MinHash/LSH.
-- Answer: B
-- Explanation: The scenario is about MinHash/LSH. The strongest answer fixes the failing layer directly: remove near duplicates at corpus scale.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether MinHash/LSH fixed or caused the failure.
-- Why C is wrong: It keeps all-pairs comparison in control instead of adding a measurable MinHash/LSH decision point.
+- Explanation: MinHash/LSH is the missing control in this scenario. The right answer makes it explicit so the system can remove near duplicates at corpus scale.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether MinHash/LSH fixed the failure.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
 - Why D is wrong: It moves attention to a neighboring control instead of making MinHash/LSH testable in the scenario.
 
-### Q80: A telecom network operations team is preparing a model-data preparation pipeline for release. The current design relies on keyword-only filtering, but the release gate needs to combine regex, NER, classifiers, and manual review for sensitive data. Which architecture keeps the boundary cleanest?
-- ID: genl-hf-data-preparation-037
-- Domain: Data Preparation
-- Topic: PII redaction; genai_llms_professional
-- Difficulty: hard
-- A. Make PII redaction explicit in the workflow: combine regex, NER, classifiers, and manual review for sensitive data.
-- B. Prioritize tokenizer coverage before validating the failure signal around PII redaction.
-- C. Bundle PII redaction, quality filtering, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated PII redaction check.
-- Answer: A
-- Explanation: The scenario is about PII redaction. The strongest answer fixes the failing layer directly: combine regex, NER, classifiers, and manual review for sensitive data.
-- Why B is wrong: It moves attention to a neighboring control instead of making PII redaction testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether PII redaction fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the PII redaction gate until after users are exposed.
-
-### Q81: A pharmaceutical research team is comparing two release designs for a model-data preparation pipeline. One design centers on using eval sets as training examples; the other adds a measurable contamination checks step. Which design is more appropriate for production?
-- ID: genl-hf-data-preparation-038
-- Domain: Data Preparation
-- Topic: contamination checks; genai_llms_professional
-- Difficulty: expert
-- A. Bundle contamination checks, PII redaction, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated contamination checks check.
-- C. Use PII redaction as the main gate even though reviewers are asking for contamination checks evidence.
-- D. Use contamination checks as the control boundary and require the system to remove benchmark/test overlaps from training data.
-- Answer: D
-- Explanation: The scenario is about contamination checks. The strongest answer fixes the failing layer directly: remove benchmark/test overlaps from training data.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether contamination checks fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the contamination checks gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making contamination checks testable in the scenario.
-
-### Q82: A bank fraud team has a production-readiness review for a model-data preparation pipeline. The review is focused on quality filtering, because the system must score content by language, duplication, toxicity, and usefulness. Which control should be added before rollout?
-- ID: genl-hf-data-preparation-039
-- Domain: Data Preparation
-- Topic: quality filtering; genai_llms_professional
-- Difficulty: medium
-- A. Use MinHash/LSH as the main gate even though reviewers are asking for quality filtering evidence.
-- B. Keep bigger model to rescue bad data as the primary release control and record only final outputs.
-- C. Add a release gate for quality filtering: score content by language, duplication, toxicity, and usefulness.
-- D. Wait for production incidents before adding a dedicated quality filtering check.
-- Answer: C
-- Explanation: The scenario is about quality filtering. The strongest answer fixes the failing layer directly: score content by language, duplication, toxicity, and usefulness.
-- Why A is wrong: It moves attention to a neighboring control instead of making quality filtering testable in the scenario.
-- Why B is wrong: It keeps bigger model to rescue bad data in control instead of adding a measurable quality filtering decision point.
-- Why D is wrong: Waiting for incidents postpones the quality filtering gate until after users are exposed.
-
-### Q83: A manufacturing quality team has a production-readiness review for a model-data preparation pipeline. The review is focused on tokenizer coverage, because the system must balance vocabulary and sampling across languages/domains. Which choice addresses the root cause?
-- ID: genl-hf-data-preparation-040
-- Domain: Data Preparation
-- Topic: tokenizer coverage; genai_llms_professional
-- Difficulty: hard
-- A. Keep English-only tokenization for multilingual requirements as the primary release control and record only final outputs.
-- B. Prioritize MinHash/LSH before validating the failure signal around tokenizer coverage.
-- C. Change the design around tokenizer coverage so the system can balance vocabulary and sampling across languages/domains.
-- D. Use PII redaction as the main gate even though reviewers are asking for tokenizer coverage evidence.
-- Answer: C
-- Explanation: The scenario is about tokenizer coverage. The strongest answer fixes the failing layer directly: balance vocabulary and sampling across languages/domains.
-- Why A is wrong: It keeps English-only tokenization for multilingual requirements in control instead of adding a measurable tokenizer coverage decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making tokenizer coverage testable in the scenario.
-- Why D is wrong: It moves attention to a neighboring control instead of making tokenizer coverage testable in the scenario.
-
-### Q84: A manufacturing quality team is comparing two release designs for a model-data preparation pipeline. One design centers on all-pairs comparison; the other adds a measurable MinHash/LSH step. Which design is more appropriate for production?
-- ID: genl-hf-data-preparation-041
-- Domain: Data Preparation
-- Topic: MinHash/LSH; genai_llms_professional
-- Difficulty: hard
-- A. Keep all-pairs comparison as the primary release control and record only final outputs.
-- B. Prioritize tokenizer coverage before validating the failure signal around MinHash/LSH.
-- C. Bundle MinHash/LSH, quality filtering, and prompt changes into one release with one aggregate score.
-- D. Make MinHash/LSH explicit in the workflow: remove near duplicates at corpus scale.
-- Answer: D
-- Explanation: The scenario is about MinHash/LSH. The strongest answer fixes the failing layer directly: remove near duplicates at corpus scale.
-- Why A is wrong: It keeps all-pairs comparison in control instead of adding a measurable MinHash/LSH decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making MinHash/LSH testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether MinHash/LSH fixed or caused the failure.
-
-### Q85: A semiconductor design group is comparing two release designs for a production model-serving rollout. One design centers on training frameworks as serving endpoints; the other adds a measurable NIM step. Which design is more appropriate for production?
+### Q10: During an architecture review, a semiconductor design group finds that training frameworks as serving endpoints is being used as the shortcut, but it does not give the team a reliable way to package optimized models as production microservice APIs. What is the best next step?
 - ID: genl-hf-model-deployment-001
 - Domain: Model Deployment
 - Topic: NIM; genai_llms_professional
 - Difficulty: hard
-- A. Prioritize blue-green deployment before validating the failure signal around NIM.
-- B. Bundle NIM, model registry, and prompt changes into one release with one aggregate score.
+- Scope: nvidia_specific
+- Source: generated
+- A. Prioritize blue-green deployment even though the observed failure is around NIM.
+- B. Release prompt, model, and model registry changes together with one aggregate score.
 - C. Make NIM explicit in the workflow: package optimized models as production microservice APIs.
-- D. Keep training frameworks as serving endpoints as the primary release control and record only final outputs.
+- D. Keep training frameworks as serving endpoints as the main control and add a dashboard for final outputs.
 - Answer: C
-- Explanation: The scenario is about NIM. The strongest answer fixes the failing layer directly: package optimized models as production microservice APIs.
+- Explanation: NIM is the missing control in this scenario. The right answer makes it explicit so the system can package optimized models as production microservice APIs.
 - Why A is wrong: It moves attention to a neighboring control instead of making NIM testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether NIM fixed or caused the failure.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether NIM fixed the failure.
 - Why D is wrong: It keeps training frameworks as serving endpoints in control instead of adding a measurable NIM decision point.
 
-### Q86: A public-sector casework team sees release rollback risk tied to Triton ensembles. The team has been using one custom script per model path; the next change needs to make Triton ensembles explicit. Which action best addresses the problem?
+### Q11: A public-sector casework team passes the happy-path demo for a production model-serving rollout, but one custom script per model path is being used as the shortcut, but it does not give the team a reliable way to compose preprocessing, model execution, and postprocessing. Which change should be made before release?
 - ID: genl-hf-model-deployment-002
 - Domain: Model Deployment
 - Topic: Triton ensembles; genai_llms_professional
 - Difficulty: easy
-- A. Wait for production incidents before adding a dedicated Triton ensembles check.
+- Scope: nvidia_specific
+- Source: generated
+- A. Increase model capacity or context length while leaving Triton ensembles implicit.
 - B. Use Triton ensembles as the control boundary and require the system to compose preprocessing, model execution, and postprocessing.
-- C. Prioritize NIM Operator before validating the failure signal around Triton ensembles.
-- D. Bundle Triton ensembles, NIM, and prompt changes into one release with one aggregate score.
+- C. Prioritize NIM Operator even though the observed failure is around Triton ensembles.
+- D. Release prompt, model, and NIM changes together with one aggregate score.
 - Answer: B
-- Explanation: The scenario is about Triton ensembles. The strongest answer fixes the failing layer directly: compose preprocessing, model execution, and postprocessing.
-- Why A is wrong: Waiting for incidents postpones the Triton ensembles gate until after users are exposed.
+- Explanation: Triton ensembles is the missing control in this scenario. The right answer makes it explicit so the system can compose preprocessing, model execution, and postprocessing.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
 - Why C is wrong: It moves attention to a neighboring control instead of making Triton ensembles testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether Triton ensembles fixed or caused the failure.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether Triton ensembles fixed the failure.
 
-### Q87: A logistics planning team is reviewing a production model-serving rollout before rollout. The main risk is NIM Operator: the system must manage NIM lifecycle on Kubernetes. Which option keeps the decision at the right layer?
+### Q12: A logistics planning team is choosing between a design centered on the inference microservice itself and one that makes NIM Operator explicit for a production model-serving rollout. Which design should win?
 - ID: genl-hf-model-deployment-003
 - Domain: Model Deployment
 - Topic: NIM Operator; genai_llms_professional
 - Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
 - A. Add a release gate for NIM Operator: manage NIM lifecycle on Kubernetes.
-- B. Bundle NIM Operator, Triton ensembles, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated NIM Operator check.
+- B. Release prompt, model, and Triton ensembles changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving NIM Operator implicit.
 - D. Use Triton ensembles as the main gate even though reviewers are asking for NIM Operator evidence.
 - Answer: A
-- Explanation: The scenario is about NIM Operator. The strongest answer fixes the failing layer directly: manage NIM lifecycle on Kubernetes.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether NIM Operator fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the NIM Operator gate until after users are exposed.
+- Explanation: NIM Operator is the missing control in this scenario. The right answer makes it explicit so the system can manage NIM lifecycle on Kubernetes.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether NIM Operator fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
 - Why D is wrong: It moves attention to a neighboring control instead of making NIM Operator testable in the scenario.
 
-### Q88: A pharmaceutical research team has a production-readiness review for a production model-serving rollout. The review is focused on blue-green deployment, because the system must switch traffic with rollback-ready versions. Which design is the best first change?
+### Q13: A pharmaceutical research team is triaging a failed pilot for a production model-serving rollout. The current design still relies on restarting pods without quality gates. Reviewers need a control that can switch traffic with rollback-ready versions. Which control addresses the root cause?
 - ID: genl-hf-model-deployment-004
 - Domain: Model Deployment
 - Topic: blue-green deployment; genai_llms_professional
 - Difficulty: expert
-- A. Wait for production incidents before adding a dedicated blue-green deployment check.
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving blue-green deployment implicit.
 - B. Use model registry as the main gate even though reviewers are asking for blue-green deployment evidence.
-- C. Keep restarting pods without quality gates as the primary release control and record only final outputs.
+- C. Move the check to post-release monitoring without changing the release path for blue-green deployment.
 - D. Change the design around blue-green deployment so the system can switch traffic with rollback-ready versions.
 - Answer: D
-- Explanation: The scenario is about blue-green deployment. The strongest answer fixes the failing layer directly: switch traffic with rollback-ready versions.
-- Why A is wrong: Waiting for incidents postpones the blue-green deployment gate until after users are exposed.
+- Explanation: Blue-green deployment is the missing control in this scenario. The right answer makes it explicit so the system can switch traffic with rollback-ready versions.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
 - Why B is wrong: It moves attention to a neighboring control instead of making blue-green deployment testable in the scenario.
-- Why C is wrong: It keeps restarting pods without quality gates in control instead of adding a measurable blue-green deployment decision point.
+- Why C is wrong: Monitoring is useful, but this scenario needs blue-green deployment controlled before release or execution.
 
-### Q89: A cybersecurity response team is preparing a production model-serving rollout for release. The current design relies on registry as runtime inference, but the release gate needs to pin artifacts, versions, eval reports, and approvals. Which architecture keeps the boundary cleanest?
+### Q14: A cybersecurity response team is building a production model-serving rollout. The failure is tied to model registry. The safer design is the one that can pin artifacts, versions, eval reports, and approvals. Which architecture keeps the boundary cleanest?
 - ID: genl-hf-model-deployment-005
 - Domain: Model Deployment
 - Topic: model registry; genai_llms_professional
 - Difficulty: medium
-- A. Keep registry as runtime inference as the primary release control and record only final outputs.
-- B. Prioritize NIM Operator before validating the failure signal around model registry.
-- C. Make model registry explicit in the workflow: pin artifacts, versions, eval reports, and approvals.
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for model registry.
+- B. Keep registry as runtime inference as the main control and add a dashboard for final outputs.
+- C. Instrument and enforce model registry; the system must pin artifacts, versions, eval reports, and approvals.
 - D. Use blue-green deployment as the main gate even though reviewers are asking for model registry evidence.
 - Answer: C
-- Explanation: The scenario is about model registry. The strongest answer fixes the failing layer directly: pin artifacts, versions, eval reports, and approvals.
-- Why A is wrong: It keeps registry as runtime inference in control instead of adding a measurable model registry decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making model registry testable in the scenario.
+- Explanation: Model registry is the missing control in this scenario. The right answer makes it explicit so the system can pin artifacts, versions, eval reports, and approvals.
+- Why A is wrong: Monitoring is useful, but this scenario needs model registry controlled before release or execution.
+- Why B is wrong: It keeps registry as runtime inference in control instead of adding a measurable model registry decision point.
 - Why D is wrong: It moves attention to a neighboring control instead of making model registry testable in the scenario.
 
-### Q90: A hospital operations team sees release rollback risk tied to NIM. The team has been using training frameworks as serving endpoints; the next change needs to make NIM explicit. Which action best addresses the problem?
+### Q15: A hospital operations team passes the happy-path demo for a production model-serving rollout, but the team can reproduce the failure around training frameworks as serving endpoints. The missing control is the one that can package optimized models as production microservice APIs. Which change should be made before release?
 - ID: genl-hf-model-deployment-006
 - Domain: Model Deployment
 - Topic: NIM; genai_llms_professional
 - Difficulty: hard
-- A. Bundle NIM, blue-green deployment, and prompt changes into one release with one aggregate score.
-- B. Use NIM as the control boundary and require the system to package optimized models as production microservice APIs.
-- C. Keep training frameworks as serving endpoints as the primary release control and record only final outputs.
-- D. Prioritize model registry before validating the failure signal around NIM.
+- Scope: nvidia_specific
+- Source: generated
+- A. Prioritize model registry even though the observed failure is around NIM.
+- B. Put NIM before rollout so the team can package optimized models as production microservice APIs.
+- C. Move the check to post-release monitoring without changing the release path for NIM.
+- D. Keep training frameworks as serving endpoints as the main control and add a dashboard for final outputs.
 - Answer: B
-- Explanation: The scenario is about NIM. The strongest answer fixes the failing layer directly: package optimized models as production microservice APIs.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether NIM fixed or caused the failure.
-- Why C is wrong: It keeps training frameworks as serving endpoints in control instead of adding a measurable NIM decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making NIM testable in the scenario.
+- Explanation: NIM is the missing control in this scenario. The right answer makes it explicit so the system can package optimized models as production microservice APIs.
+- Why A is wrong: It moves attention to a neighboring control instead of making NIM testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs NIM controlled before release or execution.
+- Why D is wrong: It keeps training frameworks as serving endpoints in control instead of adding a measurable NIM decision point.
 
-### Q91: A logistics planning team is preparing a production model-serving rollout for release. The current design relies on one custom script per model path, but the release gate needs to compose preprocessing, model execution, and postprocessing. Which architecture keeps the boundary cleanest?
+### Q16: A logistics planning team is building a production model-serving rollout. The failure is tied to Triton ensembles. The safer design is the one that can compose preprocessing, model execution, and postprocessing. Which architecture keeps the boundary cleanest?
 - ID: genl-hf-model-deployment-007
 - Domain: Model Deployment
 - Topic: Triton ensembles; genai_llms_professional
 - Difficulty: hard
-- A. Add a release gate for Triton ensembles: compose preprocessing, model execution, and postprocessing.
-- B. Prioritize blue-green deployment before validating the failure signal around Triton ensembles.
-- C. Bundle Triton ensembles, model registry, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated Triton ensembles check.
+- Scope: nvidia_specific
+- Source: generated
+- A. Make Triton ensembles explicit in the workflow: compose preprocessing, model execution, and postprocessing.
+- B. Keep one custom script per model path as the main control and add a dashboard for final outputs.
+- C. Prioritize blue-green deployment even though the observed failure is around Triton ensembles.
+- D. Release prompt, model, and model registry changes together with one aggregate score.
 - Answer: A
-- Explanation: The scenario is about Triton ensembles. The strongest answer fixes the failing layer directly: compose preprocessing, model execution, and postprocessing.
-- Why B is wrong: It moves attention to a neighboring control instead of making Triton ensembles testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether Triton ensembles fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the Triton ensembles gate until after users are exposed.
+- Explanation: Triton ensembles is the missing control in this scenario. The right answer makes it explicit so the system can compose preprocessing, model execution, and postprocessing.
+- Why B is wrong: It keeps one custom script per model path in control instead of adding a measurable Triton ensembles decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making Triton ensembles testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether Triton ensembles fixed the failure.
 
-### Q92: An automotive support team sees release rollback risk tied to NIM Operator. The team has been using the inference microservice itself; the next change needs to make NIM Operator explicit. Which action best addresses the problem?
+### Q17: An automotive support team passes the happy-path demo for a production model-serving rollout, but the current design still relies on the inference microservice itself. Reviewers need a control that can manage NIM lifecycle on Kubernetes. Which change should be made before release?
 - ID: genl-hf-model-deployment-008
 - Domain: Model Deployment
 - Topic: NIM Operator; genai_llms_professional
 - Difficulty: expert
-- A. Bundle NIM Operator, NIM, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated NIM Operator check.
-- C. Use NIM as the main gate even though reviewers are asking for NIM Operator evidence.
-- D. Change the design around NIM Operator so the system can manage NIM lifecycle on Kubernetes.
+- Scope: nvidia_specific
+- Source: generated
+- A. Prioritize Triton ensembles even though the observed failure is around NIM Operator.
+- B. Release prompt, model, and NIM changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving NIM Operator implicit.
+- D. Use NIM Operator as the control boundary and require the system to manage NIM lifecycle on Kubernetes.
 - Answer: D
-- Explanation: The scenario is about NIM Operator. The strongest answer fixes the failing layer directly: manage NIM lifecycle on Kubernetes.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether NIM Operator fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the NIM Operator gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making NIM Operator testable in the scenario.
+- Explanation: NIM Operator is the missing control in this scenario. The right answer makes it explicit so the system can manage NIM lifecycle on Kubernetes.
+- Why A is wrong: It moves attention to a neighboring control instead of making NIM Operator testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether NIM Operator fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
 
-### Q93: A cybersecurity response team sees release rollback risk tied to blue-green deployment. The team has been using restarting pods without quality gates; the next change needs to make blue-green deployment explicit. Which action best addresses the problem?
+### Q18: A cybersecurity response team passes the happy-path demo for a production model-serving rollout, but the current design still relies on restarting pods without quality gates. Reviewers need a control that can switch traffic with rollback-ready versions. Which change should be made before release?
 - ID: genl-hf-model-deployment-009
 - Domain: Model Deployment
 - Topic: blue-green deployment; genai_llms_professional
 - Difficulty: medium
-- A. Use NIM as the main gate even though reviewers are asking for blue-green deployment evidence.
-- B. Keep restarting pods without quality gates as the primary release control and record only final outputs.
-- C. Make blue-green deployment explicit in the workflow: switch traffic with rollback-ready versions.
-- D. Wait for production incidents before adding a dedicated blue-green deployment check.
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving blue-green deployment implicit.
+- B. Use NIM as the main gate even though reviewers are asking for blue-green deployment evidence.
+- C. Add a release gate for blue-green deployment: switch traffic with rollback-ready versions.
+- D. Release prompt, model, and NIM changes together with one aggregate score.
 - Answer: C
-- Explanation: The scenario is about blue-green deployment. The strongest answer fixes the failing layer directly: switch traffic with rollback-ready versions.
-- Why A is wrong: It moves attention to a neighboring control instead of making blue-green deployment testable in the scenario.
-- Why B is wrong: It keeps restarting pods without quality gates in control instead of adding a measurable blue-green deployment decision point.
-- Why D is wrong: Waiting for incidents postpones the blue-green deployment gate until after users are exposed.
+- Explanation: Blue-green deployment is the missing control in this scenario. The right answer makes it explicit so the system can switch traffic with rollback-ready versions.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making blue-green deployment testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether blue-green deployment fixed the failure.
 
-### Q94: A public-sector casework team is reviewing a production model-serving rollout before rollout. The main risk is model registry: the system must pin artifacts, versions, eval reports, and approvals. Which option keeps the decision at the right layer?
+### Q19: A public-sector casework team is choosing between a design centered on registry as runtime inference and one that makes model registry explicit for a production model-serving rollout. Which design should win?
 - ID: genl-hf-model-deployment-010
 - Domain: Model Deployment
 - Topic: model registry; genai_llms_professional
 - Difficulty: hard
-- A. Use model registry as the control boundary and require the system to pin artifacts, versions, eval reports, and approvals.
-- B. Use NIM Operator as the main gate even though reviewers are asking for model registry evidence.
-- C. Keep registry as runtime inference as the primary release control and record only final outputs.
-- D. Prioritize blue-green deployment before validating the failure signal around model registry.
+- Scope: general_concept
+- Source: generated
+- A. Change the design around model registry so the system can pin artifacts, versions, eval reports, and approvals.
+- B. Increase model capacity or context length while leaving model registry implicit.
+- C. Use NIM Operator as the main gate even though reviewers are asking for model registry evidence.
+- D. Move the check to post-release monitoring without changing the release path for model registry.
 - Answer: A
-- Explanation: The scenario is about model registry. The strongest answer fixes the failing layer directly: pin artifacts, versions, eval reports, and approvals.
-- Why B is wrong: It moves attention to a neighboring control instead of making model registry testable in the scenario.
-- Why C is wrong: It keeps registry as runtime inference in control instead of adding a measurable model registry decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making model registry testable in the scenario.
+- Explanation: Model registry is the missing control in this scenario. The right answer makes it explicit so the system can pin artifacts, versions, eval reports, and approvals.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making model registry testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs model registry controlled before release or execution.
 
-### Q95: An insurance claims group is reviewing a production model-serving rollout before rollout. The main risk is NIM: the system must package optimized models as production microservice APIs. Which option keeps the decision at the right layer?
+### Q20: An insurance claims group is choosing between a design centered on training frameworks as serving endpoints and one that makes NIM explicit for a production model-serving rollout. Which design should win?
 - ID: genl-hf-model-deployment-011
 - Domain: Model Deployment
 - Topic: NIM; genai_llms_professional
 - Difficulty: hard
-- A. Bundle NIM, Triton ensembles, and prompt changes into one release with one aggregate score.
-- B. Add a release gate for NIM: package optimized models as production microservice APIs.
-- C. Keep training frameworks as serving endpoints as the primary release control and record only final outputs.
-- D. Prioritize NIM Operator before validating the failure signal around NIM.
+- Scope: nvidia_specific
+- Source: generated
+- A. Keep training frameworks as serving endpoints as the main control and add a dashboard for final outputs.
+- B. Instrument and enforce NIM; the system must package optimized models as production microservice APIs.
+- C. Use Triton ensembles as the main gate even though reviewers are asking for NIM evidence.
+- D. Move the check to post-release monitoring without changing the release path for NIM.
 - Answer: B
-- Explanation: The scenario is about NIM. The strongest answer fixes the failing layer directly: package optimized models as production microservice APIs.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether NIM fixed or caused the failure.
-- Why C is wrong: It keeps training frameworks as serving endpoints in control instead of adding a measurable NIM decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making NIM testable in the scenario.
+- Explanation: NIM is the missing control in this scenario. The right answer makes it explicit so the system can package optimized models as production microservice APIs.
+- Why A is wrong: It keeps training frameworks as serving endpoints in control instead of adding a measurable NIM decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making NIM testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs NIM controlled before release or execution.
 
-### Q96: A global retailer is reviewing a production model-serving rollout before rollout. The main risk is Triton ensembles: the system must compose preprocessing, model execution, and postprocessing. Which option keeps the decision at the right layer?
+### Q21: A global retailer is choosing between a design centered on one custom script per model path and one that makes Triton ensembles explicit for a production model-serving rollout. Which design should win?
 - ID: genl-hf-model-deployment-012
 - Domain: Model Deployment
 - Topic: Triton ensembles; genai_llms_professional
 - Difficulty: medium
-- A. Bundle Triton ensembles, model registry, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated Triton ensembles check.
-- C. Change the design around Triton ensembles so the system can compose preprocessing, model execution, and postprocessing.
-- D. Prioritize blue-green deployment before validating the failure signal around Triton ensembles.
+- Scope: nvidia_specific
+- Source: generated
+- A. Keep one custom script per model path as the main control and add a dashboard for final outputs.
+- B. Prioritize blue-green deployment even though the observed failure is around Triton ensembles.
+- C. Put Triton ensembles before rollout so the team can compose preprocessing, model execution, and postprocessing.
+- D. Move the check to post-release monitoring without changing the release path for Triton ensembles.
 - Answer: C
-- Explanation: The scenario is about Triton ensembles. The strongest answer fixes the failing layer directly: compose preprocessing, model execution, and postprocessing.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether Triton ensembles fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the Triton ensembles gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making Triton ensembles testable in the scenario.
+- Explanation: Triton ensembles is the missing control in this scenario. The right answer makes it explicit so the system can compose preprocessing, model execution, and postprocessing.
+- Why A is wrong: It keeps one custom script per model path in control instead of adding a measurable Triton ensembles decision point.
+- Why B is wrong: It moves attention to a neighboring control instead of making Triton ensembles testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs Triton ensembles controlled before release or execution.
 
-### Q97: A manufacturing quality team is comparing two release designs for a production model-serving rollout. One design centers on the inference microservice itself; the other adds a measurable NIM Operator step. Which design is more appropriate for production?
+### Q22: During an architecture review, a manufacturing quality team finds that the team can reproduce the failure around the inference microservice itself. The missing control is the one that can manage NIM lifecycle on Kubernetes. What is the best next step?
 - ID: genl-hf-model-deployment-013
 - Domain: Model Deployment
 - Topic: NIM Operator; genai_llms_professional
 - Difficulty: hard
-- A. Bundle NIM Operator, blue-green deployment, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated NIM Operator check.
-- C. Use blue-green deployment as the main gate even though reviewers are asking for NIM Operator evidence.
+- Scope: nvidia_specific
+- Source: generated
+- A. Keep the inference microservice itself as the main control and add a dashboard for final outputs.
+- B. Prioritize model registry even though the observed failure is around NIM Operator.
+- C. Release prompt, model, and blue-green deployment changes together with one aggregate score.
 - D. Make NIM Operator explicit in the workflow: manage NIM lifecycle on Kubernetes.
 - Answer: D
-- Explanation: The scenario is about NIM Operator. The strongest answer fixes the failing layer directly: manage NIM lifecycle on Kubernetes.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether NIM Operator fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the NIM Operator gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making NIM Operator testable in the scenario.
+- Explanation: NIM Operator is the missing control in this scenario. The right answer makes it explicit so the system can manage NIM lifecycle on Kubernetes.
+- Why A is wrong: It keeps the inference microservice itself in control instead of adding a measurable NIM Operator decision point.
+- Why B is wrong: It moves attention to a neighboring control instead of making NIM Operator testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether NIM Operator fixed the failure.
 
-### Q98: A semiconductor design group is preparing a production model-serving rollout for release. The current design relies on restarting pods without quality gates, but the release gate needs to switch traffic with rollback-ready versions. Which architecture keeps the boundary cleanest?
+### Q23: A semiconductor design group is building a production model-serving rollout. The failure is tied to blue-green deployment. The safer design is the one that can switch traffic with rollback-ready versions. Which architecture keeps the boundary cleanest?
 - ID: genl-hf-model-deployment-014
 - Domain: Model Deployment
 - Topic: blue-green deployment; genai_llms_professional
 - Difficulty: hard
+- Scope: general_concept
+- Source: generated
 - A. Use blue-green deployment as the control boundary and require the system to switch traffic with rollback-ready versions.
-- B. Wait for production incidents before adding a dedicated blue-green deployment check.
-- C. Use NIM Operator as the main gate even though reviewers are asking for blue-green deployment evidence.
-- D. Keep restarting pods without quality gates as the primary release control and record only final outputs.
+- B. Prioritize model registry even though the observed failure is around blue-green deployment.
+- C. Release prompt, model, and NIM Operator changes together with one aggregate score.
+- D. Increase model capacity or context length while leaving blue-green deployment implicit.
 - Answer: A
-- Explanation: The scenario is about blue-green deployment. The strongest answer fixes the failing layer directly: switch traffic with rollback-ready versions.
-- Why B is wrong: Waiting for incidents postpones the blue-green deployment gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making blue-green deployment testable in the scenario.
-- Why D is wrong: It keeps restarting pods without quality gates in control instead of adding a measurable blue-green deployment decision point.
+- Explanation: Blue-green deployment is the missing control in this scenario. The right answer makes it explicit so the system can switch traffic with rollback-ready versions.
+- Why B is wrong: It moves attention to a neighboring control instead of making blue-green deployment testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether blue-green deployment fixed the failure.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
 
-### Q99: An insurance claims group is preparing a production model-serving rollout for release. The current design relies on registry as runtime inference, but the release gate needs to pin artifacts, versions, eval reports, and approvals. Which implementation path is most appropriate?
+### Q24: An insurance claims group is building a production model-serving rollout. The current design still relies on registry as runtime inference. Reviewers need a control that can pin artifacts, versions, eval reports, and approvals. Which implementation path is most appropriate?
 - ID: genl-hf-model-deployment-015
 - Domain: Model Deployment
 - Topic: model registry; genai_llms_professional
 - Difficulty: expert
-- A. Prioritize Triton ensembles before validating the failure signal around model registry.
+- Scope: general_concept
+- Source: generated
+- A. Use NIM as the main gate even though reviewers are asking for model registry evidence.
 - B. Add a release gate for model registry: pin artifacts, versions, eval reports, and approvals.
-- C. Use NIM as the main gate even though reviewers are asking for model registry evidence.
-- D. Keep registry as runtime inference as the primary release control and record only final outputs.
+- C. Release prompt, model, and NIM changes together with one aggregate score.
+- D. Increase model capacity or context length while leaving model registry implicit.
 - Answer: B
-- Explanation: The scenario is about model registry. The strongest answer fixes the failing layer directly: pin artifacts, versions, eval reports, and approvals.
+- Explanation: Model registry is the missing control in this scenario. The right answer makes it explicit so the system can pin artifacts, versions, eval reports, and approvals.
 - Why A is wrong: It moves attention to a neighboring control instead of making model registry testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making model registry testable in the scenario.
-- Why D is wrong: It keeps registry as runtime inference in control instead of adding a measurable model registry decision point.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether model registry fixed the failure.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
 
-### Q100: A logistics planning team has a production-readiness review for a production model-serving rollout. The review is focused on NIM, because the system must package optimized models as production microservice APIs. Which architecture keeps the boundary cleanest?
+### Q25: A logistics planning team is triaging a failed pilot for a production model-serving rollout. The team can reproduce the failure around training frameworks as serving endpoints. The missing control is the one that can package optimized models as production microservice APIs. Which control addresses the root cause?
 - ID: genl-hf-model-deployment-016
 - Domain: Model Deployment
 - Topic: NIM; genai_llms_professional
 - Difficulty: medium
-- A. Prioritize Triton ensembles before validating the failure signal around NIM.
-- B. Bundle NIM, NIM Operator, and prompt changes into one release with one aggregate score.
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NIM Operator as the main gate even though reviewers are asking for NIM evidence.
+- B. Move the check to post-release monitoring without changing the release path for NIM.
 - C. Change the design around NIM so the system can package optimized models as production microservice APIs.
-- D. Keep training frameworks as serving endpoints as the primary release control and record only final outputs.
+- D. Increase model capacity or context length while leaving NIM implicit.
 - Answer: C
-- Explanation: The scenario is about NIM. The strongest answer fixes the failing layer directly: package optimized models as production microservice APIs.
+- Explanation: NIM is the missing control in this scenario. The right answer makes it explicit so the system can package optimized models as production microservice APIs.
 - Why A is wrong: It moves attention to a neighboring control instead of making NIM testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether NIM fixed or caused the failure.
-- Why D is wrong: It keeps training frameworks as serving endpoints in control instead of adding a measurable NIM decision point.
+- Why B is wrong: Monitoring is useful, but this scenario needs NIM controlled before release or execution.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q26: During an architecture review, a hospital operations team finds that the team can reproduce the failure around one custom script per model path. The missing control is the one that can compose preprocessing, model execution, and postprocessing. What is the best next step?
+- ID: genl-hf-model-deployment-017
+- Domain: Model Deployment
+- Topic: Triton ensembles; genai_llms_professional
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NIM as the main gate even though reviewers are asking for Triton ensembles evidence.
+- B. Move the check to post-release monitoring without changing the release path for Triton ensembles.
+- C. Keep one custom script per model path as the main control and add a dashboard for final outputs.
+- D. Instrument and enforce Triton ensembles; the system must compose preprocessing, model execution, and postprocessing.
+- Answer: D
+- Explanation: Triton ensembles is the missing control in this scenario. The right answer makes it explicit so the system can compose preprocessing, model execution, and postprocessing.
+- Why A is wrong: It moves attention to a neighboring control instead of making Triton ensembles testable in the scenario.
+- Why B is wrong: Monitoring is useful, but this scenario needs Triton ensembles controlled before release or execution.
+- Why C is wrong: It keeps one custom script per model path in control instead of adding a measurable Triton ensembles decision point.
+
+### Q27: A cybersecurity response team is building a production model-serving rollout. The team can reproduce the failure around the inference microservice itself. The missing control is the one that can manage NIM lifecycle on Kubernetes. Which architecture keeps the boundary cleanest?
+- ID: genl-hf-model-deployment-018
+- Domain: Model Deployment
+- Topic: NIM Operator; genai_llms_professional
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. Put NIM Operator before rollout so the team can manage NIM lifecycle on Kubernetes.
+- B. Move the check to post-release monitoring without changing the release path for NIM Operator.
+- C. Keep the inference microservice itself as the main control and add a dashboard for final outputs.
+- D. Prioritize blue-green deployment even though the observed failure is around NIM Operator.
+- Answer: A
+- Explanation: NIM Operator is the missing control in this scenario. The right answer makes it explicit so the system can manage NIM lifecycle on Kubernetes.
+- Why B is wrong: Monitoring is useful, but this scenario needs NIM Operator controlled before release or execution.
+- Why C is wrong: It keeps the inference microservice itself in control instead of adding a measurable NIM Operator decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making NIM Operator testable in the scenario.
+
+### Q28: During an architecture review, an automotive support team finds that the team can reproduce the failure around restarting pods without quality gates. The missing control is the one that can switch traffic with rollback-ready versions. What is the best next step?
+- ID: genl-hf-model-deployment-019
+- Domain: Model Deployment
+- Topic: blue-green deployment; genai_llms_professional
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and Triton ensembles changes together with one aggregate score.
+- B. Make blue-green deployment explicit in the workflow: switch traffic with rollback-ready versions.
+- C. Keep restarting pods without quality gates as the main control and add a dashboard for final outputs.
+- D. Prioritize NIM even though the observed failure is around blue-green deployment.
+- Answer: B
+- Explanation: Blue-green deployment is the missing control in this scenario. The right answer makes it explicit so the system can switch traffic with rollback-ready versions.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether blue-green deployment fixed the failure.
+- Why C is wrong: It keeps restarting pods without quality gates in control instead of adding a measurable blue-green deployment decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making blue-green deployment testable in the scenario.
+
+### Q29: During an architecture review, a global retailer finds that the failure is tied to model registry. The safer design is the one that can pin artifacts, versions, eval reports, and approvals. What is the best next step?
+- ID: genl-hf-model-deployment-020
+- Domain: Model Deployment
+- Topic: model registry; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving model registry implicit.
+- B. Use model registry as the control boundary and require the system to pin artifacts, versions, eval reports, and approvals.
+- C. Prioritize NIM even though the observed failure is around model registry.
+- D. Release prompt, model, and Triton ensembles changes together with one aggregate score.
+- Answer: B
+- Explanation: Model registry is the missing control in this scenario. The right answer makes it explicit so the system can pin artifacts, versions, eval reports, and approvals.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making model registry testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether model registry fixed the failure.
+
+### Q30: A telecom network operations team is triaging a failed pilot for a production model-serving rollout. The failure is tied to NIM. The safer design is the one that can package optimized models as production microservice APIs. Which control addresses the root cause?
+- ID: genl-hf-model-deployment-021
+- Domain: Model Deployment
+- Topic: NIM; genai_llms_professional
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Add a release gate for NIM: package optimized models as production microservice APIs.
+- B. Release prompt, model, and NIM Operator changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving NIM implicit.
+- D. Use NIM Operator as the main gate even though reviewers are asking for NIM evidence.
+- Answer: A
+- Explanation: NIM is the missing control in this scenario. The right answer makes it explicit so the system can package optimized models as production microservice APIs.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether NIM fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making NIM testable in the scenario.
+
+### Q31: A pharmaceutical research team is building a production model-serving rollout. One custom script per model path is being used as the shortcut, but it does not give the team a reliable way to compose preprocessing, model execution, and postprocessing. Which choice addresses the root cause?
+- ID: genl-hf-model-deployment-022
+- Domain: Model Deployment
+- Topic: Triton ensembles; genai_llms_professional
+- Difficulty: easy
+- Scope: nvidia_specific
+- Source: generated
+- A. Increase model capacity or context length while leaving Triton ensembles implicit.
+- B. Use blue-green deployment as the main gate even though reviewers are asking for Triton ensembles evidence.
+- C. Move the check to post-release monitoring without changing the release path for Triton ensembles.
+- D. Change the design around Triton ensembles so the system can compose preprocessing, model execution, and postprocessing.
+- Answer: D
+- Explanation: Triton ensembles is the missing control in this scenario. The right answer makes it explicit so the system can compose preprocessing, model execution, and postprocessing.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making Triton ensembles testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs Triton ensembles controlled before release or execution.
+
+### Q32: During an architecture review, a bank fraud team finds that the failure is tied to NIM Operator. The safer design is the one that can manage NIM lifecycle on Kubernetes. What is the best next step?
+- ID: genl-hf-model-deployment-023
+- Domain: Model Deployment
+- Topic: NIM Operator; genai_llms_professional
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for NIM Operator.
+- B. Keep the inference microservice itself as the main control and add a dashboard for final outputs.
+- C. Instrument and enforce NIM Operator; the system must manage NIM lifecycle on Kubernetes.
+- D. Use model registry as the main gate even though reviewers are asking for NIM Operator evidence.
+- Answer: C
+- Explanation: NIM Operator is the missing control in this scenario. The right answer makes it explicit so the system can manage NIM lifecycle on Kubernetes.
+- Why A is wrong: Monitoring is useful, but this scenario needs NIM Operator controlled before release or execution.
+- Why B is wrong: It keeps the inference microservice itself in control instead of adding a measurable NIM Operator decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making NIM Operator testable in the scenario.
+
+### Q33: A manufacturing quality team is triaging a failed pilot for a production model-serving rollout. The current design still relies on restarting pods without quality gates. Reviewers need a control that can switch traffic with rollback-ready versions. Which control addresses the root cause?
+- ID: genl-hf-model-deployment-024
+- Domain: Model Deployment
+- Topic: blue-green deployment; genai_llms_professional
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Prioritize NIM Operator even though the observed failure is around blue-green deployment.
+- B. Put blue-green deployment before rollout so the team can switch traffic with rollback-ready versions.
+- C. Move the check to post-release monitoring without changing the release path for blue-green deployment.
+- D. Keep restarting pods without quality gates as the main control and add a dashboard for final outputs.
+- Answer: B
+- Explanation: Blue-green deployment is the missing control in this scenario. The right answer makes it explicit so the system can switch traffic with rollback-ready versions.
+- Why A is wrong: It moves attention to a neighboring control instead of making blue-green deployment testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs blue-green deployment controlled before release or execution.
+- Why D is wrong: It keeps restarting pods without quality gates in control instead of adding a measurable blue-green deployment decision point.
+
+### Q34: A telecom network operations team passes the happy-path demo for a production model-serving rollout, but the team can reproduce the failure around registry as runtime inference. The missing control is the one that can pin artifacts, versions, eval reports, and approvals. Which change should be made before release?
+- ID: genl-hf-model-deployment-025
+- Domain: Model Deployment
+- Topic: model registry; genai_llms_professional
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Make model registry explicit in the workflow: pin artifacts, versions, eval reports, and approvals.
+- B. Keep registry as runtime inference as the main control and add a dashboard for final outputs.
+- C. Prioritize NIM even though the observed failure is around model registry.
+- D. Release prompt, model, and Triton ensembles changes together with one aggregate score.
+- Answer: A
+- Explanation: Model registry is the missing control in this scenario. The right answer makes it explicit so the system can pin artifacts, versions, eval reports, and approvals.
+- Why B is wrong: It keeps registry as runtime inference in control instead of adding a measurable model registry decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making model registry testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether model registry fixed the failure.
+
+### Q35: A pharmaceutical research team is choosing between a design centered on training frameworks as serving endpoints and one that makes NIM explicit for a production model-serving rollout. Which design should win?
+- ID: genl-hf-model-deployment-026
+- Domain: Model Deployment
+- Topic: NIM; genai_llms_professional
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Prioritize NIM Operator even though the observed failure is around NIM.
+- B. Release prompt, model, and Triton ensembles changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving NIM implicit.
+- D. Use NIM as the control boundary and require the system to package optimized models as production microservice APIs.
+- Answer: D
+- Explanation: NIM is the missing control in this scenario. The right answer makes it explicit so the system can package optimized models as production microservice APIs.
+- Why A is wrong: It moves attention to a neighboring control instead of making NIM testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether NIM fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q36: During an architecture review, a global retailer finds that the failure appears when the system keeps semantic similarity as the workaround. The release needs a design step that can measure next-token prediction quality for language modeling. What is the best next step?
+- ID: genl-hf-evaluation-001
+- Domain: Evaluation
+- Topic: perplexity; genai_llms_professional
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and human evaluation changes together with one aggregate score.
+- B. Make perplexity explicit in the workflow: measure next-token prediction quality for language modeling.
+- C. Keep semantic similarity as the main control and add a dashboard for final outputs.
+- D. Prioritize data contamination even though the observed failure is around perplexity.
+- Answer: B
+- Explanation: Perplexity is the missing control in this scenario. The right answer makes it explicit so the system can measure next-token prediction quality for language modeling.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether perplexity fixed the failure.
+- Why C is wrong: It keeps semantic similarity in control instead of adding a measurable perplexity decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making perplexity testable in the scenario.
+
+### Q37: A pharmaceutical research team is choosing between a design centered on choosing the winner from one noisy run and one that makes bootstrap confidence explicit for an LLM evaluation release gate. Which design should win?
+- ID: genl-hf-evaluation-002
+- Domain: Evaluation
+- Topic: bootstrap confidence; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and data contamination changes together with one aggregate score.
+- B. Increase model capacity or context length while leaving bootstrap confidence implicit.
+- C. Use bootstrap confidence as the control boundary and require the system to estimate score uncertainty for small differences.
+- D. Prioritize human evaluation even though the observed failure is around bootstrap confidence.
+- Answer: C
+- Explanation: Bootstrap confidence is the missing control in this scenario. The right answer makes it explicit so the system can estimate score uncertainty for small differences.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether bootstrap confidence fixed the failure.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making bootstrap confidence testable in the scenario.
+
+### Q38: A cybersecurity response team passes the happy-path demo for an LLM evaluation release gate, but the failure is tied to task metrics. The safer design is the one that can use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task. Which change should be made before release?
+- ID: genl-hf-evaluation-003
+- Domain: Evaluation
+- Topic: task metrics; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and human evaluation changes together with one aggregate score.
+- B. Increase model capacity or context length while leaving task metrics implicit.
+- C. Use human evaluation as the main gate even though reviewers are asking for task metrics evidence.
+- D. Add a release gate for task metrics: use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- Answer: D
+- Explanation: Task metrics is the missing control in this scenario. The right answer makes it explicit so the system can use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether task metrics fixed the failure.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making task metrics testable in the scenario.
+
+### Q39: During an architecture review, a manufacturing quality team finds that the failure is tied to data contamination. The safer design is the one that can prevent train/test overlap and benchmark leakage. What is the best next step?
+- ID: genl-hf-evaluation-004
+- Domain: Evaluation
+- Topic: data contamination; genai_llms_professional
+- Difficulty: easy
+- Scope: general_concept
+- Source: generated
+- A. Change the design around data contamination so the system can prevent train/test overlap and benchmark leakage.
+- B. Increase model capacity or context length while leaving data contamination implicit.
+- C. Use perplexity as the main gate even though reviewers are asking for data contamination evidence.
+- D. Move the check to post-release monitoring without changing the release path for data contamination.
+- Answer: A
+- Explanation: Data contamination is the missing control in this scenario. The right answer makes it explicit so the system can prevent train/test overlap and benchmark leakage.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making data contamination testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs data contamination controlled before release or execution.
+
+### Q40: A telecom network operations team is triaging a failed pilot for an LLM evaluation release gate. The current design still relies on automatic metrics alone. Reviewers need a control that can judge nuance, safety, helpfulness, and high-stakes acceptability. Which control addresses the root cause?
+- ID: genl-hf-evaluation-005
+- Domain: Evaluation
+- Topic: human evaluation; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Keep automatic metrics alone as the main control and add a dashboard for final outputs.
+- B. Instrument and enforce human evaluation; the system must judge nuance, safety, helpfulness, and high-stakes acceptability.
+- C. Use task metrics as the main gate even though reviewers are asking for human evaluation evidence.
+- D. Move the check to post-release monitoring without changing the release path for human evaluation.
+- Answer: B
+- Explanation: Human evaluation is the missing control in this scenario. The right answer makes it explicit so the system can judge nuance, safety, helpfulness, and high-stakes acceptability.
+- Why A is wrong: It keeps automatic metrics alone in control instead of adding a measurable human evaluation decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making human evaluation testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs human evaluation controlled before release or execution.
+
+### Q41: A pharmaceutical research team is choosing between a design centered on semantic similarity and one that makes perplexity explicit for an LLM evaluation release gate. Which design should win?
+- ID: genl-hf-evaluation-006
+- Domain: Evaluation
+- Topic: perplexity; genai_llms_professional
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Keep semantic similarity as the main control and add a dashboard for final outputs.
+- B. Prioritize human evaluation even though the observed failure is around perplexity.
+- C. Put perplexity before rollout so the team can measure next-token prediction quality for language modeling.
+- D. Move the check to post-release monitoring without changing the release path for perplexity.
+- Answer: C
+- Explanation: Perplexity is the missing control in this scenario. The right answer makes it explicit so the system can measure next-token prediction quality for language modeling.
+- Why A is wrong: It keeps semantic similarity in control instead of adding a measurable perplexity decision point.
+- Why B is wrong: It moves attention to a neighboring control instead of making perplexity testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs perplexity controlled before release or execution.
+
+### Q42: A cybersecurity response team passes the happy-path demo for an LLM evaluation release gate, but the failure appears when the system keeps choosing the winner from one noisy run as the workaround. The release needs a design step that can estimate score uncertainty for small differences. Which change should be made before release?
+- ID: genl-hf-evaluation-007
+- Domain: Evaluation
+- Topic: bootstrap confidence; genai_llms_professional
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Keep choosing the winner from one noisy run as the main control and add a dashboard for final outputs.
+- B. Prioritize perplexity even though the observed failure is around bootstrap confidence.
+- C. Release prompt, model, and task metrics changes together with one aggregate score.
+- D. Make bootstrap confidence explicit in the workflow: estimate score uncertainty for small differences.
+- Answer: D
+- Explanation: Bootstrap confidence is the missing control in this scenario. The right answer makes it explicit so the system can estimate score uncertainty for small differences.
+- Why A is wrong: It keeps choosing the winner from one noisy run in control instead of adding a measurable bootstrap confidence decision point.
+- Why B is wrong: It moves attention to a neighboring control instead of making bootstrap confidence testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether bootstrap confidence fixed the failure.
+
+### Q43: A manufacturing quality team is triaging a failed pilot for an LLM evaluation release gate. The failure is tied to task metrics. The safer design is the one that can use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task. Which control addresses the root cause?
+- ID: genl-hf-evaluation-008
+- Domain: Evaluation
+- Topic: task metrics; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Use task metrics as the control boundary and require the system to use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- B. Prioritize human evaluation even though the observed failure is around task metrics.
+- C. Release prompt, model, and data contamination changes together with one aggregate score.
+- D. Increase model capacity or context length while leaving task metrics implicit.
+- Answer: A
+- Explanation: Task metrics is the missing control in this scenario. The right answer makes it explicit so the system can use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- Why B is wrong: It moves attention to a neighboring control instead of making task metrics testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether task metrics fixed the failure.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q44: A telecom network operations team passes the happy-path demo for an LLM evaluation release gate, but the team can reproduce the failure around post-hoc score interpretation only. The missing control is the one that can prevent train/test overlap and benchmark leakage. Which change should be made before release?
+- ID: genl-hf-evaluation-009
+- Domain: Evaluation
+- Topic: data contamination; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Use human evaluation as the main gate even though reviewers are asking for data contamination evidence.
+- B. Add a release gate for data contamination: prevent train/test overlap and benchmark leakage.
+- C. Release prompt, model, and human evaluation changes together with one aggregate score.
+- D. Increase model capacity or context length while leaving data contamination implicit.
+- Answer: B
+- Explanation: Data contamination is the missing control in this scenario. The right answer makes it explicit so the system can prevent train/test overlap and benchmark leakage.
+- Why A is wrong: It moves attention to a neighboring control instead of making data contamination testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether data contamination fixed the failure.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q45: An automotive support team passes the happy-path demo for an LLM evaluation release gate, but the failure appears when the system keeps automatic metrics alone as the workaround. The release needs a design step that can judge nuance, safety, helpfulness, and high-stakes acceptability. Which change should be made before release?
+- ID: genl-hf-evaluation-010
+- Domain: Evaluation
+- Topic: human evaluation; genai_llms_professional
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving human evaluation implicit.
+- B. Use data contamination as the main gate even though reviewers are asking for human evaluation evidence.
+- C. Move the check to post-release monitoring without changing the release path for human evaluation.
+- D. Change the design around human evaluation so the system can judge nuance, safety, helpfulness, and high-stakes acceptability.
+- Answer: D
+- Explanation: Human evaluation is the missing control in this scenario. The right answer makes it explicit so the system can judge nuance, safety, helpfulness, and high-stakes acceptability.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making human evaluation testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs human evaluation controlled before release or execution.
+
+### Q46: During an architecture review, a manufacturing quality team finds that semantic similarity is being used as the shortcut, but it does not give the team a reliable way to measure next-token prediction quality for language modeling. What is the best next step?
+- ID: genl-hf-evaluation-011
+- Domain: Evaluation
+- Topic: perplexity; genai_llms_professional
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for perplexity.
+- B. Keep semantic similarity as the main control and add a dashboard for final outputs.
+- C. Instrument and enforce perplexity; the system must measure next-token prediction quality for language modeling.
+- D. Use bootstrap confidence as the main gate even though reviewers are asking for perplexity evidence.
+- Answer: C
+- Explanation: Perplexity is the missing control in this scenario. The right answer makes it explicit so the system can measure next-token prediction quality for language modeling.
+- Why A is wrong: Monitoring is useful, but this scenario needs perplexity controlled before release or execution.
+- Why B is wrong: It keeps semantic similarity in control instead of adding a measurable perplexity decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making perplexity testable in the scenario.
+
+### Q47: A semiconductor design group is triaging a failed pilot for an LLM evaluation release gate. The team can reproduce the failure around choosing the winner from one noisy run. The missing control is the one that can estimate score uncertainty for small differences. Which control addresses the root cause?
+- ID: genl-hf-evaluation-012
+- Domain: Evaluation
+- Topic: bootstrap confidence; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Prioritize perplexity even though the observed failure is around bootstrap confidence.
+- B. Put bootstrap confidence before rollout so the team can estimate score uncertainty for small differences.
+- C. Move the check to post-release monitoring without changing the release path for bootstrap confidence.
+- D. Keep choosing the winner from one noisy run as the main control and add a dashboard for final outputs.
+- Answer: B
+- Explanation: Bootstrap confidence is the missing control in this scenario. The right answer makes it explicit so the system can estimate score uncertainty for small differences.
+- Why A is wrong: It moves attention to a neighboring control instead of making bootstrap confidence testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs bootstrap confidence controlled before release or execution.
+- Why D is wrong: It keeps choosing the winner from one noisy run in control instead of adding a measurable bootstrap confidence decision point.
+
+### Q48: An automotive support team is choosing between a design centered on one metric for all tasks and one that makes task metrics explicit for an LLM evaluation release gate. Which design should win?
+- ID: genl-hf-evaluation-013
+- Domain: Evaluation
+- Topic: task metrics; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Make task metrics explicit in the workflow: use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- B. Keep one metric for all tasks as the main control and add a dashboard for final outputs.
+- C. Prioritize bootstrap confidence even though the observed failure is around task metrics.
+- D. Release prompt, model, and perplexity changes together with one aggregate score.
+- Answer: A
+- Explanation: Task metrics is the missing control in this scenario. The right answer makes it explicit so the system can use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- Why B is wrong: It keeps one metric for all tasks in control instead of adding a measurable task metrics decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making task metrics testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether task metrics fixed the failure.
+
+### Q49: During an architecture review, a telecom network operations team finds that the failure is tied to data contamination. The safer design is the one that can prevent train/test overlap and benchmark leakage. What is the best next step?
+- ID: genl-hf-evaluation-014
+- Domain: Evaluation
+- Topic: data contamination; genai_llms_professional
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Prioritize task metrics even though the observed failure is around data contamination.
+- B. Release prompt, model, and human evaluation changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving data contamination implicit.
+- D. Use data contamination as the control boundary and require the system to prevent train/test overlap and benchmark leakage.
+- Answer: D
+- Explanation: Data contamination is the missing control in this scenario. The right answer makes it explicit so the system can prevent train/test overlap and benchmark leakage.
+- Why A is wrong: It moves attention to a neighboring control instead of making data contamination testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether data contamination fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q50: A hospital operations team is building an LLM evaluation release gate. The failure is tied to human evaluation. The safer design is the one that can judge nuance, safety, helpfulness, and high-stakes acceptability. Which choice addresses the root cause?
+- ID: genl-hf-evaluation-015
+- Domain: Evaluation
+- Topic: human evaluation; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving human evaluation implicit.
+- B. Use data contamination as the main gate even though reviewers are asking for human evaluation evidence.
+- C. Add a release gate for human evaluation: judge nuance, safety, helpfulness, and high-stakes acceptability.
+- D. Release prompt, model, and data contamination changes together with one aggregate score.
+- Answer: C
+- Explanation: Human evaluation is the missing control in this scenario. The right answer makes it explicit so the system can judge nuance, safety, helpfulness, and high-stakes acceptability.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making human evaluation testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether human evaluation fixed the failure.
+
+### Q51: A semiconductor design group passes the happy-path demo for an LLM evaluation release gate, but the team can reproduce the failure around semantic similarity. The missing control is the one that can measure next-token prediction quality for language modeling. Which change should be made before release?
+- ID: genl-hf-evaluation-016
+- Domain: Evaluation
+- Topic: perplexity; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for perplexity.
+- B. Change the design around perplexity so the system can measure next-token prediction quality for language modeling.
+- C. Increase model capacity or context length while leaving perplexity implicit.
+- D. Use task metrics as the main gate even though reviewers are asking for perplexity evidence.
+- Answer: B
+- Explanation: Perplexity is the missing control in this scenario. The right answer makes it explicit so the system can measure next-token prediction quality for language modeling.
+- Why A is wrong: Monitoring is useful, but this scenario needs perplexity controlled before release or execution.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making perplexity testable in the scenario.
+
+### Q52: An automotive support team is choosing between a design centered on choosing the winner from one noisy run and one that makes bootstrap confidence explicit for an LLM evaluation release gate. Which design should win?
+- ID: genl-hf-evaluation-017
+- Domain: Evaluation
+- Topic: bootstrap confidence; genai_llms_professional
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Instrument and enforce bootstrap confidence; the system must estimate score uncertainty for small differences.
+- B. Use data contamination as the main gate even though reviewers are asking for bootstrap confidence evidence.
+- C. Move the check to post-release monitoring without changing the release path for bootstrap confidence.
+- D. Keep choosing the winner from one noisy run as the main control and add a dashboard for final outputs.
+- Answer: A
+- Explanation: Bootstrap confidence is the missing control in this scenario. The right answer makes it explicit so the system can estimate score uncertainty for small differences.
+- Why B is wrong: It moves attention to a neighboring control instead of making bootstrap confidence testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs bootstrap confidence controlled before release or execution.
+- Why D is wrong: It keeps choosing the winner from one noisy run in control instead of adding a measurable bootstrap confidence decision point.
+
+### Q53: A global retailer passes the happy-path demo for an LLM evaluation release gate, but the failure appears when the system keeps one metric for all tasks as the workaround. The release needs a design step that can use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task. Which change should be made before release?
+- ID: genl-hf-evaluation-018
+- Domain: Evaluation
+- Topic: task metrics; genai_llms_professional
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for task metrics.
+- B. Keep one metric for all tasks as the main control and add a dashboard for final outputs.
+- C. Prioritize perplexity even though the observed failure is around task metrics.
+- D. Put task metrics before rollout so the team can use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- Answer: D
+- Explanation: Task metrics is the missing control in this scenario. The right answer makes it explicit so the system can use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- Why A is wrong: Monitoring is useful, but this scenario needs task metrics controlled before release or execution.
+- Why B is wrong: It keeps one metric for all tasks in control instead of adding a measurable task metrics decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making task metrics testable in the scenario.
+
+### Q54: A manufacturing quality team passes the happy-path demo for an LLM evaluation release gate, but the failure appears when the system keeps post-hoc score interpretation only as the workaround. The release needs a design step that can prevent train/test overlap and benchmark leakage. Which change should be made before release?
+- ID: genl-hf-evaluation-019
+- Domain: Evaluation
+- Topic: data contamination; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Prioritize bootstrap confidence even though the observed failure is around data contamination.
+- B. Release prompt, model, and perplexity changes together with one aggregate score.
+- C. Make data contamination explicit in the workflow: prevent train/test overlap and benchmark leakage.
+- D. Keep post-hoc score interpretation only as the main control and add a dashboard for final outputs.
+- Answer: C
+- Explanation: Data contamination is the missing control in this scenario. The right answer makes it explicit so the system can prevent train/test overlap and benchmark leakage.
+- Why A is wrong: It moves attention to a neighboring control instead of making data contamination testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether data contamination fixed the failure.
+- Why D is wrong: It keeps post-hoc score interpretation only in control instead of adding a measurable data contamination decision point.
+
+### Q55: A semiconductor design group is building an LLM evaluation release gate. Automatic metrics alone is being used as the shortcut, but it does not give the team a reliable way to judge nuance, safety, helpfulness, and high-stakes acceptability. Which control should be added before rollout?
+- ID: genl-hf-evaluation-020
+- Domain: Evaluation
+- Topic: human evaluation; genai_llms_professional
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and task metrics changes together with one aggregate score.
+- B. Increase model capacity or context length while leaving human evaluation implicit.
+- C. Use human evaluation as the control boundary and require the system to judge nuance, safety, helpfulness, and high-stakes acceptability.
+- D. Prioritize data contamination even though the observed failure is around human evaluation.
+- Answer: C
+- Explanation: Human evaluation is the missing control in this scenario. The right answer makes it explicit so the system can judge nuance, safety, helpfulness, and high-stakes acceptability.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether human evaluation fixed the failure.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making human evaluation testable in the scenario.
+
+### Q56: During an architecture review, a semiconductor design group finds that the failure appears when the system keeps semantic similarity as the workaround. The release needs a design step that can measure next-token prediction quality for language modeling. What is the best next step?
+- ID: genl-hf-evaluation-021
+- Domain: Evaluation
+- Topic: perplexity; genai_llms_professional
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and task metrics changes together with one aggregate score.
+- B. Increase model capacity or context length while leaving perplexity implicit.
+- C. Use task metrics as the main gate even though reviewers are asking for perplexity evidence.
+- D. Add a release gate for perplexity: measure next-token prediction quality for language modeling.
+- Answer: D
+- Explanation: Perplexity is the missing control in this scenario. The right answer makes it explicit so the system can measure next-token prediction quality for language modeling.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether perplexity fixed the failure.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making perplexity testable in the scenario.
+
+### Q57: A manufacturing quality team passes the happy-path demo for an LLM evaluation release gate, but the failure is tied to bootstrap confidence. The safer design is the one that can estimate score uncertainty for small differences. Which change should be made before release?
+- ID: genl-hf-evaluation-022
+- Domain: Evaluation
+- Topic: bootstrap confidence; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Change the design around bootstrap confidence so the system can estimate score uncertainty for small differences.
+- B. Increase model capacity or context length while leaving bootstrap confidence implicit.
+- C. Use perplexity as the main gate even though reviewers are asking for bootstrap confidence evidence.
+- D. Move the check to post-release monitoring without changing the release path for bootstrap confidence.
+- Answer: A
+- Explanation: Bootstrap confidence is the missing control in this scenario. The right answer makes it explicit so the system can estimate score uncertainty for small differences.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making bootstrap confidence testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs bootstrap confidence controlled before release or execution.
+
+### Q58: A telecom network operations team is choosing between a design centered on one metric for all tasks and one that makes task metrics explicit for an LLM evaluation release gate. Which design should win?
+- ID: genl-hf-evaluation-023
+- Domain: Evaluation
+- Topic: task metrics; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Keep one metric for all tasks as the main control and add a dashboard for final outputs.
+- B. Instrument and enforce task metrics; the system must use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- C. Use bootstrap confidence as the main gate even though reviewers are asking for task metrics evidence.
+- D. Move the check to post-release monitoring without changing the release path for task metrics.
+- Answer: B
+- Explanation: Task metrics is the missing control in this scenario. The right answer makes it explicit so the system can use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- Why A is wrong: It keeps one metric for all tasks in control instead of adding a measurable task metrics decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making task metrics testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs task metrics controlled before release or execution.
+
+### Q59: During an architecture review, an automotive support team finds that post-hoc score interpretation only is being used as the shortcut, but it does not give the team a reliable way to prevent train/test overlap and benchmark leakage. What is the best next step?
+- ID: genl-hf-evaluation-024
+- Domain: Evaluation
+- Topic: data contamination; genai_llms_professional
+- Difficulty: easy
+- Scope: general_concept
+- Source: generated
+- A. Keep post-hoc score interpretation only as the main control and add a dashboard for final outputs.
+- B. Prioritize human evaluation even though the observed failure is around data contamination.
+- C. Put data contamination before rollout so the team can prevent train/test overlap and benchmark leakage.
+- D. Move the check to post-release monitoring without changing the release path for data contamination.
+- Answer: C
+- Explanation: Data contamination is the missing control in this scenario. The right answer makes it explicit so the system can prevent train/test overlap and benchmark leakage.
+- Why A is wrong: It keeps post-hoc score interpretation only in control instead of adding a measurable data contamination decision point.
+- Why B is wrong: It moves attention to a neighboring control instead of making data contamination testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs data contamination controlled before release or execution.
+
+### Q60: During an architecture review, a bank fraud team finds that the failure appears when the system keeps automatic metrics alone as the workaround. The release needs a design step that can judge nuance, safety, helpfulness, and high-stakes acceptability. What is the best next step?
+- ID: genl-hf-evaluation-025
+- Domain: Evaluation
+- Topic: human evaluation; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Keep automatic metrics alone as the main control and add a dashboard for final outputs.
+- B. Prioritize data contamination even though the observed failure is around human evaluation.
+- C. Release prompt, model, and task metrics changes together with one aggregate score.
+- D. Make human evaluation explicit in the workflow: judge nuance, safety, helpfulness, and high-stakes acceptability.
+- Answer: D
+- Explanation: Human evaluation is the missing control in this scenario. The right answer makes it explicit so the system can judge nuance, safety, helpfulness, and high-stakes acceptability.
+- Why A is wrong: It keeps automatic metrics alone in control instead of adding a measurable human evaluation decision point.
+- Why B is wrong: It moves attention to a neighboring control instead of making human evaluation testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether human evaluation fixed the failure.
+
+### Q61: A manufacturing quality team passes the happy-path demo for an LLM evaluation release gate, but the failure is tied to perplexity. The safer design is the one that can measure next-token prediction quality for language modeling. Which change should be made before release?
+- ID: genl-hf-evaluation-026
+- Domain: Evaluation
+- Topic: perplexity; genai_llms_professional
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Use perplexity as the control boundary and require the system to measure next-token prediction quality for language modeling.
+- B. Prioritize task metrics even though the observed failure is around perplexity.
+- C. Release prompt, model, and bootstrap confidence changes together with one aggregate score.
+- D. Increase model capacity or context length while leaving perplexity implicit.
+- Answer: A
+- Explanation: Perplexity is the missing control in this scenario. The right answer makes it explicit so the system can measure next-token prediction quality for language modeling.
+- Why B is wrong: It moves attention to a neighboring control instead of making perplexity testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether perplexity fixed the failure.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q62: A logistics planning team is building an LLM evaluation release gate. The current design still relies on choosing the winner from one noisy run. Reviewers need a control that can estimate score uncertainty for small differences. Which control should be added before rollout?
+- ID: genl-hf-evaluation-027
+- Domain: Evaluation
+- Topic: bootstrap confidence; genai_llms_professional
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Use human evaluation as the main gate even though reviewers are asking for bootstrap confidence evidence.
+- B. Add a release gate for bootstrap confidence: estimate score uncertainty for small differences.
+- C. Release prompt, model, and human evaluation changes together with one aggregate score.
+- D. Increase model capacity or context length while leaving bootstrap confidence implicit.
+- Answer: B
+- Explanation: Bootstrap confidence is the missing control in this scenario. The right answer makes it explicit so the system can estimate score uncertainty for small differences.
+- Why A is wrong: It moves attention to a neighboring control instead of making bootstrap confidence testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether bootstrap confidence fixed the failure.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q63: An automotive support team passes the happy-path demo for an LLM evaluation release gate, but one metric for all tasks is being used as the shortcut, but it does not give the team a reliable way to use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task. Which change should be made before release?
+- ID: genl-hf-evaluation-028
+- Domain: Evaluation
+- Topic: task metrics; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Use perplexity as the main gate even though reviewers are asking for task metrics evidence.
+- B. Move the check to post-release monitoring without changing the release path for task metrics.
+- C. Change the design around task metrics so the system can use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- D. Increase model capacity or context length while leaving task metrics implicit.
+- Answer: C
+- Explanation: Task metrics is the missing control in this scenario. The right answer makes it explicit so the system can use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- Why A is wrong: It moves attention to a neighboring control instead of making task metrics testable in the scenario.
+- Why B is wrong: Monitoring is useful, but this scenario needs task metrics controlled before release or execution.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q64: A global retailer passes the happy-path demo for a monitored LLM service, but average latency only is being used as the shortcut, but it does not give the team a reliable way to watch tail latency, queueing, retries, and error budgets. Which change should be made before release?
+- ID: genl-hf-production-monitoring-and-reliability-001
+- Domain: Production Monitoring and Reliability
+- Topic: p95/p99 latency; genai_llms_professional
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Prioritize load shedding even though the observed failure is around p95/p99 latency.
+- B. Release prompt, model, and drift detection changes together with one aggregate score.
+- C. Make p95/p99 latency explicit in the workflow: watch tail latency, queueing, retries, and error budgets.
+- D. Keep average latency only as the main control and add a dashboard for final outputs.
+- Answer: C
+- Explanation: P95/p99 latency is the missing control in this scenario. The right answer makes it explicit so the system can watch tail latency, queueing, retries, and error budgets.
+- Why A is wrong: It moves attention to a neighboring control instead of making p95/p99 latency testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether p95/p99 latency fixed the failure.
+- Why D is wrong: It keeps average latency only in control instead of adding a measurable p95/p99 latency decision point.
+
+### Q65: A pharmaceutical research team is choosing between a design centered on full rollout before measurement and one that makes canary monitoring explicit for a monitored LLM service. Which design should win?
+- ID: genl-hf-production-monitoring-and-reliability-002
+- Domain: Production Monitoring and Reliability
+- Topic: canary monitoring; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving canary monitoring implicit.
+- B. Use canary monitoring as the control boundary and require the system to compare quality, safety, cost, and latency during rollout.
+- C. Prioritize load shedding even though the observed failure is around canary monitoring.
+- D. Release prompt, model, and drift detection changes together with one aggregate score.
+- Answer: B
+- Explanation: Canary monitoring is the missing control in this scenario. The right answer makes it explicit so the system can compare quality, safety, cost, and latency during rollout.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making canary monitoring testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether canary monitoring fixed the failure.
+
+### Q66: A bank fraud team is choosing between a design centered on silent fallback to lower quality and one that makes fallback policy explicit for a monitored LLM service. Which design should win?
+- ID: genl-hf-production-monitoring-and-reliability-003
+- Domain: Production Monitoring and Reliability
+- Topic: fallback policy; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Add a release gate for fallback policy: route around unhealthy models or tools with trace evidence.
+- B. Release prompt, model, and load shedding changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving fallback policy implicit.
+- D. Use load shedding as the main gate even though reviewers are asking for fallback policy evidence.
+- Answer: A
+- Explanation: Fallback policy is the missing control in this scenario. The right answer makes it explicit so the system can route around unhealthy models or tools with trace evidence.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether fallback policy fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making fallback policy testable in the scenario.
+
+### Q67: During an architecture review, a public-sector casework team finds that the current design still relies on GPU utilization alone. Reviewers need a control that can track input mix, retrieval hit rate, output quality, and safety events. What is the best next step?
+- ID: genl-hf-production-monitoring-and-reliability-004
+- Domain: Production Monitoring and Reliability
+- Topic: drift detection; genai_llms_professional
+- Difficulty: easy
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving drift detection implicit.
+- B. Use fallback policy as the main gate even though reviewers are asking for drift detection evidence.
+- C. Move the check to post-release monitoring without changing the release path for drift detection.
+- D. Change the design around drift detection so the system can track input mix, retrieval hit rate, output quality, and safety events.
+- Answer: D
+- Explanation: Drift detection is the missing control in this scenario. The right answer makes it explicit so the system can track input mix, retrieval hit rate, output quality, and safety events.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making drift detection testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs drift detection controlled before release or execution.
+
+### Q68: A global retailer is triaging a failed pilot for a monitored LLM service. The failure appears when the system keeps letting queues grow unbounded as the workaround. The release needs a design step that can reject or defer low-priority work under saturation. Which control addresses the root cause?
+- ID: genl-hf-production-monitoring-and-reliability-005
+- Domain: Production Monitoring and Reliability
+- Topic: load shedding; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for load shedding.
+- B. Keep letting queues grow unbounded as the main control and add a dashboard for final outputs.
+- C. Instrument and enforce load shedding; the system must reject or defer low-priority work under saturation.
+- D. Use drift detection as the main gate even though reviewers are asking for load shedding evidence.
+- Answer: C
+- Explanation: Load shedding is the missing control in this scenario. The right answer makes it explicit so the system can reject or defer low-priority work under saturation.
+- Why A is wrong: Monitoring is useful, but this scenario needs load shedding controlled before release or execution.
+- Why B is wrong: It keeps letting queues grow unbounded in control instead of adding a measurable load shedding decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making load shedding testable in the scenario.
+
+### Q69: An automotive support team is triaging a failed pilot for a monitored LLM service. The failure appears when the system keeps average latency only as the workaround. The release needs a design step that can watch tail latency, queueing, retries, and error budgets. Which control addresses the root cause?
+- ID: genl-hf-production-monitoring-and-reliability-006
+- Domain: Production Monitoring and Reliability
+- Topic: p95/p99 latency; genai_llms_professional
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Prioritize drift detection even though the observed failure is around p95/p99 latency.
+- B. Put p95/p99 latency before rollout so the team can watch tail latency, queueing, retries, and error budgets.
+- C. Move the check to post-release monitoring without changing the release path for p95/p99 latency.
+- D. Keep average latency only as the main control and add a dashboard for final outputs.
+- Answer: B
+- Explanation: P95/p99 latency is the missing control in this scenario. The right answer makes it explicit so the system can watch tail latency, queueing, retries, and error budgets.
+- Why A is wrong: It moves attention to a neighboring control instead of making p95/p99 latency testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs p95/p99 latency controlled before release or execution.
+- Why D is wrong: It keeps average latency only in control instead of adding a measurable p95/p99 latency decision point.
+
+### Q70: A semiconductor design group is choosing between a design centered on full rollout before measurement and one that makes canary monitoring explicit for a monitored LLM service. Which design should win?
+- ID: genl-hf-production-monitoring-and-reliability-007
+- Domain: Production Monitoring and Reliability
+- Topic: canary monitoring; genai_llms_professional
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Make canary monitoring explicit in the workflow: compare quality, safety, cost, and latency during rollout.
+- B. Keep full rollout before measurement as the main control and add a dashboard for final outputs.
+- C. Prioritize p95/p99 latency even though the observed failure is around canary monitoring.
+- D. Release prompt, model, and fallback policy changes together with one aggregate score.
+- Answer: A
+- Explanation: Canary monitoring is the missing control in this scenario. The right answer makes it explicit so the system can compare quality, safety, cost, and latency during rollout.
+- Why B is wrong: It keeps full rollout before measurement in control instead of adding a measurable canary monitoring decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making canary monitoring testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether canary monitoring fixed the failure.
+
+### Q71: A manufacturing quality team is choosing between a design centered on silent fallback to lower quality and one that makes fallback policy explicit for a monitored LLM service. Which design should win?
+- ID: genl-hf-production-monitoring-and-reliability-008
+- Domain: Production Monitoring and Reliability
+- Topic: fallback policy; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Prioritize load shedding even though the observed failure is around fallback policy.
+- B. Release prompt, model, and drift detection changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving fallback policy implicit.
+- D. Use fallback policy as the control boundary and require the system to route around unhealthy models or tools with trace evidence.
+- Answer: D
+- Explanation: Fallback policy is the missing control in this scenario. The right answer makes it explicit so the system can route around unhealthy models or tools with trace evidence.
+- Why A is wrong: It moves attention to a neighboring control instead of making fallback policy testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether fallback policy fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q72: During an architecture review, a logistics planning team finds that the team can reproduce the failure around GPU utilization alone. The missing control is the one that can track input mix, retrieval hit rate, output quality, and safety events. What is the best next step?
+- ID: genl-hf-production-monitoring-and-reliability-009
+- Domain: Production Monitoring and Reliability
+- Topic: drift detection; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving drift detection implicit.
+- B. Use canary monitoring as the main gate even though reviewers are asking for drift detection evidence.
+- C. Add a release gate for drift detection: track input mix, retrieval hit rate, output quality, and safety events.
+- D. Release prompt, model, and canary monitoring changes together with one aggregate score.
+- Answer: C
+- Explanation: Drift detection is the missing control in this scenario. The right answer makes it explicit so the system can track input mix, retrieval hit rate, output quality, and safety events.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making drift detection testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether drift detection fixed the failure.
+
+### Q73: An automotive support team is choosing between a design centered on letting queues grow unbounded and one that makes load shedding explicit for a monitored LLM service. Which design should win?
+- ID: genl-hf-production-monitoring-and-reliability-010
+- Domain: Production Monitoring and Reliability
+- Topic: load shedding; genai_llms_professional
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Change the design around load shedding so the system can reject or defer low-priority work under saturation.
+- B. Increase model capacity or context length while leaving load shedding implicit.
+- C. Use fallback policy as the main gate even though reviewers are asking for load shedding evidence.
+- D. Move the check to post-release monitoring without changing the release path for load shedding.
+- Answer: A
+- Explanation: Load shedding is the missing control in this scenario. The right answer makes it explicit so the system can reject or defer low-priority work under saturation.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making load shedding testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs load shedding controlled before release or execution.
+
+### Q74: During an architecture review, a manufacturing quality team finds that the failure appears when the system keeps average latency only as the workaround. The release needs a design step that can watch tail latency, queueing, retries, and error budgets. What is the best next step?
+- ID: genl-hf-production-monitoring-and-reliability-011
+- Domain: Production Monitoring and Reliability
+- Topic: p95/p99 latency; genai_llms_professional
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Keep average latency only as the main control and add a dashboard for final outputs.
+- B. Instrument and enforce p95/p99 latency; the system must watch tail latency, queueing, retries, and error budgets.
+- C. Use load shedding as the main gate even though reviewers are asking for p95/p99 latency evidence.
+- D. Move the check to post-release monitoring without changing the release path for p95/p99 latency.
+- Answer: B
+- Explanation: P95/p99 latency is the missing control in this scenario. The right answer makes it explicit so the system can watch tail latency, queueing, retries, and error budgets.
+- Why A is wrong: It keeps average latency only in control instead of adding a measurable p95/p99 latency decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making p95/p99 latency testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs p95/p99 latency controlled before release or execution.
+
+### Q75: A bank fraud team is triaging a failed pilot for a monitored LLM service. The failure is tied to canary monitoring. The safer design is the one that can compare quality, safety, cost, and latency during rollout. Which control addresses the root cause?
+- ID: genl-hf-production-monitoring-and-reliability-012
+- Domain: Production Monitoring and Reliability
+- Topic: canary monitoring; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Keep full rollout before measurement as the main control and add a dashboard for final outputs.
+- B. Prioritize p95/p99 latency even though the observed failure is around canary monitoring.
+- C. Put canary monitoring before rollout so the team can compare quality, safety, cost, and latency during rollout.
+- D. Move the check to post-release monitoring without changing the release path for canary monitoring.
+- Answer: C
+- Explanation: Canary monitoring is the missing control in this scenario. The right answer makes it explicit so the system can compare quality, safety, cost, and latency during rollout.
+- Why A is wrong: It keeps full rollout before measurement in control instead of adding a measurable canary monitoring decision point.
+- Why B is wrong: It moves attention to a neighboring control instead of making canary monitoring testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs canary monitoring controlled before release or execution.
+
+### Q76: An insurance claims group is triaging a failed pilot for a monitored LLM service. The team can reproduce the failure around silent fallback to lower quality. The missing control is the one that can route around unhealthy models or tools with trace evidence. Which control addresses the root cause?
+- ID: genl-hf-production-monitoring-and-reliability-013
+- Domain: Production Monitoring and Reliability
+- Topic: fallback policy; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Keep silent fallback to lower quality as the main control and add a dashboard for final outputs.
+- B. Prioritize canary monitoring even though the observed failure is around fallback policy.
+- C. Release prompt, model, and p95/p99 latency changes together with one aggregate score.
+- D. Make fallback policy explicit in the workflow: route around unhealthy models or tools with trace evidence.
+- Answer: D
+- Explanation: Fallback policy is the missing control in this scenario. The right answer makes it explicit so the system can route around unhealthy models or tools with trace evidence.
+- Why A is wrong: It keeps silent fallback to lower quality in control instead of adding a measurable fallback policy decision point.
+- Why B is wrong: It moves attention to a neighboring control instead of making fallback policy testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether fallback policy fixed the failure.
+
+### Q77: A logistics planning team is triaging a failed pilot for a monitored LLM service. The failure appears when the system keeps GPU utilization alone as the workaround. The release needs a design step that can track input mix, retrieval hit rate, output quality, and safety events. Which control addresses the root cause?
+- ID: genl-hf-production-monitoring-and-reliability-014
+- Domain: Production Monitoring and Reliability
+- Topic: drift detection; genai_llms_professional
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Use drift detection as the control boundary and require the system to track input mix, retrieval hit rate, output quality, and safety events.
+- B. Prioritize p95/p99 latency even though the observed failure is around drift detection.
+- C. Release prompt, model, and canary monitoring changes together with one aggregate score.
+- D. Increase model capacity or context length while leaving drift detection implicit.
+- Answer: A
+- Explanation: Drift detection is the missing control in this scenario. The right answer makes it explicit so the system can track input mix, retrieval hit rate, output quality, and safety events.
+- Why B is wrong: It moves attention to a neighboring control instead of making drift detection testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether drift detection fixed the failure.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q78: During an architecture review, a hospital operations team finds that letting queues grow unbounded is being used as the shortcut, but it does not give the team a reliable way to reject or defer low-priority work under saturation. What is the best next step?
+- ID: genl-hf-production-monitoring-and-reliability-015
+- Domain: Production Monitoring and Reliability
+- Topic: load shedding; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Use p95/p99 latency as the main gate even though reviewers are asking for load shedding evidence.
+- B. Add a release gate for load shedding: reject or defer low-priority work under saturation.
+- C. Release prompt, model, and p95/p99 latency changes together with one aggregate score.
+- D. Increase model capacity or context length while leaving load shedding implicit.
+- Answer: B
+- Explanation: Load shedding is the missing control in this scenario. The right answer makes it explicit so the system can reject or defer low-priority work under saturation.
+- Why A is wrong: It moves attention to a neighboring control instead of making load shedding testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether load shedding fixed the failure.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q79: A semiconductor design group is choosing between a design centered on average latency only and one that makes p95/p99 latency explicit for a monitored LLM service. Which design should win?
+- ID: genl-hf-production-monitoring-and-reliability-016
+- Domain: Production Monitoring and Reliability
+- Topic: p95/p99 latency; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Use drift detection as the main gate even though reviewers are asking for p95/p99 latency evidence.
+- B. Move the check to post-release monitoring without changing the release path for p95/p99 latency.
+- C. Change the design around p95/p99 latency so the system can watch tail latency, queueing, retries, and error budgets.
+- D. Increase model capacity or context length while leaving p95/p99 latency implicit.
+- Answer: C
+- Explanation: P95/p99 latency is the missing control in this scenario. The right answer makes it explicit so the system can watch tail latency, queueing, retries, and error budgets.
+- Why A is wrong: It moves attention to a neighboring control instead of making p95/p99 latency testable in the scenario.
+- Why B is wrong: Monitoring is useful, but this scenario needs p95/p99 latency controlled before release or execution.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q80: A pharmaceutical research team is triaging a failed pilot for a monitored LLM service. The current design still relies on full rollout before measurement. Reviewers need a control that can compare quality, safety, cost, and latency during rollout. Which control addresses the root cause?
+- ID: genl-hf-production-monitoring-and-reliability-017
+- Domain: Production Monitoring and Reliability
+- Topic: canary monitoring; genai_llms_professional
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Use drift detection as the main gate even though reviewers are asking for canary monitoring evidence.
+- B. Move the check to post-release monitoring without changing the release path for canary monitoring.
+- C. Keep full rollout before measurement as the main control and add a dashboard for final outputs.
+- D. Instrument and enforce canary monitoring; the system must compare quality, safety, cost, and latency during rollout.
+- Answer: D
+- Explanation: Canary monitoring is the missing control in this scenario. The right answer makes it explicit so the system can compare quality, safety, cost, and latency during rollout.
+- Why A is wrong: It moves attention to a neighboring control instead of making canary monitoring testable in the scenario.
+- Why B is wrong: Monitoring is useful, but this scenario needs canary monitoring controlled before release or execution.
+- Why C is wrong: It keeps full rollout before measurement in control instead of adding a measurable canary monitoring decision point.
+
+### Q81: A telecom network operations team is triaging a failed pilot for a monitored LLM service. The failure appears when the system keeps silent fallback to lower quality as the workaround. The release needs a design step that can route around unhealthy models or tools with trace evidence. Which control addresses the root cause?
+- ID: genl-hf-production-monitoring-and-reliability-018
+- Domain: Production Monitoring and Reliability
+- Topic: fallback policy; genai_llms_professional
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Put fallback policy before rollout so the team can route around unhealthy models or tools with trace evidence.
+- B. Move the check to post-release monitoring without changing the release path for fallback policy.
+- C. Keep silent fallback to lower quality as the main control and add a dashboard for final outputs.
+- D. Prioritize p95/p99 latency even though the observed failure is around fallback policy.
+- Answer: A
+- Explanation: Fallback policy is the missing control in this scenario. The right answer makes it explicit so the system can route around unhealthy models or tools with trace evidence.
+- Why B is wrong: Monitoring is useful, but this scenario needs fallback policy controlled before release or execution.
+- Why C is wrong: It keeps silent fallback to lower quality in control instead of adding a measurable fallback policy decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making fallback policy testable in the scenario.
+
+### Q82: A public-sector casework team is triaging a failed pilot for a monitored LLM service. The current design still relies on GPU utilization alone. Reviewers need a control that can track input mix, retrieval hit rate, output quality, and safety events. Which control addresses the root cause?
+- ID: genl-hf-production-monitoring-and-reliability-019
+- Domain: Production Monitoring and Reliability
+- Topic: drift detection; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and fallback policy changes together with one aggregate score.
+- B. Make drift detection explicit in the workflow: track input mix, retrieval hit rate, output quality, and safety events.
+- C. Keep GPU utilization alone as the main control and add a dashboard for final outputs.
+- D. Prioritize load shedding even though the observed failure is around drift detection.
+- Answer: B
+- Explanation: Drift detection is the missing control in this scenario. The right answer makes it explicit so the system can track input mix, retrieval hit rate, output quality, and safety events.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether drift detection fixed the failure.
+- Why C is wrong: It keeps GPU utilization alone in control instead of adding a measurable drift detection decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making drift detection testable in the scenario.
+
+### Q83: A cybersecurity response team is building a monitored LLM service. Letting queues grow unbounded is being used as the shortcut, but it does not give the team a reliable way to reject or defer low-priority work under saturation. Which action best fits the requirement?
+- ID: genl-hf-production-monitoring-and-reliability-020
+- Domain: Production Monitoring and Reliability
+- Topic: load shedding; genai_llms_professional
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving load shedding implicit.
+- B. Use load shedding as the control boundary and require the system to reject or defer low-priority work under saturation.
+- C. Prioritize p95/p99 latency even though the observed failure is around load shedding.
+- D. Release prompt, model, and canary monitoring changes together with one aggregate score.
+- Answer: B
+- Explanation: Load shedding is the missing control in this scenario. The right answer makes it explicit so the system can reject or defer low-priority work under saturation.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making load shedding testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether load shedding fixed the failure.
+
+### Q84: A cybersecurity response team passes the happy-path demo for a monitored LLM service, but the team can reproduce the failure around average latency only. The missing control is the one that can watch tail latency, queueing, retries, and error budgets. Which change should be made before release?
+- ID: genl-hf-production-monitoring-and-reliability-021
+- Domain: Production Monitoring and Reliability
+- Topic: p95/p99 latency; genai_llms_professional
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Add a release gate for p95/p99 latency: watch tail latency, queueing, retries, and error budgets.
+- B. Release prompt, model, and drift detection changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving p95/p99 latency implicit.
+- D. Use drift detection as the main gate even though reviewers are asking for p95/p99 latency evidence.
+- Answer: A
+- Explanation: P95/p99 latency is the missing control in this scenario. The right answer makes it explicit so the system can watch tail latency, queueing, retries, and error budgets.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether p95/p99 latency fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making p95/p99 latency testable in the scenario.
+
+### Q85: A hospital operations team is building a monitored LLM service. Full rollout before measurement is being used as the shortcut, but it does not give the team a reliable way to compare quality, safety, cost, and latency during rollout. Which choice addresses the root cause?
+- ID: genl-hf-production-monitoring-and-reliability-022
+- Domain: Production Monitoring and Reliability
+- Topic: canary monitoring; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving canary monitoring implicit.
+- B. Use p95/p99 latency as the main gate even though reviewers are asking for canary monitoring evidence.
+- C. Move the check to post-release monitoring without changing the release path for canary monitoring.
+- D. Change the design around canary monitoring so the system can compare quality, safety, cost, and latency during rollout.
+- Answer: D
+- Explanation: Canary monitoring is the missing control in this scenario. The right answer makes it explicit so the system can compare quality, safety, cost, and latency during rollout.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making canary monitoring testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs canary monitoring controlled before release or execution.
+
+### Q86: A telecom network operations team is triaging a failed pilot for a monitored LLM service. The current design still relies on silent fallback to lower quality. Reviewers need a control that can route around unhealthy models or tools with trace evidence. Which control addresses the root cause?
+- ID: genl-hf-production-monitoring-and-reliability-023
+- Domain: Production Monitoring and Reliability
+- Topic: fallback policy; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for fallback policy.
+- B. Keep silent fallback to lower quality as the main control and add a dashboard for final outputs.
+- C. Instrument and enforce fallback policy; the system must route around unhealthy models or tools with trace evidence.
+- D. Use canary monitoring as the main gate even though reviewers are asking for fallback policy evidence.
+- Answer: C
+- Explanation: Fallback policy is the missing control in this scenario. The right answer makes it explicit so the system can route around unhealthy models or tools with trace evidence.
+- Why A is wrong: Monitoring is useful, but this scenario needs fallback policy controlled before release or execution.
+- Why B is wrong: It keeps silent fallback to lower quality in control instead of adding a measurable fallback policy decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making fallback policy testable in the scenario.
+
+### Q87: A pharmaceutical research team is building a monitored LLM service. The failure is tied to drift detection. The safer design is the one that can track input mix, retrieval hit rate, output quality, and safety events. Which implementation path is most appropriate?
+- ID: genl-hf-production-monitoring-and-reliability-024
+- Domain: Production Monitoring and Reliability
+- Topic: drift detection; genai_llms_professional
+- Difficulty: easy
+- Scope: general_concept
+- Source: generated
+- A. Prioritize canary monitoring even though the observed failure is around drift detection.
+- B. Put drift detection before rollout so the team can track input mix, retrieval hit rate, output quality, and safety events.
+- C. Move the check to post-release monitoring without changing the release path for drift detection.
+- D. Keep GPU utilization alone as the main control and add a dashboard for final outputs.
+- Answer: B
+- Explanation: Drift detection is the missing control in this scenario. The right answer makes it explicit so the system can track input mix, retrieval hit rate, output quality, and safety events.
+- Why A is wrong: It moves attention to a neighboring control instead of making drift detection testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs drift detection controlled before release or execution.
+- Why D is wrong: It keeps GPU utilization alone in control instead of adding a measurable drift detection decision point.
+
+### Q88: During an architecture review, a bank fraud team finds that the failure appears when the system keeps letting queues grow unbounded as the workaround. The release needs a design step that can reject or defer low-priority work under saturation. What is the best next step?
+- ID: genl-hf-production-monitoring-and-reliability-025
+- Domain: Production Monitoring and Reliability
+- Topic: load shedding; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Make load shedding explicit in the workflow: reject or defer low-priority work under saturation.
+- B. Keep letting queues grow unbounded as the main control and add a dashboard for final outputs.
+- C. Prioritize p95/p99 latency even though the observed failure is around load shedding.
+- D. Release prompt, model, and canary monitoring changes together with one aggregate score.
+- Answer: A
+- Explanation: Load shedding is the missing control in this scenario. The right answer makes it explicit so the system can reject or defer low-priority work under saturation.
+- Why B is wrong: It keeps letting queues grow unbounded in control instead of adding a measurable load shedding decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making load shedding testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether load shedding fixed the failure.
+
+### Q89: A hospital operations team passes the happy-path demo for a monitored LLM service, but the team can reproduce the failure around average latency only. The missing control is the one that can watch tail latency, queueing, retries, and error budgets. Which change should be made before release?
+- ID: genl-hf-production-monitoring-and-reliability-026
+- Domain: Production Monitoring and Reliability
+- Topic: p95/p99 latency; genai_llms_professional
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Prioritize drift detection even though the observed failure is around p95/p99 latency.
+- B. Release prompt, model, and load shedding changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving p95/p99 latency implicit.
+- D. Use p95/p99 latency as the control boundary and require the system to watch tail latency, queueing, retries, and error budgets.
+- Answer: D
+- Explanation: P95/p99 latency is the missing control in this scenario. The right answer makes it explicit so the system can watch tail latency, queueing, retries, and error budgets.
+- Why A is wrong: It moves attention to a neighboring control instead of making p95/p99 latency testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether p95/p99 latency fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q90: A telecom network operations team passes the happy-path demo for a monitored LLM service, but the failure appears when the system keeps full rollout before measurement as the workaround. The release needs a design step that can compare quality, safety, cost, and latency during rollout. Which change should be made before release?
+- ID: genl-hf-production-monitoring-and-reliability-027
+- Domain: Production Monitoring and Reliability
+- Topic: canary monitoring; genai_llms_professional
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving canary monitoring implicit.
+- B. Use load shedding as the main gate even though reviewers are asking for canary monitoring evidence.
+- C. Add a release gate for canary monitoring: compare quality, safety, cost, and latency during rollout.
+- D. Release prompt, model, and load shedding changes together with one aggregate score.
+- Answer: C
+- Explanation: Canary monitoring is the missing control in this scenario. The right answer makes it explicit so the system can compare quality, safety, cost, and latency during rollout.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making canary monitoring testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether canary monitoring fixed the failure.
+
+### Q91: A pharmaceutical research team is triaging a failed pilot for a monitored LLM service. The current design still relies on silent fallback to lower quality. Reviewers need a control that can route around unhealthy models or tools with trace evidence. Which control addresses the root cause?
+- ID: genl-hf-production-monitoring-and-reliability-028
+- Domain: Production Monitoring and Reliability
+- Topic: fallback policy; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for fallback policy.
+- B. Change the design around fallback policy so the system can route around unhealthy models or tools with trace evidence.
+- C. Increase model capacity or context length while leaving fallback policy implicit.
+- D. Use p95/p99 latency as the main gate even though reviewers are asking for fallback policy evidence.
+- Answer: B
+- Explanation: Fallback policy is the missing control in this scenario. The right answer makes it explicit so the system can route around unhealthy models or tools with trace evidence.
+- Why A is wrong: Monitoring is useful, but this scenario needs fallback policy controlled before release or execution.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making fallback policy testable in the scenario.
+
+### Q92: A global retailer is triaging a failed pilot for a model-capability design. The current design still relies on recurrence as the transformer core. Reviewers need a control that can let tokens attend to context and long-range dependencies. Which control addresses the root cause?
+- ID: genl-hf-llm-architecture-001
+- Domain: LLM Architecture
+- Topic: self-attention; genai_llms_professional
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Make self-attention explicit in the workflow: let tokens attend to context and long-range dependencies.
+- B. Keep recurrence as the transformer core as the main control and add a dashboard for final outputs.
+- C. Prioritize rerankers even though the observed failure is around self-attention.
+- D. Release prompt, model, and embedding models changes together with one aggregate score.
+- Answer: A
+- Explanation: Self-attention is the missing control in this scenario. The right answer makes it explicit so the system can let tokens attend to context and long-range dependencies.
+- Why B is wrong: It keeps recurrence as the transformer core in control instead of adding a measurable self-attention decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making self-attention testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether self-attention fixed the failure.
+
+### Q93: An insurance claims group is choosing between a design centered on bidirectional attention for generation and one that makes causal masking explicit for a model-capability design. Which design should win?
+- ID: genl-hf-llm-architecture-002
+- Domain: LLM Architecture
+- Topic: causal masking; genai_llms_professional
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Prioritize embedding models even though the observed failure is around causal masking.
+- B. Release prompt, model, and rerankers changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving causal masking implicit.
+- D. Use causal masking as the control boundary and require the system to prevent decoder positions from seeing future tokens.
+- Answer: D
+- Explanation: Causal masking is the missing control in this scenario. The right answer makes it explicit so the system can prevent decoder positions from seeing future tokens.
+- Why A is wrong: It moves attention to a neighboring control instead of making causal masking testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether causal masking fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q94: During an architecture review, a cybersecurity response team finds that the team can reproduce the failure around all experts active for every token. The missing control is the one that can activate sparse experts to increase capacity without full dense compute. What is the best next step?
+- ID: genl-hf-llm-architecture-003
+- Domain: LLM Architecture
+- Topic: MoE routing; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving MoE routing implicit.
+- B. Use self-attention as the main gate even though reviewers are asking for MoE routing evidence.
+- C. Add a release gate for MoE routing: activate sparse experts to increase capacity without full dense compute.
+- D. Release prompt, model, and self-attention changes together with one aggregate score.
+- Answer: C
+- Explanation: MoE routing is the missing control in this scenario. The right answer makes it explicit so the system can activate sparse experts to increase capacity without full dense compute.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making MoE routing testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether MoE routing fixed the failure.
+
+### Q95: A public-sector casework team passes the happy-path demo for a model-capability design, but the failure is tied to embedding models. The safer design is the one that can produce vector representations for retrieval and similarity. Which change should be made before release?
+- ID: genl-hf-llm-architecture-004
+- Domain: LLM Architecture
+- Topic: embedding models; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for embedding models.
+- B. Change the design around embedding models so the system can produce vector representations for retrieval and similarity.
+- C. Increase model capacity or context length while leaving embedding models implicit.
+- D. Use causal masking as the main gate even though reviewers are asking for embedding models evidence.
+- Answer: B
+- Explanation: Embedding models is the missing control in this scenario. The right answer makes it explicit so the system can produce vector representations for retrieval and similarity.
+- Why A is wrong: Monitoring is useful, but this scenario needs embedding models controlled before release or execution.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making embedding models testable in the scenario.
+
+### Q96: A telecom network operations team is choosing between a design centered on embedding similarity as the final answer and one that makes rerankers explicit for a model-capability design. Which design should win?
+- ID: genl-hf-llm-architecture-005
+- Domain: LLM Architecture
+- Topic: rerankers; genai_llms_professional
+- Difficulty: easy
+- Scope: general_concept
+- Source: generated
+- A. Instrument and enforce rerankers; the system must rescore retrieved candidates for relevance before generation.
+- B. Use MoE routing as the main gate even though reviewers are asking for rerankers evidence.
+- C. Move the check to post-release monitoring without changing the release path for rerankers.
+- D. Keep embedding similarity as the final answer as the main control and add a dashboard for final outputs.
+- Answer: A
+- Explanation: Rerankers is the missing control in this scenario. The right answer makes it explicit so the system can rescore retrieved candidates for relevance before generation.
+- Why B is wrong: It moves attention to a neighboring control instead of making rerankers testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs rerankers controlled before release or execution.
+- Why D is wrong: It keeps embedding similarity as the final answer in control instead of adding a measurable rerankers decision point.
+
+### Q97: A pharmaceutical research team is building a model-capability design. Recurrence as the transformer core is being used as the shortcut, but it does not give the team a reliable way to let tokens attend to context and long-range dependencies. Which design is the best first change?
+- ID: genl-hf-llm-architecture-006
+- Domain: LLM Architecture
+- Topic: self-attention; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for self-attention.
+- B. Keep recurrence as the transformer core as the main control and add a dashboard for final outputs.
+- C. Prioritize embedding models even though the observed failure is around self-attention.
+- D. Put self-attention before rollout so the team can let tokens attend to context and long-range dependencies.
+- Answer: D
+- Explanation: Self-attention is the missing control in this scenario. The right answer makes it explicit so the system can let tokens attend to context and long-range dependencies.
+- Why A is wrong: Monitoring is useful, but this scenario needs self-attention controlled before release or execution.
+- Why B is wrong: It keeps recurrence as the transformer core in control instead of adding a measurable self-attention decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making self-attention testable in the scenario.
+
+### Q98: A bank fraud team passes the happy-path demo for a model-capability design, but the team can reproduce the failure around bidirectional attention for generation. The missing control is the one that can prevent decoder positions from seeing future tokens. Which change should be made before release?
+- ID: genl-hf-llm-architecture-007
+- Domain: LLM Architecture
+- Topic: causal masking; genai_llms_professional
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Prioritize MoE routing even though the observed failure is around causal masking.
+- B. Release prompt, model, and self-attention changes together with one aggregate score.
+- C. Make causal masking explicit in the workflow: prevent decoder positions from seeing future tokens.
+- D. Keep bidirectional attention for generation as the main control and add a dashboard for final outputs.
+- Answer: C
+- Explanation: Causal masking is the missing control in this scenario. The right answer makes it explicit so the system can prevent decoder positions from seeing future tokens.
+- Why A is wrong: It moves attention to a neighboring control instead of making causal masking testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether causal masking fixed the failure.
+- Why D is wrong: It keeps bidirectional attention for generation in control instead of adding a measurable causal masking decision point.
+
+### Q99: A manufacturing quality team is choosing between a design centered on all experts active for every token and one that makes MoE routing explicit for a model-capability design. Which design should win?
+- ID: genl-hf-llm-architecture-008
+- Domain: LLM Architecture
+- Topic: MoE routing; genai_llms_professional
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving MoE routing implicit.
+- B. Use MoE routing as the control boundary and require the system to activate sparse experts to increase capacity without full dense compute.
+- C. Prioritize self-attention even though the observed failure is around MoE routing.
+- D. Release prompt, model, and causal masking changes together with one aggregate score.
+- Answer: B
+- Explanation: MoE routing is the missing control in this scenario. The right answer makes it explicit so the system can activate sparse experts to increase capacity without full dense compute.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making MoE routing testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether MoE routing fixed the failure.
+
+### Q100: A telecom network operations team is building a model-capability design. The failure appears when the system keeps using a chat model endpoint for vector search as the workaround. The release needs a design step that can produce vector representations for retrieval and similarity. Which architecture keeps the boundary cleanest?
+- ID: genl-hf-llm-architecture-009
+- Domain: LLM Architecture
+- Topic: embedding models; genai_llms_professional
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Add a release gate for embedding models: produce vector representations for retrieval and similarity.
+- B. Release prompt, model, and MoE routing changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving embedding models implicit.
+- D. Use MoE routing as the main gate even though reviewers are asking for embedding models evidence.
+- Answer: A
+- Explanation: Embedding models is the missing control in this scenario. The right answer makes it explicit so the system can produce vector representations for retrieval and similarity.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether embedding models fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making embedding models testable in the scenario.

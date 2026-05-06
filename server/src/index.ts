@@ -52,6 +52,30 @@ const port = Number(process.env.PORT || 4273);
 const host = process.env.HOST || "127.0.0.1";
 const maxBodyBytes = Number(process.env.MAX_BODY_BYTES || 1024 * 1024);
 const missingLlmApiKeyMessage = "Coach chat and AI question generation need an LLM API key. Create .env from .env.example, set LLM_API_KEY, then restart the dev server.";
+const nvidiaQuestionScopeTerms = [
+  "nvidia",
+  "nemo",
+  "nim",
+  "tensorrt",
+  "triton",
+  "nsight",
+  "ngc",
+  "rapids",
+  "cuda",
+  "nccl",
+  "dgx",
+  "rtx",
+  "a100",
+  "h100",
+  "blackwell",
+  "nemotron",
+  "base command",
+  "ai enterprise",
+  "tensor core",
+  "tensor cores",
+  "dynamo-triton",
+  "dynamo triton"
+];
 
 function getLlmApiKey() {
   return process.env.LLM_API_KEY || "";
@@ -143,6 +167,30 @@ function questionBlocks(markdown) {
   return firstQ === -1 ? "" : markdown.slice(firstQ).trim();
 }
 
+function inferQuestionScope(question) {
+  if (question.questionScope === "general_concept" || question.questionScope === "nvidia_specific") {
+    return question.questionScope;
+  }
+  const haystack = [
+    question.question,
+    question.topic,
+    question.domain,
+    question.explanation,
+    ...(question.choices || []),
+    ...(question.whyWrong || [])
+  ].filter(Boolean).join(" ").toLowerCase();
+  return nvidiaQuestionScopeTerms.some((term) => haystack.includes(term))
+    ? "nvidia_specific"
+    : "general_concept";
+}
+
+function withQuestionScope(question) {
+  return {
+    ...question,
+    questionScope: inferQuestionScope(question)
+  };
+}
+
 function parseQuestionFile(markdown, source) {
   const blocks = questionBlocks(markdown);
   if (!blocks) return [];
@@ -174,6 +222,7 @@ function questionToMarkdown(question, ordinal) {
   ];
   if (question.topic) lines.push(`- Topic: ${question.topic}`);
   lines.push(`- Difficulty: ${question.difficulty || "medium"}`);
+  lines.push(`- Scope: ${inferQuestionScope(question)}`);
   question.choices.forEach((choice, index) => lines.push(`- ${letters[index]}. ${choice}`));
   lines.push(`- Answer: ${letters[question.answer]}`);
   if (question.explanation) lines.push(`- Explanation: ${question.explanation}`);
@@ -229,7 +278,7 @@ async function readExam(certDir) {
   exam.questions = [];
   for (const question of [...originalQuestions, ...highFidelityQuestions, ...draftQuestions]) {
     if (questionIds.has(question.id)) continue;
-    exam.questions.push(question);
+    exam.questions.push(withQuestionScope(question));
     questionIds.add(question.id);
   }
   const originalBankIds = new Set(originalQuestions.map((q) => q.id));
@@ -351,7 +400,8 @@ async function readMockDefinitions(certDir) {
           sourceLabel: source === "generated" ? "Improved" : "Original",
           durationMinutes: def.durationMinutes,
           passingScorePercent: def.passingScorePercent,
-          questionCount: def.questionIds.length
+          questionCount: def.questionIds.length,
+          questionIds: def.questionIds
         };
       })
     );

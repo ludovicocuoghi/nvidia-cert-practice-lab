@@ -6,6 +6,21 @@ source_lens: general-study
 
 # Policy and Guardrails Layer
 
+## Actual implementation / How you use it
+
+```yaml
+rails:
+  input: [intent_policy, jailbreak_check, pii_check]
+  retrieved_content: [prompt_injection_check, source_policy, acl_enforced]
+  tool_proposal: [allowed_tool, args_valid, approval_required]
+  tool_result: [malicious_text_check, stale_or_partial_result]
+  output: [groundedness, pii, unsafe_content, disclosure_policy]
+```
+
+| Boundary | Decision | Output |
+|---|---|---|
+| Input, retrieval, tool, result, output | Block, transform, allow, refuse, or escalate | Runtime policy decision plus audit evidence |
+
 ## What to study first
 
 - **Core idea:** You are building runtime controls that check user input, retrieved content, tool proposals, tool results, dialog behavior, and final output against policy.

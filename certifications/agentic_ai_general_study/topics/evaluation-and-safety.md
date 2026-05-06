@@ -6,6 +6,45 @@ status: populated
 
 # Evaluation and Safety
 
+## Actual implementation / Pattern you use
+
+```yaml
+eval_case:
+  input: "Customer asks whether policy X applies to account Y"
+  expected:
+    evidence_ids: [policy_2026_04, account_tier]
+    allowed_tools: [retrieve_policy, lookup_account]
+    forbidden_tools: [issue_refund]
+  score:
+    final_answer: task_success
+    retrieval: recall_at_k_and_citation_support
+    trajectory: tool_order_tool_args_and_retry_behavior
+    safety: prompt_injection_pii_and_policy_checks
+    operations: latency_cost_and_escalation_quality
+
+rails:
+  check_points: [input, retrieved_content, tool_proposal, tool_result, output]
+```
+
+| Evaluation target | Measures | Release signal |
+|---|---|---|
+| Final answer | Task success and answer quality | The answer solves the user need |
+| Retrieval | Recall, relevance, citation support, groundedness | The evidence actually supports the answer |
+| Tools | Correct tool, arguments, authorization, side effects | The path is safe, valid, and not wasteful |
+| Trajectory | Steps, observations, memory writes, retries | The agent solved the task the right way |
+| Safety | PII, prompt injection, unsafe content, policy | Failures are blocked at the boundary where they occur |
+
+## Exam coverage map
+
+Use this page first for these NCP-AAI sections:
+
+| NCP-AAI section | Why this page matters |
+|---|---|
+| Evaluation and Tuning | Covers task success, trajectory scoring, tool correctness, groundedness, judge limits, and regressions. |
+| Safety, Ethics, and Compliance | Covers prompt injection, policy checks, PII, unsafe outputs, and tool-risk controls. |
+| Run, Monitor, and Maintain | Turns live incidents and feedback into regression tests and scheduled quality checks. |
+| Knowledge Integration and Data Handling | Evaluates retrieval, reranking, citation support, and RAG failure modes. |
+
 ## What to study first
 
 - **Core idea:** How to measure quality and enforce safety for models, RAG, tools, and full agent trajectories.
@@ -80,6 +119,26 @@ Loss functions show up when training evaluators or policies; release evaluation 
 | Wrong tool call | Trajectory eval + tool gateway | Final answer accuracy |
 | Judge favors verbosity | Calibrated rubric | Blind LLM judge |
 | Release change | Regression suite | Manual spot check |
+
+### Deep dive: layered safety boundaries
+
+| Boundary | What to check | Why it matters |
+|---|---|---|
+| Input | User intent, policy, jailbreak, PII | Blocks obvious unsafe requests before retrieval or tools |
+| Retrieved content | Indirect prompt injection, source trust, permissions | Retrieved text is data, not instructions |
+| Tool proposal | Tool name, arguments, risk, approval need | The model should not be the execution authority |
+| Tool result | Stale, partial, malicious, or instruction-like output | Tool output can poison later reasoning |
+| Output | Unsupported claims, unsafe advice, privacy leakage | Final text still needs policy and citation support |
+
+### Judge and regression traps
+
+| Symptom | Better fix | Trap |
+|---|---|---|
+| Judge rewards long answers | Calibrate rubric with human anchors and disagreement checks | Blind LLM-as-judge score |
+| Correct final answer with wrong tool path | Trajectory eval and tool-call scoring | Final-answer-only metric |
+| RAG answer cites weak evidence | Citation entailment and groundedness tests | Count citations only |
+| Prompt change improves one demo | Regression suite by domain and risk tier | Manual spot check |
+| Safety false positives increase | Separate safety precision/recall and reviewer feedback | Disable guardrails |
 
 ### Hands-on checks
 

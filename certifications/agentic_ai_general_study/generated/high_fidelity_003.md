@@ -2,1502 +2,1702 @@
 
 ## Questions
 
-### Q1: A telecom network operations team is comparing two release designs for an inference-serving rollout. One design centers on static padding to the longest prompt; the other adds a measurable continuous batching step. Which design is more appropriate for production?
-- ID: ags-hf-inference-serving-and-deployment-013
-- Domain: Inference Serving and Deployment
-- Topic: continuous batching; agentic_ai_general_study
-- Difficulty: hard
-- A. Bundle continuous batching, NIM, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated continuous batching check.
-- C. Use NIM as the main gate even though reviewers are asking for continuous batching evidence.
-- D. Make continuous batching explicit in the workflow: admit new requests as decode slots free up.
-- Answer: D
-- Explanation: The scenario is about continuous batching. The strongest answer fixes the failing layer directly: admit new requests as decode slots free up.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether continuous batching fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the continuous batching gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making continuous batching testable in the scenario.
-
-### Q2: A pharmaceutical research team has a production-readiness review for an inference-serving rollout. The review is focused on AWQ, because the system must preserve salient weight channels for INT4 serving. Which implementation path is most appropriate?
-- ID: ags-hf-inference-serving-and-deployment-014
-- Domain: Inference Serving and Deployment
-- Topic: AWQ; agentic_ai_general_study
-- Difficulty: expert
-- A. Use AWQ as the control boundary and require the system to preserve salient weight channels for INT4 serving.
-- B. Wait for production incidents before adding a dedicated AWQ check.
-- C. Use continuous batching as the main gate even though reviewers are asking for AWQ evidence.
-- D. Keep uncalibrated per-tensor quantization as the primary release control and record only final outputs.
-- Answer: A
-- Explanation: The scenario is about AWQ. The strongest answer fixes the failing layer directly: preserve salient weight channels for INT4 serving.
-- Why B is wrong: Waiting for incidents postpones the AWQ gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making AWQ testable in the scenario.
-- Why D is wrong: It keeps uncalibrated per-tensor quantization in control instead of adding a measurable AWQ decision point.
-
-### Q3: A semiconductor design group sees a production failure tied to NIM. The team has been using training frameworks as serving endpoints; the next change needs to make NIM explicit. Which action best addresses the problem?
-- ID: ags-hf-inference-serving-and-deployment-015
-- Domain: Inference Serving and Deployment
-- Topic: NIM; agentic_ai_general_study
-- Difficulty: medium
-- A. Prioritize blue-green deployment before validating the failure signal around NIM.
-- B. Add a release gate for NIM: package optimized models as production microservice APIs.
-- C. Use paged KV cache as the main gate even though reviewers are asking for NIM evidence.
-- D. Keep training frameworks as serving endpoints as the primary release control and record only final outputs.
-- Answer: B
-- Explanation: The scenario is about NIM. The strongest answer fixes the failing layer directly: package optimized models as production microservice APIs.
-- Why A is wrong: It moves attention to a neighboring control instead of making NIM testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making NIM testable in the scenario.
-- Why D is wrong: It keeps training frameworks as serving endpoints in control instead of adding a measurable NIM decision point.
-
-### Q4: A public-sector casework team is comparing two release designs for an inference-serving rollout. One design centers on one custom script per model path; the other adds a measurable Triton ensembles step. Which design is more appropriate for production?
-- ID: ags-hf-inference-serving-and-deployment-016
-- Domain: Inference Serving and Deployment
-- Topic: Triton ensembles; agentic_ai_general_study
-- Difficulty: hard
-- A. Prioritize NIM Operator before validating the failure signal around Triton ensembles.
-- B. Bundle Triton ensembles, NIM, and prompt changes into one release with one aggregate score.
-- C. Change the design around Triton ensembles so the system can compose preprocessing, model execution, and postprocessing.
-- D. Keep one custom script per model path as the primary release control and record only final outputs.
-- Answer: C
-- Explanation: The scenario is about Triton ensembles. The strongest answer fixes the failing layer directly: compose preprocessing, model execution, and postprocessing.
-- Why A is wrong: It moves attention to a neighboring control instead of making Triton ensembles testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether Triton ensembles fixed or caused the failure.
-- Why D is wrong: It keeps one custom script per model path in control instead of adding a measurable Triton ensembles decision point.
-
-### Q5: A telecom network operations team is preparing an inference-serving rollout for release. The current design relies on the inference microservice itself, but the release gate needs to manage NIM lifecycle on Kubernetes. Which control should be added before rollout?
-- ID: ags-hf-inference-serving-and-deployment-017
-- Domain: Inference Serving and Deployment
-- Topic: NIM Operator; agentic_ai_general_study
-- Difficulty: hard
-- A. Prioritize NIM before validating the failure signal around NIM Operator.
-- B. Bundle NIM Operator, Triton ensembles, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated NIM Operator check.
-- D. Make NIM Operator explicit in the workflow: manage NIM lifecycle on Kubernetes.
-- Answer: D
-- Explanation: The scenario is about NIM Operator. The strongest answer fixes the failing layer directly: manage NIM lifecycle on Kubernetes.
-- Why A is wrong: It moves attention to a neighboring control instead of making NIM Operator testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether NIM Operator fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the NIM Operator gate until after users are exposed.
-
-### Q6: An insurance claims group is reviewing an inference-serving rollout before rollout. The main risk is blue-green deployment: the system must switch traffic with rollback-ready versions. Which option keeps the decision at the right layer?
-- ID: ags-hf-inference-serving-and-deployment-018
-- Domain: Inference Serving and Deployment
-- Topic: blue-green deployment; agentic_ai_general_study
-- Difficulty: medium
-- A. Use blue-green deployment as the control boundary and require the system to switch traffic with rollback-ready versions.
-- B. Bundle blue-green deployment, Triton ensembles, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated blue-green deployment check.
-- D. Use Triton ensembles as the main gate even though reviewers are asking for blue-green deployment evidence.
-- Answer: A
-- Explanation: The scenario is about blue-green deployment. The strongest answer fixes the failing layer directly: switch traffic with rollback-ready versions.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether blue-green deployment fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the blue-green deployment gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making blue-green deployment testable in the scenario.
-
-### Q7: A cybersecurity response team sees a production failure tied to paged KV cache. The team has been using weight quantization for a KV-cache bottleneck; the next change needs to make paged KV cache explicit. Which action best addresses the problem?
-- ID: ags-hf-inference-serving-and-deployment-019
-- Domain: Inference Serving and Deployment
-- Topic: paged KV cache; agentic_ai_general_study
-- Difficulty: hard
-- A. Keep weight quantization for a KV-cache bottleneck as the primary release control and record only final outputs.
-- B. Add a release gate for paged KV cache: reduce fragmentation for variable-length generation.
-- C. Wait for production incidents before adding a dedicated paged KV cache check.
-- D. Use AWQ as the main gate even though reviewers are asking for paged KV cache evidence.
-- Answer: B
-- Explanation: The scenario is about paged KV cache. The strongest answer fixes the failing layer directly: reduce fragmentation for variable-length generation.
-- Why A is wrong: It keeps weight quantization for a KV-cache bottleneck in control instead of adding a measurable paged KV cache decision point.
-- Why C is wrong: Waiting for incidents postpones the paged KV cache gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making paged KV cache testable in the scenario.
-
-### Q8: A public-sector casework team is comparing two release designs for an inference-serving rollout. One design centers on static padding to the longest prompt; the other adds a measurable continuous batching step. Which design is more appropriate for production?
-- ID: ags-hf-inference-serving-and-deployment-020
-- Domain: Inference Serving and Deployment
-- Topic: continuous batching; agentic_ai_general_study
-- Difficulty: hard
-- A. Prioritize NIM Operator before validating the failure signal around continuous batching.
-- B. Change the design around continuous batching so the system can admit new requests as decode slots free up.
-- C. Use blue-green deployment as the main gate even though reviewers are asking for continuous batching evidence.
-- D. Keep static padding to the longest prompt as the primary release control and record only final outputs.
-- Answer: B
-- Explanation: The scenario is about continuous batching. The strongest answer fixes the failing layer directly: admit new requests as decode slots free up.
-- Why A is wrong: It moves attention to a neighboring control instead of making continuous batching testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making continuous batching testable in the scenario.
-- Why D is wrong: It keeps static padding to the longest prompt in control instead of adding a measurable continuous batching decision point.
-
-### Q9: A manufacturing quality team has a production-readiness review for an inference-serving rollout. The review is focused on AWQ, because the system must preserve salient weight channels for INT4 serving. Which design is the best first change?
-- ID: ags-hf-inference-serving-and-deployment-021
-- Domain: Inference Serving and Deployment
-- Topic: AWQ; agentic_ai_general_study
-- Difficulty: expert
-- A. Make AWQ explicit in the workflow: preserve salient weight channels for INT4 serving.
-- B. Keep uncalibrated per-tensor quantization as the primary release control and record only final outputs.
-- C. Prioritize NIM before validating the failure signal around AWQ.
-- D. Bundle AWQ, blue-green deployment, and prompt changes into one release with one aggregate score.
-- Answer: A
-- Explanation: The scenario is about AWQ. The strongest answer fixes the failing layer directly: preserve salient weight channels for INT4 serving.
-- Why B is wrong: It keeps uncalibrated per-tensor quantization in control instead of adding a measurable AWQ decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making AWQ testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether AWQ fixed or caused the failure.
-
-### Q10: A semiconductor design group is comparing two release designs for an inference-serving rollout. One design centers on training frameworks as serving endpoints; the other adds a measurable NIM step. Which design is more appropriate for production?
-- ID: ags-hf-inference-serving-and-deployment-022
-- Domain: Inference Serving and Deployment
-- Topic: NIM; agentic_ai_general_study
-- Difficulty: medium
-- A. Prioritize continuous batching before validating the failure signal around NIM.
-- B. Bundle NIM, AWQ, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated NIM check.
-- D. Use NIM as the control boundary and require the system to package optimized models as production microservice APIs.
-- Answer: D
-- Explanation: The scenario is about NIM. The strongest answer fixes the failing layer directly: package optimized models as production microservice APIs.
-- Why A is wrong: It moves attention to a neighboring control instead of making NIM testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether NIM fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the NIM gate until after users are exposed.
-
-### Q11: An insurance claims group is comparing two release designs for an inference-serving rollout. One design centers on one custom script per model path; the other adds a measurable Triton ensembles step. Which design is more appropriate for production?
-- ID: ags-hf-inference-serving-and-deployment-023
-- Domain: Inference Serving and Deployment
-- Topic: Triton ensembles; agentic_ai_general_study
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated Triton ensembles check.
-- B. Use blue-green deployment as the main gate even though reviewers are asking for Triton ensembles evidence.
-- C. Add a release gate for Triton ensembles: compose preprocessing, model execution, and postprocessing.
-- D. Bundle Triton ensembles, blue-green deployment, and prompt changes into one release with one aggregate score.
-- Answer: C
-- Explanation: The scenario is about Triton ensembles. The strongest answer fixes the failing layer directly: compose preprocessing, model execution, and postprocessing.
-- Why A is wrong: Waiting for incidents postpones the Triton ensembles gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making Triton ensembles testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether Triton ensembles fixed or caused the failure.
-
-### Q12: A logistics planning team is reviewing an inference-serving rollout before rollout. The main risk is NIM Operator: the system must manage NIM lifecycle on Kubernetes. Which option keeps the decision at the right layer?
-- ID: ags-hf-inference-serving-and-deployment-024
-- Domain: Inference Serving and Deployment
-- Topic: NIM Operator; agentic_ai_general_study
-- Difficulty: expert
-- A. Keep the inference microservice itself as the primary release control and record only final outputs.
-- B. Change the design around NIM Operator so the system can manage NIM lifecycle on Kubernetes.
-- C. Wait for production incidents before adding a dedicated NIM Operator check.
-- D. Use Triton ensembles as the main gate even though reviewers are asking for NIM Operator evidence.
-- Answer: B
-- Explanation: The scenario is about NIM Operator. The strongest answer fixes the failing layer directly: manage NIM lifecycle on Kubernetes.
-- Why A is wrong: It keeps the inference microservice itself in control instead of adding a measurable NIM Operator decision point.
-- Why C is wrong: Waiting for incidents postpones the NIM Operator gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making NIM Operator testable in the scenario.
-
-### Q13: A public-sector casework team is comparing two release designs for an inference-serving rollout. One design centers on restarting pods without quality gates; the other adds a measurable blue-green deployment step. Which design is more appropriate for production?
-- ID: ags-hf-inference-serving-and-deployment-025
-- Domain: Inference Serving and Deployment
-- Topic: blue-green deployment; agentic_ai_general_study
-- Difficulty: medium
-- A. Make blue-green deployment explicit in the workflow: switch traffic with rollback-ready versions.
-- B. Use AWQ as the main gate even though reviewers are asking for blue-green deployment evidence.
-- C. Keep restarting pods without quality gates as the primary release control and record only final outputs.
-- D. Prioritize continuous batching before validating the failure signal around blue-green deployment.
-- Answer: A
-- Explanation: The scenario is about blue-green deployment. The strongest answer fixes the failing layer directly: switch traffic with rollback-ready versions.
-- Why B is wrong: It moves attention to a neighboring control instead of making blue-green deployment testable in the scenario.
-- Why C is wrong: It keeps restarting pods without quality gates in control instead of adding a measurable blue-green deployment decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making blue-green deployment testable in the scenario.
-
-### Q14: A cybersecurity response team is comparing two release designs for an inference-serving rollout. One design centers on weight quantization for a KV-cache bottleneck; the other adds a measurable paged KV cache step. Which design is more appropriate for production?
-- ID: ags-hf-inference-serving-and-deployment-026
-- Domain: Inference Serving and Deployment
-- Topic: paged KV cache; agentic_ai_general_study
-- Difficulty: hard
-- A. Keep weight quantization for a KV-cache bottleneck as the primary release control and record only final outputs.
-- B. Prioritize continuous batching before validating the failure signal around paged KV cache.
-- C. Bundle paged KV cache, Triton ensembles, and prompt changes into one release with one aggregate score.
-- D. Use paged KV cache as the control boundary and require the system to reduce fragmentation for variable-length generation.
-- Answer: D
-- Explanation: The scenario is about paged KV cache. The strongest answer fixes the failing layer directly: reduce fragmentation for variable-length generation.
-- Why A is wrong: It keeps weight quantization for a KV-cache bottleneck in control instead of adding a measurable paged KV cache decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making paged KV cache testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether paged KV cache fixed or caused the failure.
-
-### Q15: A pharmaceutical research team is preparing an inference-serving rollout for release. The current design relies on static padding to the longest prompt, but the release gate needs to admit new requests as decode slots free up. Which choice addresses the root cause?
-- ID: ags-hf-inference-serving-and-deployment-027
-- Domain: Inference Serving and Deployment
-- Topic: continuous batching; agentic_ai_general_study
-- Difficulty: hard
-- A. Bundle continuous batching, Triton ensembles, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated continuous batching check.
-- C. Add a release gate for continuous batching: admit new requests as decode slots free up.
-- D. Prioritize paged KV cache before validating the failure signal around continuous batching.
-- Answer: C
-- Explanation: The scenario is about continuous batching. The strongest answer fixes the failing layer directly: admit new requests as decode slots free up.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether continuous batching fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the continuous batching gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making continuous batching testable in the scenario.
-
-### Q16: A logistics planning team sees a production failure tied to AWQ. The team has been using uncalibrated per-tensor quantization; the next change needs to make AWQ explicit. Which action best addresses the problem?
-- ID: ags-hf-inference-serving-and-deployment-028
-- Domain: Inference Serving and Deployment
-- Topic: AWQ; agentic_ai_general_study
-- Difficulty: easy
-- A. Use NIM Operator as the main gate even though reviewers are asking for AWQ evidence.
-- B. Change the design around AWQ so the system can preserve salient weight channels for INT4 serving.
-- C. Bundle AWQ, NIM Operator, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated AWQ check.
-- Answer: B
-- Explanation: The scenario is about AWQ. The strongest answer fixes the failing layer directly: preserve salient weight channels for INT4 serving.
-- Why A is wrong: It moves attention to a neighboring control instead of making AWQ testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether AWQ fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the AWQ gate until after users are exposed.
-
-### Q17: A hospital operations team has a production-readiness review for an inference-serving rollout. The review is focused on NIM, because the system must package optimized models as production microservice APIs. Which choice addresses the root cause?
-- ID: ags-hf-inference-serving-and-deployment-029
-- Domain: Inference Serving and Deployment
-- Topic: NIM; agentic_ai_general_study
-- Difficulty: hard
-- A. Make NIM explicit in the workflow: package optimized models as production microservice APIs.
-- B. Wait for production incidents before adding a dedicated NIM check.
-- C. Use blue-green deployment as the main gate even though reviewers are asking for NIM evidence.
-- D. Keep training frameworks as serving endpoints as the primary release control and record only final outputs.
-- Answer: A
-- Explanation: The scenario is about NIM. The strongest answer fixes the failing layer directly: package optimized models as production microservice APIs.
-- Why B is wrong: Waiting for incidents postpones the NIM gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making NIM testable in the scenario.
-- Why D is wrong: It keeps training frameworks as serving endpoints in control instead of adding a measurable NIM decision point.
-
-### Q18: A bank fraud team is comparing two release designs for an inference-serving rollout. One design centers on one custom script per model path; the other adds a measurable Triton ensembles step. Which design is more appropriate for production?
-- ID: ags-hf-inference-serving-and-deployment-030
-- Domain: Inference Serving and Deployment
-- Topic: Triton ensembles; agentic_ai_general_study
-- Difficulty: expert
-- A. Keep one custom script per model path as the primary release control and record only final outputs.
-- B. Prioritize NIM before validating the failure signal around Triton ensembles.
-- C. Use Triton ensembles as the control boundary and require the system to compose preprocessing, model execution, and postprocessing.
-- D. Use NIM Operator as the main gate even though reviewers are asking for Triton ensembles evidence.
-- Answer: C
-- Explanation: The scenario is about Triton ensembles. The strongest answer fixes the failing layer directly: compose preprocessing, model execution, and postprocessing.
-- Why A is wrong: It keeps one custom script per model path in control instead of adding a measurable Triton ensembles decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making Triton ensembles testable in the scenario.
-- Why D is wrong: It moves attention to a neighboring control instead of making Triton ensembles testable in the scenario.
-
-### Q19: A global retailer is reviewing an inference-serving rollout before rollout. The main risk is NIM Operator: the system must manage NIM lifecycle on Kubernetes. Which option keeps the decision at the right layer?
-- ID: ags-hf-inference-serving-and-deployment-031
-- Domain: Inference Serving and Deployment
-- Topic: NIM Operator; agentic_ai_general_study
-- Difficulty: medium
-- A. Keep the inference microservice itself as the primary release control and record only final outputs.
-- B. Prioritize continuous batching before validating the failure signal around NIM Operator.
-- C. Bundle NIM Operator, AWQ, and prompt changes into one release with one aggregate score.
-- D. Add a release gate for NIM Operator: manage NIM lifecycle on Kubernetes.
-- Answer: D
-- Explanation: The scenario is about NIM Operator. The strongest answer fixes the failing layer directly: manage NIM lifecycle on Kubernetes.
-- Why A is wrong: It keeps the inference microservice itself in control instead of adding a measurable NIM Operator decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making NIM Operator testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether NIM Operator fixed or caused the failure.
-
-### Q20: A pharmaceutical research team is comparing two release designs for an inference-serving rollout. One design centers on restarting pods without quality gates; the other adds a measurable blue-green deployment step. Which design is more appropriate for production?
-- ID: ags-hf-inference-serving-and-deployment-032
-- Domain: Inference Serving and Deployment
-- Topic: blue-green deployment; agentic_ai_general_study
-- Difficulty: hard
-- A. Change the design around blue-green deployment so the system can switch traffic with rollback-ready versions.
-- B. Prioritize NIM before validating the failure signal around blue-green deployment.
-- C. Bundle blue-green deployment, paged KV cache, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated blue-green deployment check.
-- Answer: A
-- Explanation: The scenario is about blue-green deployment. The strongest answer fixes the failing layer directly: switch traffic with rollback-ready versions.
-- Why B is wrong: It moves attention to a neighboring control instead of making blue-green deployment testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether blue-green deployment fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the blue-green deployment gate until after users are exposed.
-
-### Q21: A bank fraud team sees a production failure tied to paged KV cache. The team has been using weight quantization for a KV-cache bottleneck; the next change needs to make paged KV cache explicit. Which action best addresses the problem?
-- ID: ags-hf-inference-serving-and-deployment-033
-- Domain: Inference Serving and Deployment
-- Topic: paged KV cache; agentic_ai_general_study
-- Difficulty: hard
-- A. Use Triton ensembles as the main gate even though reviewers are asking for paged KV cache evidence.
-- B. Make paged KV cache explicit in the workflow: reduce fragmentation for variable-length generation.
-- C. Bundle paged KV cache, Triton ensembles, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated paged KV cache check.
-- Answer: B
-- Explanation: The scenario is about paged KV cache. The strongest answer fixes the failing layer directly: reduce fragmentation for variable-length generation.
-- Why A is wrong: It moves attention to a neighboring control instead of making paged KV cache testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether paged KV cache fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the paged KV cache gate until after users are exposed.
-
-### Q22: A manufacturing quality team is reviewing an inference-serving rollout before rollout. The main risk is continuous batching: the system must admit new requests as decode slots free up. Which option keeps the decision at the right layer?
-- ID: ags-hf-inference-serving-and-deployment-034
-- Domain: Inference Serving and Deployment
-- Topic: continuous batching; agentic_ai_general_study
-- Difficulty: expert
-- A. Use Triton ensembles as the main gate even though reviewers are asking for continuous batching evidence.
-- B. Keep static padding to the longest prompt as the primary release control and record only final outputs.
-- C. Use continuous batching as the control boundary and require the system to admit new requests as decode slots free up.
-- D. Wait for production incidents before adding a dedicated continuous batching check.
-- Answer: C
-- Explanation: The scenario is about continuous batching. The strongest answer fixes the failing layer directly: admit new requests as decode slots free up.
-- Why A is wrong: It moves attention to a neighboring control instead of making continuous batching testable in the scenario.
-- Why B is wrong: It keeps static padding to the longest prompt in control instead of adding a measurable continuous batching decision point.
-- Why D is wrong: Waiting for incidents postpones the continuous batching gate until after users are exposed.
-
-### Q23: A telecom network operations team has a production-readiness review for an inference-serving rollout. The review is focused on AWQ, because the system must preserve salient weight channels for INT4 serving. Which action best fits the requirement?
-- ID: ags-hf-inference-serving-and-deployment-035
-- Domain: Inference Serving and Deployment
-- Topic: AWQ; agentic_ai_general_study
-- Difficulty: medium
-- A. Use NIM Operator as the main gate even though reviewers are asking for AWQ evidence.
-- B. Keep uncalibrated per-tensor quantization as the primary release control and record only final outputs.
-- C. Prioritize blue-green deployment before validating the failure signal around AWQ.
-- D. Add a release gate for AWQ: preserve salient weight channels for INT4 serving.
-- Answer: D
-- Explanation: The scenario is about AWQ. The strongest answer fixes the failing layer directly: preserve salient weight channels for INT4 serving.
-- Why A is wrong: It moves attention to a neighboring control instead of making AWQ testable in the scenario.
-- Why B is wrong: It keeps uncalibrated per-tensor quantization in control instead of adding a measurable AWQ decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making AWQ testable in the scenario.
-
-### Q24: A pharmaceutical research team is preparing an inference-serving rollout for release. The current design relies on training frameworks as serving endpoints, but the release gate needs to package optimized models as production microservice APIs. Which design is the best first change?
-- ID: ags-hf-inference-serving-and-deployment-036
-- Domain: Inference Serving and Deployment
-- Topic: NIM; agentic_ai_general_study
-- Difficulty: hard
-- A. Change the design around NIM so the system can package optimized models as production microservice APIs.
-- B. Keep training frameworks as serving endpoints as the primary release control and record only final outputs.
-- C. Prioritize NIM Operator before validating the failure signal around NIM.
-- D. Bundle NIM, continuous batching, and prompt changes into one release with one aggregate score.
-- Answer: A
-- Explanation: The scenario is about NIM. The strongest answer fixes the failing layer directly: package optimized models as production microservice APIs.
-- Why B is wrong: It keeps training frameworks as serving endpoints in control instead of adding a measurable NIM decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making NIM testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether NIM fixed or caused the failure.
-
-### Q25: A bank fraud team is comparing two release designs for an inference-serving rollout. One design centers on one custom script per model path; the other adds a measurable Triton ensembles step. Which design is more appropriate for production?
-- ID: ags-hf-inference-serving-and-deployment-037
-- Domain: Inference Serving and Deployment
-- Topic: Triton ensembles; agentic_ai_general_study
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated Triton ensembles check.
-- B. Make Triton ensembles explicit in the workflow: compose preprocessing, model execution, and postprocessing.
-- C. Prioritize blue-green deployment before validating the failure signal around Triton ensembles.
-- D. Bundle Triton ensembles, paged KV cache, and prompt changes into one release with one aggregate score.
-- Answer: B
-- Explanation: The scenario is about Triton ensembles. The strongest answer fixes the failing layer directly: compose preprocessing, model execution, and postprocessing.
-- Why A is wrong: Waiting for incidents postpones the Triton ensembles gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making Triton ensembles testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether Triton ensembles fixed or caused the failure.
-
-### Q26: A manufacturing quality team is comparing two release designs for an inference-serving rollout. One design centers on the inference microservice itself; the other adds a measurable NIM Operator step. Which design is more appropriate for production?
-- ID: ags-hf-inference-serving-and-deployment-038
-- Domain: Inference Serving and Deployment
-- Topic: NIM Operator; agentic_ai_general_study
-- Difficulty: medium
-- A. Wait for production incidents before adding a dedicated NIM Operator check.
-- B. Use continuous batching as the main gate even though reviewers are asking for NIM Operator evidence.
-- C. Use NIM Operator as the control boundary and require the system to manage NIM lifecycle on Kubernetes.
-- D. Bundle NIM Operator, continuous batching, and prompt changes into one release with one aggregate score.
-- Answer: C
-- Explanation: The scenario is about NIM Operator. The strongest answer fixes the failing layer directly: manage NIM lifecycle on Kubernetes.
-- Why A is wrong: Waiting for incidents postpones the NIM Operator gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making NIM Operator testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether NIM Operator fixed or caused the failure.
-
-### Q27: A telecom network operations team has a production-readiness review for an inference-serving rollout. The review is focused on blue-green deployment, because the system must switch traffic with rollback-ready versions. Which action best fits the requirement?
-- ID: ags-hf-inference-serving-and-deployment-039
-- Domain: Inference Serving and Deployment
-- Topic: blue-green deployment; agentic_ai_general_study
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated blue-green deployment check.
-- B. Use NIM as the main gate even though reviewers are asking for blue-green deployment evidence.
-- C. Keep restarting pods without quality gates as the primary release control and record only final outputs.
-- D. Add a release gate for blue-green deployment: switch traffic with rollback-ready versions.
-- Answer: D
-- Explanation: The scenario is about blue-green deployment. The strongest answer fixes the failing layer directly: switch traffic with rollback-ready versions.
-- Why A is wrong: Waiting for incidents postpones the blue-green deployment gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making blue-green deployment testable in the scenario.
-- Why C is wrong: It keeps restarting pods without quality gates in control instead of adding a measurable blue-green deployment decision point.
-
-### Q28: A pharmaceutical research team is reviewing an inference-serving rollout before rollout. The main risk is paged KV cache: the system must reduce fragmentation for variable-length generation. Which option keeps the decision at the right layer?
-- ID: ags-hf-inference-serving-and-deployment-040
-- Domain: Inference Serving and Deployment
-- Topic: paged KV cache; agentic_ai_general_study
-- Difficulty: hard
-- A. Use NIM Operator as the main gate even though reviewers are asking for paged KV cache evidence.
-- B. Keep weight quantization for a KV-cache bottleneck as the primary release control and record only final outputs.
-- C. Prioritize blue-green deployment before validating the failure signal around paged KV cache.
-- D. Change the design around paged KV cache so the system can reduce fragmentation for variable-length generation.
-- Answer: D
-- Explanation: The scenario is about paged KV cache. The strongest answer fixes the failing layer directly: reduce fragmentation for variable-length generation.
-- Why A is wrong: It moves attention to a neighboring control instead of making paged KV cache testable in the scenario.
-- Why B is wrong: It keeps weight quantization for a KV-cache bottleneck in control instead of adding a measurable paged KV cache decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making paged KV cache testable in the scenario.
-
-### Q29: An automotive support team has a production-readiness review for an inference-serving rollout. The review is focused on continuous batching, because the system must admit new requests as decode slots free up. Which design is the best first change?
-- ID: ags-hf-inference-serving-and-deployment-041
-- Domain: Inference Serving and Deployment
-- Topic: continuous batching; agentic_ai_general_study
-- Difficulty: expert
-- A. Prioritize NIM Operator before validating the failure signal around continuous batching.
-- B. Bundle continuous batching, AWQ, and prompt changes into one release with one aggregate score.
-- C. Make continuous batching explicit in the workflow: admit new requests as decode slots free up.
-- D. Keep static padding to the longest prompt as the primary release control and record only final outputs.
-- Answer: C
-- Explanation: The scenario is about continuous batching. The strongest answer fixes the failing layer directly: admit new requests as decode slots free up.
-- Why A is wrong: It moves attention to a neighboring control instead of making continuous batching testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether continuous batching fixed or caused the failure.
-- Why D is wrong: It keeps static padding to the longest prompt in control instead of adding a measurable continuous batching decision point.
-
-### Q30: A logistics planning team is comparing two release designs for an inference-serving rollout. One design centers on uncalibrated per-tensor quantization; the other adds a measurable AWQ step. Which design is more appropriate for production?
-- ID: ags-hf-inference-serving-and-deployment-042
-- Domain: Inference Serving and Deployment
-- Topic: AWQ; agentic_ai_general_study
-- Difficulty: medium
-- A. Wait for production incidents before adding a dedicated AWQ check.
-- B. Use AWQ as the control boundary and require the system to preserve salient weight channels for INT4 serving.
-- C. Prioritize continuous batching before validating the failure signal around AWQ.
-- D. Bundle AWQ, paged KV cache, and prompt changes into one release with one aggregate score.
-- Answer: B
-- Explanation: The scenario is about AWQ. The strongest answer fixes the failing layer directly: preserve salient weight channels for INT4 serving.
-- Why A is wrong: Waiting for incidents postpones the AWQ gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making AWQ testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether AWQ fixed or caused the failure.
-
-### Q31: A hospital operations team is reviewing an inference-serving rollout before rollout. The main risk is NIM: the system must package optimized models as production microservice APIs. Which option keeps the decision at the right layer?
-- ID: ags-hf-inference-serving-and-deployment-043
-- Domain: Inference Serving and Deployment
-- Topic: NIM; agentic_ai_general_study
-- Difficulty: hard
-- A. Add a release gate for NIM: package optimized models as production microservice APIs.
-- B. Bundle NIM, Triton ensembles, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated NIM check.
-- D. Use Triton ensembles as the main gate even though reviewers are asking for NIM evidence.
-- Answer: A
-- Explanation: The scenario is about NIM. The strongest answer fixes the failing layer directly: package optimized models as production microservice APIs.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether NIM fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the NIM gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making NIM testable in the scenario.
-
-### Q32: A cybersecurity response team is reviewing an inference-serving rollout before rollout. The main risk is Triton ensembles: the system must compose preprocessing, model execution, and postprocessing. Which option keeps the decision at the right layer?
-- ID: ags-hf-inference-serving-and-deployment-044
-- Domain: Inference Serving and Deployment
-- Topic: Triton ensembles; agentic_ai_general_study
-- Difficulty: expert
-- A. Wait for production incidents before adding a dedicated Triton ensembles check.
-- B. Use AWQ as the main gate even though reviewers are asking for Triton ensembles evidence.
-- C. Keep one custom script per model path as the primary release control and record only final outputs.
-- D. Change the design around Triton ensembles so the system can compose preprocessing, model execution, and postprocessing.
-- Answer: D
-- Explanation: The scenario is about Triton ensembles. The strongest answer fixes the failing layer directly: compose preprocessing, model execution, and postprocessing.
-- Why A is wrong: Waiting for incidents postpones the Triton ensembles gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making Triton ensembles testable in the scenario.
-- Why C is wrong: It keeps one custom script per model path in control instead of adding a measurable Triton ensembles decision point.
-
-### Q33: An automotive support team is reviewing an inference-serving rollout before rollout. The main risk is NIM Operator: the system must manage NIM lifecycle on Kubernetes. Which option keeps the decision at the right layer?
-- ID: ags-hf-inference-serving-and-deployment-045
-- Domain: Inference Serving and Deployment
-- Topic: NIM Operator; agentic_ai_general_study
-- Difficulty: medium
-- A. Keep the inference microservice itself as the primary release control and record only final outputs.
-- B. Prioritize Triton ensembles before validating the failure signal around NIM Operator.
-- C. Make NIM Operator explicit in the workflow: manage NIM lifecycle on Kubernetes.
-- D. Use NIM as the main gate even though reviewers are asking for NIM Operator evidence.
-- Answer: C
-- Explanation: The scenario is about NIM Operator. The strongest answer fixes the failing layer directly: manage NIM lifecycle on Kubernetes.
-- Why A is wrong: It keeps the inference microservice itself in control instead of adding a measurable NIM Operator decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making NIM Operator testable in the scenario.
-- Why D is wrong: It moves attention to a neighboring control instead of making NIM Operator testable in the scenario.
-
-### Q34: A logistics planning team is preparing an inference-serving rollout for release. The current design relies on restarting pods without quality gates, but the release gate needs to switch traffic with rollback-ready versions. Which action best fits the requirement?
-- ID: ags-hf-inference-serving-and-deployment-046
-- Domain: Inference Serving and Deployment
-- Topic: blue-green deployment; agentic_ai_general_study
-- Difficulty: hard
-- A. Bundle blue-green deployment, continuous batching, and prompt changes into one release with one aggregate score.
-- B. Use blue-green deployment as the control boundary and require the system to switch traffic with rollback-ready versions.
-- C. Keep restarting pods without quality gates as the primary release control and record only final outputs.
-- D. Prioritize Triton ensembles before validating the failure signal around blue-green deployment.
-- Answer: B
-- Explanation: The scenario is about blue-green deployment. The strongest answer fixes the failing layer directly: switch traffic with rollback-ready versions.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether blue-green deployment fixed or caused the failure.
-- Why C is wrong: It keeps restarting pods without quality gates in control instead of adding a measurable blue-green deployment decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making blue-green deployment testable in the scenario.
-
-### Q35: A hospital operations team is preparing an inference-serving rollout for release. The current design relies on weight quantization for a KV-cache bottleneck, but the release gate needs to reduce fragmentation for variable-length generation. Which implementation path is most appropriate?
-- ID: ags-hf-inference-serving-and-deployment-047
-- Domain: Inference Serving and Deployment
-- Topic: paged KV cache; agentic_ai_general_study
-- Difficulty: hard
-- A. Add a release gate for paged KV cache: reduce fragmentation for variable-length generation.
-- B. Prioritize Triton ensembles before validating the failure signal around paged KV cache.
-- C. Bundle paged KV cache, continuous batching, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated paged KV cache check.
-- Answer: A
-- Explanation: The scenario is about paged KV cache. The strongest answer fixes the failing layer directly: reduce fragmentation for variable-length generation.
-- Why B is wrong: It moves attention to a neighboring control instead of making paged KV cache testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether paged KV cache fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the paged KV cache gate until after users are exposed.
-
-### Q36: A pharmaceutical research team is comparing two release designs for an evaluation and safety gate. One design centers on scoring only the final text; the other adds a measurable trajectory evaluation step. Which design is more appropriate for production?
-- ID: ags-hf-evaluation-and-safety-001
-- Domain: Evaluation and Safety
-- Topic: trajectory evaluation; agentic_ai_general_study
-- Difficulty: expert
-- A. Bundle trajectory evaluation, LLM-as-judge calibration, and prompt changes into one release with one aggregate score.
-- B. Make trajectory evaluation explicit in the workflow: score tool choice, retrieval, safety, latency, and final answer together.
-- C. Keep scoring only the final text as the primary release control and record only final outputs.
-- D. Prioritize bootstrap evals before validating the failure signal around trajectory evaluation.
-- Answer: B
-- Explanation: The scenario is about trajectory evaluation. The strongest answer fixes the failing layer directly: score tool choice, retrieval, safety, latency, and final answer together.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether trajectory evaluation fixed or caused the failure.
-- Why C is wrong: It keeps scoring only the final text in control instead of adding a measurable trajectory evaluation decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making trajectory evaluation testable in the scenario.
-
-### Q37: A logistics planning team has a production-readiness review for an evaluation and safety gate. The review is focused on bootstrap evals, because the system must create verified question-chunk pairs when labels are missing. Which action best fits the requirement?
-- ID: ags-hf-evaluation-and-safety-002
-- Domain: Evaluation and Safety
-- Topic: bootstrap evals; agentic_ai_general_study
-- Difficulty: medium
-- A. Bundle bootstrap evals, prompt injection, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated bootstrap evals check.
-- C. Use bootstrap evals as the control boundary and require the system to create verified question-chunk pairs when labels are missing.
-- D. Prioritize least privilege before validating the failure signal around bootstrap evals.
-- Answer: C
-- Explanation: The scenario is about bootstrap evals. The strongest answer fixes the failing layer directly: create verified question-chunk pairs when labels are missing.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether bootstrap evals fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the bootstrap evals gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making bootstrap evals testable in the scenario.
-
-### Q38: A hospital operations team has a production-readiness review for an evaluation and safety gate. The review is focused on LLM-as-judge calibration, because the system must anchor judge rubrics with human labels and disagreement review. Which choice addresses the root cause?
-- ID: ags-hf-evaluation-and-safety-003
-- Domain: Evaluation and Safety
-- Topic: LLM-as-judge calibration; agentic_ai_general_study
-- Difficulty: hard
-- A. Bundle LLM-as-judge calibration, prompt injection, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated LLM-as-judge calibration check.
-- C. Use prompt injection as the main gate even though reviewers are asking for LLM-as-judge calibration evidence.
-- D. Add a release gate for LLM-as-judge calibration: anchor judge rubrics with human labels and disagreement review.
-- Answer: D
-- Explanation: The scenario is about LLM-as-judge calibration. The strongest answer fixes the failing layer directly: anchor judge rubrics with human labels and disagreement review.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether LLM-as-judge calibration fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the LLM-as-judge calibration gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making LLM-as-judge calibration testable in the scenario.
-
-### Q39: A cybersecurity response team is comparing two release designs for an evaluation and safety gate. One design centers on one final moderation pass; the other adds a measurable layered controls step. Which design is more appropriate for production?
-- ID: ags-hf-evaluation-and-safety-004
-- Domain: Evaluation and Safety
-- Topic: layered controls; agentic_ai_general_study
-- Difficulty: expert
-- A. Change the design around layered controls so the system can combine input, retrieval, tool, and output controls.
-- B. Wait for production incidents before adding a dedicated layered controls check.
-- C. Use prompt injection as the main gate even though reviewers are asking for layered controls evidence.
-- D. Keep one final moderation pass as the primary release control and record only final outputs.
-- Answer: A
-- Explanation: The scenario is about layered controls. The strongest answer fixes the failing layer directly: combine input, retrieval, tool, and output controls.
-- Why B is wrong: Waiting for incidents postpones the layered controls gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making layered controls testable in the scenario.
-- Why D is wrong: It keeps one final moderation pass in control instead of adding a measurable layered controls decision point.
-
-### Q40: A pharmaceutical research team is comparing two release designs for an evaluation and safety gate. One design centers on letting documents override system policy; the other adds a measurable prompt injection step. Which design is more appropriate for production?
-- ID: ags-hf-evaluation-and-safety-005
-- Domain: Evaluation and Safety
-- Topic: prompt injection; agentic_ai_general_study
-- Difficulty: medium
-- A. Prioritize bootstrap evals before validating the failure signal around prompt injection.
-- B. Make prompt injection explicit in the workflow: treat retrieved text and tool output as data, not instructions.
-- C. Use LLM-as-judge calibration as the main gate even though reviewers are asking for prompt injection evidence.
-- D. Keep letting documents override system policy as the primary release control and record only final outputs.
-- Answer: B
-- Explanation: The scenario is about prompt injection. The strongest answer fixes the failing layer directly: treat retrieved text and tool output as data, not instructions.
-- Why A is wrong: It moves attention to a neighboring control instead of making prompt injection testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making prompt injection testable in the scenario.
-- Why D is wrong: It keeps letting documents override system policy in control instead of adding a measurable prompt injection decision point.
-
-### Q41: A logistics planning team is preparing an evaluation and safety gate for release. The current design relies on giving the LLM API keys, but the release gate needs to scope credentials to tools and roles. Which control should be added before rollout?
-- ID: ags-hf-evaluation-and-safety-006
-- Domain: Evaluation and Safety
-- Topic: least privilege; agentic_ai_general_study
-- Difficulty: hard
-- A. Prioritize layered controls before validating the failure signal around least privilege.
-- B. Bundle least privilege, prompt injection, and prompt changes into one release with one aggregate score.
-- C. Use least privilege as the control boundary and require the system to scope credentials to tools and roles.
-- D. Keep giving the LLM API keys as the primary release control and record only final outputs.
-- Answer: C
-- Explanation: The scenario is about least privilege. The strongest answer fixes the failing layer directly: scope credentials to tools and roles.
-- Why A is wrong: It moves attention to a neighboring control instead of making least privilege testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether least privilege fixed or caused the failure.
-- Why D is wrong: It keeps giving the LLM API keys in control instead of adding a measurable least privilege decision point.
-
-### Q42: A public-sector casework team has a production-readiness review for an evaluation and safety gate. The review is focused on trajectory evaluation, because the system must score tool choice, retrieval, safety, latency, and final answer together. Which implementation path is most appropriate?
-- ID: ags-hf-evaluation-and-safety-007
-- Domain: Evaluation and Safety
-- Topic: trajectory evaluation; agentic_ai_general_study
-- Difficulty: hard
-- A. Prioritize LLM-as-judge calibration before validating the failure signal around trajectory evaluation.
-- B. Bundle trajectory evaluation, prompt injection, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated trajectory evaluation check.
-- D. Add a release gate for trajectory evaluation: score tool choice, retrieval, safety, latency, and final answer together.
-- Answer: D
-- Explanation: The scenario is about trajectory evaluation. The strongest answer fixes the failing layer directly: score tool choice, retrieval, safety, latency, and final answer together.
-- Why A is wrong: It moves attention to a neighboring control instead of making trajectory evaluation testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether trajectory evaluation fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the trajectory evaluation gate until after users are exposed.
-
-### Q43: A cybersecurity response team is comparing two release designs for an evaluation and safety gate. One design centers on agent self-judgment as ground truth; the other adds a measurable bootstrap evals step. Which design is more appropriate for production?
-- ID: ags-hf-evaluation-and-safety-008
-- Domain: Evaluation and Safety
-- Topic: bootstrap evals; agentic_ai_general_study
-- Difficulty: easy
-- A. Change the design around bootstrap evals so the system can create verified question-chunk pairs when labels are missing.
-- B. Bundle bootstrap evals, prompt injection, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated bootstrap evals check.
-- D. Use prompt injection as the main gate even though reviewers are asking for bootstrap evals evidence.
-- Answer: A
-- Explanation: The scenario is about bootstrap evals. The strongest answer fixes the failing layer directly: create verified question-chunk pairs when labels are missing.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether bootstrap evals fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the bootstrap evals gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making bootstrap evals testable in the scenario.
-
-### Q44: A pharmaceutical research team is preparing an evaluation and safety gate for release. The current design relies on trusting a judge score with no calibration, but the release gate needs to anchor judge rubrics with human labels and disagreement review. Which design is the best first change?
-- ID: ags-hf-evaluation-and-safety-009
-- Domain: Evaluation and Safety
-- Topic: LLM-as-judge calibration; agentic_ai_general_study
-- Difficulty: hard
-- A. Keep trusting a judge score with no calibration as the primary release control and record only final outputs.
-- B. Make LLM-as-judge calibration explicit in the workflow: anchor judge rubrics with human labels and disagreement review.
-- C. Wait for production incidents before adding a dedicated LLM-as-judge calibration check.
-- D. Use layered controls as the main gate even though reviewers are asking for LLM-as-judge calibration evidence.
-- Answer: B
-- Explanation: The scenario is about LLM-as-judge calibration. The strongest answer fixes the failing layer directly: anchor judge rubrics with human labels and disagreement review.
-- Why A is wrong: It keeps trusting a judge score with no calibration in control instead of adding a measurable LLM-as-judge calibration decision point.
-- Why C is wrong: Waiting for incidents postpones the LLM-as-judge calibration gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making LLM-as-judge calibration testable in the scenario.
-
-### Q45: A telecom network operations team has a production-readiness review for an evaluation and safety gate. The review is focused on layered controls, because the system must combine input, retrieval, tool, and output controls. Which architecture keeps the boundary cleanest?
-- ID: ags-hf-evaluation-and-safety-010
-- Domain: Evaluation and Safety
-- Topic: layered controls; agentic_ai_general_study
-- Difficulty: expert
-- A. Use least privilege as the main gate even though reviewers are asking for layered controls evidence.
-- B. Keep one final moderation pass as the primary release control and record only final outputs.
-- C. Prioritize LLM-as-judge calibration before validating the failure signal around layered controls.
-- D. Use layered controls as the control boundary and require the system to combine input, retrieval, tool, and output controls.
-- Answer: D
-- Explanation: The scenario is about layered controls. The strongest answer fixes the failing layer directly: combine input, retrieval, tool, and output controls.
-- Why A is wrong: It moves attention to a neighboring control instead of making layered controls testable in the scenario.
-- Why B is wrong: It keeps one final moderation pass in control instead of adding a measurable layered controls decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making layered controls testable in the scenario.
-
-### Q46: A telecom network operations team sees a production failure tied to prompt injection. The team has been using letting documents override system policy; the next change needs to make prompt injection explicit. Which action best addresses the problem?
-- ID: ags-hf-evaluation-and-safety-011
-- Domain: Evaluation and Safety
-- Topic: prompt injection; agentic_ai_general_study
-- Difficulty: medium
-- A. Prioritize trajectory evaluation before validating the failure signal around prompt injection.
-- B. Bundle prompt injection, layered controls, and prompt changes into one release with one aggregate score.
-- C. Add a release gate for prompt injection: treat retrieved text and tool output as data, not instructions.
-- D. Keep letting documents override system policy as the primary release control and record only final outputs.
-- Answer: C
-- Explanation: The scenario is about prompt injection. The strongest answer fixes the failing layer directly: treat retrieved text and tool output as data, not instructions.
-- Why A is wrong: It moves attention to a neighboring control instead of making prompt injection testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether prompt injection fixed or caused the failure.
-- Why D is wrong: It keeps letting documents override system policy in control instead of adding a measurable prompt injection decision point.
-
-### Q47: An automotive support team is comparing two release designs for an evaluation and safety gate. One design centers on giving the LLM API keys; the other adds a measurable least privilege step. Which design is more appropriate for production?
-- ID: ags-hf-evaluation-and-safety-012
-- Domain: Evaluation and Safety
-- Topic: least privilege; agentic_ai_general_study
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated least privilege check.
-- B. Change the design around least privilege so the system can scope credentials to tools and roles.
-- C. Prioritize prompt injection before validating the failure signal around least privilege.
-- D. Bundle least privilege, layered controls, and prompt changes into one release with one aggregate score.
-- Answer: B
-- Explanation: The scenario is about least privilege. The strongest answer fixes the failing layer directly: scope credentials to tools and roles.
-- Why A is wrong: Waiting for incidents postpones the least privilege gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making least privilege testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether least privilege fixed or caused the failure.
-
-### Q48: A cybersecurity response team has a production-readiness review for an evaluation and safety gate. The review is focused on trajectory evaluation, because the system must score tool choice, retrieval, safety, latency, and final answer together. Which control should be added before rollout?
-- ID: ags-hf-evaluation-and-safety-013
-- Domain: Evaluation and Safety
-- Topic: trajectory evaluation; agentic_ai_general_study
-- Difficulty: hard
-- A. Make trajectory evaluation explicit in the workflow: score tool choice, retrieval, safety, latency, and final answer together.
-- B. Bundle trajectory evaluation, least privilege, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated trajectory evaluation check.
-- D. Use least privilege as the main gate even though reviewers are asking for trajectory evaluation evidence.
-- Answer: A
-- Explanation: The scenario is about trajectory evaluation. The strongest answer fixes the failing layer directly: score tool choice, retrieval, safety, latency, and final answer together.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether trajectory evaluation fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the trajectory evaluation gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making trajectory evaluation testable in the scenario.
-
-### Q49: A hospital operations team is preparing an evaluation and safety gate for release. The current design relies on agent self-judgment as ground truth, but the release gate needs to create verified question-chunk pairs when labels are missing. Which implementation path is most appropriate?
-- ID: ags-hf-evaluation-and-safety-014
-- Domain: Evaluation and Safety
-- Topic: bootstrap evals; agentic_ai_general_study
-- Difficulty: expert
-- A. Wait for production incidents before adding a dedicated bootstrap evals check.
-- B. Use LLM-as-judge calibration as the main gate even though reviewers are asking for bootstrap evals evidence.
-- C. Keep agent self-judgment as ground truth as the primary release control and record only final outputs.
-- D. Use bootstrap evals as the control boundary and require the system to create verified question-chunk pairs when labels are missing.
-- Answer: D
-- Explanation: The scenario is about bootstrap evals. The strongest answer fixes the failing layer directly: create verified question-chunk pairs when labels are missing.
-- Why A is wrong: Waiting for incidents postpones the bootstrap evals gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making bootstrap evals testable in the scenario.
-- Why C is wrong: It keeps agent self-judgment as ground truth in control instead of adding a measurable bootstrap evals decision point.
-
-### Q50: A logistics planning team sees a production failure tied to LLM-as-judge calibration. The team has been using trusting a judge score with no calibration; the next change needs to make LLM-as-judge calibration explicit. Which action best addresses the problem?
-- ID: ags-hf-evaluation-and-safety-015
-- Domain: Evaluation and Safety
-- Topic: LLM-as-judge calibration; agentic_ai_general_study
-- Difficulty: medium
-- A. Keep trusting a judge score with no calibration as the primary release control and record only final outputs.
-- B. Prioritize bootstrap evals before validating the failure signal around LLM-as-judge calibration.
-- C. Add a release gate for LLM-as-judge calibration: anchor judge rubrics with human labels and disagreement review.
-- D. Use layered controls as the main gate even though reviewers are asking for LLM-as-judge calibration evidence.
-- Answer: C
-- Explanation: The scenario is about LLM-as-judge calibration. The strongest answer fixes the failing layer directly: anchor judge rubrics with human labels and disagreement review.
-- Why A is wrong: It keeps trusting a judge score with no calibration in control instead of adding a measurable LLM-as-judge calibration decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making LLM-as-judge calibration testable in the scenario.
-- Why D is wrong: It moves attention to a neighboring control instead of making LLM-as-judge calibration testable in the scenario.
-
-### Q51: An insurance claims group is comparing two release designs for an evaluation and safety gate. One design centers on one final moderation pass; the other adds a measurable layered controls step. Which design is more appropriate for production?
-- ID: ags-hf-evaluation-and-safety-016
-- Domain: Evaluation and Safety
-- Topic: layered controls; agentic_ai_general_study
-- Difficulty: hard
-- A. Bundle layered controls, LLM-as-judge calibration, and prompt changes into one release with one aggregate score.
-- B. Change the design around layered controls so the system can combine input, retrieval, tool, and output controls.
-- C. Keep one final moderation pass as the primary release control and record only final outputs.
-- D. Prioritize least privilege before validating the failure signal around layered controls.
-- Answer: B
-- Explanation: The scenario is about layered controls. The strongest answer fixes the failing layer directly: combine input, retrieval, tool, and output controls.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether layered controls fixed or caused the failure.
-- Why C is wrong: It keeps one final moderation pass in control instead of adding a measurable layered controls decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making layered controls testable in the scenario.
-
-### Q52: A semiconductor design group sees a production failure tied to prompt injection. The team has been using letting documents override system policy; the next change needs to make prompt injection explicit. Which action best addresses the problem?
-- ID: ags-hf-evaluation-and-safety-017
-- Domain: Evaluation and Safety
-- Topic: prompt injection; agentic_ai_general_study
-- Difficulty: hard
-- A. Make prompt injection explicit in the workflow: treat retrieved text and tool output as data, not instructions.
-- B. Prioritize layered controls before validating the failure signal around prompt injection.
-- C. Bundle prompt injection, LLM-as-judge calibration, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated prompt injection check.
-- Answer: A
-- Explanation: The scenario is about prompt injection. The strongest answer fixes the failing layer directly: treat retrieved text and tool output as data, not instructions.
-- Why B is wrong: It moves attention to a neighboring control instead of making prompt injection testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether prompt injection fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the prompt injection gate until after users are exposed.
-
-### Q53: A hospital operations team is comparing two release designs for an evaluation and safety gate. One design centers on giving the LLM API keys; the other adds a measurable least privilege step. Which design is more appropriate for production?
-- ID: ags-hf-evaluation-and-safety-018
-- Domain: Evaluation and Safety
-- Topic: least privilege; agentic_ai_general_study
-- Difficulty: medium
-- A. Bundle least privilege, prompt injection, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated least privilege check.
-- C. Use prompt injection as the main gate even though reviewers are asking for least privilege evidence.
-- D. Use least privilege as the control boundary and require the system to scope credentials to tools and roles.
-- Answer: D
-- Explanation: The scenario is about least privilege. The strongest answer fixes the failing layer directly: scope credentials to tools and roles.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether least privilege fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the least privilege gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making least privilege testable in the scenario.
-
-### Q54: A global retailer sees a production failure tied to trajectory evaluation. The team has been using scoring only the final text; the next change needs to make trajectory evaluation explicit. Which action best addresses the problem?
-- ID: ags-hf-evaluation-and-safety-019
-- Domain: Evaluation and Safety
-- Topic: trajectory evaluation; agentic_ai_general_study
-- Difficulty: hard
-- A. Use bootstrap evals as the main gate even though reviewers are asking for trajectory evaluation evidence.
-- B. Keep scoring only the final text as the primary release control and record only final outputs.
-- C. Add a release gate for trajectory evaluation: score tool choice, retrieval, safety, latency, and final answer together.
-- D. Wait for production incidents before adding a dedicated trajectory evaluation check.
-- Answer: C
-- Explanation: The scenario is about trajectory evaluation. The strongest answer fixes the failing layer directly: score tool choice, retrieval, safety, latency, and final answer together.
-- Why A is wrong: It moves attention to a neighboring control instead of making trajectory evaluation testable in the scenario.
-- Why B is wrong: It keeps scoring only the final text in control instead of adding a measurable trajectory evaluation decision point.
-- Why D is wrong: Waiting for incidents postpones the trajectory evaluation gate until after users are exposed.
-
-### Q55: A pharmaceutical research team sees a production failure tied to bootstrap evals. The team has been using agent self-judgment as ground truth; the next change needs to make bootstrap evals explicit. Which action best addresses the problem?
-- ID: ags-hf-evaluation-and-safety-020
-- Domain: Evaluation and Safety
-- Topic: bootstrap evals; agentic_ai_general_study
-- Difficulty: hard
-- A. Keep agent self-judgment as ground truth as the primary release control and record only final outputs.
-- B. Prioritize trajectory evaluation before validating the failure signal around bootstrap evals.
-- C. Change the design around bootstrap evals so the system can create verified question-chunk pairs when labels are missing.
-- D. Use layered controls as the main gate even though reviewers are asking for bootstrap evals evidence.
-- Answer: C
-- Explanation: The scenario is about bootstrap evals. The strongest answer fixes the failing layer directly: create verified question-chunk pairs when labels are missing.
-- Why A is wrong: It keeps agent self-judgment as ground truth in control instead of adding a measurable bootstrap evals decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making bootstrap evals testable in the scenario.
-- Why D is wrong: It moves attention to a neighboring control instead of making bootstrap evals testable in the scenario.
-
-### Q56: An automotive support team sees a production failure tied to LLM-as-judge calibration. The team has been using trusting a judge score with no calibration; the next change needs to make LLM-as-judge calibration explicit. Which action best addresses the problem?
-- ID: ags-hf-evaluation-and-safety-021
-- Domain: Evaluation and Safety
-- Topic: LLM-as-judge calibration; agentic_ai_general_study
-- Difficulty: expert
-- A. Keep trusting a judge score with no calibration as the primary release control and record only final outputs.
-- B. Prioritize prompt injection before validating the failure signal around LLM-as-judge calibration.
-- C. Bundle LLM-as-judge calibration, layered controls, and prompt changes into one release with one aggregate score.
-- D. Make LLM-as-judge calibration explicit in the workflow: anchor judge rubrics with human labels and disagreement review.
-- Answer: D
-- Explanation: The scenario is about LLM-as-judge calibration. The strongest answer fixes the failing layer directly: anchor judge rubrics with human labels and disagreement review.
-- Why A is wrong: It keeps trusting a judge score with no calibration in control instead of adding a measurable LLM-as-judge calibration decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making LLM-as-judge calibration testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether LLM-as-judge calibration fixed or caused the failure.
-
-### Q57: A logistics planning team is preparing an evaluation and safety gate for release. The current design relies on one final moderation pass, but the release gate needs to combine input, retrieval, tool, and output controls. Which architecture keeps the boundary cleanest?
-- ID: ags-hf-evaluation-and-safety-022
-- Domain: Evaluation and Safety
-- Topic: layered controls; agentic_ai_general_study
-- Difficulty: medium
-- A. Use layered controls as the control boundary and require the system to combine input, retrieval, tool, and output controls.
-- B. Prioritize least privilege before validating the failure signal around layered controls.
-- C. Bundle layered controls, bootstrap evals, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated layered controls check.
-- Answer: A
-- Explanation: The scenario is about layered controls. The strongest answer fixes the failing layer directly: combine input, retrieval, tool, and output controls.
-- Why B is wrong: It moves attention to a neighboring control instead of making layered controls testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether layered controls fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the layered controls gate until after users are exposed.
-
-### Q58: A public-sector casework team is reviewing an evaluation and safety gate before rollout. The main risk is prompt injection: the system must treat retrieved text and tool output as data, not instructions. Which option keeps the decision at the right layer?
-- ID: ags-hf-evaluation-and-safety-023
-- Domain: Evaluation and Safety
-- Topic: prompt injection; agentic_ai_general_study
-- Difficulty: hard
-- A. Use layered controls as the main gate even though reviewers are asking for prompt injection evidence.
-- B. Add a release gate for prompt injection: treat retrieved text and tool output as data, not instructions.
-- C. Bundle prompt injection, layered controls, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated prompt injection check.
-- Answer: B
-- Explanation: The scenario is about prompt injection. The strongest answer fixes the failing layer directly: treat retrieved text and tool output as data, not instructions.
-- Why A is wrong: It moves attention to a neighboring control instead of making prompt injection testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether prompt injection fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the prompt injection gate until after users are exposed.
-
-### Q59: A bank fraud team is reviewing an evaluation and safety gate before rollout. The main risk is least privilege: the system must scope credentials to tools and roles. Which option keeps the decision at the right layer?
-- ID: ags-hf-evaluation-and-safety-024
-- Domain: Evaluation and Safety
-- Topic: least privilege; agentic_ai_general_study
-- Difficulty: expert
-- A. Use LLM-as-judge calibration as the main gate even though reviewers are asking for least privilege evidence.
-- B. Keep giving the LLM API keys as the primary release control and record only final outputs.
-- C. Change the design around least privilege so the system can scope credentials to tools and roles.
-- D. Wait for production incidents before adding a dedicated least privilege check.
-- Answer: C
-- Explanation: The scenario is about least privilege. The strongest answer fixes the failing layer directly: scope credentials to tools and roles.
-- Why A is wrong: It moves attention to a neighboring control instead of making least privilege testable in the scenario.
-- Why B is wrong: It keeps giving the LLM API keys in control instead of adding a measurable least privilege decision point.
-- Why D is wrong: Waiting for incidents postpones the least privilege gate until after users are exposed.
-
-### Q60: An automotive support team sees a production failure tied to trajectory evaluation. The team has been using scoring only the final text; the next change needs to make trajectory evaluation explicit. Which action best addresses the problem?
-- ID: ags-hf-evaluation-and-safety-025
-- Domain: Evaluation and Safety
-- Topic: trajectory evaluation; agentic_ai_general_study
-- Difficulty: medium
-- A. Use bootstrap evals as the main gate even though reviewers are asking for trajectory evaluation evidence.
-- B. Keep scoring only the final text as the primary release control and record only final outputs.
-- C. Prioritize prompt injection before validating the failure signal around trajectory evaluation.
-- D. Make trajectory evaluation explicit in the workflow: score tool choice, retrieval, safety, latency, and final answer together.
-- Answer: D
-- Explanation: The scenario is about trajectory evaluation. The strongest answer fixes the failing layer directly: score tool choice, retrieval, safety, latency, and final answer together.
-- Why A is wrong: It moves attention to a neighboring control instead of making trajectory evaluation testable in the scenario.
-- Why B is wrong: It keeps scoring only the final text in control instead of adding a measurable trajectory evaluation decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making trajectory evaluation testable in the scenario.
-
-### Q61: A logistics planning team is comparing two release designs for an evaluation and safety gate. One design centers on agent self-judgment as ground truth; the other adds a measurable bootstrap evals step. Which design is more appropriate for production?
-- ID: ags-hf-evaluation-and-safety-026
-- Domain: Evaluation and Safety
-- Topic: bootstrap evals; agentic_ai_general_study
-- Difficulty: hard
-- A. Use bootstrap evals as the control boundary and require the system to create verified question-chunk pairs when labels are missing.
-- B. Keep agent self-judgment as ground truth as the primary release control and record only final outputs.
-- C. Prioritize LLM-as-judge calibration before validating the failure signal around bootstrap evals.
-- D. Bundle bootstrap evals, least privilege, and prompt changes into one release with one aggregate score.
-- Answer: A
-- Explanation: The scenario is about bootstrap evals. The strongest answer fixes the failing layer directly: create verified question-chunk pairs when labels are missing.
-- Why B is wrong: It keeps agent self-judgment as ground truth in control instead of adding a measurable bootstrap evals decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making bootstrap evals testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether bootstrap evals fixed or caused the failure.
-
-### Q62: A public-sector casework team is reviewing an evaluation and safety gate before rollout. The main risk is LLM-as-judge calibration: the system must anchor judge rubrics with human labels and disagreement review. Which option keeps the decision at the right layer?
-- ID: ags-hf-evaluation-and-safety-027
-- Domain: Evaluation and Safety
-- Topic: LLM-as-judge calibration; agentic_ai_general_study
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated LLM-as-judge calibration check.
-- B. Add a release gate for LLM-as-judge calibration: anchor judge rubrics with human labels and disagreement review.
-- C. Prioritize bootstrap evals before validating the failure signal around LLM-as-judge calibration.
-- D. Bundle LLM-as-judge calibration, least privilege, and prompt changes into one release with one aggregate score.
-- Answer: B
-- Explanation: The scenario is about LLM-as-judge calibration. The strongest answer fixes the failing layer directly: anchor judge rubrics with human labels and disagreement review.
-- Why A is wrong: Waiting for incidents postpones the LLM-as-judge calibration gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making LLM-as-judge calibration testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether LLM-as-judge calibration fixed or caused the failure.
-
-### Q63: A semiconductor design group is preparing an evaluation and safety gate for release. The current design relies on one final moderation pass, but the release gate needs to combine input, retrieval, tool, and output controls. Which action best fits the requirement?
-- ID: ags-hf-evaluation-and-safety-028
-- Domain: Evaluation and Safety
-- Topic: layered controls; agentic_ai_general_study
-- Difficulty: easy
-- A. Wait for production incidents before adding a dedicated layered controls check.
-- B. Use trajectory evaluation as the main gate even though reviewers are asking for layered controls evidence.
-- C. Change the design around layered controls so the system can combine input, retrieval, tool, and output controls.
-- D. Bundle layered controls, trajectory evaluation, and prompt changes into one release with one aggregate score.
-- Answer: C
-- Explanation: The scenario is about layered controls. The strongest answer fixes the failing layer directly: combine input, retrieval, tool, and output controls.
-- Why A is wrong: Waiting for incidents postpones the layered controls gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making layered controls testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether layered controls fixed or caused the failure.
-
-### Q64: A pharmaceutical research team is reviewing an evaluation and safety gate before rollout. The main risk is prompt injection: the system must treat retrieved text and tool output as data, not instructions. Which option keeps the decision at the right layer?
-- ID: ags-hf-evaluation-and-safety-029
-- Domain: Evaluation and Safety
-- Topic: prompt injection; agentic_ai_general_study
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated prompt injection check.
-- B. Use trajectory evaluation as the main gate even though reviewers are asking for prompt injection evidence.
-- C. Keep letting documents override system policy as the primary release control and record only final outputs.
-- D. Make prompt injection explicit in the workflow: treat retrieved text and tool output as data, not instructions.
-- Answer: D
-- Explanation: The scenario is about prompt injection. The strongest answer fixes the failing layer directly: treat retrieved text and tool output as data, not instructions.
-- Why A is wrong: Waiting for incidents postpones the prompt injection gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making prompt injection testable in the scenario.
-- Why C is wrong: It keeps letting documents override system policy in control instead of adding a measurable prompt injection decision point.
-
-### Q65: A telecom network operations team is preparing an evaluation and safety gate for release. The current design relies on giving the LLM API keys, but the release gate needs to scope credentials to tools and roles. Which control should be added before rollout?
-- ID: ags-hf-evaluation-and-safety-030
-- Domain: Evaluation and Safety
-- Topic: least privilege; agentic_ai_general_study
-- Difficulty: expert
-- A. Prioritize trajectory evaluation before validating the failure signal around least privilege.
-- B. Use least privilege as the control boundary and require the system to scope credentials to tools and roles.
-- C. Use bootstrap evals as the main gate even though reviewers are asking for least privilege evidence.
-- D. Keep giving the LLM API keys as the primary release control and record only final outputs.
-- Answer: B
-- Explanation: The scenario is about least privilege. The strongest answer fixes the failing layer directly: scope credentials to tools and roles.
-- Why A is wrong: It moves attention to a neighboring control instead of making least privilege testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making least privilege testable in the scenario.
-- Why D is wrong: It keeps giving the LLM API keys in control instead of adding a measurable least privilege decision point.
-
-### Q66: A semiconductor design group is preparing an evaluation and safety gate for release. The current design relies on scoring only the final text, but the release gate needs to score tool choice, retrieval, safety, latency, and final answer together. Which control should be added before rollout?
-- ID: ags-hf-evaluation-and-safety-031
-- Domain: Evaluation and Safety
-- Topic: trajectory evaluation; agentic_ai_general_study
-- Difficulty: medium
-- A. Add a release gate for trajectory evaluation: score tool choice, retrieval, safety, latency, and final answer together.
-- B. Keep scoring only the final text as the primary release control and record only final outputs.
-- C. Prioritize least privilege before validating the failure signal around trajectory evaluation.
-- D. Bundle trajectory evaluation, prompt injection, and prompt changes into one release with one aggregate score.
-- Answer: A
-- Explanation: The scenario is about trajectory evaluation. The strongest answer fixes the failing layer directly: score tool choice, retrieval, safety, latency, and final answer together.
-- Why B is wrong: It keeps scoring only the final text in control instead of adding a measurable trajectory evaluation decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making trajectory evaluation testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether trajectory evaluation fixed or caused the failure.
-
-### Q67: A hospital operations team has a production-readiness review for an evaluation and safety gate. The review is focused on bootstrap evals, because the system must create verified question-chunk pairs when labels are missing. Which design is the best first change?
-- ID: ags-hf-evaluation-and-safety-032
-- Domain: Evaluation and Safety
-- Topic: bootstrap evals; agentic_ai_general_study
-- Difficulty: hard
-- A. Prioritize trajectory evaluation before validating the failure signal around bootstrap evals.
-- B. Bundle bootstrap evals, LLM-as-judge calibration, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated bootstrap evals check.
-- D. Change the design around bootstrap evals so the system can create verified question-chunk pairs when labels are missing.
-- Answer: D
-- Explanation: The scenario is about bootstrap evals. The strongest answer fixes the failing layer directly: create verified question-chunk pairs when labels are missing.
-- Why A is wrong: It moves attention to a neighboring control instead of making bootstrap evals testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether bootstrap evals fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the bootstrap evals gate until after users are exposed.
-
-### Q68: A logistics planning team is preparing an evaluation and safety gate for release. The current design relies on trusting a judge score with no calibration, but the release gate needs to anchor judge rubrics with human labels and disagreement review. Which action best fits the requirement?
-- ID: ags-hf-evaluation-and-safety-033
-- Domain: Evaluation and Safety
-- Topic: LLM-as-judge calibration; agentic_ai_general_study
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated LLM-as-judge calibration check.
-- B. Use bootstrap evals as the main gate even though reviewers are asking for LLM-as-judge calibration evidence.
-- C. Make LLM-as-judge calibration explicit in the workflow: anchor judge rubrics with human labels and disagreement review.
-- D. Bundle LLM-as-judge calibration, bootstrap evals, and prompt changes into one release with one aggregate score.
-- Answer: C
-- Explanation: The scenario is about LLM-as-judge calibration. The strongest answer fixes the failing layer directly: anchor judge rubrics with human labels and disagreement review.
-- Why A is wrong: Waiting for incidents postpones the LLM-as-judge calibration gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making LLM-as-judge calibration testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether LLM-as-judge calibration fixed or caused the failure.
-
-### Q69: A pharmaceutical research team sees a production failure tied to layered controls. The team has been using one final moderation pass; the next change needs to make layered controls explicit. Which action best addresses the problem?
-- ID: ags-hf-evaluation-and-safety-034
-- Domain: Evaluation and Safety
-- Topic: layered controls; agentic_ai_general_study
-- Difficulty: expert
-- A. Keep one final moderation pass as the primary release control and record only final outputs.
-- B. Use layered controls as the control boundary and require the system to combine input, retrieval, tool, and output controls.
-- C. Wait for production incidents before adding a dedicated layered controls check.
-- D. Use prompt injection as the main gate even though reviewers are asking for layered controls evidence.
-- Answer: B
-- Explanation: The scenario is about layered controls. The strongest answer fixes the failing layer directly: combine input, retrieval, tool, and output controls.
-- Why A is wrong: It keeps one final moderation pass in control instead of adding a measurable layered controls decision point.
-- Why C is wrong: Waiting for incidents postpones the layered controls gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making layered controls testable in the scenario.
-
-### Q70: A cybersecurity response team has a production-readiness review for an evaluation and safety gate. The review is focused on prompt injection, because the system must treat retrieved text and tool output as data, not instructions. Which architecture keeps the boundary cleanest?
-- ID: ags-hf-evaluation-and-safety-035
-- Domain: Evaluation and Safety
-- Topic: prompt injection; agentic_ai_general_study
-- Difficulty: medium
-- A. Add a release gate for prompt injection: treat retrieved text and tool output as data, not instructions.
-- B. Use least privilege as the main gate even though reviewers are asking for prompt injection evidence.
-- C. Keep letting documents override system policy as the primary release control and record only final outputs.
-- D. Prioritize trajectory evaluation before validating the failure signal around prompt injection.
-- Answer: A
-- Explanation: The scenario is about prompt injection. The strongest answer fixes the failing layer directly: treat retrieved text and tool output as data, not instructions.
-- Why B is wrong: It moves attention to a neighboring control instead of making prompt injection testable in the scenario.
-- Why C is wrong: It keeps letting documents override system policy in control instead of adding a measurable prompt injection decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making prompt injection testable in the scenario.
-
-### Q71: A public-sector casework team has a production-readiness review for an evaluation and safety gate. The review is focused on least privilege, because the system must scope credentials to tools and roles. Which choice addresses the root cause?
-- ID: ags-hf-evaluation-and-safety-036
-- Domain: Evaluation and Safety
-- Topic: least privilege; agentic_ai_general_study
-- Difficulty: hard
-- A. Keep giving the LLM API keys as the primary release control and record only final outputs.
-- B. Prioritize bootstrap evals before validating the failure signal around least privilege.
-- C. Bundle least privilege, prompt injection, and prompt changes into one release with one aggregate score.
-- D. Change the design around least privilege so the system can scope credentials to tools and roles.
-- Answer: D
-- Explanation: The scenario is about least privilege. The strongest answer fixes the failing layer directly: scope credentials to tools and roles.
-- Why A is wrong: It keeps giving the LLM API keys in control instead of adding a measurable least privilege decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making least privilege testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether least privilege fixed or caused the failure.
-
-### Q72: A logistics planning team sees a production failure tied to trajectory evaluation. The team has been using scoring only the final text; the next change needs to make trajectory evaluation explicit. Which action best addresses the problem?
-- ID: ags-hf-evaluation-and-safety-037
-- Domain: Evaluation and Safety
-- Topic: trajectory evaluation; agentic_ai_general_study
-- Difficulty: hard
-- A. Bundle trajectory evaluation, least privilege, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated trajectory evaluation check.
-- C. Make trajectory evaluation explicit in the workflow: score tool choice, retrieval, safety, latency, and final answer together.
-- D. Prioritize LLM-as-judge calibration before validating the failure signal around trajectory evaluation.
-- Answer: C
-- Explanation: The scenario is about trajectory evaluation. The strongest answer fixes the failing layer directly: score tool choice, retrieval, safety, latency, and final answer together.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether trajectory evaluation fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the trajectory evaluation gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making trajectory evaluation testable in the scenario.
-
-### Q73: An automotive support team is preparing an evaluation and safety gate for release. The current design relies on agent self-judgment as ground truth, but the release gate needs to create verified question-chunk pairs when labels are missing. Which choice addresses the root cause?
-- ID: ags-hf-evaluation-and-safety-038
-- Domain: Evaluation and Safety
-- Topic: bootstrap evals; agentic_ai_general_study
-- Difficulty: medium
-- A. Use trajectory evaluation as the main gate even though reviewers are asking for bootstrap evals evidence.
-- B. Use bootstrap evals as the control boundary and require the system to create verified question-chunk pairs when labels are missing.
-- C. Bundle bootstrap evals, trajectory evaluation, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated bootstrap evals check.
-- Answer: B
-- Explanation: The scenario is about bootstrap evals. The strongest answer fixes the failing layer directly: create verified question-chunk pairs when labels are missing.
-- Why A is wrong: It moves attention to a neighboring control instead of making bootstrap evals testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether bootstrap evals fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the bootstrap evals gate until after users are exposed.
-
-### Q74: A bank fraud team is reviewing an evaluation and safety gate before rollout. The main risk is LLM-as-judge calibration: the system must anchor judge rubrics with human labels and disagreement review. Which option keeps the decision at the right layer?
-- ID: ags-hf-evaluation-and-safety-039
-- Domain: Evaluation and Safety
-- Topic: LLM-as-judge calibration; agentic_ai_general_study
-- Difficulty: hard
-- A. Add a release gate for LLM-as-judge calibration: anchor judge rubrics with human labels and disagreement review.
-- B. Wait for production incidents before adding a dedicated LLM-as-judge calibration check.
-- C. Use prompt injection as the main gate even though reviewers are asking for LLM-as-judge calibration evidence.
-- D. Keep trusting a judge score with no calibration as the primary release control and record only final outputs.
-- Answer: A
-- Explanation: The scenario is about LLM-as-judge calibration. The strongest answer fixes the failing layer directly: anchor judge rubrics with human labels and disagreement review.
-- Why B is wrong: Waiting for incidents postpones the LLM-as-judge calibration gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making LLM-as-judge calibration testable in the scenario.
-- Why D is wrong: It keeps trusting a judge score with no calibration in control instead of adding a measurable LLM-as-judge calibration decision point.
-
-### Q75: A manufacturing quality team is preparing an evaluation and safety gate for release. The current design relies on one final moderation pass, but the release gate needs to combine input, retrieval, tool, and output controls. Which implementation path is most appropriate?
-- ID: ags-hf-evaluation-and-safety-040
-- Domain: Evaluation and Safety
-- Topic: layered controls; agentic_ai_general_study
-- Difficulty: hard
-- A. Change the design around layered controls so the system can combine input, retrieval, tool, and output controls.
-- B. Use LLM-as-judge calibration as the main gate even though reviewers are asking for layered controls evidence.
-- C. Keep one final moderation pass as the primary release control and record only final outputs.
-- D. Prioritize prompt injection before validating the failure signal around layered controls.
-- Answer: A
-- Explanation: The scenario is about layered controls. The strongest answer fixes the failing layer directly: combine input, retrieval, tool, and output controls.
-- Why B is wrong: It moves attention to a neighboring control instead of making layered controls testable in the scenario.
-- Why C is wrong: It keeps one final moderation pass in control instead of adding a measurable layered controls decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making layered controls testable in the scenario.
-
-### Q76: A hospital operations team has a production-readiness review for an evaluation and safety gate. The review is focused on prompt injection, because the system must treat retrieved text and tool output as data, not instructions. Which design is the best first change?
-- ID: ags-hf-evaluation-and-safety-041
-- Domain: Evaluation and Safety
-- Topic: prompt injection; agentic_ai_general_study
-- Difficulty: expert
-- A. Bundle prompt injection, LLM-as-judge calibration, and prompt changes into one release with one aggregate score.
-- B. Make prompt injection explicit in the workflow: treat retrieved text and tool output as data, not instructions.
-- C. Keep letting documents override system policy as the primary release control and record only final outputs.
-- D. Prioritize bootstrap evals before validating the failure signal around prompt injection.
-- Answer: B
-- Explanation: The scenario is about prompt injection. The strongest answer fixes the failing layer directly: treat retrieved text and tool output as data, not instructions.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether prompt injection fixed or caused the failure.
-- Why C is wrong: It keeps letting documents override system policy in control instead of adding a measurable prompt injection decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making prompt injection testable in the scenario.
-
-### Q77: A semiconductor design group has a production-readiness review for an evaluation and safety gate. The review is focused on least privilege, because the system must scope credentials to tools and roles. Which action best fits the requirement?
-- ID: ags-hf-evaluation-and-safety-042
-- Domain: Evaluation and Safety
-- Topic: least privilege; agentic_ai_general_study
-- Difficulty: medium
-- A. Bundle least privilege, prompt injection, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated least privilege check.
-- C. Use least privilege as the control boundary and require the system to scope credentials to tools and roles.
-- D. Prioritize LLM-as-judge calibration before validating the failure signal around least privilege.
-- Answer: C
-- Explanation: The scenario is about least privilege. The strongest answer fixes the failing layer directly: scope credentials to tools and roles.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether least privilege fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the least privilege gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making least privilege testable in the scenario.
-
-### Q78: A pharmaceutical research team is reviewing an evaluation and safety gate before rollout. The main risk is trajectory evaluation: the system must score tool choice, retrieval, safety, latency, and final answer together. Which option keeps the decision at the right layer?
-- ID: ags-hf-evaluation-and-safety-043
-- Domain: Evaluation and Safety
-- Topic: trajectory evaluation; agentic_ai_general_study
-- Difficulty: hard
-- A. Bundle trajectory evaluation, LLM-as-judge calibration, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated trajectory evaluation check.
-- C. Use LLM-as-judge calibration as the main gate even though reviewers are asking for trajectory evaluation evidence.
-- D. Add a release gate for trajectory evaluation: score tool choice, retrieval, safety, latency, and final answer together.
-- Answer: D
-- Explanation: The scenario is about trajectory evaluation. The strongest answer fixes the failing layer directly: score tool choice, retrieval, safety, latency, and final answer together.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether trajectory evaluation fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the trajectory evaluation gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making trajectory evaluation testable in the scenario.
-
-### Q79: A logistics planning team is reviewing an evaluation and safety gate before rollout. The main risk is bootstrap evals: the system must create verified question-chunk pairs when labels are missing. Which option keeps the decision at the right layer?
-- ID: ags-hf-evaluation-and-safety-044
-- Domain: Evaluation and Safety
-- Topic: bootstrap evals; agentic_ai_general_study
-- Difficulty: expert
-- A. Change the design around bootstrap evals so the system can create verified question-chunk pairs when labels are missing.
-- B. Wait for production incidents before adding a dedicated bootstrap evals check.
-- C. Use layered controls as the main gate even though reviewers are asking for bootstrap evals evidence.
-- D. Keep agent self-judgment as ground truth as the primary release control and record only final outputs.
-- Answer: A
-- Explanation: The scenario is about bootstrap evals. The strongest answer fixes the failing layer directly: create verified question-chunk pairs when labels are missing.
-- Why B is wrong: Waiting for incidents postpones the bootstrap evals gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making bootstrap evals testable in the scenario.
-- Why D is wrong: It keeps agent self-judgment as ground truth in control instead of adding a measurable bootstrap evals decision point.
-
-### Q80: A public-sector casework team has a production-readiness review for an evaluation and safety gate. The review is focused on LLM-as-judge calibration, because the system must anchor judge rubrics with human labels and disagreement review. Which design is the best first change?
-- ID: ags-hf-evaluation-and-safety-045
-- Domain: Evaluation and Safety
-- Topic: LLM-as-judge calibration; agentic_ai_general_study
-- Difficulty: medium
-- A. Prioritize layered controls before validating the failure signal around LLM-as-judge calibration.
-- B. Make LLM-as-judge calibration explicit in the workflow: anchor judge rubrics with human labels and disagreement review.
-- C. Use trajectory evaluation as the main gate even though reviewers are asking for LLM-as-judge calibration evidence.
-- D. Keep trusting a judge score with no calibration as the primary release control and record only final outputs.
-- Answer: B
-- Explanation: The scenario is about LLM-as-judge calibration. The strongest answer fixes the failing layer directly: anchor judge rubrics with human labels and disagreement review.
-- Why A is wrong: It moves attention to a neighboring control instead of making LLM-as-judge calibration testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making LLM-as-judge calibration testable in the scenario.
-- Why D is wrong: It keeps trusting a judge score with no calibration in control instead of adding a measurable LLM-as-judge calibration decision point.
-
-### Q81: A cybersecurity response team is comparing two release designs for an evaluation and safety gate. One design centers on one final moderation pass; the other adds a measurable layered controls step. Which design is more appropriate for production?
-- ID: ags-hf-evaluation-and-safety-046
-- Domain: Evaluation and Safety
-- Topic: layered controls; agentic_ai_general_study
-- Difficulty: hard
-- A. Prioritize trajectory evaluation before validating the failure signal around layered controls.
-- B. Bundle layered controls, bootstrap evals, and prompt changes into one release with one aggregate score.
-- C. Use layered controls as the control boundary and require the system to combine input, retrieval, tool, and output controls.
-- D. Keep one final moderation pass as the primary release control and record only final outputs.
-- Answer: C
-- Explanation: The scenario is about layered controls. The strongest answer fixes the failing layer directly: combine input, retrieval, tool, and output controls.
-- Why A is wrong: It moves attention to a neighboring control instead of making layered controls testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether layered controls fixed or caused the failure.
-- Why D is wrong: It keeps one final moderation pass in control instead of adding a measurable layered controls decision point.
-
-### Q82: An automotive support team is preparing an evaluation and safety gate for release. The current design relies on letting documents override system policy, but the release gate needs to treat retrieved text and tool output as data, not instructions. Which choice addresses the root cause?
-- ID: ags-hf-evaluation-and-safety-047
-- Domain: Evaluation and Safety
-- Topic: prompt injection; agentic_ai_general_study
-- Difficulty: hard
-- A. Prioritize layered controls before validating the failure signal around prompt injection.
-- B. Bundle prompt injection, trajectory evaluation, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated prompt injection check.
-- D. Add a release gate for prompt injection: treat retrieved text and tool output as data, not instructions.
-- Answer: D
-- Explanation: The scenario is about prompt injection. The strongest answer fixes the failing layer directly: treat retrieved text and tool output as data, not instructions.
-- Why A is wrong: It moves attention to a neighboring control instead of making prompt injection testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether prompt injection fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the prompt injection gate until after users are exposed.
-
-### Q83: A manufacturing quality team has a production-readiness review for an operational monitoring plan. The review is focused on trace replay, because the system must capture spans for model, retrieval, tools, guardrails, latency, and cost. Which implementation path is most appropriate?
-- ID: ags-hf-observability-operations-and-cost-001
-- Domain: Observability, Operations, and Cost
-- Topic: trace replay; agentic_ai_general_study
-- Difficulty: expert
-- A. Make trace replay explicit in the workflow: capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- B. Keep HTTP 200 as the only success signal as the primary release control and record only final outputs.
-- C. Prioritize drift monitoring before validating the failure signal around trace replay.
-- D. Bundle trace replay, canary monitoring, and prompt changes into one release with one aggregate score.
-- Answer: A
-- Explanation: The scenario is about trace replay. The strongest answer fixes the failing layer directly: capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- Why B is wrong: It keeps HTTP 200 as the only success signal in control instead of adding a measurable trace replay decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making trace replay testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether trace replay fixed or caused the failure.
-
-### Q84: A bank fraud team has a production-readiness review for an operational monitoring plan. The review is focused on drift monitoring, because the system must watch route mix, retrieval hit rate, judge scores, and escalation rates. Which architecture keeps the boundary cleanest?
-- ID: ags-hf-observability-operations-and-cost-002
-- Domain: Observability, Operations, and Cost
-- Topic: drift monitoring; agentic_ai_general_study
-- Difficulty: medium
-- A. Prioritize incident response before validating the failure signal around drift monitoring.
-- B. Bundle drift monitoring, fallback policy, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated drift monitoring check.
-- D. Use drift monitoring as the control boundary and require the system to watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- Answer: D
-- Explanation: The scenario is about drift monitoring. The strongest answer fixes the failing layer directly: watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- Why A is wrong: It moves attention to a neighboring control instead of making drift monitoring testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether drift monitoring fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the drift monitoring gate until after users are exposed.
-
-### Q85: An insurance claims group has a production-readiness review for an operational monitoring plan. The review is focused on incident response, because the system must convert incidents into regression tests and rollback rules. Which choice addresses the root cause?
-- ID: ags-hf-observability-operations-and-cost-003
-- Domain: Observability, Operations, and Cost
-- Topic: incident response; agentic_ai_general_study
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated incident response check.
-- B. Use canary monitoring as the main gate even though reviewers are asking for incident response evidence.
-- C. Add a release gate for incident response: convert incidents into regression tests and rollback rules.
-- D. Bundle incident response, canary monitoring, and prompt changes into one release with one aggregate score.
-- Answer: C
-- Explanation: The scenario is about incident response. The strongest answer fixes the failing layer directly: convert incidents into regression tests and rollback rules.
-- Why A is wrong: Waiting for incidents postpones the incident response gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making incident response testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether incident response fixed or caused the failure.
-
-### Q86: A global retailer is reviewing an operational monitoring plan before rollout. The main risk is p95/p99 latency: the system must watch tail latency, queueing, retries, and error budgets. Which option keeps the decision at the right layer?
-- ID: ags-hf-observability-operations-and-cost-004
-- Domain: Observability, Operations, and Cost
-- Topic: p95/p99 latency; agentic_ai_general_study
-- Difficulty: expert
-- A. Keep average latency only as the primary release control and record only final outputs.
-- B. Change the design around p95/p99 latency so the system can watch tail latency, queueing, retries, and error budgets.
-- C. Wait for production incidents before adding a dedicated p95/p99 latency check.
-- D. Use trace replay as the main gate even though reviewers are asking for p95/p99 latency evidence.
-- Answer: B
-- Explanation: The scenario is about p95/p99 latency. The strongest answer fixes the failing layer directly: watch tail latency, queueing, retries, and error budgets.
-- Why A is wrong: It keeps average latency only in control instead of adding a measurable p95/p99 latency decision point.
-- Why C is wrong: Waiting for incidents postpones the p95/p99 latency gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making p95/p99 latency testable in the scenario.
-
-### Q87: A manufacturing quality team has a production-readiness review for an operational monitoring plan. The review is focused on canary monitoring, because the system must compare quality, safety, cost, and latency during rollout. Which design is the best first change?
-- ID: ags-hf-observability-operations-and-cost-005
-- Domain: Observability, Operations, and Cost
-- Topic: canary monitoring; agentic_ai_general_study
-- Difficulty: medium
-- A. Make canary monitoring explicit in the workflow: compare quality, safety, cost, and latency during rollout.
-- B. Use drift monitoring as the main gate even though reviewers are asking for canary monitoring evidence.
-- C. Keep full rollout before measurement as the primary release control and record only final outputs.
-- D. Prioritize p95/p99 latency before validating the failure signal around canary monitoring.
-- Answer: A
-- Explanation: The scenario is about canary monitoring. The strongest answer fixes the failing layer directly: compare quality, safety, cost, and latency during rollout.
-- Why B is wrong: It moves attention to a neighboring control instead of making canary monitoring testable in the scenario.
-- Why C is wrong: It keeps full rollout before measurement in control instead of adding a measurable canary monitoring decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making canary monitoring testable in the scenario.
-
-### Q88: A semiconductor design group is reviewing an operational monitoring plan before rollout. The main risk is fallback policy: the system must route around unhealthy models or tools with trace evidence. Which option keeps the decision at the right layer?
-- ID: ags-hf-observability-operations-and-cost-006
-- Domain: Observability, Operations, and Cost
-- Topic: fallback policy; agentic_ai_general_study
-- Difficulty: hard
-- A. Keep silent fallback to lower quality as the primary release control and record only final outputs.
-- B. Prioritize p95/p99 latency before validating the failure signal around fallback policy.
-- C. Bundle fallback policy, canary monitoring, and prompt changes into one release with one aggregate score.
-- D. Use fallback policy as the control boundary and require the system to route around unhealthy models or tools with trace evidence.
-- Answer: D
-- Explanation: The scenario is about fallback policy. The strongest answer fixes the failing layer directly: route around unhealthy models or tools with trace evidence.
-- Why A is wrong: It keeps silent fallback to lower quality in control instead of adding a measurable fallback policy decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making fallback policy testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether fallback policy fixed or caused the failure.
-
-### Q89: An insurance claims group is comparing two release designs for an operational monitoring plan. One design centers on HTTP 200 as the only success signal; the other adds a measurable trace replay step. Which design is more appropriate for production?
-- ID: ags-hf-observability-operations-and-cost-007
-- Domain: Observability, Operations, and Cost
-- Topic: trace replay; agentic_ai_general_study
-- Difficulty: hard
-- A. Bundle trace replay, fallback policy, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated trace replay check.
-- C. Add a release gate for trace replay: capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- D. Prioritize drift monitoring before validating the failure signal around trace replay.
-- Answer: C
-- Explanation: The scenario is about trace replay. The strongest answer fixes the failing layer directly: capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether trace replay fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the trace replay gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making trace replay testable in the scenario.
-
-### Q90: A global retailer is preparing an operational monitoring plan for release. The current design relies on average latency only, but the release gate needs to watch route mix, retrieval hit rate, judge scores, and escalation rates. Which architecture keeps the boundary cleanest?
-- ID: ags-hf-observability-operations-and-cost-008
-- Domain: Observability, Operations, and Cost
-- Topic: drift monitoring; agentic_ai_general_study
-- Difficulty: easy
-- A. Use trace replay as the main gate even though reviewers are asking for drift monitoring evidence.
-- B. Change the design around drift monitoring so the system can watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- C. Bundle drift monitoring, trace replay, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated drift monitoring check.
-- Answer: B
-- Explanation: The scenario is about drift monitoring. The strongest answer fixes the failing layer directly: watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- Why A is wrong: It moves attention to a neighboring control instead of making drift monitoring testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether drift monitoring fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the drift monitoring gate until after users are exposed.
-
-### Q91: A hospital operations team is comparing two release designs for an operational monitoring plan. One design centers on manual transcript review only; the other adds a measurable incident response step. Which design is more appropriate for production?
+### Q1: During an architecture review, a hospital operations team finds that the team can reproduce the failure around average latency dashboards. The missing control is the one that can monitor tail latency alongside task quality and safety. What is the best next step?
 - ID: ags-hf-observability-operations-and-cost-009
 - Domain: Observability, Operations, and Cost
-- Topic: incident response; agentic_ai_general_study
+- Topic: p95/p99 SLOs; agentic_ai_general_study
 - Difficulty: hard
-- A. Make incident response explicit in the workflow: convert incidents into regression tests and rollback rules.
-- B. Wait for production incidents before adding a dedicated incident response check.
-- C. Use fallback policy as the main gate even though reviewers are asking for incident response evidence.
-- D. Keep manual transcript review only as the primary release control and record only final outputs.
+- Scope: general_concept
+- Source: generated
+- A. Add a release gate for p95/p99 SLOs: monitor tail latency alongside task quality and safety.
+- B. Release prompt, model, and audit trail changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving p95/p99 SLOs implicit.
+- D. Use audit trail as the main gate even though reviewers are asking for p95/p99 SLOs evidence.
 - Answer: A
-- Explanation: The scenario is about incident response. The strongest answer fixes the failing layer directly: convert incidents into regression tests and rollback rules.
-- Why B is wrong: Waiting for incidents postpones the incident response gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making incident response testable in the scenario.
-- Why D is wrong: It keeps manual transcript review only in control instead of adding a measurable incident response decision point.
+- Explanation: P95/p99 SLOs is the missing control in this scenario. The right answer makes it explicit so the system can monitor tail latency alongside task quality and safety.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether p95/p99 SLOs fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making p95/p99 SLOs testable in the scenario.
 
-### Q92: A bank fraud team is preparing an operational monitoring plan for release. The current design relies on average latency only, but the release gate needs to watch tail latency, queueing, retries, and error budgets. Which control should be added before rollout?
+### Q2: A bank fraud team is building an operational monitoring plan. The current design still relies on average latency only. Reviewers need a control that can watch tail latency, queueing, retries, and error budgets. Which control should be added before rollout?
 - ID: ags-hf-observability-operations-and-cost-010
 - Domain: Observability, Operations, and Cost
 - Topic: p95/p99 latency; agentic_ai_general_study
 - Difficulty: expert
-- A. Keep average latency only as the primary release control and record only final outputs.
-- B. Prioritize fallback policy before validating the failure signal around p95/p99 latency.
-- C. Use p95/p99 latency as the control boundary and require the system to watch tail latency, queueing, retries, and error budgets.
-- D. Use incident response as the main gate even though reviewers are asking for p95/p99 latency evidence.
+- Scope: general_concept
+- Source: generated
+- A. Use p95/p99 SLOs as the main gate even though reviewers are asking for p95/p99 latency evidence.
+- B. Move the check to post-release monitoring without changing the release path for p95/p99 latency.
+- C. Change the design around p95/p99 latency so the system can watch tail latency, queueing, retries, and error budgets.
+- D. Increase model capacity or context length while leaving p95/p99 latency implicit.
 - Answer: C
-- Explanation: The scenario is about p95/p99 latency. The strongest answer fixes the failing layer directly: watch tail latency, queueing, retries, and error budgets.
-- Why A is wrong: It keeps average latency only in control instead of adding a measurable p95/p99 latency decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making p95/p99 latency testable in the scenario.
-- Why D is wrong: It moves attention to a neighboring control instead of making p95/p99 latency testable in the scenario.
+- Explanation: P95/p99 latency is the missing control in this scenario. The right answer makes it explicit so the system can watch tail latency, queueing, retries, and error budgets.
+- Why A is wrong: It moves attention to a neighboring control instead of making p95/p99 latency testable in the scenario.
+- Why B is wrong: Monitoring is useful, but this scenario needs p95/p99 latency controlled before release or execution.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
 
-### Q93: A semiconductor design group is preparing an operational monitoring plan for release. The current design relies on full rollout before measurement, but the release gate needs to compare quality, safety, cost, and latency during rollout. Which architecture keeps the boundary cleanest?
+### Q3: A semiconductor design group is building an operational monitoring plan. The failure is tied to canary monitoring. The safer design is the one that can compare quality, safety, cost, and latency during rollout. Which architecture keeps the boundary cleanest?
 - ID: ags-hf-observability-operations-and-cost-011
 - Domain: Observability, Operations, and Cost
 - Topic: canary monitoring; agentic_ai_general_study
 - Difficulty: medium
-- A. Keep full rollout before measurement as the primary release control and record only final outputs.
-- B. Prioritize incident response before validating the failure signal around canary monitoring.
-- C. Bundle canary monitoring, fallback policy, and prompt changes into one release with one aggregate score.
-- D. Add a release gate for canary monitoring: compare quality, safety, cost, and latency during rollout.
+- Scope: general_concept
+- Source: generated
+- A. Use fallback policy as the main gate even though reviewers are asking for canary monitoring evidence.
+- B. Move the check to post-release monitoring without changing the release path for canary monitoring.
+- C. Keep full rollout before measurement as the main control and add a dashboard for final outputs.
+- D. Instrument and enforce canary monitoring; the system must compare quality, safety, cost, and latency during rollout.
 - Answer: D
-- Explanation: The scenario is about canary monitoring. The strongest answer fixes the failing layer directly: compare quality, safety, cost, and latency during rollout.
-- Why A is wrong: It keeps full rollout before measurement in control instead of adding a measurable canary monitoring decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making canary monitoring testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether canary monitoring fixed or caused the failure.
+- Explanation: Canary monitoring is the missing control in this scenario. The right answer makes it explicit so the system can compare quality, safety, cost, and latency during rollout.
+- Why A is wrong: It moves attention to a neighboring control instead of making canary monitoring testable in the scenario.
+- Why B is wrong: Monitoring is useful, but this scenario needs canary monitoring controlled before release or execution.
+- Why C is wrong: It keeps full rollout before measurement in control instead of adding a measurable canary monitoring decision point.
 
-### Q94: A hospital operations team is preparing an operational monitoring plan for release. The current design relies on silent fallback to lower quality, but the release gate needs to route around unhealthy models or tools with trace evidence. Which implementation path is most appropriate?
+### Q4: A hospital operations team is building an operational monitoring plan. The failure appears when the system keeps silent fallback to lower quality as the workaround. The release needs a design step that can route around unhealthy models or tools with trace evidence. Which implementation path is most appropriate?
 - ID: ags-hf-observability-operations-and-cost-012
 - Domain: Observability, Operations, and Cost
 - Topic: fallback policy; agentic_ai_general_study
 - Difficulty: hard
-- A. Change the design around fallback policy so the system can route around unhealthy models or tools with trace evidence.
-- B. Prioritize p95/p99 latency before validating the failure signal around fallback policy.
-- C. Bundle fallback policy, incident response, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated fallback policy check.
+- Scope: general_concept
+- Source: generated
+- A. Put fallback policy before rollout so the team can route around unhealthy models or tools with trace evidence.
+- B. Move the check to post-release monitoring without changing the release path for fallback policy.
+- C. Keep silent fallback to lower quality as the main control and add a dashboard for final outputs.
+- D. Prioritize p95/p99 latency even though the observed failure is around fallback policy.
 - Answer: A
-- Explanation: The scenario is about fallback policy. The strongest answer fixes the failing layer directly: route around unhealthy models or tools with trace evidence.
-- Why B is wrong: It moves attention to a neighboring control instead of making fallback policy testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether fallback policy fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the fallback policy gate until after users are exposed.
+- Explanation: Fallback policy is the missing control in this scenario. The right answer makes it explicit so the system can route around unhealthy models or tools with trace evidence.
+- Why B is wrong: Monitoring is useful, but this scenario needs fallback policy controlled before release or execution.
+- Why C is wrong: It keeps silent fallback to lower quality in control instead of adding a measurable fallback policy decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making fallback policy testable in the scenario.
 
-### Q95: A logistics planning team is comparing two release designs for an operational monitoring plan. One design centers on HTTP 200 as the only success signal; the other adds a measurable trace replay step. Which design is more appropriate for production?
+### Q5: During an architecture review, a logistics planning team finds that the team can reproduce the failure around HTTP 200 as the only success signal. The missing control is the one that can capture spans for model, retrieval, tools, guardrails, latency, and cost. What is the best next step?
 - ID: ags-hf-observability-operations-and-cost-013
 - Domain: Observability, Operations, and Cost
 - Topic: trace replay; agentic_ai_general_study
 - Difficulty: hard
-- A. Use fallback policy as the main gate even though reviewers are asking for trace replay evidence.
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and fallback policy changes together with one aggregate score.
 - B. Make trace replay explicit in the workflow: capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- C. Bundle trace replay, fallback policy, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated trace replay check.
+- C. Keep HTTP 200 as the only success signal as the main control and add a dashboard for final outputs.
+- D. Prioritize canary monitoring even though the observed failure is around trace replay.
 - Answer: B
-- Explanation: The scenario is about trace replay. The strongest answer fixes the failing layer directly: capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- Why A is wrong: It moves attention to a neighboring control instead of making trace replay testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether trace replay fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the trace replay gate until after users are exposed.
+- Explanation: Trace replay is the missing control in this scenario. The right answer makes it explicit so the system can capture spans for model, retrieval, tools, guardrails, latency, and cost.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether trace replay fixed the failure.
+- Why C is wrong: It keeps HTTP 200 as the only success signal in control instead of adding a measurable trace replay decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making trace replay testable in the scenario.
 
-### Q96: A pharmaceutical research team is comparing two release designs for an operational monitoring plan. One design centers on average latency only; the other adds a measurable drift monitoring step. Which design is more appropriate for production?
+### Q6: During an architecture review, a pharmaceutical research team finds that the team can reproduce the failure around final answer logs only. The missing control is the one that can record model, prompt, tool, retrieval, guardrail, approval, and version metadata. What is the best next step?
 - ID: ags-hf-observability-operations-and-cost-014
 - Domain: Observability, Operations, and Cost
-- Topic: drift monitoring; agentic_ai_general_study
+- Topic: audit trail; agentic_ai_general_study
 - Difficulty: expert
-- A. Use incident response as the main gate even though reviewers are asking for drift monitoring evidence.
-- B. Keep average latency only as the primary release control and record only final outputs.
-- C. Use drift monitoring as the control boundary and require the system to watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- D. Wait for production incidents before adding a dedicated drift monitoring check.
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and trace replay changes together with one aggregate score.
+- B. Increase model capacity or context length while leaving audit trail implicit.
+- C. Use audit trail as the control boundary and require the system to record model, prompt, tool, retrieval, guardrail, approval, and version metadata.
+- D. Prioritize fallback policy even though the observed failure is around audit trail.
 - Answer: C
-- Explanation: The scenario is about drift monitoring. The strongest answer fixes the failing layer directly: watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- Why A is wrong: It moves attention to a neighboring control instead of making drift monitoring testable in the scenario.
-- Why B is wrong: It keeps average latency only in control instead of adding a measurable drift monitoring decision point.
-- Why D is wrong: Waiting for incidents postpones the drift monitoring gate until after users are exposed.
+- Explanation: Audit trail is the missing control in this scenario. The right answer makes it explicit so the system can record model, prompt, tool, retrieval, guardrail, approval, and version metadata.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether audit trail fixed the failure.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making audit trail testable in the scenario.
 
-### Q97: A cybersecurity response team has a production-readiness review for an operational monitoring plan. The review is focused on incident response, because the system must convert incidents into regression tests and rollback rules. Which action best fits the requirement?
+### Q7: A cybersecurity response team is triaging a failed pilot for an operational monitoring plan. The failure appears when the system keeps average latency dashboards as the workaround. The release needs a design step that can monitor tail latency alongside task quality and safety. Which control addresses the root cause?
 - ID: ags-hf-observability-operations-and-cost-015
 - Domain: Observability, Operations, and Cost
-- Topic: incident response; agentic_ai_general_study
+- Topic: p95/p99 SLOs; agentic_ai_general_study
 - Difficulty: medium
-- A. Use drift monitoring as the main gate even though reviewers are asking for incident response evidence.
-- B. Keep manual transcript review only as the primary release control and record only final outputs.
-- C. Prioritize p95/p99 latency before validating the failure signal around incident response.
-- D. Add a release gate for incident response: convert incidents into regression tests and rollback rules.
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and fallback policy changes together with one aggregate score.
+- B. Increase model capacity or context length while leaving p95/p99 SLOs implicit.
+- C. Use fallback policy as the main gate even though reviewers are asking for p95/p99 SLOs evidence.
+- D. Add a release gate for p95/p99 SLOs: monitor tail latency alongside task quality and safety.
 - Answer: D
-- Explanation: The scenario is about incident response. The strongest answer fixes the failing layer directly: convert incidents into regression tests and rollback rules.
-- Why A is wrong: It moves attention to a neighboring control instead of making incident response testable in the scenario.
-- Why B is wrong: It keeps manual transcript review only in control instead of adding a measurable incident response decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making incident response testable in the scenario.
+- Explanation: P95/p99 SLOs is the missing control in this scenario. The right answer makes it explicit so the system can monitor tail latency alongside task quality and safety.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether p95/p99 SLOs fixed the failure.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making p95/p99 SLOs testable in the scenario.
 
-### Q98: A manufacturing quality team is preparing an operational monitoring plan for release. The current design relies on average latency only, but the release gate needs to watch tail latency, queueing, retries, and error budgets. Which choice addresses the root cause?
+### Q8: A manufacturing quality team is building an operational monitoring plan. The failure is tied to p95/p99 latency. The safer design is the one that can watch tail latency, queueing, retries, and error budgets. Which choice addresses the root cause?
 - ID: ags-hf-observability-operations-and-cost-016
 - Domain: Observability, Operations, and Cost
 - Topic: p95/p99 latency; agentic_ai_general_study
 - Difficulty: hard
+- Scope: general_concept
+- Source: generated
 - A. Change the design around p95/p99 latency so the system can watch tail latency, queueing, retries, and error budgets.
-- B. Keep average latency only as the primary release control and record only final outputs.
-- C. Prioritize fallback policy before validating the failure signal around p95/p99 latency.
-- D. Bundle p95/p99 latency, trace replay, and prompt changes into one release with one aggregate score.
+- B. Increase model capacity or context length while leaving p95/p99 latency implicit.
+- C. Use trace replay as the main gate even though reviewers are asking for p95/p99 latency evidence.
+- D. Move the check to post-release monitoring without changing the release path for p95/p99 latency.
 - Answer: A
-- Explanation: The scenario is about p95/p99 latency. The strongest answer fixes the failing layer directly: watch tail latency, queueing, retries, and error budgets.
-- Why B is wrong: It keeps average latency only in control instead of adding a measurable p95/p99 latency decision point.
+- Explanation: P95/p99 latency is the missing control in this scenario. The right answer makes it explicit so the system can watch tail latency, queueing, retries, and error budgets.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
 - Why C is wrong: It moves attention to a neighboring control instead of making p95/p99 latency testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether p95/p99 latency fixed or caused the failure.
+- Why D is wrong: Monitoring is useful, but this scenario needs p95/p99 latency controlled before release or execution.
 
-### Q99: A logistics planning team is reviewing an operational monitoring plan before rollout. The main risk is canary monitoring: the system must compare quality, safety, cost, and latency during rollout. Which option keeps the decision at the right layer?
+### Q9: A logistics planning team is choosing between a design centered on full rollout before measurement and one that makes canary monitoring explicit for an operational monitoring plan. Which design should win?
 - ID: ags-hf-observability-operations-and-cost-017
 - Domain: Observability, Operations, and Cost
 - Topic: canary monitoring; agentic_ai_general_study
 - Difficulty: hard
-- A. Wait for production incidents before adding a dedicated canary monitoring check.
-- B. Make canary monitoring explicit in the workflow: compare quality, safety, cost, and latency during rollout.
-- C. Prioritize incident response before validating the failure signal around canary monitoring.
-- D. Bundle canary monitoring, p95/p99 latency, and prompt changes into one release with one aggregate score.
+- Scope: general_concept
+- Source: generated
+- A. Keep full rollout before measurement as the main control and add a dashboard for final outputs.
+- B. Instrument and enforce canary monitoring; the system must compare quality, safety, cost, and latency during rollout.
+- C. Use p95/p99 latency as the main gate even though reviewers are asking for canary monitoring evidence.
+- D. Move the check to post-release monitoring without changing the release path for canary monitoring.
 - Answer: B
-- Explanation: The scenario is about canary monitoring. The strongest answer fixes the failing layer directly: compare quality, safety, cost, and latency during rollout.
-- Why A is wrong: Waiting for incidents postpones the canary monitoring gate until after users are exposed.
+- Explanation: Canary monitoring is the missing control in this scenario. The right answer makes it explicit so the system can compare quality, safety, cost, and latency during rollout.
+- Why A is wrong: It keeps full rollout before measurement in control instead of adding a measurable canary monitoring decision point.
 - Why C is wrong: It moves attention to a neighboring control instead of making canary monitoring testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether canary monitoring fixed or caused the failure.
+- Why D is wrong: Monitoring is useful, but this scenario needs canary monitoring controlled before release or execution.
 
-### Q100: An automotive support team sees a production failure tied to fallback policy. The team has been using silent fallback to lower quality; the next change needs to make fallback policy explicit. Which action best addresses the problem?
+### Q10: An automotive support team passes the happy-path demo for an operational monitoring plan, but silent fallback to lower quality is being used as the shortcut, but it does not give the team a reliable way to route around unhealthy models or tools with trace evidence. Which change should be made before release?
 - ID: ags-hf-observability-operations-and-cost-018
 - Domain: Observability, Operations, and Cost
 - Topic: fallback policy; agentic_ai_general_study
 - Difficulty: medium
-- A. Wait for production incidents before adding a dedicated fallback policy check.
-- B. Use p95/p99 latency as the main gate even though reviewers are asking for fallback policy evidence.
-- C. Use fallback policy as the control boundary and require the system to route around unhealthy models or tools with trace evidence.
-- D. Bundle fallback policy, p95/p99 latency, and prompt changes into one release with one aggregate score.
+- Scope: general_concept
+- Source: generated
+- A. Keep silent fallback to lower quality as the main control and add a dashboard for final outputs.
+- B. Prioritize trace replay even though the observed failure is around fallback policy.
+- C. Put fallback policy before rollout so the team can route around unhealthy models or tools with trace evidence.
+- D. Move the check to post-release monitoring without changing the release path for fallback policy.
 - Answer: C
-- Explanation: The scenario is about fallback policy. The strongest answer fixes the failing layer directly: route around unhealthy models or tools with trace evidence.
-- Why A is wrong: Waiting for incidents postpones the fallback policy gate until after users are exposed.
+- Explanation: Fallback policy is the missing control in this scenario. The right answer makes it explicit so the system can route around unhealthy models or tools with trace evidence.
+- Why A is wrong: It keeps silent fallback to lower quality in control instead of adding a measurable fallback policy decision point.
 - Why B is wrong: It moves attention to a neighboring control instead of making fallback policy testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether fallback policy fixed or caused the failure.
+- Why D is wrong: Monitoring is useful, but this scenario needs fallback policy controlled before release or execution.
+
+### Q11: During an architecture review, a bank fraud team finds that the team can reproduce the failure around HTTP 200 as the only success signal. The missing control is the one that can capture spans for model, retrieval, tools, guardrails, latency, and cost. What is the best next step?
+- ID: ags-hf-observability-operations-and-cost-019
+- Domain: Observability, Operations, and Cost
+- Topic: trace replay; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Keep HTTP 200 as the only success signal as the main control and add a dashboard for final outputs.
+- B. Prioritize fallback policy even though the observed failure is around trace replay.
+- C. Release prompt, model, and p95/p99 SLOs changes together with one aggregate score.
+- D. Make trace replay explicit in the workflow: capture spans for model, retrieval, tools, guardrails, latency, and cost.
+- Answer: D
+- Explanation: Trace replay is the missing control in this scenario. The right answer makes it explicit so the system can capture spans for model, retrieval, tools, guardrails, latency, and cost.
+- Why A is wrong: It keeps HTTP 200 as the only success signal in control instead of adding a measurable trace replay decision point.
+- Why B is wrong: It moves attention to a neighboring control instead of making trace replay testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether trace replay fixed the failure.
+
+### Q12: A manufacturing quality team is triaging a failed pilot for an operational monitoring plan. The current design still relies on final answer logs only. Reviewers need a control that can record model, prompt, tool, retrieval, guardrail, approval, and version metadata. Which control addresses the root cause?
+- ID: ags-hf-observability-operations-and-cost-020
+- Domain: Observability, Operations, and Cost
+- Topic: audit trail; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Prioritize canary monitoring even though the observed failure is around audit trail.
+- B. Release prompt, model, and trace replay changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving audit trail implicit.
+- D. Use audit trail as the control boundary and require the system to record model, prompt, tool, retrieval, guardrail, approval, and version metadata.
+- Answer: D
+- Explanation: Audit trail is the missing control in this scenario. The right answer makes it explicit so the system can record model, prompt, tool, retrieval, guardrail, approval, and version metadata.
+- Why A is wrong: It moves attention to a neighboring control instead of making audit trail testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether audit trail fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q13: During an architecture review, a public-sector casework team finds that the failure appears when the system keeps average latency dashboards as the workaround. The release needs a design step that can monitor tail latency alongside task quality and safety. What is the best next step?
+- ID: ags-hf-observability-operations-and-cost-021
+- Domain: Observability, Operations, and Cost
+- Topic: p95/p99 SLOs; agentic_ai_general_study
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving p95/p99 SLOs implicit.
+- B. Use canary monitoring as the main gate even though reviewers are asking for p95/p99 SLOs evidence.
+- C. Add a release gate for p95/p99 SLOs: monitor tail latency alongside task quality and safety.
+- D. Release prompt, model, and canary monitoring changes together with one aggregate score.
+- Answer: C
+- Explanation: P95/p99 SLOs is the missing control in this scenario. The right answer makes it explicit so the system can monitor tail latency alongside task quality and safety.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making p95/p99 SLOs testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether p95/p99 SLOs fixed the failure.
+
+### Q14: A semiconductor design group is building an operational monitoring plan. Average latency only is being used as the shortcut, but it does not give the team a reliable way to watch tail latency, queueing, retries, and error budgets. Which architecture keeps the boundary cleanest?
+- ID: ags-hf-observability-operations-and-cost-022
+- Domain: Observability, Operations, and Cost
+- Topic: p95/p99 latency; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for p95/p99 latency.
+- B. Change the design around p95/p99 latency so the system can watch tail latency, queueing, retries, and error budgets.
+- C. Increase model capacity or context length while leaving p95/p99 latency implicit.
+- D. Use canary monitoring as the main gate even though reviewers are asking for p95/p99 latency evidence.
+- Answer: B
+- Explanation: P95/p99 latency is the missing control in this scenario. The right answer makes it explicit so the system can watch tail latency, queueing, retries, and error budgets.
+- Why A is wrong: Monitoring is useful, but this scenario needs p95/p99 latency controlled before release or execution.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making p95/p99 latency testable in the scenario.
+
+### Q15: An insurance claims group is building an operational monitoring plan. Full rollout before measurement is being used as the shortcut, but it does not give the team a reliable way to compare quality, safety, cost, and latency during rollout. Which design is the best first change?
+- ID: ags-hf-observability-operations-and-cost-023
+- Domain: Observability, Operations, and Cost
+- Topic: canary monitoring; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Instrument and enforce canary monitoring; the system must compare quality, safety, cost, and latency during rollout.
+- B. Use audit trail as the main gate even though reviewers are asking for canary monitoring evidence.
+- C. Move the check to post-release monitoring without changing the release path for canary monitoring.
+- D. Keep full rollout before measurement as the main control and add a dashboard for final outputs.
+- Answer: A
+- Explanation: Canary monitoring is the missing control in this scenario. The right answer makes it explicit so the system can compare quality, safety, cost, and latency during rollout.
+- Why B is wrong: It moves attention to a neighboring control instead of making canary monitoring testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs canary monitoring controlled before release or execution.
+- Why D is wrong: It keeps full rollout before measurement in control instead of adding a measurable canary monitoring decision point.
+
+### Q16: During an architecture review, a global retailer finds that silent fallback to lower quality is being used as the shortcut, but it does not give the team a reliable way to route around unhealthy models or tools with trace evidence. What is the best next step?
+- ID: ags-hf-observability-operations-and-cost-024
+- Domain: Observability, Operations, and Cost
+- Topic: fallback policy; agentic_ai_general_study
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for fallback policy.
+- B. Keep silent fallback to lower quality as the main control and add a dashboard for final outputs.
+- C. Prioritize p95/p99 SLOs even though the observed failure is around fallback policy.
+- D. Put fallback policy before rollout so the team can route around unhealthy models or tools with trace evidence.
+- Answer: D
+- Explanation: Fallback policy is the missing control in this scenario. The right answer makes it explicit so the system can route around unhealthy models or tools with trace evidence.
+- Why A is wrong: Monitoring is useful, but this scenario needs fallback policy controlled before release or execution.
+- Why B is wrong: It keeps silent fallback to lower quality in control instead of adding a measurable fallback policy decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making fallback policy testable in the scenario.
+
+### Q17: A hospital operations team is building an operational monitoring plan. The failure is tied to trace replay. The safer design is the one that can capture spans for model, retrieval, tools, guardrails, latency, and cost. Which implementation path is most appropriate?
+- ID: ags-hf-observability-operations-and-cost-025
+- Domain: Observability, Operations, and Cost
+- Topic: trace replay; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Prioritize p95/p99 SLOs even though the observed failure is around trace replay.
+- B. Release prompt, model, and fallback policy changes together with one aggregate score.
+- C. Make trace replay explicit in the workflow: capture spans for model, retrieval, tools, guardrails, latency, and cost.
+- D. Keep HTTP 200 as the only success signal as the main control and add a dashboard for final outputs.
+- Answer: C
+- Explanation: Trace replay is the missing control in this scenario. The right answer makes it explicit so the system can capture spans for model, retrieval, tools, guardrails, latency, and cost.
+- Why A is wrong: It moves attention to a neighboring control instead of making trace replay testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether trace replay fixed the failure.
+- Why D is wrong: It keeps HTTP 200 as the only success signal in control instead of adding a measurable trace replay decision point.
+
+### Q18: A bank fraud team is choosing between a design centered on final answer logs only and one that makes audit trail explicit for an operational monitoring plan. Which design should win?
+- ID: ags-hf-observability-operations-and-cost-026
+- Domain: Observability, Operations, and Cost
+- Topic: audit trail; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving audit trail implicit.
+- B. Use audit trail as the control boundary and require the system to record model, prompt, tool, retrieval, guardrail, approval, and version metadata.
+- C. Prioritize fallback policy even though the observed failure is around audit trail.
+- D. Release prompt, model, and p95/p99 latency changes together with one aggregate score.
+- Answer: B
+- Explanation: Audit trail is the missing control in this scenario. The right answer makes it explicit so the system can record model, prompt, tool, retrieval, guardrail, approval, and version metadata.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making audit trail testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether audit trail fixed the failure.
+
+### Q19: An insurance claims group is building an operational monitoring plan. The current design still relies on average latency dashboards. Reviewers need a control that can monitor tail latency alongside task quality and safety. Which choice addresses the root cause?
+- ID: ags-hf-observability-operations-and-cost-027
+- Domain: Observability, Operations, and Cost
+- Topic: p95/p99 SLOs; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Add a release gate for p95/p99 SLOs: monitor tail latency alongside task quality and safety.
+- B. Release prompt, model, and trace replay changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving p95/p99 SLOs implicit.
+- D. Use trace replay as the main gate even though reviewers are asking for p95/p99 SLOs evidence.
+- Answer: A
+- Explanation: P95/p99 SLOs is the missing control in this scenario. The right answer makes it explicit so the system can monitor tail latency alongside task quality and safety.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether p95/p99 SLOs fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making p95/p99 SLOs testable in the scenario.
+
+### Q20: A logistics planning team passes the happy-path demo for an operational monitoring plan, but the failure appears when the system keeps average latency only as the workaround. The release needs a design step that can watch tail latency, queueing, retries, and error budgets. Which change should be made before release?
+- ID: ags-hf-observability-operations-and-cost-028
+- Domain: Observability, Operations, and Cost
+- Topic: p95/p99 latency; agentic_ai_general_study
+- Difficulty: easy
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving p95/p99 latency implicit.
+- B. Use canary monitoring as the main gate even though reviewers are asking for p95/p99 latency evidence.
+- C. Move the check to post-release monitoring without changing the release path for p95/p99 latency.
+- D. Change the design around p95/p99 latency so the system can watch tail latency, queueing, retries, and error budgets.
+- Answer: D
+- Explanation: P95/p99 latency is the missing control in this scenario. The right answer makes it explicit so the system can watch tail latency, queueing, retries, and error budgets.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making p95/p99 latency testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs p95/p99 latency controlled before release or execution.
+
+### Q21: A hospital operations team is triaging a failed pilot for an operational monitoring plan. The failure is tied to canary monitoring. The safer design is the one that can compare quality, safety, cost, and latency during rollout. Which control addresses the root cause?
+- ID: ags-hf-observability-operations-and-cost-029
+- Domain: Observability, Operations, and Cost
+- Topic: canary monitoring; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for canary monitoring.
+- B. Keep full rollout before measurement as the main control and add a dashboard for final outputs.
+- C. Instrument and enforce canary monitoring; the system must compare quality, safety, cost, and latency during rollout.
+- D. Use fallback policy as the main gate even though reviewers are asking for canary monitoring evidence.
+- Answer: C
+- Explanation: Canary monitoring is the missing control in this scenario. The right answer makes it explicit so the system can compare quality, safety, cost, and latency during rollout.
+- Why A is wrong: Monitoring is useful, but this scenario needs canary monitoring controlled before release or execution.
+- Why B is wrong: It keeps full rollout before measurement in control instead of adding a measurable canary monitoring decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making canary monitoring testable in the scenario.
+
+### Q22: A semiconductor design group is triaging a failed pilot for an operational monitoring plan. The team can reproduce the failure around silent fallback to lower quality. The missing control is the one that can route around unhealthy models or tools with trace evidence. Which control addresses the root cause?
+- ID: ags-hf-observability-operations-and-cost-030
+- Domain: Observability, Operations, and Cost
+- Topic: fallback policy; agentic_ai_general_study
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Put fallback policy before rollout so the team can route around unhealthy models or tools with trace evidence.
+- B. Move the check to post-release monitoring without changing the release path for fallback policy.
+- C. Keep silent fallback to lower quality as the main control and add a dashboard for final outputs.
+- D. Prioritize p95/p99 latency even though the observed failure is around fallback policy.
+- Answer: A
+- Explanation: Fallback policy is the missing control in this scenario. The right answer makes it explicit so the system can route around unhealthy models or tools with trace evidence.
+- Why B is wrong: Monitoring is useful, but this scenario needs fallback policy controlled before release or execution.
+- Why C is wrong: It keeps silent fallback to lower quality in control instead of adding a measurable fallback policy decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making fallback policy testable in the scenario.
+
+### Q23: During an architecture review, a global retailer finds that the current design still relies on HTTP 200 as the only success signal. Reviewers need a control that can capture spans for model, retrieval, tools, guardrails, latency, and cost. What is the best next step?
+- ID: ags-hf-observability-operations-and-cost-031
+- Domain: Observability, Operations, and Cost
+- Topic: trace replay; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and fallback policy changes together with one aggregate score.
+- B. Make trace replay explicit in the workflow: capture spans for model, retrieval, tools, guardrails, latency, and cost.
+- C. Keep HTTP 200 as the only success signal as the main control and add a dashboard for final outputs.
+- D. Prioritize canary monitoring even though the observed failure is around trace replay.
+- Answer: B
+- Explanation: Trace replay is the missing control in this scenario. The right answer makes it explicit so the system can capture spans for model, retrieval, tools, guardrails, latency, and cost.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether trace replay fixed the failure.
+- Why C is wrong: It keeps HTTP 200 as the only success signal in control instead of adding a measurable trace replay decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making trace replay testable in the scenario.
+
+### Q24: A pharmaceutical research team is triaging a failed pilot for an operational monitoring plan. The failure appears when the system keeps final answer logs only as the workaround. The release needs a design step that can record model, prompt, tool, retrieval, guardrail, approval, and version metadata. Which control addresses the root cause?
+- ID: ags-hf-observability-operations-and-cost-032
+- Domain: Observability, Operations, and Cost
+- Topic: audit trail; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and p95/p99 SLOs changes together with one aggregate score.
+- B. Increase model capacity or context length while leaving audit trail implicit.
+- C. Use audit trail as the control boundary and require the system to record model, prompt, tool, retrieval, guardrail, approval, and version metadata.
+- D. Prioritize trace replay even though the observed failure is around audit trail.
+- Answer: C
+- Explanation: Audit trail is the missing control in this scenario. The right answer makes it explicit so the system can record model, prompt, tool, retrieval, guardrail, approval, and version metadata.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether audit trail fixed the failure.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making audit trail testable in the scenario.
+
+### Q25: A hospital operations team passes the happy-path demo for a governance and review workflow, but the failure appears when the system keeps review after irreversible mutations as the workaround. The release needs a design step that can require approval before high-risk actions. Which change should be made before release?
+- ID: ags-hf-human-oversight-and-governance-001
+- Domain: Human Oversight and Governance
+- Topic: human-in-the-loop; agentic_ai_general_study
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Prioritize review queues even though the observed failure is around human-in-the-loop.
+- B. Release prompt, model, and human-on-the-loop changes together with one aggregate score.
+- C. Make human-in-the-loop explicit in the workflow: require approval before high-risk actions.
+- D. Keep review after irreversible mutations as the main control and add a dashboard for final outputs.
+- Answer: C
+- Explanation: Human-in-the-loop is the missing control in this scenario. The right answer makes it explicit so the system can require approval before high-risk actions.
+- Why A is wrong: It moves attention to a neighboring control instead of making human-in-the-loop testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether human-in-the-loop fixed the failure.
+- Why D is wrong: It keeps review after irreversible mutations in control instead of adding a measurable human-in-the-loop decision point.
+
+### Q26: A bank fraud team passes the happy-path demo for a governance and review workflow, but manual approval for every low-risk step is being used as the shortcut, but it does not give the team a reliable way to sample low-risk decisions and monitor drift. Which change should be made before release?
+- ID: ags-hf-human-oversight-and-governance-002
+- Domain: Human Oversight and Governance
+- Topic: human-on-the-loop; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving human-on-the-loop implicit.
+- B. Use human-on-the-loop as the control boundary and require the system to sample low-risk decisions and monitor drift.
+- C. Prioritize feedback loop even though the observed failure is around human-on-the-loop.
+- D. Release prompt, model, and decision traceability changes together with one aggregate score.
+- Answer: B
+- Explanation: Human-on-the-loop is the missing control in this scenario. The right answer makes it explicit so the system can sample low-risk decisions and monitor drift.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making human-on-the-loop testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether human-on-the-loop fixed the failure.
+
+### Q27: An automotive support team is building a governance and review workflow. First-in-first-out for all cases is being used as the shortcut, but it does not give the team a reliable way to prioritize by risk, uncertainty, and impact. Which implementation path is most appropriate?
+- ID: ags-hf-human-oversight-and-governance-003
+- Domain: Human Oversight and Governance
+- Topic: review queues; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Add a release gate for review queues: prioritize by risk, uncertainty, and impact.
+- B. Release prompt, model, and human-in-the-loop changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving review queues implicit.
+- D. Use human-in-the-loop as the main gate even though reviewers are asking for review queues evidence.
+- Answer: A
+- Explanation: Review queues is the missing control in this scenario. The right answer makes it explicit so the system can prioritize by risk, uncertainty, and impact.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether review queues fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making review queues testable in the scenario.
+
+### Q28: A logistics planning team passes the happy-path demo for a governance and review workflow, but the failure appears when the system keeps collecting comments with no downstream owner as the workaround. The release needs a design step that can turn review labels into evals, prompt fixes, or training data. Which change should be made before release?
+- ID: ags-hf-human-oversight-and-governance-004
+- Domain: Human Oversight and Governance
+- Topic: feedback loop; agentic_ai_general_study
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving feedback loop implicit.
+- B. Use escalation threshold as the main gate even though reviewers are asking for feedback loop evidence.
+- C. Move the check to post-release monitoring without changing the release path for feedback loop.
+- D. Change the design around feedback loop so the system can turn review labels into evals, prompt fixes, or training data.
+- Answer: D
+- Explanation: Feedback loop is the missing control in this scenario. The right answer makes it explicit so the system can turn review labels into evals, prompt fixes, or training data.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making feedback loop testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs feedback loop controlled before release or execution.
+
+### Q29: A public-sector casework team passes the happy-path demo for a governance and review workflow, but the team can reproduce the failure around asking reviewers to judge opaque outputs. The missing control is the one that can show evidence, confidence, and pending tool actions to reviewers. Which change should be made before release?
+- ID: ags-hf-human-oversight-and-governance-005
+- Domain: Human Oversight and Governance
+- Topic: transparent handoff; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for transparent handoff.
+- B. Keep asking reviewers to judge opaque outputs as the main control and add a dashboard for final outputs.
+- C. Instrument and enforce transparent handoff; the system must show evidence, confidence, and pending tool actions to reviewers.
+- D. Use override path as the main gate even though reviewers are asking for transparent handoff evidence.
+- Answer: C
+- Explanation: Transparent handoff is the missing control in this scenario. The right answer makes it explicit so the system can show evidence, confidence, and pending tool actions to reviewers.
+- Why A is wrong: Monitoring is useful, but this scenario needs transparent handoff controlled before release or execution.
+- Why B is wrong: It keeps asking reviewers to judge opaque outputs in control instead of adding a measurable transparent handoff decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making transparent handoff testable in the scenario.
+
+### Q30: A cybersecurity response team is choosing between a design centered on same path for every request and one that makes escalation threshold explicit for a governance and review workflow. Which design should win?
+- ID: ags-hf-human-oversight-and-governance-006
+- Domain: Human Oversight and Governance
+- Topic: escalation threshold; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Prioritize review queues even though the observed failure is around escalation threshold.
+- B. Put escalation threshold before rollout so the team can send low-confidence or high-impact cases to the right reviewer.
+- C. Move the check to post-release monitoring without changing the release path for escalation threshold.
+- D. Keep same path for every request as the main control and add a dashboard for final outputs.
+- Answer: B
+- Explanation: Escalation threshold is the missing control in this scenario. The right answer makes it explicit so the system can send low-confidence or high-impact cases to the right reviewer.
+- Why A is wrong: It moves attention to a neighboring control instead of making escalation threshold testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs escalation threshold controlled before release or execution.
+- Why D is wrong: It keeps same path for every request in control instead of adding a measurable escalation threshold decision point.
+
+### Q31: A pharmaceutical research team is choosing between a design centered on silent long-term memory and one that makes user consent explicit for a governance and review workflow. Which design should win?
+- ID: ags-hf-human-oversight-and-governance-007
+- Domain: Human Oversight and Governance
+- Topic: user consent; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Make user consent explicit in the workflow: ask before storing preferences or using personal context beyond the session.
+- B. Keep silent long-term memory as the main control and add a dashboard for final outputs.
+- C. Prioritize transparent handoff even though the observed failure is around user consent.
+- D. Release prompt, model, and escalation threshold changes together with one aggregate score.
+- Answer: A
+- Explanation: User consent is the missing control in this scenario. The right answer makes it explicit so the system can ask before storing preferences or using personal context beyond the session.
+- Why B is wrong: It keeps silent long-term memory in control instead of adding a measurable user consent decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making user consent testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether user consent fixed the failure.
+
+### Q32: A telecom network operations team is triaging a failed pilot for a governance and review workflow. The current design still relies on binary approve-only UI. Reviewers need a control that can allow reviewers to approve, reject, edit, or request more evidence. Which control addresses the root cause?
+- ID: ags-hf-human-oversight-and-governance-008
+- Domain: Human Oversight and Governance
+- Topic: override path; agentic_ai_general_study
+- Difficulty: easy
+- Scope: general_concept
+- Source: generated
+- A. Prioritize escalation threshold even though the observed failure is around override path.
+- B. Release prompt, model, and transparent handoff changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving override path implicit.
+- D. Use override path as the control boundary and require the system to allow reviewers to approve, reject, edit, or request more evidence.
+- Answer: D
+- Explanation: Override path is the missing control in this scenario. The right answer makes it explicit so the system can allow reviewers to approve, reject, edit, or request more evidence.
+- Why A is wrong: It moves attention to a neighboring control instead of making override path testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether override path fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q33: A manufacturing quality team is triaging a failed pilot for a governance and review workflow. The failure is tied to decision traceability. The safer design is the one that can show why the agent chose a route, tool, evidence, and action. Which control addresses the root cause?
+- ID: ags-hf-human-oversight-and-governance-009
+- Domain: Human Oversight and Governance
+- Topic: decision traceability; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving decision traceability implicit.
+- B. Use override path as the main gate even though reviewers are asking for decision traceability evidence.
+- C. Add a release gate for decision traceability: show why the agent chose a route, tool, evidence, and action.
+- D. Release prompt, model, and override path changes together with one aggregate score.
+- Answer: C
+- Explanation: Decision traceability is the missing control in this scenario. The right answer makes it explicit so the system can show why the agent chose a route, tool, evidence, and action.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making decision traceability testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether decision traceability fixed the failure.
+
+### Q34: During an architecture review, a semiconductor design group finds that the current design still relies on review after irreversible mutations. Reviewers need a control that can require approval before high-risk actions. What is the best next step?
+- ID: ags-hf-human-oversight-and-governance-010
+- Domain: Human Oversight and Governance
+- Topic: human-in-the-loop; agentic_ai_general_study
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Change the design around human-in-the-loop so the system can require approval before high-risk actions.
+- B. Increase model capacity or context length while leaving human-in-the-loop implicit.
+- C. Use review queues as the main gate even though reviewers are asking for human-in-the-loop evidence.
+- D. Move the check to post-release monitoring without changing the release path for human-in-the-loop.
+- Answer: A
+- Explanation: Human-in-the-loop is the missing control in this scenario. The right answer makes it explicit so the system can require approval before high-risk actions.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making human-in-the-loop testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs human-in-the-loop controlled before release or execution.
+
+### Q35: A semiconductor design group is building a governance and review workflow. The failure appears when the system keeps manual approval for every low-risk step as the workaround. The release needs a design step that can sample low-risk decisions and monitor drift. Which architecture keeps the boundary cleanest?
+- ID: ags-hf-human-oversight-and-governance-011
+- Domain: Human Oversight and Governance
+- Topic: human-on-the-loop; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Keep manual approval for every low-risk step as the main control and add a dashboard for final outputs.
+- B. Instrument and enforce human-on-the-loop; the system must sample low-risk decisions and monitor drift.
+- C. Use transparent handoff as the main gate even though reviewers are asking for human-on-the-loop evidence.
+- D. Move the check to post-release monitoring without changing the release path for human-on-the-loop.
+- Answer: B
+- Explanation: Human-on-the-loop is the missing control in this scenario. The right answer makes it explicit so the system can sample low-risk decisions and monitor drift.
+- Why A is wrong: It keeps manual approval for every low-risk step in control instead of adding a measurable human-on-the-loop decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making human-on-the-loop testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs human-on-the-loop controlled before release or execution.
+
+### Q36: A hospital operations team is choosing between a design centered on first-in-first-out for all cases and one that makes review queues explicit for a governance and review workflow. Which design should win?
+- ID: ags-hf-human-oversight-and-governance-012
+- Domain: Human Oversight and Governance
+- Topic: review queues; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Keep first-in-first-out for all cases as the main control and add a dashboard for final outputs.
+- B. Prioritize transparent handoff even though the observed failure is around review queues.
+- C. Put review queues before rollout so the team can prioritize by risk, uncertainty, and impact.
+- D. Move the check to post-release monitoring without changing the release path for review queues.
+- Answer: C
+- Explanation: Review queues is the missing control in this scenario. The right answer makes it explicit so the system can prioritize by risk, uncertainty, and impact.
+- Why A is wrong: It keeps first-in-first-out for all cases in control instead of adding a measurable review queues decision point.
+- Why B is wrong: It moves attention to a neighboring control instead of making review queues testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs review queues controlled before release or execution.
+
+### Q37: During an architecture review, a global retailer finds that collecting comments with no downstream owner is being used as the shortcut, but it does not give the team a reliable way to turn review labels into evals, prompt fixes, or training data. What is the best next step?
+- ID: ags-hf-human-oversight-and-governance-013
+- Domain: Human Oversight and Governance
+- Topic: feedback loop; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Keep collecting comments with no downstream owner as the main control and add a dashboard for final outputs.
+- B. Prioritize transparent handoff even though the observed failure is around feedback loop.
+- C. Release prompt, model, and override path changes together with one aggregate score.
+- D. Make feedback loop explicit in the workflow: turn review labels into evals, prompt fixes, or training data.
+- Answer: D
+- Explanation: Feedback loop is the missing control in this scenario. The right answer makes it explicit so the system can turn review labels into evals, prompt fixes, or training data.
+- Why A is wrong: It keeps collecting comments with no downstream owner in control instead of adding a measurable feedback loop decision point.
+- Why B is wrong: It moves attention to a neighboring control instead of making feedback loop testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether feedback loop fixed the failure.
+
+### Q38: An automotive support team is building a governance and review workflow. Asking reviewers to judge opaque outputs is being used as the shortcut, but it does not give the team a reliable way to show evidence, confidence, and pending tool actions to reviewers. Which design is the best first change?
+- ID: ags-hf-human-oversight-and-governance-014
+- Domain: Human Oversight and Governance
+- Topic: transparent handoff; agentic_ai_general_study
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Use transparent handoff as the control boundary and require the system to show evidence, confidence, and pending tool actions to reviewers.
+- B. Prioritize user consent even though the observed failure is around transparent handoff.
+- C. Release prompt, model, and escalation threshold changes together with one aggregate score.
+- D. Increase model capacity or context length while leaving transparent handoff implicit.
+- Answer: A
+- Explanation: Transparent handoff is the missing control in this scenario. The right answer makes it explicit so the system can show evidence, confidence, and pending tool actions to reviewers.
+- Why B is wrong: It moves attention to a neighboring control instead of making transparent handoff testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether transparent handoff fixed the failure.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q39: A bank fraud team is choosing between a design centered on same path for every request and one that makes escalation threshold explicit for a governance and review workflow. Which design should win?
+- ID: ags-hf-human-oversight-and-governance-015
+- Domain: Human Oversight and Governance
+- Topic: escalation threshold; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Use feedback loop as the main gate even though reviewers are asking for escalation threshold evidence.
+- B. Add a release gate for escalation threshold: send low-confidence or high-impact cases to the right reviewer.
+- C. Release prompt, model, and feedback loop changes together with one aggregate score.
+- D. Increase model capacity or context length while leaving escalation threshold implicit.
+- Answer: B
+- Explanation: Escalation threshold is the missing control in this scenario. The right answer makes it explicit so the system can send low-confidence or high-impact cases to the right reviewer.
+- Why A is wrong: It moves attention to a neighboring control instead of making escalation threshold testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether escalation threshold fixed the failure.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q40: A manufacturing quality team is triaging a failed pilot for a governance and review workflow. The failure appears when the system keeps silent long-term memory as the workaround. The release needs a design step that can ask before storing preferences or using personal context beyond the session. Which control addresses the root cause?
+- ID: ags-hf-human-oversight-and-governance-016
+- Domain: Human Oversight and Governance
+- Topic: user consent; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Use escalation threshold as the main gate even though reviewers are asking for user consent evidence.
+- B. Move the check to post-release monitoring without changing the release path for user consent.
+- C. Change the design around user consent so the system can ask before storing preferences or using personal context beyond the session.
+- D. Increase model capacity or context length while leaving user consent implicit.
+- Answer: C
+- Explanation: User consent is the missing control in this scenario. The right answer makes it explicit so the system can ask before storing preferences or using personal context beyond the session.
+- Why A is wrong: It moves attention to a neighboring control instead of making user consent testable in the scenario.
+- Why B is wrong: Monitoring is useful, but this scenario needs user consent controlled before release or execution.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q41: During an architecture review, a telecom network operations team finds that the failure is tied to override path. The safer design is the one that can allow reviewers to approve, reject, edit, or request more evidence. What is the best next step?
+- ID: ags-hf-human-oversight-and-governance-017
+- Domain: Human Oversight and Governance
+- Topic: override path; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Use user consent as the main gate even though reviewers are asking for override path evidence.
+- B. Move the check to post-release monitoring without changing the release path for override path.
+- C. Keep binary approve-only UI as the main control and add a dashboard for final outputs.
+- D. Instrument and enforce override path; the system must allow reviewers to approve, reject, edit, or request more evidence.
+- Answer: D
+- Explanation: Override path is the missing control in this scenario. The right answer makes it explicit so the system can allow reviewers to approve, reject, edit, or request more evidence.
+- Why A is wrong: It moves attention to a neighboring control instead of making override path testable in the scenario.
+- Why B is wrong: Monitoring is useful, but this scenario needs override path controlled before release or execution.
+- Why C is wrong: It keeps binary approve-only UI in control instead of adding a measurable override path decision point.
+
+### Q42: An automotive support team is triaging a failed pilot for a governance and review workflow. The current design still relies on reviewing a final answer with no trajectory. Reviewers need a control that can show why the agent chose a route, tool, evidence, and action. Which control addresses the root cause?
+- ID: ags-hf-human-oversight-and-governance-018
+- Domain: Human Oversight and Governance
+- Topic: decision traceability; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Put decision traceability before rollout so the team can show why the agent chose a route, tool, evidence, and action.
+- B. Move the check to post-release monitoring without changing the release path for decision traceability.
+- C. Keep reviewing a final answer with no trajectory as the main control and add a dashboard for final outputs.
+- D. Prioritize user consent even though the observed failure is around decision traceability.
+- Answer: A
+- Explanation: Decision traceability is the missing control in this scenario. The right answer makes it explicit so the system can show why the agent chose a route, tool, evidence, and action.
+- Why B is wrong: Monitoring is useful, but this scenario needs decision traceability controlled before release or execution.
+- Why C is wrong: It keeps reviewing a final answer with no trajectory in control instead of adding a measurable decision traceability decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making decision traceability testable in the scenario.
+
+### Q43: A bank fraud team is choosing between a design centered on review after irreversible mutations and one that makes human-in-the-loop explicit for a governance and review workflow. Which design should win?
+- ID: ags-hf-human-oversight-and-governance-019
+- Domain: Human Oversight and Governance
+- Topic: human-in-the-loop; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and review queues changes together with one aggregate score.
+- B. Make human-in-the-loop explicit in the workflow: require approval before high-risk actions.
+- C. Keep review after irreversible mutations as the main control and add a dashboard for final outputs.
+- D. Prioritize human-on-the-loop even though the observed failure is around human-in-the-loop.
+- Answer: B
+- Explanation: Human-in-the-loop is the missing control in this scenario. The right answer makes it explicit so the system can require approval before high-risk actions.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether human-in-the-loop fixed the failure.
+- Why C is wrong: It keeps review after irreversible mutations in control instead of adding a measurable human-in-the-loop decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making human-in-the-loop testable in the scenario.
+
+### Q44: During an architecture review, a public-sector casework team finds that manual approval for every low-risk step is being used as the shortcut, but it does not give the team a reliable way to sample low-risk decisions and monitor drift. What is the best next step?
+- ID: ags-hf-human-oversight-and-governance-020
+- Domain: Human Oversight and Governance
+- Topic: human-on-the-loop; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving human-on-the-loop implicit.
+- B. Use human-on-the-loop as the control boundary and require the system to sample low-risk decisions and monitor drift.
+- C. Prioritize decision traceability even though the observed failure is around human-on-the-loop.
+- D. Release prompt, model, and feedback loop changes together with one aggregate score.
+- Answer: B
+- Explanation: Human-on-the-loop is the missing control in this scenario. The right answer makes it explicit so the system can sample low-risk decisions and monitor drift.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making human-on-the-loop testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether human-on-the-loop fixed the failure.
+
+### Q45: A public-sector casework team is triaging a failed pilot for a governance and review workflow. The failure appears when the system keeps first-in-first-out for all cases as the workaround. The release needs a design step that can prioritize by risk, uncertainty, and impact. Which control addresses the root cause?
+- ID: ags-hf-human-oversight-and-governance-021
+- Domain: Human Oversight and Governance
+- Topic: review queues; agentic_ai_general_study
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Add a release gate for review queues: prioritize by risk, uncertainty, and impact.
+- B. Release prompt, model, and feedback loop changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving review queues implicit.
+- D. Use feedback loop as the main gate even though reviewers are asking for review queues evidence.
+- Answer: A
+- Explanation: Review queues is the missing control in this scenario. The right answer makes it explicit so the system can prioritize by risk, uncertainty, and impact.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether review queues fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making review queues testable in the scenario.
+
+### Q46: A semiconductor design group is choosing between a design centered on collecting comments with no downstream owner and one that makes feedback loop explicit for a governance and review workflow. Which design should win?
+- ID: ags-hf-human-oversight-and-governance-022
+- Domain: Human Oversight and Governance
+- Topic: feedback loop; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving feedback loop implicit.
+- B. Use escalation threshold as the main gate even though reviewers are asking for feedback loop evidence.
+- C. Move the check to post-release monitoring without changing the release path for feedback loop.
+- D. Change the design around feedback loop so the system can turn review labels into evals, prompt fixes, or training data.
+- Answer: D
+- Explanation: Feedback loop is the missing control in this scenario. The right answer makes it explicit so the system can turn review labels into evals, prompt fixes, or training data.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making feedback loop testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs feedback loop controlled before release or execution.
+
+### Q47: During an architecture review, an insurance claims group finds that the team can reproduce the failure around asking reviewers to judge opaque outputs. The missing control is the one that can show evidence, confidence, and pending tool actions to reviewers. What is the best next step?
+- ID: ags-hf-human-oversight-and-governance-023
+- Domain: Human Oversight and Governance
+- Topic: transparent handoff; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for transparent handoff.
+- B. Keep asking reviewers to judge opaque outputs as the main control and add a dashboard for final outputs.
+- C. Instrument and enforce transparent handoff; the system must show evidence, confidence, and pending tool actions to reviewers.
+- D. Use human-in-the-loop as the main gate even though reviewers are asking for transparent handoff evidence.
+- Answer: C
+- Explanation: Transparent handoff is the missing control in this scenario. The right answer makes it explicit so the system can show evidence, confidence, and pending tool actions to reviewers.
+- Why A is wrong: Monitoring is useful, but this scenario needs transparent handoff controlled before release or execution.
+- Why B is wrong: It keeps asking reviewers to judge opaque outputs in control instead of adding a measurable transparent handoff decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making transparent handoff testable in the scenario.
+
+### Q48: During an architecture review, a global retailer finds that the team can reproduce the failure around same path for every request. The missing control is the one that can send low-confidence or high-impact cases to the right reviewer. What is the best next step?
+- ID: ags-hf-human-oversight-and-governance-024
+- Domain: Human Oversight and Governance
+- Topic: escalation threshold; agentic_ai_general_study
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Prioritize human-in-the-loop even though the observed failure is around escalation threshold.
+- B. Put escalation threshold before rollout so the team can send low-confidence or high-impact cases to the right reviewer.
+- C. Move the check to post-release monitoring without changing the release path for escalation threshold.
+- D. Keep same path for every request as the main control and add a dashboard for final outputs.
+- Answer: B
+- Explanation: Escalation threshold is the missing control in this scenario. The right answer makes it explicit so the system can send low-confidence or high-impact cases to the right reviewer.
+- Why A is wrong: It moves attention to a neighboring control instead of making escalation threshold testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs escalation threshold controlled before release or execution.
+- Why D is wrong: It keeps same path for every request in control instead of adding a measurable escalation threshold decision point.
+
+### Q49: A public-sector casework team is building a governance and review workflow. The failure appears when the system keeps silent long-term memory as the workaround. The release needs a design step that can ask before storing preferences or using personal context beyond the session. Which design is the best first change?
+- ID: ags-hf-human-oversight-and-governance-025
+- Domain: Human Oversight and Governance
+- Topic: user consent; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Make user consent explicit in the workflow: ask before storing preferences or using personal context beyond the session.
+- B. Keep silent long-term memory as the main control and add a dashboard for final outputs.
+- C. Prioritize transparent handoff even though the observed failure is around user consent.
+- D. Release prompt, model, and escalation threshold changes together with one aggregate score.
+- Answer: A
+- Explanation: User consent is the missing control in this scenario. The right answer makes it explicit so the system can ask before storing preferences or using personal context beyond the session.
+- Why B is wrong: It keeps silent long-term memory in control instead of adding a measurable user consent decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making user consent testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether user consent fixed the failure.
+
+### Q50: A semiconductor design group is choosing between a design centered on binary approve-only UI and one that makes override path explicit for a governance and review workflow. Which design should win?
+- ID: ags-hf-human-oversight-and-governance-026
+- Domain: Human Oversight and Governance
+- Topic: override path; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Prioritize escalation threshold even though the observed failure is around override path.
+- B. Release prompt, model, and transparent handoff changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving override path implicit.
+- D. Use override path as the control boundary and require the system to allow reviewers to approve, reject, edit, or request more evidence.
+- Answer: D
+- Explanation: Override path is the missing control in this scenario. The right answer makes it explicit so the system can allow reviewers to approve, reject, edit, or request more evidence.
+- Why A is wrong: It moves attention to a neighboring control instead of making override path testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether override path fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q51: During an architecture review, an insurance claims group finds that the team can reproduce the failure around reviewing a final answer with no trajectory. The missing control is the one that can show why the agent chose a route, tool, evidence, and action. What is the best next step?
+- ID: ags-hf-human-oversight-and-governance-027
+- Domain: Human Oversight and Governance
+- Topic: decision traceability; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving decision traceability implicit.
+- B. Use feedback loop as the main gate even though reviewers are asking for decision traceability evidence.
+- C. Add a release gate for decision traceability: show why the agent chose a route, tool, evidence, and action.
+- D. Release prompt, model, and feedback loop changes together with one aggregate score.
+- Answer: C
+- Explanation: Decision traceability is the missing control in this scenario. The right answer makes it explicit so the system can show why the agent chose a route, tool, evidence, and action.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making decision traceability testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether decision traceability fixed the failure.
+
+### Q52: A global retailer is building a governance and review workflow. Review after irreversible mutations is being used as the shortcut, but it does not give the team a reliable way to require approval before high-risk actions. Which architecture keeps the boundary cleanest?
+- ID: ags-hf-human-oversight-and-governance-028
+- Domain: Human Oversight and Governance
+- Topic: human-in-the-loop; agentic_ai_general_study
+- Difficulty: easy
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for human-in-the-loop.
+- B. Change the design around human-in-the-loop so the system can require approval before high-risk actions.
+- C. Increase model capacity or context length while leaving human-in-the-loop implicit.
+- D. Use decision traceability as the main gate even though reviewers are asking for human-in-the-loop evidence.
+- Answer: B
+- Explanation: Human-in-the-loop is the missing control in this scenario. The right answer makes it explicit so the system can require approval before high-risk actions.
+- Why A is wrong: Monitoring is useful, but this scenario needs human-in-the-loop controlled before release or execution.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making human-in-the-loop testable in the scenario.
+
+### Q53: During an architecture review, a public-sector casework team finds that the team can reproduce the failure around manual approval for every low-risk step. The missing control is the one that can sample low-risk decisions and monitor drift. What is the best next step?
+- ID: ags-hf-human-oversight-and-governance-029
+- Domain: Human Oversight and Governance
+- Topic: human-on-the-loop; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Instrument and enforce human-on-the-loop; the system must sample low-risk decisions and monitor drift.
+- B. Use override path as the main gate even though reviewers are asking for human-on-the-loop evidence.
+- C. Move the check to post-release monitoring without changing the release path for human-on-the-loop.
+- D. Keep manual approval for every low-risk step as the main control and add a dashboard for final outputs.
+- Answer: A
+- Explanation: Human-on-the-loop is the missing control in this scenario. The right answer makes it explicit so the system can sample low-risk decisions and monitor drift.
+- Why B is wrong: It moves attention to a neighboring control instead of making human-on-the-loop testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs human-on-the-loop controlled before release or execution.
+- Why D is wrong: It keeps manual approval for every low-risk step in control instead of adding a measurable human-on-the-loop decision point.
+
+### Q54: A bank fraud team is choosing between a design centered on first-in-first-out for all cases and one that makes review queues explicit for a governance and review workflow. Which design should win?
+- ID: ags-hf-human-oversight-and-governance-030
+- Domain: Human Oversight and Governance
+- Topic: review queues; agentic_ai_general_study
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Keep first-in-first-out for all cases as the main control and add a dashboard for final outputs.
+- B. Prioritize override path even though the observed failure is around review queues.
+- C. Put review queues before rollout so the team can prioritize by risk, uncertainty, and impact.
+- D. Move the check to post-release monitoring without changing the release path for review queues.
+- Answer: C
+- Explanation: Review queues is the missing control in this scenario. The right answer makes it explicit so the system can prioritize by risk, uncertainty, and impact.
+- Why A is wrong: It keeps first-in-first-out for all cases in control instead of adding a measurable review queues decision point.
+- Why B is wrong: It moves attention to a neighboring control instead of making review queues testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs review queues controlled before release or execution.
+
+### Q55: During an architecture review, a global retailer finds that the current design still relies on collecting comments with no downstream owner. Reviewers need a control that can turn review labels into evals, prompt fixes, or training data. What is the best next step?
+- ID: ags-hf-human-oversight-and-governance-031
+- Domain: Human Oversight and Governance
+- Topic: feedback loop; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Keep collecting comments with no downstream owner as the main control and add a dashboard for final outputs.
+- B. Prioritize transparent handoff even though the observed failure is around feedback loop.
+- C. Release prompt, model, and override path changes together with one aggregate score.
+- D. Make feedback loop explicit in the workflow: turn review labels into evals, prompt fixes, or training data.
+- Answer: D
+- Explanation: Feedback loop is the missing control in this scenario. The right answer makes it explicit so the system can turn review labels into evals, prompt fixes, or training data.
+- Why A is wrong: It keeps collecting comments with no downstream owner in control instead of adding a measurable feedback loop decision point.
+- Why B is wrong: It moves attention to a neighboring control instead of making feedback loop testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether feedback loop fixed the failure.
+
+### Q56: An insurance claims group is choosing between a design centered on asking reviewers to judge opaque outputs and one that makes transparent handoff explicit for a governance and review workflow. Which design should win?
+- ID: ags-hf-human-oversight-and-governance-032
+- Domain: Human Oversight and Governance
+- Topic: transparent handoff; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Use transparent handoff as the control boundary and require the system to show evidence, confidence, and pending tool actions to reviewers.
+- B. Prioritize human-on-the-loop even though the observed failure is around transparent handoff.
+- C. Release prompt, model, and human-in-the-loop changes together with one aggregate score.
+- D. Increase model capacity or context length while leaving transparent handoff implicit.
+- Answer: A
+- Explanation: Transparent handoff is the missing control in this scenario. The right answer makes it explicit so the system can show evidence, confidence, and pending tool actions to reviewers.
+- Why B is wrong: It moves attention to a neighboring control instead of making transparent handoff testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether transparent handoff fixed the failure.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q57: A manufacturing quality team is preparing a production rollout. The project team wants to train or tune a model and must decide which curation recipe applies: web-corpus dedupe for pretraining, labeled examples for SFT, preference pairs for alignment, or protected holdouts for evaluation. The team wants the choice that acts at this layer, not a neighboring one. Which capability best matches the release blocker?
+- ID: ags-hf-svc-training-data-curation-pipeline-001
+- Domain: Data Curation and Knowledge Grounding
+- Topic: Study capability: Training Data Curation Pipeline; lifecycle: Training-time data curation; Which lifecycle component turns raw corpora or examples into safe learning data?
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Agent Orchestration Runtime is the best fit for this layer: framework/runtime for composing agent roles, workflows, planners, tools, retrieval, memory, routing, retries, and traceable handoffs.
+- B. Choose Training Data Curation Pipeline; it provides fit-for-purpose data curation for model learning and evaluation: corpus cleanup for training from zero, high-precision examples for tuning, protected holdouts for evaluation, and clear boundaries from RAG ingestion.
+- C. Use Cost/Latency Optimizer when you need to handle user count, p99 latency, TTFT, throughput, token cost, context bloat, model routing, caching, quantization, or batching.
+- D. Select Model Customization Toolkit; it owns training and customization work such as changing durable behavior, style, rubric-following, or domain task adaptation learned from examples.
+- Answer: B
+- Explanation: Training Data Curation Pipeline is the best fit because it sits in Training-time data curation: Fit-for-purpose data curation for model learning and evaluation: corpus cleanup for training from zero, high-precision examples for tuning, protected holdouts for evaluation, and clear boundaries from RAG ingestion.
+- Why A is wrong: Agent Orchestration Runtime belongs to Agent orchestration, while this scenario asks for Training-time data curation.
+- Why C is wrong: Cost/Latency Optimizer belongs to Inference optimization, while this scenario asks for Training-time data curation.
+- Why D is wrong: Model Customization Toolkit belongs to Training and customization, while this scenario asks for Training-time data curation.
+
+### Q58: A semiconductor design group is reviewing the implementation plan. The implementation requirement is to prepare model-learning or evaluation data: pretraining corpora, continued-pretraining corpora, SFT examples, preference pairs, tool-use traces, synthetic examples, validation sets, and benchmark holdouts. Which capability page covers the missing layer?
+- ID: ags-hf-svc-training-data-curation-pipeline-002
+- Domain: Data Curation and Knowledge Grounding
+- Topic: Study capability: Training Data Curation Pipeline; lifecycle: Training-time data curation; Which lifecycle component turns raw corpora or examples into safe learning data?
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Prompt and Context Design is the best fit for this layer: no-weight-change control layer for system prompts, task instructions, few-shot examples, structured outputs, context assembly, and prompt/version governance.
+- B. Choose Model Serving Gateway; it provides serving layer that routes requests across models/endpoints, handles batching, fallback, rate limits, canaries, and multi-model operations.
+- C. Use Training Data Curation Pipeline when you need to prepare model-learning or evaluation data: pretraining corpora, continued-pretraining corpora, SFT examples, preference pairs, tool-use traces, synthetic examples, validation sets, and benchmark holdouts.
+- D. Select Knowledge Ingestion and Permission Pipeline; it owns runtime knowledge preparation work such as preparing private or changing documents as safe, searchable, permission-aware knowledge for an agent without changing model weights.
+- Answer: C
+- Explanation: Training Data Curation Pipeline is the best fit because it sits in Training-time data curation: Fit-for-purpose data curation for model learning and evaluation: corpus cleanup for training from zero, high-precision examples for tuning, protected holdouts for evaluation, and clear boundaries from RAG ingestion.
+- Why A is wrong: Prompt and Context Design belongs to Prompt and context adaptation, while this scenario asks for Training-time data curation.
+- Why B is wrong: Model Serving Gateway belongs to Serving and deployment, while this scenario asks for Training-time data curation.
+- Why D is wrong: Knowledge Ingestion and Permission Pipeline belongs to Runtime knowledge preparation, while this scenario asks for Training-time data curation.
+
+### Q59: A pharmaceutical research team has narrowed the next engineering decision. The next release blocker is diagnosing where time is spent across retrieval, tools, and inference. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: ags-hf-svc-training-data-curation-pipeline-003
+- Domain: Data Curation and Knowledge Grounding
+- Topic: Study capability: Training Data Curation Pipeline; lifecycle: Training-time data curation; Which lifecycle component turns raw corpora or examples into safe learning data?
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Human Review and Governance Console is the best fit for this layer: oversight workspace for approvals, escalations, sampled review, reviewer feedback, issue triage, and policy/governance workflows.
+- B. Choose Foundation Model Training Stack; it provides heavy training path for creating or continuing a model with distributed training recipes, accelerators, checkpoints, data mixtures, and experiment tracking.
+- C. Use Model Customization Toolkit when you need to change durable behavior, style, rubric-following, or domain task adaptation learned from examples.
+- D. Select Training Data Curation Pipeline; it owns training-time data curation work such as preparing model-learning or evaluation data: pretraining corpora, continued-pretraining corpora, SFT examples, preference pairs, tool-use traces, synthetic examples, validation sets, and benchmark holdouts.
+- Answer: D
+- Explanation: Training Data Curation Pipeline is the best fit because it sits in Training-time data curation: Fit-for-purpose data curation for model learning and evaluation: corpus cleanup for training from zero, high-precision examples for tuning, protected holdouts for evaluation, and clear boundaries from RAG ingestion.
+- Why A is wrong: Human Review and Governance Console belongs to Human oversight, while this scenario asks for Training-time data curation.
+- Why B is wrong: Foundation Model Training Stack belongs to Foundation training, while this scenario asks for Training-time data curation.
+- Why C is wrong: Model Customization Toolkit belongs to Training and customization, while this scenario asks for Training-time data curation.
+
+### Q60: A telecom network operations team needs to choose the right implementation surface. The blocker is preparing model-learning or evaluation data: pretraining corpora, continued-pretraining corpora, SFT examples, preference pairs, tool-use traces, synthetic examples, validation sets, and benchmark holdouts. Which study card is the right next stop?
+- ID: ags-hf-svc-training-data-curation-pipeline-004
+- Domain: Data Curation and Knowledge Grounding
+- Topic: Study capability: Training Data Curation Pipeline; lifecycle: Training-time data curation; Which lifecycle component turns raw corpora or examples into safe learning data?
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Training Data Curation Pipeline is the best fit for this layer: fit-for-purpose data curation for model learning and evaluation: corpus cleanup for training from zero, high-precision examples for tuning, protected holdouts for evaluation, and clear boundaries from RAG ingestion.
+- B. Choose Knowledge and RAG Pipeline; it provides query-time grounding path for embeddings, indexing, metadata filtering, search, reranking, context assembly, citations, and freshness-aware retrieval.
+- C. Use Model Customization Toolkit when you need to change durable behavior, style, rubric-following, or domain task adaptation learned from examples.
+- D. Select Model Selection and Registry; it owns model selection work such as deciding whether to call an existing API/model, choose a base model, use a catalog artifact, approve an adapter, compare variants, or roll back a release.
+- Answer: A
+- Explanation: Training Data Curation Pipeline is the best fit because it sits in Training-time data curation: Fit-for-purpose data curation for model learning and evaluation: corpus cleanup for training from zero, high-precision examples for tuning, protected holdouts for evaluation, and clear boundaries from RAG ingestion.
+- Why B is wrong: Knowledge and RAG Pipeline belongs to RAG and retrieval, while this scenario asks for Training-time data curation.
+- Why C is wrong: Model Customization Toolkit belongs to Training and customization, while this scenario asks for Training-time data curation.
+- Why D is wrong: Model Selection and Registry belongs to Model selection, while this scenario asks for Training-time data curation.
+
+### Q61: A hospital operations team is preparing a production rollout. The project team wants to train or tune a model and must decide which curation recipe applies: web-corpus dedupe for pretraining, labeled examples for SFT, preference pairs for alignment, or protected holdouts for evaluation. Which reusable concept area should guide the design?
+- ID: ags-hf-svc-training-data-curation-pipeline-005
+- Domain: Data Curation and Knowledge Grounding
+- Topic: Study capability: Training Data Curation Pipeline; lifecycle: Training-time data curation; Which lifecycle component turns raw corpora or examples into safe learning data?
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Agent Orchestration Runtime is the best fit for this layer: framework/runtime for composing agent roles, workflows, planners, tools, retrieval, memory, routing, retries, and traceable handoffs.
+- B. Choose Training Data Curation Pipeline; it provides fit-for-purpose data curation for model learning and evaluation: corpus cleanup for training from zero, high-precision examples for tuning, protected holdouts for evaluation, and clear boundaries from RAG ingestion.
+- C. Use Model Customization Toolkit when you need to change durable behavior, style, rubric-following, or domain task adaptation learned from examples.
+- D. Select Model Inference Endpoint; it owns serving and deployment work such as for production model APIs, self-hosted endpoints, deployment packaging, latency SLOs, concurrency, or operational model serving.
+- Answer: B
+- Explanation: Training Data Curation Pipeline is the best fit because it sits in Training-time data curation: Fit-for-purpose data curation for model learning and evaluation: corpus cleanup for training from zero, high-precision examples for tuning, protected holdouts for evaluation, and clear boundaries from RAG ingestion.
+- Why A is wrong: Agent Orchestration Runtime belongs to Agent orchestration, while this scenario asks for Training-time data curation.
+- Why C is wrong: Model Customization Toolkit belongs to Training and customization, while this scenario asks for Training-time data curation.
+- Why D is wrong: Model Inference Endpoint belongs to Serving and deployment, while this scenario asks for Training-time data curation.
+
+### Q62: A telecom network operations team is setting a release gate. The implementation requirement is to prepare private or changing documents as safe, searchable, permission-aware knowledge for an agent without changing model weights. Which study capability should they read first?
+- ID: ags-hf-svc-knowledge-ingestion-and-permission-pipeline-001
+- Domain: Data Curation and Knowledge Grounding
+- Topic: Study capability: Knowledge Ingestion and Permission Pipeline; lifecycle: Runtime knowledge preparation; Which lifecycle component prepares private documents before RAG retrieval?
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Use Observability and Trace Monitor when you need to diagnose live failures, p95/p99 latency, TTFT, route drift, empty tool results, trace replay, or incident diagnosis.
+- B. Select Tool Gateway and Function Runtime; it owns tool execution work such as exposing safe API calls, function calling, parameter validation, mutation control, retries, or permissions.
+- C. Policy and Guardrails Layer is the best fit for this layer: runtime controls for input checks, retrieved-content checks, tool-call policy, dialog constraints, output moderation, and prompt-injection defense.
+- D. Choose Knowledge Ingestion and Permission Pipeline; it provides runtime-knowledge preparation pipeline for agent/RAG systems: extract, clean, chunk, enrich metadata, enforce ACL fields, redact sensitive text, and preserve ingestion lineage.
+- Answer: D
+- Explanation: Knowledge Ingestion and Permission Pipeline is the best fit because it sits in Runtime knowledge preparation: Runtime-knowledge preparation pipeline for agent/RAG systems: extract, clean, chunk, enrich metadata, enforce ACL fields, redact sensitive text, and preserve ingestion lineage.
+- Why A is wrong: Observability and Trace Monitor belongs to Monitoring and profiling, while this scenario asks for Runtime knowledge preparation.
+- Why B is wrong: Tool Gateway and Function Runtime belongs to Tool execution, while this scenario asks for Runtime knowledge preparation.
+- Why C is wrong: Policy and Guardrails Layer belongs to Safety and guardrails, while this scenario asks for Runtime knowledge preparation.
+
+### Q63: An insurance claims group has narrowed the next engineering decision. The rollout is blocked until the team can prepare private or changing documents as safe, searchable, permission-aware knowledge for an agent without changing model weights. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: ags-hf-svc-knowledge-ingestion-and-permission-pipeline-002
+- Domain: Data Curation and Knowledge Grounding
+- Topic: Study capability: Knowledge Ingestion and Permission Pipeline; lifecycle: Runtime knowledge preparation; Which lifecycle component prepares private documents before RAG retrieval?
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Use Knowledge Ingestion and Permission Pipeline when you need to prepare private or changing documents as safe, searchable, permission-aware knowledge for an agent without changing model weights.
+- B. Select Memory Store; it owns memory and state work such as remembering task progress, user preferences, prior tool results, or reusable facts across turns or sessions.
+- C. Training Data Curation Pipeline is the best fit for this layer: fit-for-purpose data curation for model learning and evaluation: corpus cleanup for training from zero, high-precision examples for tuning, protected holdouts for evaluation, and clear boundaries from RAG ingestion.
+- D. Choose Prompt and Context Design; it provides no-weight-change control layer for system prompts, task instructions, few-shot examples, structured outputs, context assembly, and prompt/version governance.
+- Answer: A
+- Explanation: Knowledge Ingestion and Permission Pipeline is the best fit because it sits in Runtime knowledge preparation: Runtime-knowledge preparation pipeline for agent/RAG systems: extract, clean, chunk, enrich metadata, enforce ACL fields, redact sensitive text, and preserve ingestion lineage.
+- Why B is wrong: Memory Store belongs to Memory and state, while this scenario asks for Runtime knowledge preparation.
+- Why C is wrong: Training Data Curation Pipeline belongs to Training-time data curation, while this scenario asks for Runtime knowledge preparation.
+- Why D is wrong: Prompt and Context Design belongs to Prompt and context adaptation, while this scenario asks for Runtime knowledge preparation.
+
+### Q64: A semiconductor design group is setting a release gate. The trace points to the need to prepare private or changing documents as safe, searchable, permission-aware knowledge for an agent without changing model weights. The team must avoid solving this with the wrong lifecycle layer. Which study card is the right next stop?
+- ID: ags-hf-svc-knowledge-ingestion-and-permission-pipeline-003
+- Domain: Data Curation and Knowledge Grounding
+- Topic: Study capability: Knowledge Ingestion and Permission Pipeline; lifecycle: Runtime knowledge preparation; Which lifecycle component prepares private documents before RAG retrieval?
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Use Prompt and Context Design when you need to adapt an existing model with clearer instructions, examples, output format, tool-use framing, context packing, or versioned prompt control.
+- B. Select Knowledge Ingestion and Permission Pipeline; it owns runtime knowledge preparation work such as preparing private or changing documents as safe, searchable, permission-aware knowledge for an agent without changing model weights.
+- C. Agent Orchestration Runtime is the best fit for this layer: framework/runtime for composing agent roles, workflows, planners, tools, retrieval, memory, routing, retries, and traceable handoffs.
+- D. Choose Tool Gateway and Function Runtime; it provides execution boundary that exposes tools/functions with schemas, validation, permissions, risk checks, idempotency, and audit logs.
+- Answer: B
+- Explanation: Knowledge Ingestion and Permission Pipeline is the best fit because it sits in Runtime knowledge preparation: Runtime-knowledge preparation pipeline for agent/RAG systems: extract, clean, chunk, enrich metadata, enforce ACL fields, redact sensitive text, and preserve ingestion lineage.
+- Why A is wrong: Prompt and Context Design belongs to Prompt and context adaptation, while this scenario asks for Runtime knowledge preparation.
+- Why C is wrong: Agent Orchestration Runtime belongs to Agent orchestration, while this scenario asks for Runtime knowledge preparation.
+- Why D is wrong: Tool Gateway and Function Runtime belongs to Tool execution, while this scenario asks for Runtime knowledge preparation.
+
+### Q65: A hospital operations team has narrowed the next engineering decision. The work to finish before release is preparing private or changing documents as safe, searchable, permission-aware knowledge for an agent without changing model weights. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: ags-hf-svc-knowledge-ingestion-and-permission-pipeline-004
+- Domain: Data Curation and Knowledge Grounding
+- Topic: Study capability: Knowledge Ingestion and Permission Pipeline; lifecycle: Runtime knowledge preparation; Which lifecycle component prepares private documents before RAG retrieval?
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Use Foundation Model Training Stack when you need to create or continue a model when no existing model or fine-tuning route is enough and the team must create a model, continue pretraining, change tokenizer/domain depth, or run large distributed training jobs.
+- B. Select Cost/Latency Optimizer; it owns inference optimization work such as handling user count, p99 latency, TTFT, throughput, token cost, context bloat, model routing, caching, quantization, or batching.
+- C. Knowledge Ingestion and Permission Pipeline is the best fit for this layer: runtime-knowledge preparation pipeline for agent/RAG systems: extract, clean, chunk, enrich metadata, enforce ACL fields, redact sensitive text, and preserve ingestion lineage.
+- D. Choose Model Serving Gateway; it provides serving layer that routes requests across models/endpoints, handles batching, fallback, rate limits, canaries, and multi-model operations.
+- Answer: C
+- Explanation: Knowledge Ingestion and Permission Pipeline is the best fit because it sits in Runtime knowledge preparation: Runtime-knowledge preparation pipeline for agent/RAG systems: extract, clean, chunk, enrich metadata, enforce ACL fields, redact sensitive text, and preserve ingestion lineage.
+- Why A is wrong: Foundation Model Training Stack belongs to Foundation training, while this scenario asks for Runtime knowledge preparation.
+- Why B is wrong: Cost/Latency Optimizer belongs to Inference optimization, while this scenario asks for Runtime knowledge preparation.
+- Why D is wrong: Model Serving Gateway belongs to Serving and deployment, while this scenario asks for Runtime knowledge preparation.
+
+### Q66: A global retailer is setting a release gate. The blocker is preparing private or changing documents as safe, searchable, permission-aware knowledge for an agent without changing model weights. The team must avoid solving this with the wrong lifecycle layer. Which study capability should they read first?
+- ID: ags-hf-svc-knowledge-ingestion-and-permission-pipeline-005
+- Domain: Data Curation and Knowledge Grounding
+- Topic: Study capability: Knowledge Ingestion and Permission Pipeline; lifecycle: Runtime knowledge preparation; Which lifecycle component prepares private documents before RAG retrieval?
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Use Observability and Trace Monitor when you need to diagnose live failures, p95/p99 latency, TTFT, route drift, empty tool results, trace replay, or incident diagnosis.
+- B. Select Foundation Model Training Stack; it owns foundation training work such as creating or continuing a model when no existing model or fine-tuning route is enough and the team must create a model, continue pretraining, change tokenizer/domain depth, or run large distributed training jobs.
+- C. Model Inference Endpoint is the best fit for this layer: packaged model endpoint that exposes optimized inference APIs with health checks, model profiles, auth, concurrency limits, latency metrics, and deployment hooks.
+- D. Choose Knowledge Ingestion and Permission Pipeline; it provides runtime-knowledge preparation pipeline for agent/RAG systems: extract, clean, chunk, enrich metadata, enforce ACL fields, redact sensitive text, and preserve ingestion lineage.
+- Answer: D
+- Explanation: Knowledge Ingestion and Permission Pipeline is the best fit because it sits in Runtime knowledge preparation: Runtime-knowledge preparation pipeline for agent/RAG systems: extract, clean, chunk, enrich metadata, enforce ACL fields, redact sensitive text, and preserve ingestion lineage.
+- Why A is wrong: Observability and Trace Monitor belongs to Monitoring and profiling, while this scenario asks for Runtime knowledge preparation.
+- Why B is wrong: Foundation Model Training Stack belongs to Foundation training, while this scenario asks for Runtime knowledge preparation.
+- Why C is wrong: Model Inference Endpoint belongs to Serving and deployment, while this scenario asks for Runtime knowledge preparation.
+
+### Q67: A hospital operations team is preparing a production rollout. The enterprise needs to know which adapter, prompt version, and eval report support the model currently in production. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: ags-hf-svc-model-selection-and-registry-001
+- Domain: Model Selection and Customization
+- Topic: Study capability: Model Selection and Registry; lifecycle: Model selection; Which layer tracks approved model artifacts and rollback versions?
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Knowledge and RAG Pipeline is the best fit for this layer: query-time grounding path for embeddings, indexing, metadata filtering, search, reranking, context assembly, citations, and freshness-aware retrieval.
+- B. Choose Model Selection and Registry; it provides decision and governance layer for model/API choice, base models, tuned adapters, versions, approvals, eval reports, and rollback-ready artifacts.
+- C. Use Policy and Guardrails Layer when you need to enforce policy around prompts, retrieval, tool use, sensitive content, or final outputs.
+- D. Select Model Inference Endpoint; it owns serving and deployment work such as for production model APIs, self-hosted endpoints, deployment packaging, latency SLOs, concurrency, or operational model serving.
+- Answer: B
+- Explanation: Model Selection and Registry is the best fit because it sits in Model selection: Decision and governance layer for model/API choice, base models, tuned adapters, versions, approvals, eval reports, and rollback-ready artifacts.
+- Why A is wrong: Knowledge and RAG Pipeline belongs to RAG and retrieval, while this scenario asks for Model selection.
+- Why C is wrong: Policy and Guardrails Layer belongs to Safety and guardrails, while this scenario asks for Model selection.
+- Why D is wrong: Model Inference Endpoint belongs to Serving and deployment, while this scenario asks for Model selection.
+
+### Q68: A semiconductor design group is setting a release gate. The blocker is deciding whether to call an existing API/model, choose a base model, use a catalog artifact, approve an adapter, compare variants, or roll back a release. The team must avoid solving this with the wrong lifecycle layer. Which capability page covers the missing layer?
+- ID: ags-hf-svc-model-selection-and-registry-002
+- Domain: Model Selection and Customization
+- Topic: Study capability: Model Selection and Registry; lifecycle: Model selection; Which layer tracks approved model artifacts and rollback versions?
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Memory Store is the best fit for this layer: scoped memory layer for short-term task state, episodic session memory, semantic facts, user preferences, expiration, and consent-aware recall.
+- B. Choose Cost/Latency Optimizer; it provides optimization loop for model routing, prompt/context size, caching, batching, concurrency, KV cache, quantization, and cost budgets.
+- C. Use Model Selection and Registry when you need to decide whether to call an existing API/model, choose a base model, use a catalog artifact, approve an adapter, compare variants, or roll back a release.
+- D. Select Foundation Model Training Stack; it owns foundation training work such as creating or continuing a model when no existing model or fine-tuning route is enough and the team must create a model, continue pretraining, change tokenizer/domain depth, or run large distributed training jobs.
+- Answer: C
+- Explanation: Model Selection and Registry is the best fit because it sits in Model selection: Decision and governance layer for model/API choice, base models, tuned adapters, versions, approvals, eval reports, and rollback-ready artifacts.
+- Why A is wrong: Memory Store belongs to Memory and state, while this scenario asks for Model selection.
+- Why B is wrong: Cost/Latency Optimizer belongs to Inference optimization, while this scenario asks for Model selection.
+- Why D is wrong: Foundation Model Training Stack belongs to Foundation training, while this scenario asks for Model selection.
+
+### Q69: An automotive support team is preparing a production rollout. The next release blocker is avoid mistaking the model itself for the endpoint that serves it. Which reusable concept area should guide the design?
+- ID: ags-hf-svc-model-selection-and-registry-003
+- Domain: Model Selection and Customization
+- Topic: Study capability: Model Selection and Registry; lifecycle: Model selection; Which layer tracks approved model artifacts and rollback versions?
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Knowledge and RAG Pipeline is the best fit for this layer: query-time grounding path for embeddings, indexing, metadata filtering, search, reranking, context assembly, citations, and freshness-aware retrieval.
+- B. Choose Foundation Model Training Stack; it provides heavy training path for creating or continuing a model with distributed training recipes, accelerators, checkpoints, data mixtures, and experiment tracking.
+- C. Use Prompt and Context Design when you need to adapt an existing model with clearer instructions, examples, output format, tool-use framing, context packing, or versioned prompt control.
+- D. Select Model Selection and Registry; it owns model selection work such as deciding whether to call an existing API/model, choose a base model, use a catalog artifact, approve an adapter, compare variants, or roll back a release.
+- Answer: D
+- Explanation: Model Selection and Registry is the best fit because it sits in Model selection: Decision and governance layer for model/API choice, base models, tuned adapters, versions, approvals, eval reports, and rollback-ready artifacts.
+- Why A is wrong: Knowledge and RAG Pipeline belongs to RAG and retrieval, while this scenario asks for Model selection.
+- Why B is wrong: Foundation Model Training Stack belongs to Foundation training, while this scenario asks for Model selection.
+- Why C is wrong: Prompt and Context Design belongs to Prompt and context adaptation, while this scenario asks for Model selection.
+
+### Q70: A global retailer is reviewing the implementation plan. The trace points to the need to decide whether to call an existing API/model, choose a base model, use a catalog artifact, approve an adapter, compare variants, or roll back a release. Which study card is the right next stop?
+- ID: ags-hf-svc-model-selection-and-registry-004
+- Domain: Model Selection and Customization
+- Topic: Study capability: Model Selection and Registry; lifecycle: Model selection; Which layer tracks approved model artifacts and rollback versions?
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Model Selection and Registry is the best fit for this layer: decision and governance layer for model/API choice, base models, tuned adapters, versions, approvals, eval reports, and rollback-ready artifacts.
+- B. Choose Prompt and Context Design; it provides no-weight-change control layer for system prompts, task instructions, few-shot examples, structured outputs, context assembly, and prompt/version governance.
+- C. Use Policy and Guardrails Layer when you need to enforce policy around prompts, retrieval, tool use, sensitive content, or final outputs.
+- D. Select Human Review and Governance Console; it owns human oversight work such as supporting human approval, escalation, sampled review, regulated decision support, or reviewer feedback loops.
+- Answer: A
+- Explanation: Model Selection and Registry is the best fit because it sits in Model selection: Decision and governance layer for model/API choice, base models, tuned adapters, versions, approvals, eval reports, and rollback-ready artifacts.
+- Why B is wrong: Prompt and Context Design belongs to Prompt and context adaptation, while this scenario asks for Model selection.
+- Why C is wrong: Policy and Guardrails Layer belongs to Safety and guardrails, while this scenario asks for Model selection.
+- Why D is wrong: Human Review and Governance Console belongs to Human oversight, while this scenario asks for Model selection.
+
+### Q71: A manufacturing quality team is fixing the layer called out by the trace and design review. The enterprise needs to know which adapter, prompt version, and eval report support the model currently in production. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: ags-hf-svc-model-selection-and-registry-005
+- Domain: Model Selection and Customization
+- Topic: Study capability: Model Selection and Registry; lifecycle: Model selection; Which layer tracks approved model artifacts and rollback versions?
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Human Review and Governance Console is the best fit for this layer: oversight workspace for approvals, escalations, sampled review, reviewer feedback, issue triage, and policy/governance workflows.
+- B. Choose Model Selection and Registry; it provides decision and governance layer for model/API choice, base models, tuned adapters, versions, approvals, eval reports, and rollback-ready artifacts.
+- C. Use Latency, Throughput, and Traffic Control when you need to handle user count, p95/p99, TTFT, tail latency, request rate, concurrency, queue delay, batching, streaming, autoscaling lag, overload, canary, rollback, or traffic isolation.
+- D. Select Cost/Latency Optimizer; it owns inference optimization work such as handling user count, p99 latency, TTFT, throughput, token cost, context bloat, model routing, caching, quantization, or batching.
+- Answer: B
+- Explanation: Model Selection and Registry is the best fit because it sits in Model selection: Decision and governance layer for model/API choice, base models, tuned adapters, versions, approvals, eval reports, and rollback-ready artifacts.
+- Why A is wrong: Human Review and Governance Console belongs to Human oversight, while this scenario asks for Model selection.
+- Why C is wrong: Latency, Throughput, and Traffic Control belongs to Serving and deployment, while this scenario asks for Model selection.
+- Why D is wrong: Cost/Latency Optimizer belongs to Inference optimization, while this scenario asks for Model selection.
+
+### Q72: A bank fraud team needs to choose the right implementation surface. The trace points to the need to create or continue a model when no existing model or fine-tuning route is enough and the team must create a model, continue pretraining, change tokenizer/domain depth, or run large distributed training jobs. What is the best first implementation choice?
+- ID: ags-hf-svc-foundation-model-training-stack-001
+- Domain: Model Selection and Customization
+- Topic: Study capability: Foundation Model Training Stack; lifecycle: Foundation training; Which lifecycle component owns full model training or continued pretraining?
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Choose Foundation Model Training Stack; it provides heavy training path for creating or continuing a model with distributed training recipes, accelerators, checkpoints, data mixtures, and experiment tracking.
+- B. Use Observability and Trace Monitor when you need to diagnose live failures, p95/p99 latency, TTFT, route drift, empty tool results, trace replay, or incident diagnosis.
+- C. Select Tool Gateway and Function Runtime; it owns tool execution work such as exposing safe API calls, function calling, parameter validation, mutation control, retries, or permissions.
+- D. Prompt and Context Design is the best fit for this layer: no-weight-change control layer for system prompts, task instructions, few-shot examples, structured outputs, context assembly, and prompt/version governance.
+- Answer: A
+- Explanation: Foundation Model Training Stack is the best fit because it sits in Foundation training: Heavy training path for creating or continuing a model with distributed training recipes, accelerators, checkpoints, data mixtures, and experiment tracking.
+- Why B is wrong: Observability and Trace Monitor belongs to Monitoring and profiling, while this scenario asks for Foundation training.
+- Why C is wrong: Tool Gateway and Function Runtime belongs to Tool execution, while this scenario asks for Foundation training.
+- Why D is wrong: Prompt and Context Design belongs to Prompt and context adaptation, while this scenario asks for Foundation training.
+
+### Q73: A public-sector casework team is preparing a production rollout. The rollout is blocked until the team can create or continue a model when no existing model or fine-tuning route is enough and the team must create a model, continue pretraining, change tokenizer/domain depth, or run large distributed training jobs. The team wants the choice that acts at this layer, not a neighboring one. Which reusable concept area should guide the design?
+- ID: ags-hf-svc-foundation-model-training-stack-002
+- Domain: Model Selection and Customization
+- Topic: Study capability: Foundation Model Training Stack; lifecycle: Foundation training; Which lifecycle component owns full model training or continued pretraining?
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Select Agent Orchestration Runtime; it owns agent orchestration work such as building or coordinating an agent workflow with tools, routers, specialists, state, and recoverable execution.
+- B. Policy and Guardrails Layer is the best fit for this layer: runtime controls for input checks, retrieved-content checks, tool-call policy, dialog constraints, output moderation, and prompt-injection defense.
+- C. Choose Prompt and Context Design; it provides no-weight-change control layer for system prompts, task instructions, few-shot examples, structured outputs, context assembly, and prompt/version governance.
+- D. Use Foundation Model Training Stack when you need to create or continue a model when no existing model or fine-tuning route is enough and the team must create a model, continue pretraining, change tokenizer/domain depth, or run large distributed training jobs.
+- Answer: D
+- Explanation: Foundation Model Training Stack is the best fit because it sits in Foundation training: Heavy training path for creating or continuing a model with distributed training recipes, accelerators, checkpoints, data mixtures, and experiment tracking.
+- Why A is wrong: Agent Orchestration Runtime belongs to Agent orchestration, while this scenario asks for Foundation training.
+- Why B is wrong: Policy and Guardrails Layer belongs to Safety and guardrails, while this scenario asks for Foundation training.
+- Why C is wrong: Prompt and Context Design belongs to Prompt and context adaptation, while this scenario asks for Foundation training.
+
+### Q74: A global retailer is setting a release gate. The blocker is creating or continuing a model when no existing model or fine-tuning route is enough and the team must create a model, continue pretraining, change tokenizer/domain depth, or run large distributed training jobs. The team must avoid solving this with the wrong lifecycle layer. Which study capability should they read first?
+- ID: ags-hf-svc-foundation-model-training-stack-003
+- Domain: Model Selection and Customization
+- Topic: Study capability: Foundation Model Training Stack; lifecycle: Foundation training; Which lifecycle component owns full model training or continued pretraining?
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Choose Latency, Throughput, and Traffic Control; it provides production traffic-control concepts for model and agent systems: percentiles, TTFT, concurrency, queueing, batching, autoscaling, backpressure, circuit breakers, and rollout safety.
+- B. Use Model Inference Endpoint when you need to for production model APIs, self-hosted endpoints, deployment packaging, latency SLOs, concurrency, or operational model serving.
+- C. Select Foundation Model Training Stack; it owns foundation training work such as creating or continuing a model when no existing model or fine-tuning route is enough and the team must create a model, continue pretraining, change tokenizer/domain depth, or run large distributed training jobs.
+- D. Cost/Latency Optimizer is the best fit for this layer: optimization loop for model routing, prompt/context size, caching, batching, concurrency, KV cache, quantization, and cost budgets.
+- Answer: C
+- Explanation: Foundation Model Training Stack is the best fit because it sits in Foundation training: Heavy training path for creating or continuing a model with distributed training recipes, accelerators, checkpoints, data mixtures, and experiment tracking.
+- Why A is wrong: Latency, Throughput, and Traffic Control belongs to Serving and deployment, while this scenario asks for Foundation training.
+- Why B is wrong: Model Inference Endpoint belongs to Serving and deployment, while this scenario asks for Foundation training.
+- Why D is wrong: Cost/Latency Optimizer belongs to Inference optimization, while this scenario asks for Foundation training.
+
+### Q75: A pharmaceutical research team is fixing the layer called out by the trace and design review. The work to finish before release is creating or continuing a model when no existing model or fine-tuning route is enough and the team must create a model, continue pretraining, change tokenizer/domain depth, or run large distributed training jobs. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: ags-hf-svc-foundation-model-training-stack-004
+- Domain: Model Selection and Customization
+- Topic: Study capability: Foundation Model Training Stack; lifecycle: Foundation training; Which lifecycle component owns full model training or continued pretraining?
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Select Cost/Latency Optimizer; it owns inference optimization work such as handling user count, p99 latency, TTFT, throughput, token cost, context bloat, model routing, caching, quantization, or batching.
+- B. Foundation Model Training Stack is the best fit for this layer: heavy training path for creating or continuing a model with distributed training recipes, accelerators, checkpoints, data mixtures, and experiment tracking.
+- C. Choose Model Selection and Registry; it provides decision and governance layer for model/API choice, base models, tuned adapters, versions, approvals, eval reports, and rollback-ready artifacts.
+- D. Use Evaluation and Regression Harness when you need to measure quality, compare variants, catch regressions, score trajectories, or calibrate judges.
+- Answer: B
+- Explanation: Foundation Model Training Stack is the best fit because it sits in Foundation training: Heavy training path for creating or continuing a model with distributed training recipes, accelerators, checkpoints, data mixtures, and experiment tracking.
+- Why A is wrong: Cost/Latency Optimizer belongs to Inference optimization, while this scenario asks for Foundation training.
+- Why C is wrong: Model Selection and Registry belongs to Model selection, while this scenario asks for Foundation training.
+- Why D is wrong: Evaluation and Regression Harness belongs to Evaluation, while this scenario asks for Foundation training.
+
+### Q76: A cybersecurity response team is setting a release gate. The trace points to the need to create or continue a model when no existing model or fine-tuning route is enough and the team must create a model, continue pretraining, change tokenizer/domain depth, or run large distributed training jobs. The team must avoid solving this with the wrong lifecycle layer. Which study card is the right next stop?
+- ID: ags-hf-svc-foundation-model-training-stack-005
+- Domain: Model Selection and Customization
+- Topic: Study capability: Foundation Model Training Stack; lifecycle: Foundation training; Which lifecycle component owns full model training or continued pretraining?
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Choose Foundation Model Training Stack; it provides heavy training path for creating or continuing a model with distributed training recipes, accelerators, checkpoints, data mixtures, and experiment tracking.
+- B. Use Knowledge Ingestion and Permission Pipeline when you need to prepare private or changing documents as safe, searchable, permission-aware knowledge for an agent without changing model weights.
+- C. Select Memory Store; it owns memory and state work such as remembering task progress, user preferences, prior tool results, or reusable facts across turns or sessions.
+- D. Observability and Trace Monitor is the best fit for this layer: live operations layer for traces, logs, metrics, tool-call health, retrieval quality, user-facing latency, errors, drift, incidents, and replay.
+- Answer: A
+- Explanation: Foundation Model Training Stack is the best fit because it sits in Foundation training: Heavy training path for creating or continuing a model with distributed training recipes, accelerators, checkpoints, data mixtures, and experiment tracking.
+- Why B is wrong: Knowledge Ingestion and Permission Pipeline belongs to Runtime knowledge preparation, while this scenario asks for Foundation training.
+- Why C is wrong: Memory Store belongs to Memory and state, while this scenario asks for Foundation training.
+- Why D is wrong: Observability and Trace Monitor belongs to Monitoring and profiling, while this scenario asks for Foundation training.
+
+### Q77: A bank fraud team needs to choose the right implementation surface. The trace points to the need to change durable behavior, style, rubric-following, or domain task adaptation learned from examples. What is the best first implementation choice?
+- ID: ags-hf-svc-model-customization-toolkit-001
+- Domain: Model Selection and Customization
+- Topic: Study capability: Model Customization Toolkit; lifecycle: Training and customization; When is customization better than only changing retrieval?
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Use Latency, Throughput, and Traffic Control when you need to handle user count, p95/p99, TTFT, tail latency, request rate, concurrency, queue delay, batching, streaming, autoscaling lag, overload, canary, rollback, or traffic isolation.
+- B. Select Evaluation and Regression Harness; it owns evaluation work such as measuring quality, compare variants, catch regressions, score trajectories, or calibrate judges.
+- C. Model Selection and Registry is the best fit for this layer: decision and governance layer for model/API choice, base models, tuned adapters, versions, approvals, eval reports, and rollback-ready artifacts.
+- D. Choose Model Customization Toolkit; it provides adaptation layer for changing an existing model's durable behavior with SFT, PEFT/LoRA, preference tuning, continued pretraining, or alignment workflows.
+- Answer: D
+- Explanation: Model Customization Toolkit is the best fit because it sits in Training and customization: Adaptation layer for changing an existing model's durable behavior with SFT, PEFT/LoRA, preference tuning, continued pretraining, or alignment workflows.
+- Why A is wrong: Latency, Throughput, and Traffic Control belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why B is wrong: Evaluation and Regression Harness belongs to Evaluation, while this scenario asks for Training and customization.
+- Why C is wrong: Model Selection and Registry belongs to Model selection, while this scenario asks for Training and customization.
+
+### Q78: A manufacturing quality team is preparing a production rollout. The rollout is blocked until the team can change durable behavior, style, rubric-following, or domain task adaptation learned from examples. Which General Study capability owns this requirement?
+- ID: ags-hf-svc-model-customization-toolkit-002
+- Domain: Model Selection and Customization
+- Topic: Study capability: Model Customization Toolkit; lifecycle: Training and customization; When is customization better than only changing retrieval?
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Use Model Customization Toolkit when you need to change durable behavior, style, rubric-following, or domain task adaptation learned from examples.
+- B. Select Knowledge Ingestion and Permission Pipeline; it owns runtime knowledge preparation work such as preparing private or changing documents as safe, searchable, permission-aware knowledge for an agent without changing model weights.
+- C. Observability and Trace Monitor is the best fit for this layer: live operations layer for traces, logs, metrics, tool-call health, retrieval quality, user-facing latency, errors, drift, incidents, and replay.
+- D. Choose Model Inference Endpoint; it provides packaged model endpoint that exposes optimized inference APIs with health checks, model profiles, auth, concurrency limits, latency metrics, and deployment hooks.
+- Answer: A
+- Explanation: Model Customization Toolkit is the best fit because it sits in Training and customization: Adaptation layer for changing an existing model's durable behavior with SFT, PEFT/LoRA, preference tuning, continued pretraining, or alignment workflows.
+- Why B is wrong: Knowledge Ingestion and Permission Pipeline belongs to Runtime knowledge preparation, while this scenario asks for Training and customization.
+- Why C is wrong: Observability and Trace Monitor belongs to Monitoring and profiling, while this scenario asks for Training and customization.
+- Why D is wrong: Model Inference Endpoint belongs to Serving and deployment, while this scenario asks for Training and customization.
+
+### Q79: A logistics planning team is reviewing the implementation plan. The blocker is changing durable behavior, style, rubric-following, or domain task adaptation learned from examples. What is the best first implementation choice?
+- ID: ags-hf-svc-model-customization-toolkit-003
+- Domain: Model Selection and Customization
+- Topic: Study capability: Model Customization Toolkit; lifecycle: Training and customization; When is customization better than only changing retrieval?
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Use Cost/Latency Optimizer when you need to handle user count, p99 latency, TTFT, throughput, token cost, context bloat, model routing, caching, quantization, or batching.
+- B. Select Model Customization Toolkit; it owns training and customization work such as changing durable behavior, style, rubric-following, or domain task adaptation learned from examples.
+- C. Latency, Throughput, and Traffic Control is the best fit for this layer: production traffic-control concepts for model and agent systems: percentiles, TTFT, concurrency, queueing, batching, autoscaling, backpressure, circuit breakers, and rollout safety.
+- D. Choose Tool Gateway and Function Runtime; it provides execution boundary that exposes tools/functions with schemas, validation, permissions, risk checks, idempotency, and audit logs.
+- Answer: B
+- Explanation: Model Customization Toolkit is the best fit because it sits in Training and customization: Adaptation layer for changing an existing model's durable behavior with SFT, PEFT/LoRA, preference tuning, continued pretraining, or alignment workflows.
+- Why A is wrong: Cost/Latency Optimizer belongs to Inference optimization, while this scenario asks for Training and customization.
+- Why C is wrong: Latency, Throughput, and Traffic Control belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why D is wrong: Tool Gateway and Function Runtime belongs to Tool execution, while this scenario asks for Training and customization.
+
+### Q80: An automotive support team is fixing the layer called out by the trace and design review. The work to finish before release is changing durable behavior, style, rubric-following, or domain task adaptation learned from examples. The team wants the choice that acts at this layer, not a neighboring one. Which capability best matches the release blocker?
+- ID: ags-hf-svc-model-customization-toolkit-004
+- Domain: Model Selection and Customization
+- Topic: Study capability: Model Customization Toolkit; lifecycle: Training and customization; When is customization better than only changing retrieval?
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Use Model Serving Gateway when you need to manage multi-model routing, traffic splitting, canary rollout, fallback, dynamic batching, or endpoint-level policies.
+- B. Select Knowledge and RAG Pipeline; it owns rAG and retrieval work such as grounding answers in private, changing, or source-grounded knowledge at query time without changing weights.
+- C. Model Customization Toolkit is the best fit for this layer: adaptation layer for changing an existing model's durable behavior with SFT, PEFT/LoRA, preference tuning, continued pretraining, or alignment workflows.
+- D. Choose Tool Gateway and Function Runtime; it provides execution boundary that exposes tools/functions with schemas, validation, permissions, risk checks, idempotency, and audit logs.
+- Answer: C
+- Explanation: Model Customization Toolkit is the best fit because it sits in Training and customization: Adaptation layer for changing an existing model's durable behavior with SFT, PEFT/LoRA, preference tuning, continued pretraining, or alignment workflows.
+- Why A is wrong: Model Serving Gateway belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why B is wrong: Knowledge and RAG Pipeline belongs to RAG and retrieval, while this scenario asks for Training and customization.
+- Why D is wrong: Tool Gateway and Function Runtime belongs to Tool execution, while this scenario asks for Training and customization.
+
+### Q81: A semiconductor design group is setting a release gate. The trace points to the need to change durable behavior, style, rubric-following, or domain task adaptation learned from examples. What is the best first implementation choice?
+- ID: ags-hf-svc-model-customization-toolkit-005
+- Domain: Model Selection and Customization
+- Topic: Study capability: Model Customization Toolkit; lifecycle: Training and customization; When is customization better than only changing retrieval?
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Use Knowledge and RAG Pipeline when you need to ground answers in private, changing, or source-grounded knowledge at query time without changing weights.
+- B. Select Memory Store; it owns memory and state work such as remembering task progress, user preferences, prior tool results, or reusable facts across turns or sessions.
+- C. Knowledge Ingestion and Permission Pipeline is the best fit for this layer: runtime-knowledge preparation pipeline for agent/RAG systems: extract, clean, chunk, enrich metadata, enforce ACL fields, redact sensitive text, and preserve ingestion lineage.
+- D. Choose Model Customization Toolkit; it provides adaptation layer for changing an existing model's durable behavior with SFT, PEFT/LoRA, preference tuning, continued pretraining, or alignment workflows.
+- Answer: D
+- Explanation: Model Customization Toolkit is the best fit because it sits in Training and customization: Adaptation layer for changing an existing model's durable behavior with SFT, PEFT/LoRA, preference tuning, continued pretraining, or alignment workflows.
+- Why A is wrong: Knowledge and RAG Pipeline belongs to RAG and retrieval, while this scenario asks for Training and customization.
+- Why B is wrong: Memory Store belongs to Memory and state, while this scenario asks for Training and customization.
+- Why C is wrong: Knowledge Ingestion and Permission Pipeline belongs to Runtime knowledge preparation, while this scenario asks for Training and customization.
+
+### Q82: A semiconductor design group is setting a release gate. The blocker is adapting an existing model with clearer instructions, examples, output format, tool-use framing, context packing, or versioned prompt control. Which study capability should they read first?
+- ID: ags-hf-svc-prompt-and-context-design-001
+- Domain: Model Selection and Customization
+- Topic: Study capability: Prompt and Context Design; lifecycle: Prompt and context adaptation; Which lifecycle component adapts behavior without training or fine-tuning?
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Select Tool Gateway and Function Runtime; it owns tool execution work such as exposing safe API calls, function calling, parameter validation, mutation control, retries, or permissions.
+- B. Agent Orchestration Runtime is the best fit for this layer: framework/runtime for composing agent roles, workflows, planners, tools, retrieval, memory, routing, retries, and traceable handoffs.
+- C. Choose Prompt and Context Design; it provides no-weight-change control layer for system prompts, task instructions, few-shot examples, structured outputs, context assembly, and prompt/version governance.
+- D. Use Observability and Trace Monitor when you need to diagnose live failures, p95/p99 latency, TTFT, route drift, empty tool results, trace replay, or incident diagnosis.
+- Answer: C
+- Explanation: Prompt and Context Design is the best fit because it sits in Prompt and context adaptation: No-weight-change control layer for system prompts, task instructions, few-shot examples, structured outputs, context assembly, and prompt/version governance.
+- Why A is wrong: Tool Gateway and Function Runtime belongs to Tool execution, while this scenario asks for Prompt and context adaptation.
+- Why B is wrong: Agent Orchestration Runtime belongs to Agent orchestration, while this scenario asks for Prompt and context adaptation.
+- Why D is wrong: Observability and Trace Monitor belongs to Monitoring and profiling, while this scenario asks for Prompt and context adaptation.
+
+### Q83: A public-sector casework team is preparing a production rollout. The rollout is blocked until the team can adapt an existing model with clearer instructions, examples, output format, tool-use framing, context packing, or versioned prompt control. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: ags-hf-svc-prompt-and-context-design-002
+- Domain: Model Selection and Customization
+- Topic: Study capability: Prompt and Context Design; lifecycle: Prompt and context adaptation; Which lifecycle component adapts behavior without training or fine-tuning?
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Choose Cost/Latency Optimizer; it provides optimization loop for model routing, prompt/context size, caching, batching, concurrency, KV cache, quantization, and cost budgets.
+- B. Use Prompt and Context Design when you need to adapt an existing model with clearer instructions, examples, output format, tool-use framing, context packing, or versioned prompt control.
+- C. Select Model Serving Gateway; it owns serving and deployment work such as managing multi-model routing, traffic splitting, canary rollout, fallback, dynamic batching, or endpoint-level policies.
+- D. Training Data Curation Pipeline is the best fit for this layer: fit-for-purpose data curation for model learning and evaluation: corpus cleanup for training from zero, high-precision examples for tuning, protected holdouts for evaluation, and clear boundaries from RAG ingestion.
+- Answer: B
+- Explanation: Prompt and Context Design is the best fit because it sits in Prompt and context adaptation: No-weight-change control layer for system prompts, task instructions, few-shot examples, structured outputs, context assembly, and prompt/version governance.
+- Why A is wrong: Cost/Latency Optimizer belongs to Inference optimization, while this scenario asks for Prompt and context adaptation.
+- Why C is wrong: Model Serving Gateway belongs to Serving and deployment, while this scenario asks for Prompt and context adaptation.
+- Why D is wrong: Training Data Curation Pipeline belongs to Training-time data curation, while this scenario asks for Prompt and context adaptation.
+
+### Q84: A global retailer is reviewing the implementation plan. The trace points to the need to adapt an existing model with clearer instructions, examples, output format, tool-use framing, context packing, or versioned prompt control. The team must avoid solving this with the wrong lifecycle layer. Which study capability should they read first?
+- ID: ags-hf-svc-prompt-and-context-design-003
+- Domain: Model Selection and Customization
+- Topic: Study capability: Prompt and Context Design; lifecycle: Prompt and context adaptation; Which lifecycle component adapts behavior without training or fine-tuning?
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Select Prompt and Context Design; it owns prompt and context adaptation work such as adapting an existing model with clearer instructions, examples, output format, tool-use framing, context packing, or versioned prompt control.
+- B. Foundation Model Training Stack is the best fit for this layer: heavy training path for creating or continuing a model with distributed training recipes, accelerators, checkpoints, data mixtures, and experiment tracking.
+- C. Choose Tool Gateway and Function Runtime; it provides execution boundary that exposes tools/functions with schemas, validation, permissions, risk checks, idempotency, and audit logs.
+- D. Use Model Serving Gateway when you need to manage multi-model routing, traffic splitting, canary rollout, fallback, dynamic batching, or endpoint-level policies.
+- Answer: A
+- Explanation: Prompt and Context Design is the best fit because it sits in Prompt and context adaptation: No-weight-change control layer for system prompts, task instructions, few-shot examples, structured outputs, context assembly, and prompt/version governance.
+- Why B is wrong: Foundation Model Training Stack belongs to Foundation training, while this scenario asks for Prompt and context adaptation.
+- Why C is wrong: Tool Gateway and Function Runtime belongs to Tool execution, while this scenario asks for Prompt and context adaptation.
+- Why D is wrong: Model Serving Gateway belongs to Serving and deployment, while this scenario asks for Prompt and context adaptation.
+
+### Q85: An insurance claims group is fixing the layer called out by the trace and design review. The work to finish before release is adapting an existing model with clearer instructions, examples, output format, tool-use framing, context packing, or versioned prompt control. The team wants the choice that acts at this layer, not a neighboring one. Which capability best matches the release blocker?
+- ID: ags-hf-svc-prompt-and-context-design-004
+- Domain: Model Selection and Customization
+- Topic: Study capability: Prompt and Context Design; lifecycle: Prompt and context adaptation; Which lifecycle component adapts behavior without training or fine-tuning?
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Choose Model Inference Endpoint; it provides packaged model endpoint that exposes optimized inference APIs with health checks, model profiles, auth, concurrency limits, latency metrics, and deployment hooks.
+- B. Use Foundation Model Training Stack when you need to create or continue a model when no existing model or fine-tuning route is enough and the team must create a model, continue pretraining, change tokenizer/domain depth, or run large distributed training jobs.
+- C. Select Agent Orchestration Runtime; it owns agent orchestration work such as building or coordinating an agent workflow with tools, routers, specialists, state, and recoverable execution.
+- D. Prompt and Context Design is the best fit for this layer: no-weight-change control layer for system prompts, task instructions, few-shot examples, structured outputs, context assembly, and prompt/version governance.
+- Answer: D
+- Explanation: Prompt and Context Design is the best fit because it sits in Prompt and context adaptation: No-weight-change control layer for system prompts, task instructions, few-shot examples, structured outputs, context assembly, and prompt/version governance.
+- Why A is wrong: Model Inference Endpoint belongs to Serving and deployment, while this scenario asks for Prompt and context adaptation.
+- Why B is wrong: Foundation Model Training Stack belongs to Foundation training, while this scenario asks for Prompt and context adaptation.
+- Why C is wrong: Agent Orchestration Runtime belongs to Agent orchestration, while this scenario asks for Prompt and context adaptation.
+
+### Q86: A bank fraud team needs to choose the right implementation surface. The blocker is adapting an existing model with clearer instructions, examples, output format, tool-use framing, context packing, or versioned prompt control. What is the best first implementation choice?
+- ID: ags-hf-svc-prompt-and-context-design-005
+- Domain: Model Selection and Customization
+- Topic: Study capability: Prompt and Context Design; lifecycle: Prompt and context adaptation; Which lifecycle component adapts behavior without training or fine-tuning?
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Select Tool Gateway and Function Runtime; it owns tool execution work such as exposing safe API calls, function calling, parameter validation, mutation control, retries, or permissions.
+- B. Human Review and Governance Console is the best fit for this layer: oversight workspace for approvals, escalations, sampled review, reviewer feedback, issue triage, and policy/governance workflows.
+- C. Choose Prompt and Context Design; it provides no-weight-change control layer for system prompts, task instructions, few-shot examples, structured outputs, context assembly, and prompt/version governance.
+- D. Use Foundation Model Training Stack when you need to create or continue a model when no existing model or fine-tuning route is enough and the team must create a model, continue pretraining, change tokenizer/domain depth, or run large distributed training jobs.
+- Answer: C
+- Explanation: Prompt and Context Design is the best fit because it sits in Prompt and context adaptation: No-weight-change control layer for system prompts, task instructions, few-shot examples, structured outputs, context assembly, and prompt/version governance.
+- Why A is wrong: Tool Gateway and Function Runtime belongs to Tool execution, while this scenario asks for Prompt and context adaptation.
+- Why B is wrong: Human Review and Governance Console belongs to Human oversight, while this scenario asks for Prompt and context adaptation.
+- Why D is wrong: Foundation Model Training Stack belongs to Foundation training, while this scenario asks for Prompt and context adaptation.
+
+### Q87: A telecom network operations team needs to choose the right implementation surface. The blocker is building or coordinating an agent workflow with tools, routers, specialists, state, and recoverable execution. What is the best first implementation choice?
+- ID: ags-hf-svc-agent-orchestration-runtime-001
+- Domain: Tooling, Orchestration, and Memory
+- Topic: Study capability: Agent Orchestration Runtime; lifecycle: Agent orchestration; Which layer coordinates agent roles, tools, and state?
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Knowledge Ingestion and Permission Pipeline is the best fit for this layer: runtime-knowledge preparation pipeline for agent/RAG systems: extract, clean, chunk, enrich metadata, enforce ACL fields, redact sensitive text, and preserve ingestion lineage.
+- B. Choose Agent Orchestration Runtime; it provides framework/runtime for composing agent roles, workflows, planners, tools, retrieval, memory, routing, retries, and traceable handoffs.
+- C. Use Evaluation and Regression Harness when you need to measure quality, compare variants, catch regressions, score trajectories, or calibrate judges.
+- D. Select Latency, Throughput, and Traffic Control; it owns serving and deployment work such as handling user count, p95/p99, TTFT, tail latency, request rate, concurrency, queue delay, batching, streaming, autoscaling lag, overload, canary, rollback, or traffic isolation.
+- Answer: B
+- Explanation: Agent Orchestration Runtime is the best fit because it sits in Agent orchestration: Framework/runtime for composing agent roles, workflows, planners, tools, retrieval, memory, routing, retries, and traceable handoffs.
+- Why A is wrong: Knowledge Ingestion and Permission Pipeline belongs to Runtime knowledge preparation, while this scenario asks for Agent orchestration.
+- Why C is wrong: Evaluation and Regression Harness belongs to Evaluation, while this scenario asks for Agent orchestration.
+- Why D is wrong: Latency, Throughput, and Traffic Control belongs to Serving and deployment, while this scenario asks for Agent orchestration.
+
+### Q88: An automotive support team is preparing a production rollout. The rollout is blocked until the team can build or coordinate an agent workflow with tools, routers, specialists, state, and recoverable execution. Which General Study capability owns this requirement?
+- ID: ags-hf-svc-agent-orchestration-runtime-002
+- Domain: Tooling, Orchestration, and Memory
+- Topic: Study capability: Agent Orchestration Runtime; lifecycle: Agent orchestration; Which layer coordinates agent roles, tools, and state?
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Human Review and Governance Console is the best fit for this layer: oversight workspace for approvals, escalations, sampled review, reviewer feedback, issue triage, and policy/governance workflows.
+- B. Choose Model Selection and Registry; it provides decision and governance layer for model/API choice, base models, tuned adapters, versions, approvals, eval reports, and rollback-ready artifacts.
+- C. Use Agent Orchestration Runtime when you need to build or coordinate an agent workflow with tools, routers, specialists, state, and recoverable execution.
+- D. Select Foundation Model Training Stack; it owns foundation training work such as creating or continuing a model when no existing model or fine-tuning route is enough and the team must create a model, continue pretraining, change tokenizer/domain depth, or run large distributed training jobs.
+- Answer: C
+- Explanation: Agent Orchestration Runtime is the best fit because it sits in Agent orchestration: Framework/runtime for composing agent roles, workflows, planners, tools, retrieval, memory, routing, retries, and traceable handoffs.
+- Why A is wrong: Human Review and Governance Console belongs to Human oversight, while this scenario asks for Agent orchestration.
+- Why B is wrong: Model Selection and Registry belongs to Model selection, while this scenario asks for Agent orchestration.
+- Why D is wrong: Foundation Model Training Stack belongs to Foundation training, while this scenario asks for Agent orchestration.
+
+### Q89: A semiconductor design group is setting a release gate. The implementation requirement is to build or coordinate an agent workflow with tools, routers, specialists, state, and recoverable execution. Which study capability should they read first?
+- ID: ags-hf-svc-agent-orchestration-runtime-003
+- Domain: Tooling, Orchestration, and Memory
+- Topic: Study capability: Agent Orchestration Runtime; lifecycle: Agent orchestration; Which layer coordinates agent roles, tools, and state?
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Prompt and Context Design is the best fit for this layer: no-weight-change control layer for system prompts, task instructions, few-shot examples, structured outputs, context assembly, and prompt/version governance.
+- B. Choose Model Inference Endpoint; it provides packaged model endpoint that exposes optimized inference APIs with health checks, model profiles, auth, concurrency limits, latency metrics, and deployment hooks.
+- C. Use Tool Gateway and Function Runtime when you need to expose safe API calls, function calling, parameter validation, mutation control, retries, or permissions.
+- D. Select Agent Orchestration Runtime; it owns agent orchestration work such as building or coordinating an agent workflow with tools, routers, specialists, state, and recoverable execution.
+- Answer: D
+- Explanation: Agent Orchestration Runtime is the best fit because it sits in Agent orchestration: Framework/runtime for composing agent roles, workflows, planners, tools, retrieval, memory, routing, retries, and traceable handoffs.
+- Why A is wrong: Prompt and Context Design belongs to Prompt and context adaptation, while this scenario asks for Agent orchestration.
+- Why B is wrong: Model Inference Endpoint belongs to Serving and deployment, while this scenario asks for Agent orchestration.
+- Why C is wrong: Tool Gateway and Function Runtime belongs to Tool execution, while this scenario asks for Agent orchestration.
+
+### Q90: A public-sector casework team has narrowed the next engineering decision. The work to finish before release is building or coordinating an agent workflow with tools, routers, specialists, state, and recoverable execution. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: ags-hf-svc-agent-orchestration-runtime-004
+- Domain: Tooling, Orchestration, and Memory
+- Topic: Study capability: Agent Orchestration Runtime; lifecycle: Agent orchestration; Which layer coordinates agent roles, tools, and state?
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Agent Orchestration Runtime is the best fit for this layer: framework/runtime for composing agent roles, workflows, planners, tools, retrieval, memory, routing, retries, and traceable handoffs.
+- B. Choose Tool Gateway and Function Runtime; it provides execution boundary that exposes tools/functions with schemas, validation, permissions, risk checks, idempotency, and audit logs.
+- C. Use Cost/Latency Optimizer when you need to handle user count, p99 latency, TTFT, throughput, token cost, context bloat, model routing, caching, quantization, or batching.
+- D. Select Model Selection and Registry; it owns model selection work such as deciding whether to call an existing API/model, choose a base model, use a catalog artifact, approve an adapter, compare variants, or roll back a release.
+- Answer: A
+- Explanation: Agent Orchestration Runtime is the best fit because it sits in Agent orchestration: Framework/runtime for composing agent roles, workflows, planners, tools, retrieval, memory, routing, retries, and traceable handoffs.
+- Why B is wrong: Tool Gateway and Function Runtime belongs to Tool execution, while this scenario asks for Agent orchestration.
+- Why C is wrong: Cost/Latency Optimizer belongs to Inference optimization, while this scenario asks for Agent orchestration.
+- Why D is wrong: Model Selection and Registry belongs to Model selection, while this scenario asks for Agent orchestration.
+
+### Q91: A telecom network operations team needs to choose the right implementation surface. The implementation requirement is to build or coordinate an agent workflow with tools, routers, specialists, state, and recoverable execution. What is the best first implementation choice?
+- ID: ags-hf-svc-agent-orchestration-runtime-005
+- Domain: Tooling, Orchestration, and Memory
+- Topic: Study capability: Agent Orchestration Runtime; lifecycle: Agent orchestration; Which layer coordinates agent roles, tools, and state?
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Prompt and Context Design is the best fit for this layer: no-weight-change control layer for system prompts, task instructions, few-shot examples, structured outputs, context assembly, and prompt/version governance.
+- B. Choose Agent Orchestration Runtime; it provides framework/runtime for composing agent roles, workflows, planners, tools, retrieval, memory, routing, retries, and traceable handoffs.
+- C. Use Policy and Guardrails Layer when you need to enforce policy around prompts, retrieval, tool use, sensitive content, or final outputs.
+- D. Select Latency, Throughput, and Traffic Control; it owns serving and deployment work such as handling user count, p95/p99, TTFT, tail latency, request rate, concurrency, queue delay, batching, streaming, autoscaling lag, overload, canary, rollback, or traffic isolation.
+- Answer: B
+- Explanation: Agent Orchestration Runtime is the best fit because it sits in Agent orchestration: Framework/runtime for composing agent roles, workflows, planners, tools, retrieval, memory, routing, retries, and traceable handoffs.
+- Why A is wrong: Prompt and Context Design belongs to Prompt and context adaptation, while this scenario asks for Agent orchestration.
+- Why C is wrong: Policy and Guardrails Layer belongs to Safety and guardrails, while this scenario asks for Agent orchestration.
+- Why D is wrong: Latency, Throughput, and Traffic Control belongs to Serving and deployment, while this scenario asks for Agent orchestration.
+
+### Q92: An automotive support team is fixing the layer called out by the trace and design review. An agent may create refunds, update CRM records, or query sensitive systems and must validate every action before execution. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: ags-hf-svc-tool-gateway-and-function-runtime-001
+- Domain: Tooling, Orchestration, and Memory
+- Topic: Study capability: Tool Gateway and Function Runtime; lifecycle: Tool execution; Which component enforces schemas and permissions before tools run?
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Select Model Selection and Registry; it owns model selection work such as deciding whether to call an existing API/model, choose a base model, use a catalog artifact, approve an adapter, compare variants, or roll back a release.
+- B. Prompt and Context Design is the best fit for this layer: no-weight-change control layer for system prompts, task instructions, few-shot examples, structured outputs, context assembly, and prompt/version governance.
+- C. Choose Tool Gateway and Function Runtime; it provides execution boundary that exposes tools/functions with schemas, validation, permissions, risk checks, idempotency, and audit logs.
+- D. Use Observability and Trace Monitor when you need to diagnose live failures, p95/p99 latency, TTFT, route drift, empty tool results, trace replay, or incident diagnosis.
+- Answer: C
+- Explanation: Tool Gateway and Function Runtime is the best fit because it sits in Tool execution: Execution boundary that exposes tools/functions with schemas, validation, permissions, risk checks, idempotency, and audit logs.
+- Why A is wrong: Model Selection and Registry belongs to Model selection, while this scenario asks for Tool execution.
+- Why B is wrong: Prompt and Context Design belongs to Prompt and context adaptation, while this scenario asks for Tool execution.
+- Why D is wrong: Observability and Trace Monitor belongs to Monitoring and profiling, while this scenario asks for Tool execution.
+
+### Q93: A logistics planning team is setting a release gate. The trace points to the need to expose safe API calls, function calling, parameter validation, mutation control, retries, or permissions. The team must avoid solving this with the wrong lifecycle layer. Which capability page covers the missing layer?
+- ID: ags-hf-svc-tool-gateway-and-function-runtime-002
+- Domain: Tooling, Orchestration, and Memory
+- Topic: Study capability: Tool Gateway and Function Runtime; lifecycle: Tool execution; Which component enforces schemas and permissions before tools run?
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Choose Observability and Trace Monitor; it provides live operations layer for traces, logs, metrics, tool-call health, retrieval quality, user-facing latency, errors, drift, incidents, and replay.
+- B. Use Tool Gateway and Function Runtime when you need to expose safe API calls, function calling, parameter validation, mutation control, retries, or permissions.
+- C. Select Evaluation and Regression Harness; it owns evaluation work such as measuring quality, compare variants, catch regressions, score trajectories, or calibrate judges.
+- D. Model Inference Endpoint is the best fit for this layer: packaged model endpoint that exposes optimized inference APIs with health checks, model profiles, auth, concurrency limits, latency metrics, and deployment hooks.
+- Answer: B
+- Explanation: Tool Gateway and Function Runtime is the best fit because it sits in Tool execution: Execution boundary that exposes tools/functions with schemas, validation, permissions, risk checks, idempotency, and audit logs.
+- Why A is wrong: Observability and Trace Monitor belongs to Monitoring and profiling, while this scenario asks for Tool execution.
+- Why C is wrong: Evaluation and Regression Harness belongs to Evaluation, while this scenario asks for Tool execution.
+- Why D is wrong: Model Inference Endpoint belongs to Serving and deployment, while this scenario asks for Tool execution.
+
+### Q94: A public-sector casework team is preparing a production rollout. The next release blocker is separating model planning from server-side function execution. The team wants the choice that acts at this layer, not a neighboring one. Which capability best matches the release blocker?
+- ID: ags-hf-svc-tool-gateway-and-function-runtime-003
+- Domain: Tooling, Orchestration, and Memory
+- Topic: Study capability: Tool Gateway and Function Runtime; lifecycle: Tool execution; Which component enforces schemas and permissions before tools run?
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Select Tool Gateway and Function Runtime; it owns tool execution work such as exposing safe API calls, function calling, parameter validation, mutation control, retries, or permissions.
+- B. Evaluation and Regression Harness is the best fit for this layer: test and measurement system for prompts, models, retrieval, tool calls, agent trajectories, safety, regressions, and human/LLM judging.
+- C. Choose Model Customization Toolkit; it provides adaptation layer for changing an existing model's durable behavior with SFT, PEFT/LoRA, preference tuning, continued pretraining, or alignment workflows.
+- D. Use Model Selection and Registry when you need to decide whether to call an existing API/model, choose a base model, use a catalog artifact, approve an adapter, compare variants, or roll back a release.
+- Answer: A
+- Explanation: Tool Gateway and Function Runtime is the best fit because it sits in Tool execution: Execution boundary that exposes tools/functions with schemas, validation, permissions, risk checks, idempotency, and audit logs.
+- Why B is wrong: Evaluation and Regression Harness belongs to Evaluation, while this scenario asks for Tool execution.
+- Why C is wrong: Model Customization Toolkit belongs to Training and customization, while this scenario asks for Tool execution.
+- Why D is wrong: Model Selection and Registry belongs to Model selection, while this scenario asks for Tool execution.
+
+### Q95: A bank fraud team is setting a release gate. The trace points to the need to expose safe API calls, function calling, parameter validation, mutation control, retries, or permissions. What is the best first implementation choice?
+- ID: ags-hf-svc-tool-gateway-and-function-runtime-004
+- Domain: Tooling, Orchestration, and Memory
+- Topic: Study capability: Tool Gateway and Function Runtime; lifecycle: Tool execution; Which component enforces schemas and permissions before tools run?
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Choose Knowledge and RAG Pipeline; it provides query-time grounding path for embeddings, indexing, metadata filtering, search, reranking, context assembly, citations, and freshness-aware retrieval.
+- B. Use Foundation Model Training Stack when you need to create or continue a model when no existing model or fine-tuning route is enough and the team must create a model, continue pretraining, change tokenizer/domain depth, or run large distributed training jobs.
+- C. Select Model Serving Gateway; it owns serving and deployment work such as managing multi-model routing, traffic splitting, canary rollout, fallback, dynamic batching, or endpoint-level policies.
+- D. Tool Gateway and Function Runtime is the best fit for this layer: execution boundary that exposes tools/functions with schemas, validation, permissions, risk checks, idempotency, and audit logs.
+- Answer: D
+- Explanation: Tool Gateway and Function Runtime is the best fit because it sits in Tool execution: Execution boundary that exposes tools/functions with schemas, validation, permissions, risk checks, idempotency, and audit logs.
+- Why A is wrong: Knowledge and RAG Pipeline belongs to RAG and retrieval, while this scenario asks for Tool execution.
+- Why B is wrong: Foundation Model Training Stack belongs to Foundation training, while this scenario asks for Tool execution.
+- Why C is wrong: Model Serving Gateway belongs to Serving and deployment, while this scenario asks for Tool execution.
+
+### Q96: An automotive support team is preparing a production rollout. An agent may create refunds, update CRM records, or query sensitive systems and must validate every action before execution. The team wants the choice that acts at this layer, not a neighboring one. Which General Study capability owns this requirement?
+- ID: ags-hf-svc-tool-gateway-and-function-runtime-005
+- Domain: Tooling, Orchestration, and Memory
+- Topic: Study capability: Tool Gateway and Function Runtime; lifecycle: Tool execution; Which component enforces schemas and permissions before tools run?
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Select Training Data Curation Pipeline; it owns training-time data curation work such as preparing model-learning or evaluation data: pretraining corpora, continued-pretraining corpora, SFT examples, preference pairs, tool-use traces, synthetic examples, validation sets, and benchmark holdouts.
+- B. Agent Orchestration Runtime is the best fit for this layer: framework/runtime for composing agent roles, workflows, planners, tools, retrieval, memory, routing, retries, and traceable handoffs.
+- C. Choose Tool Gateway and Function Runtime; it provides execution boundary that exposes tools/functions with schemas, validation, permissions, risk checks, idempotency, and audit logs.
+- D. Use Model Serving Gateway when you need to manage multi-model routing, traffic splitting, canary rollout, fallback, dynamic batching, or endpoint-level policies.
+- Answer: C
+- Explanation: Tool Gateway and Function Runtime is the best fit because it sits in Tool execution: Execution boundary that exposes tools/functions with schemas, validation, permissions, risk checks, idempotency, and audit logs.
+- Why A is wrong: Training Data Curation Pipeline belongs to Training-time data curation, while this scenario asks for Tool execution.
+- Why B is wrong: Agent Orchestration Runtime belongs to Agent orchestration, while this scenario asks for Tool execution.
+- Why D is wrong: Model Serving Gateway belongs to Serving and deployment, while this scenario asks for Tool execution.
+
+### Q97: A pharmaceutical research team has narrowed the next engineering decision. A multi-tenant support agent must answer from current policy docs with citations and tenant isolation. The team wants the choice that acts at this layer, not a neighboring one. Which reusable concept area should guide the design?
+- ID: ags-hf-svc-knowledge-and-rag-pipeline-001
+- Domain: Data Curation and Knowledge Grounding
+- Topic: Study capability: Knowledge and RAG Pipeline; lifecycle: RAG and retrieval; Which runtime component handles retrieval, reranking, and grounding?
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Use Observability and Trace Monitor when you need to diagnose live failures, p95/p99 latency, TTFT, route drift, empty tool results, trace replay, or incident diagnosis.
+- B. Select Latency, Throughput, and Traffic Control; it owns serving and deployment work such as handling user count, p95/p99, TTFT, tail latency, request rate, concurrency, queue delay, batching, streaming, autoscaling lag, overload, canary, rollback, or traffic isolation.
+- C. Tool Gateway and Function Runtime is the best fit for this layer: execution boundary that exposes tools/functions with schemas, validation, permissions, risk checks, idempotency, and audit logs.
+- D. Choose Knowledge and RAG Pipeline; it provides query-time grounding path for embeddings, indexing, metadata filtering, search, reranking, context assembly, citations, and freshness-aware retrieval.
+- Answer: D
+- Explanation: Knowledge and RAG Pipeline is the best fit because it sits in RAG and retrieval: Query-time grounding path for embeddings, indexing, metadata filtering, search, reranking, context assembly, citations, and freshness-aware retrieval.
+- Why A is wrong: Observability and Trace Monitor belongs to Monitoring and profiling, while this scenario asks for RAG and retrieval.
+- Why B is wrong: Latency, Throughput, and Traffic Control belongs to Serving and deployment, while this scenario asks for RAG and retrieval.
+- Why C is wrong: Tool Gateway and Function Runtime belongs to Tool execution, while this scenario asks for RAG and retrieval.
+
+### Q98: A telecom network operations team is setting a release gate. The blocker is grounding answers in private, changing, or source-grounded knowledge at query time without changing weights. The team must avoid solving this with the wrong lifecycle layer. Which capability page covers the missing layer?
+- ID: ags-hf-svc-knowledge-and-rag-pipeline-002
+- Domain: Data Curation and Knowledge Grounding
+- Topic: Study capability: Knowledge and RAG Pipeline; lifecycle: RAG and retrieval; Which runtime component handles retrieval, reranking, and grounding?
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Use Knowledge and RAG Pipeline when you need to ground answers in private, changing, or source-grounded knowledge at query time without changing weights.
+- B. Select Evaluation and Regression Harness; it owns evaluation work such as measuring quality, compare variants, catch regressions, score trajectories, or calibrate judges.
+- C. Tool Gateway and Function Runtime is the best fit for this layer: execution boundary that exposes tools/functions with schemas, validation, permissions, risk checks, idempotency, and audit logs.
+- D. Choose Memory Store; it provides scoped memory layer for short-term task state, episodic session memory, semantic facts, user preferences, expiration, and consent-aware recall.
+- Answer: A
+- Explanation: Knowledge and RAG Pipeline is the best fit because it sits in RAG and retrieval: Query-time grounding path for embeddings, indexing, metadata filtering, search, reranking, context assembly, citations, and freshness-aware retrieval.
+- Why B is wrong: Evaluation and Regression Harness belongs to Evaluation, while this scenario asks for RAG and retrieval.
+- Why C is wrong: Tool Gateway and Function Runtime belongs to Tool execution, while this scenario asks for RAG and retrieval.
+- Why D is wrong: Memory Store belongs to Memory and state, while this scenario asks for RAG and retrieval.
+
+### Q99: A manufacturing quality team is fixing the layer called out by the trace and design review. The next release blocker is separating retrieval quality from fine-tuning and serving infrastructure. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: ags-hf-svc-knowledge-and-rag-pipeline-003
+- Domain: Data Curation and Knowledge Grounding
+- Topic: Study capability: Knowledge and RAG Pipeline; lifecycle: RAG and retrieval; Which runtime component handles retrieval, reranking, and grounding?
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Use Training Data Curation Pipeline when you need to prepare model-learning or evaluation data: pretraining corpora, continued-pretraining corpora, SFT examples, preference pairs, tool-use traces, synthetic examples, validation sets, and benchmark holdouts.
+- B. Select Knowledge and RAG Pipeline; it owns rAG and retrieval work such as grounding answers in private, changing, or source-grounded knowledge at query time without changing weights.
+- C. Prompt and Context Design is the best fit for this layer: no-weight-change control layer for system prompts, task instructions, few-shot examples, structured outputs, context assembly, and prompt/version governance.
+- D. Choose Latency, Throughput, and Traffic Control; it provides production traffic-control concepts for model and agent systems: percentiles, TTFT, concurrency, queueing, batching, autoscaling, backpressure, circuit breakers, and rollout safety.
+- Answer: B
+- Explanation: Knowledge and RAG Pipeline is the best fit because it sits in RAG and retrieval: Query-time grounding path for embeddings, indexing, metadata filtering, search, reranking, context assembly, citations, and freshness-aware retrieval.
+- Why A is wrong: Training Data Curation Pipeline belongs to Training-time data curation, while this scenario asks for RAG and retrieval.
+- Why C is wrong: Prompt and Context Design belongs to Prompt and context adaptation, while this scenario asks for RAG and retrieval.
+- Why D is wrong: Latency, Throughput, and Traffic Control belongs to Serving and deployment, while this scenario asks for RAG and retrieval.
+
+### Q100: A bank fraud team needs to choose the right implementation surface. The implementation requirement is to ground answers in private, changing, or source-grounded knowledge at query time without changing weights. The team must avoid solving this with the wrong lifecycle layer. Which study capability should they read first?
+- ID: ags-hf-svc-knowledge-and-rag-pipeline-004
+- Domain: Data Curation and Knowledge Grounding
+- Topic: Study capability: Knowledge and RAG Pipeline; lifecycle: RAG and retrieval; Which runtime component handles retrieval, reranking, and grounding?
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Use Human Review and Governance Console when you need to support human approval, escalation, sampled review, regulated decision support, or reviewer feedback loops.
+- B. Select Latency, Throughput, and Traffic Control; it owns serving and deployment work such as handling user count, p95/p99, TTFT, tail latency, request rate, concurrency, queue delay, batching, streaming, autoscaling lag, overload, canary, rollback, or traffic isolation.
+- C. Knowledge and RAG Pipeline is the best fit for this layer: query-time grounding path for embeddings, indexing, metadata filtering, search, reranking, context assembly, citations, and freshness-aware retrieval.
+- D. Choose Model Customization Toolkit; it provides adaptation layer for changing an existing model's durable behavior with SFT, PEFT/LoRA, preference tuning, continued pretraining, or alignment workflows.
+- Answer: C
+- Explanation: Knowledge and RAG Pipeline is the best fit because it sits in RAG and retrieval: Query-time grounding path for embeddings, indexing, metadata filtering, search, reranking, context assembly, citations, and freshness-aware retrieval.
+- Why A is wrong: Human Review and Governance Console belongs to Human oversight, while this scenario asks for RAG and retrieval.
+- Why B is wrong: Latency, Throughput, and Traffic Control belongs to Serving and deployment, while this scenario asks for RAG and retrieval.
+- Why D is wrong: Model Customization Toolkit belongs to Training and customization, while this scenario asks for RAG and retrieval.

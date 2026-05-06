@@ -6,14 +6,34 @@ source_lens: general-study
 
 # Agent Orchestration Runtime
 
+## Actual implementation / How you use it
+
+```yaml
+workflow:
+  _type: router_agent
+  routes:
+    simple: faq_or_direct_model_call
+    evidence_needed: rag_agent
+    dynamic_tools: react_agent
+    high_risk: human_approval_workflow
+  state:
+    owns: [task, route, evidence, tool_results, memory_writes, approvals]
+```
+
+| Input | Runtime decision | Output |
+|---|---|---|
+| User task, risk, tools, evidence need | Route to graph, ReAct, supervisor, or human review | Traceable workflow with state, budgets, and stop conditions |
+
 ## What to study first
 
 - **Core idea:** You are building the workflow/runtime that coordinates model calls, tools, retrieval, memory, state, routing, retries, handoffs, and termination for an agentic application.
-- **Study first:** Decide whether the task needs deterministic workflow, agent loop, or multi-agent handoff.
-- Define state: task, user, tool results, retrieved evidence, memory, approvals, errors.
-- Define nodes: planner, retriever, tool executor, verifier, reviewer, writer.
-- Add routing, retries, timeouts, and stop conditions.
-- Connect tools through validated execution boundaries.
+- **Study first:** Decide whether the task needs a deterministic workflow, a router, a ReAct loop, plan-and-execute, a supervisor, or human review.
+- **Deterministic workflow:** Use a fixed state graph when the process is known, compliance-heavy, auditable, or approval-driven.
+- **ReAct:** Use the Reason -> Act -> Observe loop when each tool result can change the next step; always add max steps, retry budgets, stop conditions, and a verifier/critic.
+- **Plan-and-execute:** Use when subgoals are predictable but later observations may invalidate the plan; the exam trap is continuing a stale plan without a replanning trigger.
+- **Router:** Classify request intent, risk, evidence need, or complexity before choosing simple answer, RAG, full agent, or human escalation.
+- **Supervisor / multi-agent:** Split roles only when responsibilities, permissions, expertise, or audit ownership are genuinely separable.
+- **State and trace:** Define the state owner, readable/writable fields, checkpoints, memory writes, tool results, policy decisions, and replayable trace spans.
 
 ## What You Are Building
 
@@ -45,6 +65,9 @@ You are building the workflow/runtime that coordinates model calls, tools, retri
 - State ownership prevents agents from losing context or duplicating work.
 - Deterministic graphs are safer for predictable high-risk flows.
 - Agent loops need budgets, stop conditions, and recovery logic.
+- ReAct is a bounded reasoning/action loop, not a magic synonym for "agent." It works when the next action depends on observations.
+- Plan-and-execute separates planning from action; it must include replanning when retrieved evidence or tool results contradict the original plan.
+- Router workflows reduce latency and cost by sending simple, RAG, full-agent, and human-review tasks down different paths.
 - Trajectory eval measures tool choice, evidence use, policy, latency, and cost.
 - NeMo Agent Toolkit is the NVIDIA cue for composing agent workflows, tools, retrieval, and multi-agent coordination.
 - Orchestration calls endpoints, retrievers, tools, guardrails, memory, and evaluators; it does not replace those layers.
@@ -97,13 +120,37 @@ It decides what happens before and after a model call: state transitions, tool c
 
 ### Pattern map
 
-| Pattern | Use it when... | Trap |
+| Pattern | Plain definition | Use it when... | Trap |
+|---|---|---|---|
+| Deterministic state graph | Explicit nodes, edges, state transitions, and approval gates | Workflow has known steps, compliance needs, or predictable outcomes | Overusing open-ended autonomy |
+| ReAct | Reason -> Act -> Observe -> Reason loop around tools | The next action depends on live observations or tool feedback | No budgets, no verifier, or using it for a known process |
+| Plan-and-execute | Create a plan first, execute steps, then replan if observations contradict the plan | The task has decomposable subgoals but tool/retrieval results may change later steps | Continuing a stale plan |
+| Router | Classify request intent/risk/complexity before choosing the path | Mixed workloads need cheap simple paths plus deeper agent/RAG paths | One-size-fits-all agent for every request |
+| Supervisor / multi-agent | Central orchestrator assigns roles and owns shared state | Roles have different permissions, tools, or expertise | Peer agents with no state owner or audit trail |
+| Verifier / critic | Checks evidence, tool results, policy, and stop criteria before continuing | Intermediate decisions matter, not just final answer text | Treating fluent text as proof |
+
+### ReAct in one minute
+
+ReAct means **reasoning plus acting**. The runtime lets the model decide the next action, calls a tool, observes the result, and then reasons again. That is useful for dynamic tasks where the next step is unknowable before seeing a search result, API response, sensor value, or document hit.
+
+```text
+Thought: what do I need next?
+Action: call one approved tool with validated arguments
+Observation: tool result, error, or missing evidence
+Thought: continue, retry, ask human, or stop
+```
+
+Use ReAct when observations should change the path. Do not use it just because the word "agent" appears. If the process is fixed, high-risk, or compliance-heavy, a deterministic graph with approval gates is usually the better answer. Every ReAct loop needs step budgets, wall-clock budgets, allowed tools, retry limits, stop conditions, and trajectory traces.
+
+### Workflow versus agent decision tree
+
+| Question signal | Prefer | Why |
 |---|---|---|
-| Deterministic state graph | Workflow has known steps and compliance needs | Overusing open-ended autonomy |
-| Planner/executor | Task needs decomposition before action | Letting planner mutate systems directly |
-| Router | Simple tasks should avoid expensive reasoning | Poor routing hides failures |
-| Verifier | Evidence/tool results must support next step | Treating fluent text as proof |
-| Multi-agent handoff | Roles are genuinely distinct | Adds latency and ambiguous ownership |
+| Fixed process, predictable steps, regulated approval | Deterministic workflow graph | Easier to audit, replay, and constrain |
+| Unknown intermediate steps, tool feedback changes the next action | Bounded ReAct loop | Observation-driven decisions are the point |
+| Many request types with different cost/risk | Router | Avoids spending agent reasoning on simple requests |
+| Big task with predictable subgoals | Plan-and-execute | Keeps a visible plan while allowing replanning |
+| Multiple permission domains or specialized roles | Supervisor / multi-agent | Keeps ownership and least-privilege boundaries explicit |
 
 ### NVIDIA service boundary
 

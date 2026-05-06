@@ -8,13 +8,14 @@ status: populated
 
 ## What to study first
 
-- **Core idea:** Customize model behavior with **SFT**, **PEFT**, **LoRA**/**QLoRA**, **adapters**, **DPO**/**RLHF**, and tuning controls.
+- **Core idea:** Customize model behavior with **SFT**, **PEFT**, **LoRA**/**QLoRA**, **adapters**, **DPO**/**GRPO**/**RLHF**, and tuning controls.
 - **Use it when:** Study this when **examples**, domain behavior, style, or **preference data** are central.
 - **Study first:** SFT (Supervised Fine-Tuning): Full weight update on labeled instruction-response pairs. Teaches WHAT to say. Needs full model per task. High quality 1K-100K **examples**. Risk: **catastrophic forgetting**.
 - LoRA (Low-Rank Adaptation): Freezes base weights, trains low-**rank** **adapters** (B×A matrices). **Rank** r=8-64, alpha=16-128. Effective update = (α/r)BA. Adapts <1% of params. Can be merged into weights for **zero** inference overhead.
 - QLoRA: **LoRA** + 4-bit base model **quantization** (NF4 format). Double **quantization** of scaling factors. Paged optimizers for memory spikes. Fits 70B **fine-tuning** on single 48GB **GPU** with minimal accuracy loss vs **FP16** **LoRA**.
 - Rank/alpha: **rank** r = capacity of adaptation (higher = more expressive). alpha = scaling factor (effective strength = α/r). At fixed r, doubling α doubles adapter influence. At fixed ratio, higher r+α gives more capacity at same strength.
 - DPO (Direct Preference Optimization): Trains on (prompt, chosen, rejected) triples without reward model. More stable than PPO, simpler to implement. The loss function directly optimizes preference probability via implicit reward.
+- GRPO (Group Relative Policy Optimization): PPO-family preference/RL method that removes the separate value/critic model and estimates advantages from a group of sampled responses' relative rewards. It is alignment optimization, not SFT or LoRA.
 - **Real trap:** **Fine-tuning** is not the right solution for rapidly changing facts; use **RAG**.
 
 ## Certification boundary
@@ -154,6 +155,7 @@ Averages model weights from multiple checkpoints near convergence. Smoother loss
 | **Reward Model Training** | Train a model to predict human preferences between pairs of responses | Scalar reward predictor |
 | **RL (PPO)** | Use reward model to fine-tune **SFT** model via reinforcement learning | Policy that maximizes reward |
 | **DPO (alternative)** | Direct Preference Optimization: bypass reward model; optimize from preferences directly | Policy model without separate reward model |
+| **GRPO (alternative)** | Group Relative Policy Optimization: compute advantages from a group of sampled responses without a separate critic/value model | Preference/RL policy update with less critic overhead than PPO |
 
 **Exam signal**: **SFT** teaches capability; **RLHF** teaches preference. **RLHF** is about what humans prefer, not what is factually correct.
 
@@ -271,7 +273,7 @@ Evidence source: `mock_1` through `mock_5`, especially **LoRA**/**QLoRA**, **RLH
 
 - **Exam:** GenAI LLMs
 - **Weight:** 13%
-- **What it covers:** Customize model behavior with **SFT**, **PEFT**, **LoRA**/**QLoRA**, **adapters**, **DPO**/**RLHF**, and tuning controls.
+- **What it covers:** Customize model behavior with **SFT**, **PEFT**, **LoRA**/**QLoRA**, **adapters**, **DPO**/**GRPO**/**RLHF**, and tuning controls.
 - **Use this section when:** Study this when **examples**, domain behavior, style, or **preference data** are central.
 - **Common trap:** **Fine-tuning** is not the right solution for rapidly changing facts; use **RAG**.
 - **Recognition clues:** A legal assistant improves domain tone but loses general instruction-following after narrow **SFT**.
@@ -314,6 +316,7 @@ Evidence source: `mock_1` through `mock_5`, especially **LoRA**/**QLoRA**, **RLH
   - Stage 2: Train reward model on human preference pairs (prompt, chosen, rejected). Reward model learns to predict which response humans prefer.
   - Stage 3: PPO optimizes the **SFT** policy against the reward model. KL penalty keeps policy from drifting too far from **SFT** reference (prevents reward hacking).
   - **DPO** alternative: Train directly on preference pairs without a separate reward model. Simpler, more stable, but requires high-quality **preference data**. Loss = -log σ(β(log πθ(chosen)/πref(chosen) - log πθ(rejected)/πref(rejected)))
+  - **GRPO** alternative: Sample a group of responses, score them, and compute relative advantages within the group without a separate critic/value network.
 
 ### Must know
 
@@ -322,6 +325,7 @@ Evidence source: `mock_1` through `mock_5`, especially **LoRA**/**QLoRA**, **RLH
 - **QLoRA**: **LoRA** + 4-bit base model **quantization** (NF4 format). Double **quantization** of scaling factors. Paged optimizers for memory spikes. Fits 70B **fine-tuning** on single 48GB **GPU** with minimal accuracy loss vs **FP16** **LoRA**.
 - **Rank/alpha**: **rank** r = capacity of adaptation (higher = more expressive). alpha = scaling factor (effective strength = α/r). At fixed r, doubling α doubles adapter influence. At fixed ratio, higher r+α gives more capacity at same strength.
 - **DPO (Direct Preference Optimization)**: Trains on (prompt, chosen, rejected) triples without reward model. More stable than PPO, simpler to implement. The loss function directly optimizes preference probability via implicit reward.
+- **GRPO (Group Relative Policy Optimization)**: Removes the separate critic/value model used in PPO and estimates advantages from relative rewards among grouped sampled responses.
 - **RLHF (Reinforcement Learning from Human Feedback)**: Three-stage: **SFT** → reward model training → PPO optimization. KL penalty prevents **drift** from **SFT** reference. More expressive than **DPO** but more complex and less stable.
 - **Catastrophic forgetting**: Model loses general capabilities after domain-specific **fine-tuning**. Mitigate with **data mixing** (10-30% general), **LoRA** (frozen base), lower LR, multi-stage training with data replay.
 

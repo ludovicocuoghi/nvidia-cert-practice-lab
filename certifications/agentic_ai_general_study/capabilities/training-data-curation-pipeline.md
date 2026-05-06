@@ -6,6 +6,19 @@ source_lens: general-study
 
 # Training Data Curation Pipeline
 
+## Actual implementation / How you use it
+
+```text
+raw data -> source inventory -> license/PII checks -> normalize
+         -> exact hash dedupe -> MinHash/LSH fuzzy dedupe
+         -> quality filters -> train/validation/test split
+         -> contamination check -> versioned dataset card
+```
+
+| Input | Curation owns | Output |
+|---|---|---|
+| Raw corpora, examples, traces, labels, holdouts | Provenance, quality, dedupe, splits, leakage, privacy | Dataset ready for training, tuning, or evaluation |
+
 ## What to study first
 
 - **Core idea:** You are building the offline data pipeline that decides which raw text, code, documents, labels, traces, synthetic examples, and holdouts are safe and useful enough for a model to learn from or be evaluated against. The output is not a chatbot, a retriever, or an endpoint. The output is a curated dataset with provenance, quality controls, splits, and lineage.

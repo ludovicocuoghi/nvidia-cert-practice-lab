@@ -21,6 +21,10 @@ status: populated
 
 This page is the NCP-AAI exam lens for reasoning, planning, and memory. Keep portable concepts only at the depth needed for the certification. The reusable concept home is `Agentic AI General Study -> Tooling, Orchestration, and Memory` plus `Agent Lifecycle and Architecture`; NVIDIA-specific implementation cues stay here.
 
+## General Study first
+
+Read `Agentic AI General Study -> Tooling, Orchestration, and Memory`, `Agentic AI General Study -> Memory Store`, and `Agentic AI General Study -> Agent Lifecycle and Architecture`. Use this overlay to answer official-domain questions about ReAct, planning, replanning, task decomposition, short-term state, long-term memory, episodic/semantic/entity memory, and memory safety.
+
 ## Core ideas you must hold in your head
 
 - **ReAct > CoT** when tools are involved. Chain-of-Thought reasons but doesn't act. ReAct reasons → acts → observes → reasons again. The exam tests this distinction explicitly.

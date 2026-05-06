@@ -77,6 +77,30 @@ describe("simulator domain", () => {
     expect(result.byDomain["Prompt Engineering"]).toEqual({ total: 2, correct: 1 });
   });
 
+  it("parses optional question scope metadata", () => {
+    const exam = parseExamMarkdown([
+      "- Name: Scope Test",
+      "- Code: NCP-AAI",
+      "",
+      "## Questions",
+      "",
+      "### Q1: Which NVIDIA serving layer fits a packaged inference endpoint?",
+      "- ID: scope-001",
+      "- Domain: NVIDIA Platform Implementation",
+      "- Topic: NIM",
+      "- Difficulty: hard",
+      "- Scope: nvidia_specific",
+      "- A. NVIDIA NIM",
+      "- B. A generic prompt template",
+      "- C. A tokenizer merge table",
+      "- D. A manual spreadsheet",
+      "- Answer: A",
+      "- Explanation: NIM is the packaged serving layer."
+    ].join("\n"));
+
+    expect(exam.questions[0].questionScope).toBe("nvidia_specific");
+  });
+
   it("loads the structured question bank", async () => {
     const certDir = "certifications/genai_llms_professional";
     const blueprint = JSON.parse(await readFile(`${certDir}/blueprint.json`, "utf8"));

@@ -21,6 +21,10 @@ status: populated
 
 This page is intentionally NVIDIA-specific. It should map NIM, NeMo Agent Toolkit, NeMo Retriever, NeMo Guardrails, NeMo Evaluator, NeMo Curator, NIM Operator, Triton, TensorRT-LLM, Nsight, NGC, and related tools to the Agentic AI lifecycle. Generic lifecycle theory should stay in Agentic AI General Study.
 
+## General Study first
+
+Read the relevant General Study page for the concept first, then use this page as the NVIDIA product map. For example: orchestration belongs to `Agentic AI General Study -> Tooling, Orchestration, and Memory`; RAG belongs to `Data Curation and Knowledge Grounding`; serving belongs to `Inference Serving and Deployment`; safety, evaluation, and operations belong to their matching General Study pages.
+
 ## Core ideas you must hold in your head
 
 - **NIM** serves models; **NeMo Framework** trains/customizes models; **NeMo Agent Toolkit** orchestrates agent workflows. These are three different lifecycle stages — the exam tests whether you can map the right tool to the right stage.

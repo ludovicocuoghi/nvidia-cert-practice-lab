@@ -73,7 +73,7 @@ const banned = [
   /Use first when/i
 ];
 
-const serviceSignalPattern = /trace|timeline|kernel|CUDA|Kubernetes|endpoint|API|LoRA|PEFT|RAG|retrieval|embedding|rerank|guardrail|policy|eval|benchmark|judge|dataset|dedup|PII|profile|registry|container|rollout|autoscal|all-reduce|NCCL|GPU|latency|throughput|documents|workflow|tools|memory|state|agent|router|specialist|planner|handoff|retry|preference|session|recall|consent|model artifacts|release|serve|serving|routing|runtime|artifact|microservice|profiler|JSONL|Parquet|corpus|pipeline|ScoreFilter|classifier|curation|prefill|decode|KV-cache|multi-node|H100/i;
+const serviceSignalPattern = /trace|timeline|kernel|CUDA|Kubernetes|endpoint|API|LoRA|PEFT|RAG|retrieval|embedding|rerank|guardrail|policy|eval|benchmark|judge|dataset|dedup|PII|profile|registry|container|rollout|autoscal|all-reduce|NCCL|GPU|latency|throughput|documents|workflow|tools|memory|state|agent|router|specialist|planner|handoff|retry|preference|session|recall|consent|model artifacts|release|serve|serving|routing|runtime|artifact|microservice|profiler|JSONL|Parquet|corpus|pipeline|ScoreFilter|classifier|curation|prefill|decode|KV-cache|multi-node|H100|TensorRT|optimized LLM|LLM engine|batching|quantization|TTFT|inference/i;
 
 function countBy(items, keyFn) {
   return items.reduce((counts, item) => {

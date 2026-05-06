@@ -15,11 +15,12 @@ status: populated
 - Dynamic batching: Server-side request grouping. max_queue_delay_microseconds (100-500µs for interactive) controls **latency**/**throughput** trade-off. preferred_batch_size aligns with **GPU** efficiency. NOT the same as continuous/**in-flight batching** (**TensorRT-LLM** engine-level).
 - Kubernetes deployment: **NIM** containers on K8s with **GPU** node pools. HPA (Horizontal Pod **Autoscaling**) scales pod count based on **metrics**. **NIM Operator** simplifies lifecycle management. Standard enterprise **deployment** pattern.
 - Canary/Rollback: **Canary** = gradual traffic shift to new version with quality **monitoring**. **Rollback** = instant switch back to previous version via K8s **deployment** revision or load balancer redirect. Critical for LLM deployments where quality regressions are the primary risk.
+- **General Study first:** Read `Agentic AI General Study -> Latency, Throughput, and Traffic Control` when a deployment question mentions user count, p95/p99, TTFT, queue delay, concurrency, backpressure, canary, blue-green, or rollback. This page then maps those reusable ideas to NIM, Triton, TensorRT-LLM, NIM Operator, and NVIDIA monitoring surfaces.
 - **Real trap:** **Deployment** packaging is not the same as model optimization or **fine-tuning**.
 
 ## Certification boundary
 
-This page is the NCP-GENL exam lens for deploying LLMs on NVIDIA. Keep NIM, Triton, TensorRT-LLM, NGC, NIM Operator, rollout strategy, API shape, and production-serving traps here. The vendor-neutral model-serving lifecycle belongs in Agentic AI General Study; this page should explain the NVIDIA implementation and certification answer choices.
+This page is the NCP-GENL exam lens for deploying LLMs on NVIDIA. Keep NIM, Triton, TensorRT-LLM, NGC, NIM Operator, rollout strategy, API shape, and production-serving traps here. The vendor-neutral model-serving lifecycle belongs in Agentic AI General Study, especially `Latency, Throughput, and Traffic Control`; this page explains the NVIDIA implementation and certification answer choices.
 
 ## Core ideas you must hold in your head
 

@@ -6,6 +6,51 @@ status: populated
 
 # Model Selection and Customization
 
+## Actual implementation / Pattern you use
+
+```yaml
+model_release_record:
+  task: claims_support_agent
+  base_model: approved_reasoning_model
+  adapter: null_or_lora_adapter_v2
+  prompt_version: claims_prompt_2026_05
+  retrieval_index: claims_policy_index_14
+  eval_report: eval_claims_regression_42
+  serving_endpoint: claims-agent-model-api
+  rollback_to: claims-agent-model-api_previous
+```
+
+```python
+def choose_change(req):
+    if req.needs_current_private_facts:
+        return "RAG_or_API_tool"
+    if req.needs_format_or_tone and examples_are_small:
+        return "prompt_or_few_shot"
+    if req.needs_durable_behavior and curated_examples_exist:
+        return "PEFT_LoRA_or_SFT"
+    if req.has_ranked_preference_pairs:
+        return "preference_tuning"
+    return "select_better_base_model_or_route"
+```
+
+| Object | Means | Common confusion |
+|---|---|---|
+| Model family | The base capability and architecture class | Not the deployed endpoint |
+| Catalog/registry artifact | Approved model, adapter, container, metadata, lineage | Not the runtime itself |
+| Customization run | Changes durable behavior or preference ranking | Not a way to keep facts fresh |
+| Serving endpoint | Callable API for inference | Not the agent workflow |
+
+## Exam coverage map
+
+Use this page first for these NCP-AAI sections:
+
+| NCP-AAI section | Why this page matters |
+|---|---|
+| Evaluation and Tuning | Covers when to fix prompt/schema/retrieval/policy before tuning model weights. |
+| Agent Architecture and Design | Covers model role choice: router, planner, tool-use model, generator, embedder, or reranker. |
+| Knowledge Integration and Data Handling | Separates fresh facts in RAG from durable behavior in model weights. |
+| NVIDIA Platform Implementation | Maps generic model/artifact decisions to Nemotron models, NGC, NIM, and NeMo Customizer when named. |
+
 ## What to study first
 
 - **Core idea:** How to choose a model and decide whether to prompt, retrieve, tune, or preference-align.
@@ -86,6 +131,27 @@ Training losses include next-token cross-entropy for SFT, pairwise/DPO losses fo
 | Approved model release | Registry | Manual artifact copy |
 | Human preference | Preference tuning | Accuracy metric only |
 | Rollback | Registry + gateway | Rebuild from memory |
+
+### Deep dive: adaptation boundaries
+
+| Need | First choice | Why |
+|---|---|---|
+| Fresh company facts | RAG or API tools | Facts change without retraining |
+| Repeated output structure | Prompt examples or structured output | Cheaper and easier to roll back |
+| Durable domain style | PEFT/LoRA or SFT | Behavior should persist beyond one prompt |
+| Better preference ranking | Preference tuning such as DPO-style training | The desired answer is about ranking alternatives |
+| Smaller/faster endpoint | Distillation, quantization, routing, or smaller model | The problem is serving cost/latency, not knowledge |
+| Tool argument mistakes | Tool schema, examples, validation, orchestration | Fine-tuning may hide a runtime contract bug |
+
+### Model-choice signals
+
+| Scenario clue | Consider |
+|---|---|
+| Needs tool use and planning | Reasoning/instruction model plus orchestration controls |
+| Needs retrieval | Embedding model, reranker, generator, and RAG evals as separate choices |
+| Needs low latency | Smaller model, routing, batching, quantization, cache, or optimized endpoint |
+| Needs audit and rollback | Registry/catalog record plus endpoint versioning |
+| Needs private hosting | Deployment/runtime constraints may outrank leaderboard score |
 
 ### Hands-on checks
 

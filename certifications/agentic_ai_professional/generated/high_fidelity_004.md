@@ -2,1502 +2,1022 @@
 
 ## Questions
 
-### Q1: An automotive support team is preparing a monitored production agent for release. The current design relies on HTTP 200 as the only success signal, but the release gate needs to capture spans for model, retrieval, tools, guardrails, latency, and cost. Which choice addresses the root cause?
-- ID: aai-hf-run-monitor-and-maintain-006
-- Domain: Run, Monitor, and Maintain
-- Topic: trace replay; agentic_ai_professional
-- Difficulty: hard
-- A. Keep HTTP 200 as the only success signal as the primary release control and record only final outputs.
-- B. Prioritize incident response before validating the failure signal around trace replay.
-- C. Bundle trace replay, drift monitoring, and prompt changes into one release with one aggregate score.
-- D. Use trace replay as the control boundary and require the system to capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- Answer: D
-- Explanation: The scenario is about trace replay. The strongest answer fixes the failing layer directly: capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- Why A is wrong: It keeps HTTP 200 as the only success signal in control instead of adding a measurable trace replay decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making trace replay testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether trace replay fixed or caused the failure.
-
-### Q2: A bank fraud team is comparing two release designs for a monitored production agent. One design centers on average latency only; the other adds a measurable drift monitoring step. Which design is more appropriate for production?
-- ID: aai-hf-run-monitor-and-maintain-007
-- Domain: Run, Monitor, and Maintain
-- Topic: drift monitoring; agentic_ai_professional
-- Difficulty: hard
-- A. Bundle drift monitoring, SLOs, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated drift monitoring check.
-- C. Add a release gate for drift monitoring: watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- D. Prioritize observability before validating the failure signal around drift monitoring.
-- Answer: C
-- Explanation: The scenario is about drift monitoring. The strongest answer fixes the failing layer directly: watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether drift monitoring fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the drift monitoring gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making drift monitoring testable in the scenario.
-
-### Q3: A manufacturing quality team sees incidents that cannot be explained without incident response. The team has been using manual transcript review only; the next change needs to make incident response explicit. Which action best addresses the problem?
-- ID: aai-hf-run-monitor-and-maintain-008
-- Domain: Run, Monitor, and Maintain
-- Topic: incident response; agentic_ai_professional
-- Difficulty: easy
-- A. Use drift monitoring as the main gate even though reviewers are asking for incident response evidence.
-- B. Change the design around incident response so the system can convert incidents into regression tests and rollback rules.
-- C. Bundle incident response, drift monitoring, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated incident response check.
-- Answer: B
-- Explanation: The scenario is about incident response. The strongest answer fixes the failing layer directly: convert incidents into regression tests and rollback rules.
-- Why A is wrong: It moves attention to a neighboring control instead of making incident response testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether incident response fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the incident response gate until after users are exposed.
-
-### Q4: A global retailer has a production-readiness review for a monitored production agent. The review is focused on SLOs, because the system must measure task success, safety blocks, p95/p99, and cost together. Which control should be added before rollout?
-- ID: aai-hf-run-monitor-and-maintain-009
-- Domain: Run, Monitor, and Maintain
-- Topic: SLOs; agentic_ai_professional
-- Difficulty: hard
-- A. Make SLOs explicit in the workflow: measure task success, safety blocks, p95/p99, and cost together.
-- B. Wait for production incidents before adding a dedicated SLOs check.
-- C. Use incident response as the main gate even though reviewers are asking for SLOs evidence.
-- D. Keep model tokens/sec alone as the primary release control and record only final outputs.
-- Answer: A
-- Explanation: The scenario is about SLOs. The strongest answer fixes the failing layer directly: measure task success, safety blocks, p95/p99, and cost together.
-- Why B is wrong: Waiting for incidents postpones the SLOs gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making SLOs testable in the scenario.
-- Why D is wrong: It keeps model tokens/sec alone in control instead of adding a measurable SLOs decision point.
-
-### Q5: An automotive support team is comparing two release designs for a monitored production agent. One design centers on separate logs with no request ID; the other adds a measurable observability step. Which design is more appropriate for production?
-- ID: aai-hf-run-monitor-and-maintain-010
-- Domain: Run, Monitor, and Maintain
-- Topic: observability; agentic_ai_professional
+### Q1: A logistics planning team is setting a release gate. The blocker is connecting proprietary data to RAG: parse documents, embed chunks/queries, index/search, apply permissions, or rerank candidate passages. What is the best first implementation choice?
+- ID: aai-hf-svc-nemo-retriever-001
+- Domain: Knowledge Integration and Data Handling
+- Topic: NVIDIA service: NeMo Retriever; lifecycle: RAG and retrieval; Which NVIDIA Retriever layer handles extraction, embedding, indexing/search, and reranking for enterprise RAG?
 - Difficulty: expert
-- A. Keep separate logs with no request ID as the primary release control and record only final outputs.
-- B. Prioritize incident response before validating the failure signal around observability.
-- C. Use observability as the control boundary and require the system to correlate workflow spans across services.
-- D. Use SLOs as the main gate even though reviewers are asking for observability evidence.
-- Answer: C
-- Explanation: The scenario is about observability. The strongest answer fixes the failing layer directly: correlate workflow spans across services.
-- Why A is wrong: It keeps separate logs with no request ID in control instead of adding a measurable observability decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making observability testable in the scenario.
-- Why D is wrong: It moves attention to a neighboring control instead of making observability testable in the scenario.
-
-### Q6: A manufacturing quality team is comparing two release designs for a monitored production agent. One design centers on HTTP 200 as the only success signal; the other adds a measurable trace replay step. Which design is more appropriate for production?
-- ID: aai-hf-run-monitor-and-maintain-011
-- Domain: Run, Monitor, and Maintain
-- Topic: trace replay; agentic_ai_professional
-- Difficulty: medium
-- A. Keep HTTP 200 as the only success signal as the primary release control and record only final outputs.
-- B. Prioritize observability before validating the failure signal around trace replay.
-- C. Bundle trace replay, SLOs, and prompt changes into one release with one aggregate score.
-- D. Add a release gate for trace replay: capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- Answer: D
-- Explanation: The scenario is about trace replay. The strongest answer fixes the failing layer directly: capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- Why A is wrong: It keeps HTTP 200 as the only success signal in control instead of adding a measurable trace replay decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making trace replay testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether trace replay fixed or caused the failure.
-
-### Q7: A bank fraud team is comparing two release designs for a monitored production agent. One design centers on average latency only; the other adds a measurable drift monitoring step. Which design is more appropriate for production?
-- ID: aai-hf-run-monitor-and-maintain-012
-- Domain: Run, Monitor, and Maintain
-- Topic: drift monitoring; agentic_ai_professional
-- Difficulty: hard
-- A. Change the design around drift monitoring so the system can watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- B. Prioritize incident response before validating the failure signal around drift monitoring.
-- C. Bundle drift monitoring, trace replay, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated drift monitoring check.
-- Answer: A
-- Explanation: The scenario is about drift monitoring. The strongest answer fixes the failing layer directly: watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- Why B is wrong: It moves attention to a neighboring control instead of making drift monitoring testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether drift monitoring fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the drift monitoring gate until after users are exposed.
-
-### Q8: An automotive support team is preparing a monitored production agent for release. The current design relies on manual transcript review only, but the release gate needs to convert incidents into regression tests and rollback rules. Which implementation path is most appropriate?
-- ID: aai-hf-run-monitor-and-maintain-013
-- Domain: Run, Monitor, and Maintain
-- Topic: incident response; agentic_ai_professional
-- Difficulty: hard
-- A. Use drift monitoring as the main gate even though reviewers are asking for incident response evidence.
-- B. Make incident response explicit in the workflow: convert incidents into regression tests and rollback rules.
-- C. Bundle incident response, drift monitoring, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated incident response check.
+- Scope: nvidia_specific
+- Source: generated
+- A. NeMo Guardrails is the best fit for this layer: programmable rails for controlling LLM and agent behavior across input, dialog, tool execution, retrieval, and output.
+- B. Choose NeMo Retriever; it provides the NVIDIA Retriever microservice family for document extraction, embeddings, indexing/search, and reranking in enterprise RAG.
+- C. Use Nsight Compute when you need to diagnose why a known kernel is memory-bound, compute-bound, or inefficient.
+- D. Select NeMo Framework; it owns training and customization work such as running SFT, PEFT, LoRA/QLoRA, continued pretraining, model customization, or large-scale model recipes.
 - Answer: B
-- Explanation: The scenario is about incident response. The strongest answer fixes the failing layer directly: convert incidents into regression tests and rollback rules.
-- Why A is wrong: It moves attention to a neighboring control instead of making incident response testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether incident response fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the incident response gate until after users are exposed.
+- Explanation: NeMo Retriever is the best fit because it sits in RAG and retrieval: NVIDIA Retriever microservice family for document extraction, embeddings, indexing/search, and reranking in enterprise RAG.
+- Why A is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for RAG and retrieval.
+- Why C is wrong: Nsight Compute belongs to Monitoring and profiling, while this scenario asks for RAG and retrieval.
+- Why D is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for RAG and retrieval.
 
-### Q9: A global retailer is preparing a monitored production agent for release. The current design relies on model tokens/sec alone, but the release gate needs to measure task success, safety blocks, p95/p99, and cost together. Which action best fits the requirement?
-- ID: aai-hf-run-monitor-and-maintain-014
-- Domain: Run, Monitor, and Maintain
-- Topic: SLOs; agentic_ai_professional
+### Q2: An insurance claims group is fixing the layer called out by the trace and design review. The rollout is blocked until the team can connect proprietary data to RAG: parse documents, embed chunks/queries, index/search, apply permissions, or rerank candidate passages. Which NVIDIA product owns this requirement?
+- ID: aai-hf-svc-nemo-retriever-002
+- Domain: Knowledge Integration and Data Handling
+- Topic: NVIDIA service: NeMo Retriever; lifecycle: RAG and retrieval; Which NVIDIA Retriever layer handles extraction, embedding, indexing/search, and reranking for enterprise RAG?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. NIM Operator is the best fit for this layer: a Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
+- B. Choose NeMo Customizer; it provides a microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- C. Use NeMo Retriever when you need to connect proprietary data to RAG: parse documents, embed chunks/queries, index/search, apply permissions, or rerank candidate passages.
+- D. Select NIM; it owns serving and deployment work such as for packaged, supported, optimized model serving with APIs, profiles, observability, and Kubernetes/container deployment.
+- Answer: C
+- Explanation: NeMo Retriever is the best fit because it sits in RAG and retrieval: NVIDIA Retriever microservice family for document extraction, embeddings, indexing/search, and reranking in enterprise RAG.
+- Why A is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for RAG and retrieval.
+- Why B is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for RAG and retrieval.
+- Why D is wrong: NIM belongs to Serving and deployment, while this scenario asks for RAG and retrieval.
+
+### Q3: A semiconductor design group needs to choose the right implementation surface. The blocker is connecting proprietary data to RAG: parse documents, embed chunks/queries, index/search, apply permissions, or rerank candidate passages. Which NVIDIA option addresses the named layer?
+- ID: aai-hf-svc-nemo-retriever-003
+- Domain: Knowledge Integration and Data Handling
+- Topic: NVIDIA service: NeMo Retriever; lifecycle: RAG and retrieval; Which NVIDIA Retriever layer handles extraction, embedding, indexing/search, and reranking for enterprise RAG?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Nemotron models is the best fit for this layer: NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- B. Choose Nsight Systems; it provides a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- C. Use NeMo Agent Toolkit when you need to a workflow must route requests, call tools/retrievers/memory, run sequential or parallel branches, expose an API/MCP server, or evaluate/profile agent traces.
+- D. Select NeMo Retriever; it owns rAG and retrieval work such as connecting proprietary data to RAG: parse documents, embed chunks/queries, index/search, apply permissions, or rerank candidate passages.
+- Answer: D
+- Explanation: NeMo Retriever is the best fit because it sits in RAG and retrieval: NVIDIA Retriever microservice family for document extraction, embeddings, indexing/search, and reranking in enterprise RAG.
+- Why A is wrong: Nemotron models belongs to Model selection, while this scenario asks for RAG and retrieval.
+- Why B is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for RAG and retrieval.
+- Why C is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for RAG and retrieval.
+
+### Q4: A hospital operations team is fixing the layer called out by the trace and design review. The work to finish before release is connecting proprietary data to RAG: parse documents, embed chunks/queries, index/search, apply permissions, or rerank candidate passages. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: aai-hf-svc-nemo-retriever-004
+- Domain: Knowledge Integration and Data Handling
+- Topic: NVIDIA service: NeMo Retriever; lifecycle: RAG and retrieval; Which NVIDIA Retriever layer handles extraction, embedding, indexing/search, and reranking for enterprise RAG?
 - Difficulty: expert
-- A. Use trace replay as the main gate even though reviewers are asking for SLOs evidence.
-- B. Keep model tokens/sec alone as the primary release control and record only final outputs.
-- C. Use SLOs as the control boundary and require the system to measure task success, safety blocks, p95/p99, and cost together.
-- D. Wait for production incidents before adding a dedicated SLOs check.
-- Answer: C
-- Explanation: The scenario is about SLOs. The strongest answer fixes the failing layer directly: measure task success, safety blocks, p95/p99, and cost together.
-- Why A is wrong: It moves attention to a neighboring control instead of making SLOs testable in the scenario.
-- Why B is wrong: It keeps model tokens/sec alone in control instead of adding a measurable SLOs decision point.
-- Why D is wrong: Waiting for incidents postpones the SLOs gate until after users are exposed.
-
-### Q10: A hospital operations team has a production-readiness review for a monitored production agent. The review is focused on observability, because the system must correlate workflow spans across services. Which choice addresses the root cause?
-- ID: aai-hf-run-monitor-and-maintain-015
-- Domain: Run, Monitor, and Maintain
-- Topic: observability; agentic_ai_professional
-- Difficulty: medium
-- A. Use SLOs as the main gate even though reviewers are asking for observability evidence.
-- B. Keep separate logs with no request ID as the primary release control and record only final outputs.
-- C. Prioritize incident response before validating the failure signal around observability.
-- D. Add a release gate for observability: correlate workflow spans across services.
-- Answer: D
-- Explanation: The scenario is about observability. The strongest answer fixes the failing layer directly: correlate workflow spans across services.
-- Why A is wrong: It moves attention to a neighboring control instead of making observability testable in the scenario.
-- Why B is wrong: It keeps separate logs with no request ID in control instead of adding a measurable observability decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making observability testable in the scenario.
-
-### Q11: A cybersecurity response team is comparing two release designs for a monitored production agent. One design centers on HTTP 200 as the only success signal; the other adds a measurable trace replay step. Which design is more appropriate for production?
-- ID: aai-hf-run-monitor-and-maintain-016
-- Domain: Run, Monitor, and Maintain
-- Topic: trace replay; agentic_ai_professional
-- Difficulty: hard
-- A. Change the design around trace replay so the system can capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- B. Keep HTTP 200 as the only success signal as the primary release control and record only final outputs.
-- C. Prioritize SLOs before validating the failure signal around trace replay.
-- D. Bundle trace replay, observability, and prompt changes into one release with one aggregate score.
+- Scope: nvidia_specific
+- Source: generated
+- A. NeMo Retriever is the best fit for this layer: the NVIDIA Retriever microservice family for document extraction, embeddings, indexing/search, and reranking in enterprise RAG.
+- B. Choose Nsight Compute; it provides a CUDA kernel profiler for detailed metrics, occupancy, memory throughput, warp behavior, and kernel bottlenecks.
+- C. Use NIM Operator when you need to manage K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
+- D. Select NeMo Agent Toolkit; it owns agent orchestration work such as a workflow must route requests, call tools/retrievers/memory, run sequential or parallel branches, expose an API/MCP server, or evaluate/profile agent traces.
 - Answer: A
-- Explanation: The scenario is about trace replay. The strongest answer fixes the failing layer directly: capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- Why B is wrong: It keeps HTTP 200 as the only success signal in control instead of adding a measurable trace replay decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making trace replay testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether trace replay fixed or caused the failure.
+- Explanation: NeMo Retriever is the best fit because it sits in RAG and retrieval: NVIDIA Retriever microservice family for document extraction, embeddings, indexing/search, and reranking in enterprise RAG.
+- Why B is wrong: Nsight Compute belongs to Monitoring and profiling, while this scenario asks for RAG and retrieval.
+- Why C is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for RAG and retrieval.
+- Why D is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for RAG and retrieval.
 
-### Q12: A pharmaceutical research team is comparing two release designs for a monitored production agent. One design centers on average latency only; the other adds a measurable drift monitoring step. Which design is more appropriate for production?
-- ID: aai-hf-run-monitor-and-maintain-017
-- Domain: Run, Monitor, and Maintain
-- Topic: drift monitoring; agentic_ai_professional
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated drift monitoring check.
-- B. Make drift monitoring explicit in the workflow: watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- C. Prioritize SLOs before validating the failure signal around drift monitoring.
-- D. Bundle drift monitoring, observability, and prompt changes into one release with one aggregate score.
-- Answer: B
-- Explanation: The scenario is about drift monitoring. The strongest answer fixes the failing layer directly: watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- Why A is wrong: Waiting for incidents postpones the drift monitoring gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making drift monitoring testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether drift monitoring fixed or caused the failure.
-
-### Q13: A global retailer is reviewing a monitored production agent before rollout. The main risk is incident response: the system must convert incidents into regression tests and rollback rules. Which option keeps the decision at the right layer?
-- ID: aai-hf-run-monitor-and-maintain-018
-- Domain: Run, Monitor, and Maintain
-- Topic: incident response; agentic_ai_professional
+### Q5: A telecom network operations team is setting a release gate. The trace points to the need to connect proprietary data to RAG: parse documents, embed chunks/queries, index/search, apply permissions, or rerank candidate passages. Which NVIDIA option addresses the named layer?
+- ID: aai-hf-svc-nemo-retriever-005
+- Domain: Knowledge Integration and Data Handling
+- Topic: NVIDIA service: NeMo Retriever; lifecycle: RAG and retrieval; Which NVIDIA Retriever layer handles extraction, embedding, indexing/search, and reranking for enterprise RAG?
 - Difficulty: medium
-- A. Wait for production incidents before adding a dedicated incident response check.
-- B. Use trace replay as the main gate even though reviewers are asking for incident response evidence.
-- C. Use incident response as the control boundary and require the system to convert incidents into regression tests and rollback rules.
-- D. Bundle incident response, trace replay, and prompt changes into one release with one aggregate score.
-- Answer: C
-- Explanation: The scenario is about incident response. The strongest answer fixes the failing layer directly: convert incidents into regression tests and rollback rules.
-- Why A is wrong: Waiting for incidents postpones the incident response gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making incident response testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether incident response fixed or caused the failure.
+- Scope: nvidia_specific
+- Source: generated
+- A. Nemotron models is the best fit for this layer: NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- B. Choose NeMo Retriever; it provides the NVIDIA Retriever microservice family for document extraction, embeddings, indexing/search, and reranking in enterprise RAG.
+- C. Use NeMo Agent Toolkit when you need to a workflow must route requests, call tools/retrievers/memory, run sequential or parallel branches, expose an API/MCP server, or evaluate/profile agent traces.
+- D. Select NGC; it owns serving and deployment work such as pulling NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- Answer: B
+- Explanation: NeMo Retriever is the best fit because it sits in RAG and retrieval: NVIDIA Retriever microservice family for document extraction, embeddings, indexing/search, and reranking in enterprise RAG.
+- Why A is wrong: Nemotron models belongs to Model selection, while this scenario asks for RAG and retrieval.
+- Why C is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for RAG and retrieval.
+- Why D is wrong: NGC belongs to Serving and deployment, while this scenario asks for RAG and retrieval.
 
-### Q14: A hospital operations team is preparing a monitored production agent for release. The current design relies on model tokens/sec alone, but the release gate needs to measure task success, safety blocks, p95/p99, and cost together. Which implementation path is most appropriate?
-- ID: aai-hf-run-monitor-and-maintain-019
-- Domain: Run, Monitor, and Maintain
-- Topic: SLOs; agentic_ai_professional
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated SLOs check.
-- B. Use observability as the main gate even though reviewers are asking for SLOs evidence.
-- C. Keep model tokens/sec alone as the primary release control and record only final outputs.
-- D. Add a release gate for SLOs: measure task success, safety blocks, p95/p99, and cost together.
-- Answer: D
-- Explanation: The scenario is about SLOs. The strongest answer fixes the failing layer directly: measure task success, safety blocks, p95/p99, and cost together.
-- Why A is wrong: Waiting for incidents postpones the SLOs gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making SLOs testable in the scenario.
-- Why C is wrong: It keeps model tokens/sec alone in control instead of adding a measurable SLOs decision point.
-
-### Q15: A bank fraud team is comparing two release designs for a monitored production agent. One design centers on separate logs with no request ID; the other adds a measurable observability step. Which design is more appropriate for production?
-- ID: aai-hf-run-monitor-and-maintain-020
-- Domain: Run, Monitor, and Maintain
-- Topic: observability; agentic_ai_professional
-- Difficulty: hard
-- A. Use incident response as the main gate even though reviewers are asking for observability evidence.
-- B. Keep separate logs with no request ID as the primary release control and record only final outputs.
-- C. Prioritize SLOs before validating the failure signal around observability.
-- D. Change the design around observability so the system can correlate workflow spans across services.
-- Answer: D
-- Explanation: The scenario is about observability. The strongest answer fixes the failing layer directly: correlate workflow spans across services.
-- Why A is wrong: It moves attention to a neighboring control instead of making observability testable in the scenario.
-- Why B is wrong: It keeps separate logs with no request ID in control instead of adding a measurable observability decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making observability testable in the scenario.
-
-### Q16: A cybersecurity response team has a production-readiness review for a monitored production agent. The review is focused on trace replay, because the system must capture spans for model, retrieval, tools, guardrails, latency, and cost. Which control should be added before rollout?
-- ID: aai-hf-run-monitor-and-maintain-021
-- Domain: Run, Monitor, and Maintain
-- Topic: trace replay; agentic_ai_professional
+### Q6: A public-sector casework team is preparing a production rollout. The project team wants an OpenAI-compatible endpoint for a supported LLM on their own GPUs. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA service should be selected first?
+- ID: aai-hf-svc-nim-001
+- Domain: Deployment and Scaling
+- Topic: NVIDIA service: NIM; lifecycle: Serving and deployment; Which NVIDIA layer gives a production microservice API for optimized model inference?
 - Difficulty: expert
-- A. Prioritize SLOs before validating the failure signal around trace replay.
-- B. Bundle trace replay, observability, and prompt changes into one release with one aggregate score.
-- C. Make trace replay explicit in the workflow: capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- D. Keep HTTP 200 as the only success signal as the primary release control and record only final outputs.
-- Answer: C
-- Explanation: The scenario is about trace replay. The strongest answer fixes the failing layer directly: capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- Why A is wrong: It moves attention to a neighboring control instead of making trace replay testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether trace replay fixed or caused the failure.
-- Why D is wrong: It keeps HTTP 200 as the only success signal in control instead of adding a measurable trace replay decision point.
-
-### Q17: A public-sector casework team is reviewing a monitored production agent before rollout. The main risk is drift monitoring: the system must watch route mix, retrieval hit rate, judge scores, and escalation rates. Which option keeps the decision at the right layer?
-- ID: aai-hf-run-monitor-and-maintain-022
-- Domain: Run, Monitor, and Maintain
-- Topic: drift monitoring; agentic_ai_professional
-- Difficulty: medium
-- A. Wait for production incidents before adding a dedicated drift monitoring check.
-- B. Use drift monitoring as the control boundary and require the system to watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- C. Prioritize trace replay before validating the failure signal around drift monitoring.
-- D. Bundle drift monitoring, incident response, and prompt changes into one release with one aggregate score.
+- Scope: nvidia_specific
+- Source: generated
+- A. Dynamo (Triton Dynamo) is the best fit for this layer: a distributed inference serving stack for LLMs: disaggregated prefill/decode, KV-cache routing, multi-node scaling.
+- B. Choose NIM; it provides inference microservices for deploying optimized models with production APIs and model profiles.
+- C. Use NeMo Retriever when you need to connect proprietary data to RAG: parse documents, embed chunks/queries, index/search, apply permissions, or rerank candidate passages.
+- D. Select NCCL; it owns training and customization work such as handling distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
 - Answer: B
-- Explanation: The scenario is about drift monitoring. The strongest answer fixes the failing layer directly: watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- Why A is wrong: Waiting for incidents postpones the drift monitoring gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making drift monitoring testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether drift monitoring fixed or caused the failure.
+- Explanation: NIM is the best fit because it sits in Serving and deployment: Inference microservices for deploying optimized models with production APIs and model profiles.
+- Why A is wrong: Dynamo (Triton Dynamo) is a neighboring serving and deployment component, but this signal asks specifically for NIM: for packaged, supported, optimized model serving with APIs, profiles, observability, and Kubernetes/container deployment.
+- Why C is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Serving and deployment.
+- Why D is wrong: NCCL belongs to Training and customization, while this scenario asks for Serving and deployment.
 
-### Q18: A logistics planning team is comparing two release designs for a monitored production agent. One design centers on manual transcript review only; the other adds a measurable incident response step. Which design is more appropriate for production?
-- ID: aai-hf-run-monitor-and-maintain-023
-- Domain: Run, Monitor, and Maintain
-- Topic: incident response; agentic_ai_professional
+### Q7: A cybersecurity response team is reviewing the implementation plan. The trace points to the need to for packaged, supported, optimized model serving with APIs, profiles, observability, and Kubernetes/container deployment. What is the best first implementation choice?
+- ID: aai-hf-svc-nim-002
+- Domain: Deployment and Scaling
+- Topic: NVIDIA service: NIM; lifecycle: Serving and deployment; Which NVIDIA layer gives a production microservice API for optimized model inference?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. NeMo Framework is the best fit for this layer: a framework for training, customizing, aligning, and evaluating generative AI models.
+- B. Choose NeMo Curator; it provides a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- C. Use NIM when you need to for packaged, supported, optimized model serving with APIs, profiles, observability, and Kubernetes/container deployment.
+- D. Select Nemotron models; it owns model selection work such as choosing a model family for NVIDIA-aligned reasoning, reward, instruction, or agentic workflows.
+- Answer: C
+- Explanation: NIM is the best fit because it sits in Serving and deployment: Inference microservices for deploying optimized models with production APIs and model profiles.
+- Why A is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for Serving and deployment.
+- Why B is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Serving and deployment.
+- Why D is wrong: Nemotron models belongs to Model selection, while this scenario asks for Serving and deployment.
+
+### Q8: A pharmaceutical research team is preparing a production rollout. The next release blocker is packaging or managing production model endpoints, artifacts, routing, and rollout. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: aai-hf-svc-nim-003
+- Domain: Deployment and Scaling
+- Topic: NVIDIA service: NIM; lifecycle: Serving and deployment; Which NVIDIA layer gives a production microservice API for optimized model inference?
 - Difficulty: hard
-- A. Add a release gate for incident response: convert incidents into regression tests and rollback rules.
-- B. Bundle incident response, trace replay, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated incident response check.
-- D. Use trace replay as the main gate even though reviewers are asking for incident response evidence.
-- Answer: A
-- Explanation: The scenario is about incident response. The strongest answer fixes the failing layer directly: convert incidents into regression tests and rollback rules.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether incident response fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the incident response gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making incident response testable in the scenario.
+- Scope: nvidia_specific
+- Source: generated
+- A. NeMo Agent Toolkit is the best fit for this layer: a config-driven NAT workflow runtime for agent control flow across tools, retrievers, memory, MCP, tracing, eval, and serving.
+- B. Choose NeMo Customizer; it provides a microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- C. Use Dynamo (Triton Dynamo) when you need to support disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale.
+- D. Select NIM; it owns serving and deployment work such as for packaged, supported, optimized model serving with APIs, profiles, observability, and Kubernetes/container deployment.
+- Answer: D
+- Explanation: NIM is the best fit because it sits in Serving and deployment: Inference microservices for deploying optimized models with production APIs and model profiles.
+- Why A is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Serving and deployment.
+- Why B is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Serving and deployment.
+- Why C is wrong: Dynamo (Triton Dynamo) is a neighboring serving and deployment component, but this signal asks specifically for NIM: for packaged, supported, optimized model serving with APIs, profiles, observability, and Kubernetes/container deployment.
 
-### Q19: A pharmaceutical research team is reviewing a monitored production agent before rollout. The main risk is SLOs: the system must measure task success, safety blocks, p95/p99, and cost together. Which option keeps the decision at the right layer?
-- ID: aai-hf-run-monitor-and-maintain-024
-- Domain: Run, Monitor, and Maintain
-- Topic: SLOs; agentic_ai_professional
+### Q9: A global retailer needs to choose the right implementation surface. The trace points to the need to for packaged, supported, optimized model serving with APIs, profiles, observability, and Kubernetes/container deployment. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA platform layer is the right match?
+- ID: aai-hf-svc-nim-004
+- Domain: Deployment and Scaling
+- Topic: NVIDIA service: NIM; lifecycle: Serving and deployment; Which NVIDIA layer gives a production microservice API for optimized model inference?
 - Difficulty: expert
-- A. Wait for production incidents before adding a dedicated SLOs check.
-- B. Use drift monitoring as the main gate even though reviewers are asking for SLOs evidence.
-- C. Keep model tokens/sec alone as the primary release control and record only final outputs.
-- D. Change the design around SLOs so the system can measure task success, safety blocks, p95/p99, and cost together.
-- Answer: D
-- Explanation: The scenario is about SLOs. The strongest answer fixes the failing layer directly: measure task success, safety blocks, p95/p99, and cost together.
-- Why A is wrong: Waiting for incidents postpones the SLOs gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making SLOs testable in the scenario.
-- Why C is wrong: It keeps model tokens/sec alone in control instead of adding a measurable SLOs decision point.
-
-### Q20: A bank fraud team sees incidents that cannot be explained without observability. The team has been using separate logs with no request ID; the next change needs to make observability explicit. Which action best addresses the problem?
-- ID: aai-hf-run-monitor-and-maintain-025
-- Domain: Run, Monitor, and Maintain
-- Topic: observability; agentic_ai_professional
-- Difficulty: medium
-- A. Keep separate logs with no request ID as the primary release control and record only final outputs.
-- B. Prioritize SLOs before validating the failure signal around observability.
-- C. Make observability explicit in the workflow: correlate workflow spans across services.
-- D. Use incident response as the main gate even though reviewers are asking for observability evidence.
-- Answer: C
-- Explanation: The scenario is about observability. The strongest answer fixes the failing layer directly: correlate workflow spans across services.
-- Why A is wrong: It keeps separate logs with no request ID in control instead of adding a measurable observability decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making observability testable in the scenario.
-- Why D is wrong: It moves attention to a neighboring control instead of making observability testable in the scenario.
-
-### Q21: A manufacturing quality team is preparing a monitored production agent for release. The current design relies on HTTP 200 as the only success signal, but the release gate needs to capture spans for model, retrieval, tools, guardrails, latency, and cost. Which choice addresses the root cause?
-- ID: aai-hf-run-monitor-and-maintain-026
-- Domain: Run, Monitor, and Maintain
-- Topic: trace replay; agentic_ai_professional
-- Difficulty: hard
-- A. Bundle trace replay, SLOs, and prompt changes into one release with one aggregate score.
-- B. Use trace replay as the control boundary and require the system to capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- C. Keep HTTP 200 as the only success signal as the primary release control and record only final outputs.
-- D. Prioritize observability before validating the failure signal around trace replay.
-- Answer: B
-- Explanation: The scenario is about trace replay. The strongest answer fixes the failing layer directly: capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether trace replay fixed or caused the failure.
-- Why C is wrong: It keeps HTTP 200 as the only success signal in control instead of adding a measurable trace replay decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making trace replay testable in the scenario.
-
-### Q22: A telecom network operations team is preparing a monitored production agent for release. The current design relies on average latency only, but the release gate needs to watch route mix, retrieval hit rate, judge scores, and escalation rates. Which architecture keeps the boundary cleanest?
-- ID: aai-hf-run-monitor-and-maintain-027
-- Domain: Run, Monitor, and Maintain
-- Topic: drift monitoring; agentic_ai_professional
-- Difficulty: hard
-- A. Add a release gate for drift monitoring: watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- B. Prioritize observability before validating the failure signal around drift monitoring.
-- C. Bundle drift monitoring, SLOs, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated drift monitoring check.
+- Scope: nvidia_specific
+- Source: generated
+- A. NIM is the best fit for this layer: inference microservices for deploying optimized models with production APIs and model profiles.
+- B. Choose NGC; it provides a catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- C. Use RAPIDS when you need to accelerate pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- D. Select NeMo Retriever; it owns rAG and retrieval work such as connecting proprietary data to RAG: parse documents, embed chunks/queries, index/search, apply permissions, or rerank candidate passages.
 - Answer: A
-- Explanation: The scenario is about drift monitoring. The strongest answer fixes the failing layer directly: watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- Why B is wrong: It moves attention to a neighboring control instead of making drift monitoring testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether drift monitoring fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the drift monitoring gate until after users are exposed.
+- Explanation: NIM is the best fit because it sits in Serving and deployment: Inference microservices for deploying optimized models with production APIs and model profiles.
+- Why B is wrong: NGC is a neighboring serving and deployment component, but this signal asks specifically for NIM: for packaged, supported, optimized model serving with APIs, profiles, observability, and Kubernetes/container deployment.
+- Why C is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Serving and deployment.
+- Why D is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Serving and deployment.
 
-### Q23: A pharmaceutical research team sees incidents that cannot be explained without incident response. The team has been using manual transcript review only; the next change needs to make incident response explicit. Which action best addresses the problem?
-- ID: aai-hf-run-monitor-and-maintain-028
-- Domain: Run, Monitor, and Maintain
-- Topic: incident response; agentic_ai_professional
-- Difficulty: easy
-- A. Bundle incident response, drift monitoring, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated incident response check.
-- C. Use drift monitoring as the main gate even though reviewers are asking for incident response evidence.
-- D. Change the design around incident response so the system can convert incidents into regression tests and rollback rules.
-- Answer: D
-- Explanation: The scenario is about incident response. The strongest answer fixes the failing layer directly: convert incidents into regression tests and rollback rules.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether incident response fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the incident response gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making incident response testable in the scenario.
+### Q10: A manufacturing quality team is fixing the layer called out by the trace and design review. The project team wants an OpenAI-compatible endpoint for a supported LLM on their own GPUs. Which NVIDIA tool should the team start with?
+- ID: aai-hf-svc-nim-005
+- Domain: Deployment and Scaling
+- Topic: NVIDIA service: NIM; lifecycle: Serving and deployment; Which NVIDIA layer gives a production microservice API for optimized model inference?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. NCCL is the best fit for this layer: a collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- B. Choose NIM; it provides inference microservices for deploying optimized models with production APIs and model profiles.
+- C. Use NeMo Framework when you need to run SFT, PEFT, LoRA/QLoRA, continued pretraining, model customization, or large-scale model recipes.
+- D. Select TensorRT-LLM; it owns inference optimization work such as building optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT.
+- Answer: B
+- Explanation: NIM is the best fit because it sits in Serving and deployment: Inference microservices for deploying optimized models with production APIs and model profiles.
+- Why A is wrong: NCCL belongs to Training and customization, while this scenario asks for Serving and deployment.
+- Why C is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for Serving and deployment.
+- Why D is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Serving and deployment.
 
-### Q24: A cybersecurity response team has a production-readiness review for a monitored production agent. The review is focused on SLOs, because the system must measure task success, safety blocks, p95/p99, and cost together. Which architecture keeps the boundary cleanest?
-- ID: aai-hf-run-monitor-and-maintain-029
-- Domain: Run, Monitor, and Maintain
-- Topic: SLOs; agentic_ai_professional
-- Difficulty: hard
-- A. Use incident response as the main gate even though reviewers are asking for SLOs evidence.
-- B. Keep model tokens/sec alone as the primary release control and record only final outputs.
-- C. Make SLOs explicit in the workflow: measure task success, safety blocks, p95/p99, and cost together.
-- D. Wait for production incidents before adding a dedicated SLOs check.
-- Answer: C
-- Explanation: The scenario is about SLOs. The strongest answer fixes the failing layer directly: measure task success, safety blocks, p95/p99, and cost together.
-- Why A is wrong: It moves attention to a neighboring control instead of making SLOs testable in the scenario.
-- Why B is wrong: It keeps model tokens/sec alone in control instead of adding a measurable SLOs decision point.
-- Why D is wrong: Waiting for incidents postpones the SLOs gate until after users are exposed.
-
-### Q25: A public-sector casework team is preparing a monitored production agent for release. The current design relies on separate logs with no request ID, but the release gate needs to correlate workflow spans across services. Which implementation path is most appropriate?
-- ID: aai-hf-run-monitor-and-maintain-030
-- Domain: Run, Monitor, and Maintain
-- Topic: observability; agentic_ai_professional
+### Q11: A manufacturing quality team has narrowed the next engineering decision. An agent needs a reasoning-capable model and a reward model for preference evaluation. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA service should be selected first?
+- ID: aai-hf-svc-nemotron-models-001
+- Domain: Agent Architecture and Design
+- Topic: NVIDIA service: Nemotron models; lifecycle: Model selection; When is Nemotron the model choice rather than the serving stack?
 - Difficulty: expert
-- A. Use observability as the control boundary and require the system to correlate workflow spans across services.
-- B. Use SLOs as the main gate even though reviewers are asking for observability evidence.
-- C. Keep separate logs with no request ID as the primary release control and record only final outputs.
-- D. Prioritize incident response before validating the failure signal around observability.
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose Nemotron models; it provides NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- B. Use NeMo Retriever when you need to connect proprietary data to RAG: parse documents, embed chunks/queries, index/search, apply permissions, or rerank candidate passages.
+- C. Select NCCL; it owns training and customization work such as handling distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- D. NeMo Guardrails is the best fit for this layer: programmable rails for controlling LLM and agent behavior across input, dialog, tool execution, retrieval, and output.
 - Answer: A
-- Explanation: The scenario is about observability. The strongest answer fixes the failing layer directly: correlate workflow spans across services.
-- Why B is wrong: It moves attention to a neighboring control instead of making observability testable in the scenario.
-- Why C is wrong: It keeps separate logs with no request ID in control instead of adding a measurable observability decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making observability testable in the scenario.
+- Explanation: Nemotron models is the best fit because it sits in Model selection: NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- Why B is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Model selection.
+- Why C is wrong: NCCL belongs to Training and customization, while this scenario asks for Model selection.
+- Why D is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Model selection.
 
-### Q26: An insurance claims group is comparing two release designs for a monitored production agent. One design centers on HTTP 200 as the only success signal; the other adds a measurable trace replay step. Which design is more appropriate for production?
-- ID: aai-hf-run-monitor-and-maintain-031
-- Domain: Run, Monitor, and Maintain
-- Topic: trace replay; agentic_ai_professional
+### Q12: A cybersecurity response team needs to choose the right implementation surface. The implementation requirement is to choose a model family for NVIDIA-aligned reasoning, reward, instruction, or agentic workflows. Which NVIDIA option addresses the named layer?
+- ID: aai-hf-svc-nemotron-models-002
+- Domain: Agent Architecture and Design
+- Topic: NVIDIA service: Nemotron models; lifecycle: Model selection; When is Nemotron the model choice rather than the serving stack?
 - Difficulty: medium
-- A. Bundle trace replay, drift monitoring, and prompt changes into one release with one aggregate score.
-- B. Add a release gate for trace replay: capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- C. Keep HTTP 200 as the only success signal as the primary release control and record only final outputs.
-- D. Prioritize incident response before validating the failure signal around trace replay.
-- Answer: B
-- Explanation: The scenario is about trace replay. The strongest answer fixes the failing layer directly: capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether trace replay fixed or caused the failure.
-- Why C is wrong: It keeps HTTP 200 as the only success signal in control instead of adding a measurable trace replay decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making trace replay testable in the scenario.
-
-### Q27: A global retailer is reviewing a monitored production agent before rollout. The main risk is drift monitoring: the system must watch route mix, retrieval hit rate, judge scores, and escalation rates. Which option keeps the decision at the right layer?
-- ID: aai-hf-run-monitor-and-maintain-032
-- Domain: Run, Monitor, and Maintain
-- Topic: drift monitoring; agentic_ai_professional
-- Difficulty: hard
-- A. Bundle drift monitoring, SLOs, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated drift monitoring check.
-- C. Change the design around drift monitoring so the system can watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- D. Prioritize observability before validating the failure signal around drift monitoring.
-- Answer: C
-- Explanation: The scenario is about drift monitoring. The strongest answer fixes the failing layer directly: watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether drift monitoring fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the drift monitoring gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making drift monitoring testable in the scenario.
-
-### Q28: A hospital operations team sees incidents that cannot be explained without incident response. The team has been using manual transcript review only; the next change needs to make incident response explicit. Which action best addresses the problem?
-- ID: aai-hf-run-monitor-and-maintain-033
-- Domain: Run, Monitor, and Maintain
-- Topic: incident response; agentic_ai_professional
-- Difficulty: hard
-- A. Bundle incident response, observability, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated incident response check.
-- C. Use observability as the main gate even though reviewers are asking for incident response evidence.
-- D. Make incident response explicit in the workflow: convert incidents into regression tests and rollback rules.
+- Scope: nvidia_specific
+- Source: generated
+- A. Select NeMo Evaluator; it owns evaluation work such as running standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge.
+- B. RAPIDS is the best fit for this layer: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- C. Choose NCCL; it provides a collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- D. Use Nemotron models when you need to choose a model family for NVIDIA-aligned reasoning, reward, instruction, or agentic workflows.
 - Answer: D
-- Explanation: The scenario is about incident response. The strongest answer fixes the failing layer directly: convert incidents into regression tests and rollback rules.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether incident response fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the incident response gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making incident response testable in the scenario.
+- Explanation: Nemotron models is the best fit because it sits in Model selection: NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- Why A is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Model selection.
+- Why B is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Model selection.
+- Why C is wrong: NCCL belongs to Training and customization, while this scenario asks for Model selection.
 
-### Q29: A cybersecurity response team is comparing two release designs for a monitored production agent. One design centers on model tokens/sec alone; the other adds a measurable SLOs step. Which design is more appropriate for production?
-- ID: aai-hf-run-monitor-and-maintain-034
-- Domain: Run, Monitor, and Maintain
-- Topic: SLOs; agentic_ai_professional
+### Q13: A pharmaceutical research team is fixing the layer called out by the trace and design review. The next release blocker is avoid mistaking the model itself for the endpoint that serves it. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA product owns this requirement?
+- ID: aai-hf-svc-nemotron-models-003
+- Domain: Agent Architecture and Design
+- Topic: NVIDIA service: Nemotron models; lifecycle: Model selection; When is Nemotron the model choice rather than the serving stack?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose Triton Inference Server; it provides a production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- B. Use RAPIDS when you need to accelerate pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- C. Select Nemotron models; it owns model selection work such as choosing a model family for NVIDIA-aligned reasoning, reward, instruction, or agentic workflows.
+- D. NIM Operator is the best fit for this layer: a Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
+- Answer: C
+- Explanation: Nemotron models is the best fit because it sits in Model selection: NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- Why A is wrong: Triton Inference Server belongs to Serving and deployment, while this scenario asks for Model selection.
+- Why B is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Model selection.
+- Why D is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Model selection.
+
+### Q14: A telecom network operations team needs to choose the right implementation surface. The trace points to the need to choose a model family for NVIDIA-aligned reasoning, reward, instruction, or agentic workflows. What is the best first implementation choice?
+- ID: aai-hf-svc-nemotron-models-004
+- Domain: Agent Architecture and Design
+- Topic: NVIDIA service: Nemotron models; lifecycle: Model selection; When is Nemotron the model choice rather than the serving stack?
 - Difficulty: expert
-- A. Use SLOs as the control boundary and require the system to measure task success, safety blocks, p95/p99, and cost together.
-- B. Wait for production incidents before adding a dedicated SLOs check.
-- C. Use incident response as the main gate even though reviewers are asking for SLOs evidence.
-- D. Keep model tokens/sec alone as the primary release control and record only final outputs.
-- Answer: A
-- Explanation: The scenario is about SLOs. The strongest answer fixes the failing layer directly: measure task success, safety blocks, p95/p99, and cost together.
-- Why B is wrong: Waiting for incidents postpones the SLOs gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making SLOs testable in the scenario.
-- Why D is wrong: It keeps model tokens/sec alone in control instead of adding a measurable SLOs decision point.
+- Scope: nvidia_specific
+- Source: generated
+- A. Select Dynamo (Triton Dynamo); it owns serving and deployment work such as supporting disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale.
+- B. Nemotron models is the best fit for this layer: NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- C. Choose NCCL; it provides a collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- D. Use NeMo Framework when you need to run SFT, PEFT, LoRA/QLoRA, continued pretraining, model customization, or large-scale model recipes.
+- Answer: B
+- Explanation: Nemotron models is the best fit because it sits in Model selection: NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- Why A is wrong: Dynamo (Triton Dynamo) belongs to Serving and deployment, while this scenario asks for Model selection.
+- Why C is wrong: NCCL belongs to Training and customization, while this scenario asks for Model selection.
+- Why D is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for Model selection.
 
-### Q30: An insurance claims group is preparing a monitored production agent for release. The current design relies on separate logs with no request ID, but the release gate needs to correlate workflow spans across services. Which design is the best first change?
-- ID: aai-hf-run-monitor-and-maintain-035
+### Q15: A public-sector casework team has narrowed the next engineering decision. An agent needs a reasoning-capable model and a reward model for preference evaluation. Which NVIDIA tool should the team start with?
+- ID: aai-hf-svc-nemotron-models-005
+- Domain: Agent Architecture and Design
+- Topic: NVIDIA service: Nemotron models; lifecycle: Model selection; When is Nemotron the model choice rather than the serving stack?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose Nemotron models; it provides NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- B. Use NCCL when you need to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- C. Select NeMo Evaluator; it owns evaluation work such as running standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge.
+- D. TensorRT-LLM is the best fit for this layer: an optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- Answer: A
+- Explanation: Nemotron models is the best fit because it sits in Model selection: NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- Why B is wrong: NCCL belongs to Training and customization, while this scenario asks for Model selection.
+- Why C is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Model selection.
+- Why D is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Model selection.
+
+### Q16: A hospital operations team is preparing a production rollout. An air-gapped enterprise needs approved containers and model artifacts staged from an NVIDIA registry. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA product owns this requirement?
+- ID: aai-hf-svc-ngc-001
+- Domain: Deployment and Scaling
+- Topic: NVIDIA service: NGC; lifecycle: Serving and deployment; What NVIDIA service is the catalog/registry for containers and model assets?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. NeMo Evaluator is the best fit for this layer: a microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- B. Choose NGC; it provides a catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- C. Use NeMo Guardrails when you need to enforce policy flows, safe dialog behavior, prompt-injection defenses, tool restrictions, or output checks.
+- D. Select RAPIDS; it owns data preparation work such as accelerating pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- Answer: B
+- Explanation: NGC is the best fit because it sits in Serving and deployment: Catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- Why A is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Serving and deployment.
+- Why C is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Serving and deployment.
+- Why D is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Serving and deployment.
+
+### Q17: A semiconductor design group needs to choose the right implementation surface. The blocker is pulling NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets. What is the best first implementation choice?
+- ID: aai-hf-svc-ngc-002
+- Domain: Deployment and Scaling
+- Topic: NVIDIA service: NGC; lifecycle: Serving and deployment; What NVIDIA service is the catalog/registry for containers and model assets?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Nsight Systems is the best fit for this layer: a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- B. Choose NeMo Guardrails; it provides programmable rails for controlling LLM and agent behavior across input, dialog, tool execution, retrieval, and output.
+- C. Use NGC when you need to pull NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- D. Select NeMo Retriever; it owns rAG and retrieval work such as connecting proprietary data to RAG: parse documents, embed chunks/queries, index/search, apply permissions, or rerank candidate passages.
+- Answer: C
+- Explanation: NGC is the best fit because it sits in Serving and deployment: Catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- Why A is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Serving and deployment.
+- Why B is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Serving and deployment.
+- Why D is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Serving and deployment.
+
+### Q18: An automotive support team is fixing the layer called out by the trace and design review. The next release blocker is packaging or managing production model endpoints, artifacts, routing, and rollout. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: aai-hf-svc-ngc-003
+- Domain: Deployment and Scaling
+- Topic: NVIDIA service: NGC; lifecycle: Serving and deployment; What NVIDIA service is the catalog/registry for containers and model assets?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. NeMo Evaluator is the best fit for this layer: a microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- B. Choose NeMo Agent Toolkit; it provides a config-driven NAT workflow runtime for agent control flow across tools, retrievers, memory, MCP, tracing, eval, and serving.
+- C. Use Dynamo (Triton Dynamo) when you need to support disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale.
+- D. Select NGC; it owns serving and deployment work such as pulling NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- Answer: D
+- Explanation: NGC is the best fit because it sits in Serving and deployment: Catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- Why A is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Serving and deployment.
+- Why B is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Serving and deployment.
+- Why C is wrong: Dynamo (Triton Dynamo) is a neighboring serving and deployment component, but this signal asks specifically for NGC: to pull NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+
+### Q19: A global retailer is reviewing the implementation plan. The implementation requirement is to pull NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets. Which NVIDIA platform layer is the right match?
+- ID: aai-hf-svc-ngc-004
+- Domain: Deployment and Scaling
+- Topic: NVIDIA service: NGC; lifecycle: Serving and deployment; What NVIDIA service is the catalog/registry for containers and model assets?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. NGC is the best fit for this layer: a catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- B. Choose Nsight Systems; it provides a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- C. Use NeMo Framework when you need to run SFT, PEFT, LoRA/QLoRA, continued pretraining, model customization, or large-scale model recipes.
+- D. Select NIM Operator; it owns serving and deployment work such as managing K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
+- Answer: A
+- Explanation: NGC is the best fit because it sits in Serving and deployment: Catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- Why B is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Serving and deployment.
+- Why C is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for Serving and deployment.
+- Why D is wrong: NIM Operator is a neighboring serving and deployment component, but this signal asks specifically for NGC: to pull NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+
+### Q20: A manufacturing quality team has narrowed the next engineering decision. An air-gapped enterprise needs approved containers and model artifacts staged from an NVIDIA registry. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: aai-hf-svc-ngc-005
+- Domain: Deployment and Scaling
+- Topic: NVIDIA service: NGC; lifecycle: Serving and deployment; What NVIDIA service is the catalog/registry for containers and model assets?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Nsight Systems is the best fit for this layer: a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- B. Choose NGC; it provides a catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- C. Use NCCL when you need to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- D. Select NeMo Curator; it owns data preparation work such as preparing raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation.
+- Answer: B
+- Explanation: NGC is the best fit because it sits in Serving and deployment: Catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- Why A is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Serving and deployment.
+- Why C is wrong: NCCL belongs to Training and customization, while this scenario asks for Serving and deployment.
+- Why D is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Serving and deployment.
+
+### Q21: A bank fraud team needs to choose the right implementation surface. The implementation requirement is to identify where time is going across CPU, GPU, launches, waits, and communication. What is the best first implementation choice?
+- ID: aai-hf-svc-nsight-systems-001
 - Domain: Run, Monitor, and Maintain
-- Topic: observability; agentic_ai_professional
-- Difficulty: medium
-- A. Prioritize trace replay before validating the failure signal around observability.
-- B. Add a release gate for observability: correlate workflow spans across services.
-- C. Use drift monitoring as the main gate even though reviewers are asking for observability evidence.
-- D. Keep separate logs with no request ID as the primary release control and record only final outputs.
-- Answer: B
-- Explanation: The scenario is about observability. The strongest answer fixes the failing layer directly: correlate workflow spans across services.
-- Why A is wrong: It moves attention to a neighboring control instead of making observability testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making observability testable in the scenario.
-- Why D is wrong: It keeps separate logs with no request ID in control instead of adding a measurable observability decision point.
+- Topic: NVIDIA service: Nsight Systems; lifecycle: Monitoring and profiling; Which profiler shows CPU/GPU timeline gaps and CUDA launch overhead?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NeMo Customizer when you need to run API-driven LoRA/PEFT customization without standing up a full training stack.
+- B. Select NeMo Framework; it owns training and customization work such as running SFT, PEFT, LoRA/QLoRA, continued pretraining, model customization, or large-scale model recipes.
+- C. Nemotron models is the best fit for this layer: NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- D. Choose Nsight Systems; it provides a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- Answer: D
+- Explanation: Nsight Systems is the best fit because it sits in Monitoring and profiling: System-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- Why A is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Monitoring and profiling.
+- Why B is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for Monitoring and profiling.
+- Why C is wrong: Nemotron models belongs to Model selection, while this scenario asks for Monitoring and profiling.
 
-### Q31: A telecom network operations team is preparing a monitored production agent for release. The current design relies on HTTP 200 as the only success signal, but the release gate needs to capture spans for model, retrieval, tools, guardrails, latency, and cost. Which control should be added before rollout?
-- ID: aai-hf-run-monitor-and-maintain-036
+### Q22: A hospital operations team is preparing a production rollout. The rollout is blocked until the team can identify where time is going across CPU, GPU, launches, waits, and communication. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA product owns this requirement?
+- ID: aai-hf-svc-nsight-systems-002
+- Domain: Deployment and Scaling
+- Topic: NVIDIA service: Nsight Systems; lifecycle: Monitoring and profiling; Which profiler shows CPU/GPU timeline gaps and CUDA launch overhead?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Use Nsight Systems when you need to identify where time is going across CPU, GPU, launches, waits, and communication.
+- B. Select Dynamo (Triton Dynamo); it owns serving and deployment work such as supporting disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale.
+- C. NeMo Curator is the best fit for this layer: a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- D. Choose NIM Operator; it provides a Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
+- Answer: A
+- Explanation: Nsight Systems is the best fit because it sits in Monitoring and profiling: System-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- Why B is wrong: Dynamo (Triton Dynamo) belongs to Serving and deployment, while this scenario asks for Monitoring and profiling.
+- Why C is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Monitoring and profiling.
+- Why D is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Monitoring and profiling.
+
+### Q23: A global retailer needs to choose the right implementation surface. The trace points to the need to identify where time is going across CPU, GPU, launches, waits, and communication. What is the best first implementation choice?
+- ID: aai-hf-svc-nsight-systems-003
 - Domain: Run, Monitor, and Maintain
-- Topic: trace replay; agentic_ai_professional
+- Topic: NVIDIA service: Nsight Systems; lifecycle: Monitoring and profiling; Which profiler shows CPU/GPU timeline gaps and CUDA launch overhead?
 - Difficulty: hard
-- A. Prioritize drift monitoring before validating the failure signal around trace replay.
-- B. Bundle trace replay, incident response, and prompt changes into one release with one aggregate score.
-- C. Change the design around trace replay so the system can capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- D. Keep HTTP 200 as the only success signal as the primary release control and record only final outputs.
-- Answer: C
-- Explanation: The scenario is about trace replay. The strongest answer fixes the failing layer directly: capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- Why A is wrong: It moves attention to a neighboring control instead of making trace replay testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether trace replay fixed or caused the failure.
-- Why D is wrong: It keeps HTTP 200 as the only success signal in control instead of adding a measurable trace replay decision point.
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NeMo Framework when you need to run SFT, PEFT, LoRA/QLoRA, continued pretraining, model customization, or large-scale model recipes.
+- B. Select Nsight Systems; it owns monitoring and profiling work such as identifying where time is going across CPU, GPU, launches, waits, and communication.
+- C. NeMo Guardrails is the best fit for this layer: programmable rails for controlling LLM and agent behavior across input, dialog, tool execution, retrieval, and output.
+- D. Choose NIM; it provides inference microservices for deploying optimized models with production APIs and model profiles.
+- Answer: B
+- Explanation: Nsight Systems is the best fit because it sits in Monitoring and profiling: System-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- Why A is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for Monitoring and profiling.
+- Why C is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Monitoring and profiling.
+- Why D is wrong: NIM belongs to Serving and deployment, while this scenario asks for Monitoring and profiling.
 
-### Q32: A hospital operations team sees incidents that cannot be explained without drift monitoring. The team has been using average latency only; the next change needs to make drift monitoring explicit. Which action best addresses the problem?
-- ID: aai-hf-run-monitor-and-maintain-037
+### Q24: An insurance claims group is fixing the layer called out by the trace and design review. The work to finish before release is identifying where time is going across CPU, GPU, launches, waits, and communication. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA product owns this requirement?
+- ID: aai-hf-svc-nsight-systems-004
+- Domain: Deployment and Scaling
+- Topic: NVIDIA service: Nsight Systems; lifecycle: Monitoring and profiling; Which profiler shows CPU/GPU timeline gaps and CUDA launch overhead?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NeMo Customizer when you need to run API-driven LoRA/PEFT customization without standing up a full training stack.
+- B. Select NeMo Agent Toolkit; it owns agent orchestration work such as a workflow must route requests, call tools/retrievers/memory, run sequential or parallel branches, expose an API/MCP server, or evaluate/profile agent traces.
+- C. Nsight Systems is the best fit for this layer: a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- D. Choose TensorRT-LLM; it provides an optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- Answer: C
+- Explanation: Nsight Systems is the best fit because it sits in Monitoring and profiling: System-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- Why A is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Monitoring and profiling.
+- Why B is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Monitoring and profiling.
+- Why D is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Monitoring and profiling.
+
+### Q25: A bank fraud team needs to choose the right implementation surface. The implementation requirement is to identify where time is going across CPU, GPU, launches, waits, and communication. What is the best first implementation choice?
+- ID: aai-hf-svc-nsight-systems-005
 - Domain: Run, Monitor, and Maintain
-- Topic: drift monitoring; agentic_ai_professional
-- Difficulty: hard
-- A. Prioritize trace replay before validating the failure signal around drift monitoring.
-- B. Bundle drift monitoring, incident response, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated drift monitoring check.
-- D. Make drift monitoring explicit in the workflow: watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- Answer: D
-- Explanation: The scenario is about drift monitoring. The strongest answer fixes the failing layer directly: watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- Why A is wrong: It moves attention to a neighboring control instead of making drift monitoring testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether drift monitoring fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the drift monitoring gate until after users are exposed.
-
-### Q33: A semiconductor design group is reviewing a monitored production agent before rollout. The main risk is incident response: the system must convert incidents into regression tests and rollback rules. Which option keeps the decision at the right layer?
-- ID: aai-hf-run-monitor-and-maintain-038
-- Domain: Run, Monitor, and Maintain
-- Topic: incident response; agentic_ai_professional
+- Topic: NVIDIA service: Nsight Systems; lifecycle: Monitoring and profiling; Which profiler shows CPU/GPU timeline gaps and CUDA launch overhead?
 - Difficulty: medium
-- A. Use incident response as the control boundary and require the system to convert incidents into regression tests and rollback rules.
-- B. Bundle incident response, SLOs, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated incident response check.
-- D. Use SLOs as the main gate even though reviewers are asking for incident response evidence.
-- Answer: A
-- Explanation: The scenario is about incident response. The strongest answer fixes the failing layer directly: convert incidents into regression tests and rollback rules.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether incident response fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the incident response gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making incident response testable in the scenario.
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NeMo Retriever when you need to connect proprietary data to RAG: parse documents, embed chunks/queries, index/search, apply permissions, or rerank candidate passages.
+- B. Select NeMo Guardrails; it owns safety and guardrails work such as enforcing policy flows, safe dialog behavior, prompt-injection defenses, tool restrictions, or output checks.
+- C. NeMo Framework is the best fit for this layer: a framework for training, customizing, aligning, and evaluating generative AI models.
+- D. Choose Nsight Systems; it provides a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- Answer: D
+- Explanation: Nsight Systems is the best fit because it sits in Monitoring and profiling: System-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- Why A is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Monitoring and profiling.
+- Why B is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Monitoring and profiling.
+- Why C is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for Monitoring and profiling.
 
-### Q34: An insurance claims group sees incidents that cannot be explained without SLOs. The team has been using model tokens/sec alone; the next change needs to make SLOs explicit. Which action best addresses the problem?
-- ID: aai-hf-run-monitor-and-maintain-039
-- Domain: Run, Monitor, and Maintain
-- Topic: SLOs; agentic_ai_professional
-- Difficulty: hard
-- A. Keep model tokens/sec alone as the primary release control and record only final outputs.
-- B. Add a release gate for SLOs: measure task success, safety blocks, p95/p99, and cost together.
-- C. Wait for production incidents before adding a dedicated SLOs check.
-- D. Use drift monitoring as the main gate even though reviewers are asking for SLOs evidence.
-- Answer: B
-- Explanation: The scenario is about SLOs. The strongest answer fixes the failing layer directly: measure task success, safety blocks, p95/p99, and cost together.
-- Why A is wrong: It keeps model tokens/sec alone in control instead of adding a measurable SLOs decision point.
-- Why C is wrong: Waiting for incidents postpones the SLOs gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making SLOs testable in the scenario.
-
-### Q35: A global retailer sees incidents that cannot be explained without observability. The team has been using separate logs with no request ID; the next change needs to make observability explicit. Which action best addresses the problem?
-- ID: aai-hf-run-monitor-and-maintain-040
-- Domain: Run, Monitor, and Maintain
-- Topic: observability; agentic_ai_professional
-- Difficulty: hard
-- A. Prioritize drift monitoring before validating the failure signal around observability.
-- B. Change the design around observability so the system can correlate workflow spans across services.
-- C. Use trace replay as the main gate even though reviewers are asking for observability evidence.
-- D. Keep separate logs with no request ID as the primary release control and record only final outputs.
-- Answer: B
-- Explanation: The scenario is about observability. The strongest answer fixes the failing layer directly: correlate workflow spans across services.
-- Why A is wrong: It moves attention to a neighboring control instead of making observability testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making observability testable in the scenario.
-- Why D is wrong: It keeps separate logs with no request ID in control instead of adding a measurable observability decision point.
-
-### Q36: A logistics planning team is reviewing a monitored production agent before rollout. The main risk is trace replay: the system must capture spans for model, retrieval, tools, guardrails, latency, and cost. Which option keeps the decision at the right layer?
-- ID: aai-hf-run-monitor-and-maintain-041
-- Domain: Run, Monitor, and Maintain
-- Topic: trace replay; agentic_ai_professional
+### Q26: An insurance claims group is fixing the layer called out by the trace and design review. A 64-node training job hangs intermittently during gradient all-reduce. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA tool should the team start with?
+- ID: aai-hf-svc-nccl-001
+- Domain: Evaluation and Tuning
+- Topic: NVIDIA service: NCCL; lifecycle: Training and customization; Which library is central to multi-GPU collective communication?
 - Difficulty: expert
-- A. Make trace replay explicit in the workflow: capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- B. Keep HTTP 200 as the only success signal as the primary release control and record only final outputs.
-- C. Prioritize drift monitoring before validating the failure signal around trace replay.
-- D. Bundle trace replay, incident response, and prompt changes into one release with one aggregate score.
-- Answer: A
-- Explanation: The scenario is about trace replay. The strongest answer fixes the failing layer directly: capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- Why B is wrong: It keeps HTTP 200 as the only success signal in control instead of adding a measurable trace replay decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making trace replay testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether trace replay fixed or caused the failure.
-
-### Q37: An automotive support team is reviewing a monitored production agent before rollout. The main risk is drift monitoring: the system must watch route mix, retrieval hit rate, judge scores, and escalation rates. Which option keeps the decision at the right layer?
-- ID: aai-hf-run-monitor-and-maintain-042
-- Domain: Run, Monitor, and Maintain
-- Topic: drift monitoring; agentic_ai_professional
-- Difficulty: medium
-- A. Prioritize SLOs before validating the failure signal around drift monitoring.
-- B. Bundle drift monitoring, observability, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated drift monitoring check.
-- D. Use drift monitoring as the control boundary and require the system to watch route mix, retrieval hit rate, judge scores, and escalation rates.
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NeMo Evaluator when you need to run standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge.
+- B. Select Nemotron models; it owns model selection work such as choosing a model family for NVIDIA-aligned reasoning, reward, instruction, or agentic workflows.
+- C. Nsight Systems is the best fit for this layer: a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- D. Choose NCCL; it provides a collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
 - Answer: D
-- Explanation: The scenario is about drift monitoring. The strongest answer fixes the failing layer directly: watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- Why A is wrong: It moves attention to a neighboring control instead of making drift monitoring testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether drift monitoring fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the drift monitoring gate until after users are exposed.
+- Explanation: NCCL is the best fit because it sits in Training and customization: Collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- Why A is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Training and customization.
+- Why B is wrong: Nemotron models belongs to Model selection, while this scenario asks for Training and customization.
+- Why C is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Training and customization.
 
-### Q38: A bank fraud team has a production-readiness review for a monitored production agent. The review is focused on incident response, because the system must convert incidents into regression tests and rollback rules. Which control should be added before rollout?
-- ID: aai-hf-run-monitor-and-maintain-043
-- Domain: Run, Monitor, and Maintain
-- Topic: incident response; agentic_ai_professional
+### Q27: A logistics planning team is setting a release gate. The blocker is handling distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs. Which NVIDIA service fits this requirement?
+- ID: aai-hf-svc-nccl-002
+- Domain: NVIDIA Platform Implementation
+- Topic: NVIDIA service: NCCL; lifecycle: Training and customization; Which library is central to multi-GPU collective communication?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NCCL when you need to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- B. Select Nsight Systems; it owns monitoring and profiling work such as identifying where time is going across CPU, GPU, launches, waits, and communication.
+- C. NeMo Framework is the best fit for this layer: a framework for training, customizing, aligning, and evaluating generative AI models.
+- D. Choose NIM Operator; it provides a Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
+- Answer: A
+- Explanation: NCCL is the best fit because it sits in Training and customization: Collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- Why B is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Training and customization.
+- Why C is wrong: NeMo Framework is a neighboring training and customization component, but this signal asks specifically for NCCL: to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- Why D is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Training and customization.
+
+### Q28: A hospital operations team has narrowed the next engineering decision. The next release blocker is running distributed training or customization before an artifact is approved for serving. Which NVIDIA product owns this requirement?
+- ID: aai-hf-svc-nccl-003
+- Domain: Evaluation and Tuning
+- Topic: NVIDIA service: NCCL; lifecycle: Training and customization; Which library is central to multi-GPU collective communication?
 - Difficulty: hard
-- A. Wait for production incidents before adding a dedicated incident response check.
-- B. Use SLOs as the main gate even though reviewers are asking for incident response evidence.
-- C. Add a release gate for incident response: convert incidents into regression tests and rollback rules.
-- D. Bundle incident response, SLOs, and prompt changes into one release with one aggregate score.
-- Answer: C
-- Explanation: The scenario is about incident response. The strongest answer fixes the failing layer directly: convert incidents into regression tests and rollback rules.
-- Why A is wrong: Waiting for incidents postpones the incident response gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making incident response testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether incident response fixed or caused the failure.
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NeMo Retriever when you need to connect proprietary data to RAG: parse documents, embed chunks/queries, index/search, apply permissions, or rerank candidate passages.
+- B. Select NCCL; it owns training and customization work such as handling distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- C. NIM Operator is the best fit for this layer: a Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
+- D. Choose Triton Inference Server; it provides a production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- Answer: B
+- Explanation: NCCL is the best fit because it sits in Training and customization: Collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- Why A is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Training and customization.
+- Why C is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why D is wrong: Triton Inference Server belongs to Serving and deployment, while this scenario asks for Training and customization.
 
-### Q39: A public-sector casework team is comparing two release designs for a monitored production agent. One design centers on model tokens/sec alone; the other adds a measurable SLOs step. Which design is more appropriate for production?
-- ID: aai-hf-run-monitor-and-maintain-044
-- Domain: Run, Monitor, and Maintain
-- Topic: SLOs; agentic_ai_professional
+### Q29: A cybersecurity response team needs to choose the right implementation surface. The trace points to the need to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA option addresses the named layer?
+- ID: aai-hf-svc-nccl-004
+- Domain: NVIDIA Platform Implementation
+- Topic: NVIDIA service: NCCL; lifecycle: Training and customization; Which library is central to multi-GPU collective communication?
 - Difficulty: expert
-- A. Keep model tokens/sec alone as the primary release control and record only final outputs.
-- B. Change the design around SLOs so the system can measure task success, safety blocks, p95/p99, and cost together.
-- C. Wait for production incidents before adding a dedicated SLOs check.
-- D. Use observability as the main gate even though reviewers are asking for SLOs evidence.
-- Answer: B
-- Explanation: The scenario is about SLOs. The strongest answer fixes the failing layer directly: measure task success, safety blocks, p95/p99, and cost together.
-- Why A is wrong: It keeps model tokens/sec alone in control instead of adding a measurable SLOs decision point.
-- Why C is wrong: Waiting for incidents postpones the SLOs gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making SLOs testable in the scenario.
-
-### Q40: A telecom network operations team is comparing two release designs for a monitored production agent. One design centers on separate logs with no request ID; the other adds a measurable observability step. Which design is more appropriate for production?
-- ID: aai-hf-run-monitor-and-maintain-045
-- Domain: Run, Monitor, and Maintain
-- Topic: observability; agentic_ai_professional
-- Difficulty: medium
-- A. Make observability explicit in the workflow: correlate workflow spans across services.
-- B. Use trace replay as the main gate even though reviewers are asking for observability evidence.
-- C. Keep separate logs with no request ID as the primary release control and record only final outputs.
-- D. Prioritize drift monitoring before validating the failure signal around observability.
-- Answer: A
-- Explanation: The scenario is about observability. The strongest answer fixes the failing layer directly: correlate workflow spans across services.
-- Why B is wrong: It moves attention to a neighboring control instead of making observability testable in the scenario.
-- Why C is wrong: It keeps separate logs with no request ID in control instead of adding a measurable observability decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making observability testable in the scenario.
-
-### Q41: An automotive support team has a production-readiness review for a monitored production agent. The review is focused on trace replay, because the system must capture spans for model, retrieval, tools, guardrails, latency, and cost. Which choice addresses the root cause?
-- ID: aai-hf-run-monitor-and-maintain-046
-- Domain: Run, Monitor, and Maintain
-- Topic: trace replay; agentic_ai_professional
-- Difficulty: hard
-- A. Keep HTTP 200 as the only success signal as the primary release control and record only final outputs.
-- B. Prioritize incident response before validating the failure signal around trace replay.
-- C. Bundle trace replay, drift monitoring, and prompt changes into one release with one aggregate score.
-- D. Use trace replay as the control boundary and require the system to capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- Answer: D
-- Explanation: The scenario is about trace replay. The strongest answer fixes the failing layer directly: capture spans for model, retrieval, tools, guardrails, latency, and cost.
-- Why A is wrong: It keeps HTTP 200 as the only success signal in control instead of adding a measurable trace replay decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making trace replay testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether trace replay fixed or caused the failure.
-
-### Q42: A semiconductor design group has a production-readiness review for a monitored production agent. The review is focused on drift monitoring, because the system must watch route mix, retrieval hit rate, judge scores, and escalation rates. Which action best fits the requirement?
-- ID: aai-hf-run-monitor-and-maintain-047
-- Domain: Run, Monitor, and Maintain
-- Topic: drift monitoring; agentic_ai_professional
-- Difficulty: hard
-- A. Bundle drift monitoring, trace replay, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated drift monitoring check.
-- C. Add a release gate for drift monitoring: watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- D. Prioritize incident response before validating the failure signal around drift monitoring.
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NeMo Retriever when you need to connect proprietary data to RAG: parse documents, embed chunks/queries, index/search, apply permissions, or rerank candidate passages.
+- B. Select RAPIDS; it owns data preparation work such as accelerating pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- C. NCCL is the best fit for this layer: a collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- D. Choose Nemotron models; it provides NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
 - Answer: C
-- Explanation: The scenario is about drift monitoring. The strongest answer fixes the failing layer directly: watch route mix, retrieval hit rate, judge scores, and escalation rates.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether drift monitoring fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the drift monitoring gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making drift monitoring testable in the scenario.
+- Explanation: NCCL is the best fit because it sits in Training and customization: Collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- Why A is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Training and customization.
+- Why B is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Training and customization.
+- Why D is wrong: Nemotron models belongs to Model selection, while this scenario asks for Training and customization.
 
-### Q43: A hospital operations team sees policy failures that need layered controls as an explicit control. The team has been using one final moderation pass; the next change needs to make layered controls explicit. Which action best addresses the problem?
-- ID: aai-hf-safety-ethics-and-compliance-001
-- Domain: Safety, Ethics, and Compliance
-- Topic: layered controls; agentic_ai_professional
+### Q30: An insurance claims group has narrowed the next engineering decision. A 64-node training job hangs intermittently during gradient all-reduce. Which NVIDIA tool should the team start with?
+- ID: aai-hf-svc-nccl-005
+- Domain: Evaluation and Tuning
+- Topic: NVIDIA service: NCCL; lifecycle: Training and customization; Which library is central to multi-GPU collective communication?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NeMo Agent Toolkit when you need to a workflow must route requests, call tools/retrievers/memory, run sequential or parallel branches, expose an API/MCP server, or evaluate/profile agent traces.
+- B. Select NeMo Evaluator; it owns evaluation work such as running standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge.
+- C. NeMo Curator is the best fit for this layer: a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- D. Choose NCCL; it provides a collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- Answer: D
+- Explanation: NCCL is the best fit because it sits in Training and customization: Collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- Why A is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Training and customization.
+- Why B is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Training and customization.
+- Why C is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Training and customization.
+
+### Q31: A global retailer is reviewing the implementation plan. The implementation requirement is to accelerate pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs. Which NVIDIA service fits this requirement?
+- ID: aai-hf-svc-rapids-001
+- Domain: Knowledge Integration and Data Handling
+- Topic: NVIDIA service: RAPIDS; lifecycle: Data preparation; Which NVIDIA stack accelerates dataframe-style preprocessing on GPUs?
 - Difficulty: expert
-- A. Bundle layered controls, approval gates, and prompt changes into one release with one aggregate score.
-- B. Make layered controls explicit in the workflow: combine input, retrieval, tool, and output controls.
-- C. Keep one final moderation pass as the primary release control and record only final outputs.
-- D. Prioritize policy testing before validating the failure signal around layered controls.
-- Answer: B
-- Explanation: The scenario is about layered controls. The strongest answer fixes the failing layer directly: combine input, retrieval, tool, and output controls.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether layered controls fixed or caused the failure.
-- Why C is wrong: It keeps one final moderation pass in control instead of adding a measurable layered controls decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making layered controls testable in the scenario.
-
-### Q44: A cybersecurity response team is preparing a governed agent workflow for release. The current design relies on letting documents override system policy, but the release gate needs to treat retrieved text and tool output as data, not instructions. Which action best fits the requirement?
-- ID: aai-hf-safety-ethics-and-compliance-002
-- Domain: Safety, Ethics, and Compliance
-- Topic: prompt injection; agentic_ai_professional
-- Difficulty: medium
-- A. Bundle prompt injection, layered controls, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated prompt injection check.
-- C. Use prompt injection as the control boundary and require the system to treat retrieved text and tool output as data, not instructions.
-- D. Prioritize least privilege before validating the failure signal around prompt injection.
+- Scope: nvidia_specific
+- Source: generated
+- A. Select Nemotron models; it owns model selection work such as choosing a model family for NVIDIA-aligned reasoning, reward, instruction, or agentic workflows.
+- B. NGC is the best fit for this layer: a catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- C. Choose RAPIDS; it provides GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- D. Use Triton Inference Server when you need to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
 - Answer: C
-- Explanation: The scenario is about prompt injection. The strongest answer fixes the failing layer directly: treat retrieved text and tool output as data, not instructions.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether prompt injection fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the prompt injection gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making prompt injection testable in the scenario.
+- Explanation: RAPIDS is the best fit because it sits in Data preparation: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- Why A is wrong: Nemotron models belongs to Model selection, while this scenario asks for Data preparation.
+- Why B is wrong: NGC belongs to Serving and deployment, while this scenario asks for Data preparation.
+- Why D is wrong: Triton Inference Server belongs to Serving and deployment, while this scenario asks for Data preparation.
 
-### Q45: An insurance claims group is preparing a governed agent workflow for release. The current design relies on giving the LLM API keys, but the release gate needs to scope credentials to tools and roles. Which design is the best first change?
-- ID: aai-hf-safety-ethics-and-compliance-003
-- Domain: Safety, Ethics, and Compliance
-- Topic: least privilege; agentic_ai_professional
+### Q32: A pharmaceutical research team is fixing the layer called out by the trace and design review. The rollout is blocked until the team can accelerate pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs. Which NVIDIA tool should the team start with?
+- ID: aai-hf-svc-rapids-002
+- Domain: Knowledge Integration and Data Handling
+- Topic: NVIDIA service: RAPIDS; lifecycle: Data preparation; Which NVIDIA stack accelerates dataframe-style preprocessing on GPUs?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose Nsight Compute; it provides a CUDA kernel profiler for detailed metrics, occupancy, memory throughput, warp behavior, and kernel bottlenecks.
+- B. Use RAPIDS when you need to accelerate pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- C. Select NeMo Guardrails; it owns safety and guardrails work such as enforcing policy flows, safe dialog behavior, prompt-injection defenses, tool restrictions, or output checks.
+- D. NeMo Agent Toolkit is the best fit for this layer: a config-driven NAT workflow runtime for agent control flow across tools, retrievers, memory, MCP, tracing, eval, and serving.
+- Answer: B
+- Explanation: RAPIDS is the best fit because it sits in Data preparation: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- Why A is wrong: Nsight Compute belongs to Monitoring and profiling, while this scenario asks for Data preparation.
+- Why C is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Data preparation.
+- Why D is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Data preparation.
+
+### Q33: A cybersecurity response team is setting a release gate. The trace points to the need to accelerate pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs. Which NVIDIA option addresses the named layer?
+- ID: aai-hf-svc-rapids-003
+- Domain: Knowledge Integration and Data Handling
+- Topic: NVIDIA service: RAPIDS; lifecycle: Data preparation; Which NVIDIA stack accelerates dataframe-style preprocessing on GPUs?
 - Difficulty: hard
-- A. Bundle least privilege, approval gates, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated least privilege check.
-- C. Use approval gates as the main gate even though reviewers are asking for least privilege evidence.
-- D. Add a release gate for least privilege: scope credentials to tools and roles.
-- Answer: D
-- Explanation: The scenario is about least privilege. The strongest answer fixes the failing layer directly: scope credentials to tools and roles.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether least privilege fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the least privilege gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making least privilege testable in the scenario.
+- Scope: nvidia_specific
+- Source: generated
+- A. Select RAPIDS; it owns data preparation work such as accelerating pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- B. NeMo Evaluator is the best fit for this layer: a microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- C. Choose Dynamo (Triton Dynamo); it provides a distributed inference serving stack for LLMs: disaggregated prefill/decode, KV-cache routing, multi-node scaling.
+- D. Use NeMo Guardrails when you need to enforce policy flows, safe dialog behavior, prompt-injection defenses, tool restrictions, or output checks.
+- Answer: A
+- Explanation: RAPIDS is the best fit because it sits in Data preparation: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- Why B is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Data preparation.
+- Why C is wrong: Dynamo (Triton Dynamo) belongs to Serving and deployment, while this scenario asks for Data preparation.
+- Why D is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Data preparation.
 
-### Q46: A global retailer is comparing two release designs for a governed agent workflow. One design centers on approval after execution; the other adds a measurable approval gates step. Which design is more appropriate for production?
-- ID: aai-hf-safety-ethics-and-compliance-004
-- Domain: Safety, Ethics, and Compliance
-- Topic: approval gates; agentic_ai_professional
+### Q34: A manufacturing quality team has narrowed the next engineering decision. The work to finish before release is accelerating pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA tool should the team start with?
+- ID: aai-hf-svc-rapids-004
+- Domain: Knowledge Integration and Data Handling
+- Topic: NVIDIA service: RAPIDS; lifecycle: Data preparation; Which NVIDIA stack accelerates dataframe-style preprocessing on GPUs?
 - Difficulty: expert
-- A. Change the design around approval gates so the system can require human approval for high-impact mutations.
-- B. Wait for production incidents before adding a dedicated approval gates check.
-- C. Use least privilege as the main gate even though reviewers are asking for approval gates evidence.
-- D. Keep approval after execution as the primary release control and record only final outputs.
-- Answer: A
-- Explanation: The scenario is about approval gates. The strongest answer fixes the failing layer directly: require human approval for high-impact mutations.
-- Why B is wrong: Waiting for incidents postpones the approval gates gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making approval gates testable in the scenario.
-- Why D is wrong: It keeps approval after execution in control instead of adding a measurable approval gates decision point.
-
-### Q47: A manufacturing quality team has a production-readiness review for a governed agent workflow. The review is focused on policy testing, because the system must test refusals, jailbreaks, and unsafe tool proposals. Which implementation path is most appropriate?
-- ID: aai-hf-safety-ethics-and-compliance-005
-- Domain: Safety, Ethics, and Compliance
-- Topic: policy testing; agentic_ai_professional
-- Difficulty: medium
-- A. Prioritize approval gates before validating the failure signal around policy testing.
-- B. Make policy testing explicit in the workflow: test refusals, jailbreaks, and unsafe tool proposals.
-- C. Use least privilege as the main gate even though reviewers are asking for policy testing evidence.
-- D. Keep spot checks only as the primary release control and record only final outputs.
-- Answer: B
-- Explanation: The scenario is about policy testing. The strongest answer fixes the failing layer directly: test refusals, jailbreaks, and unsafe tool proposals.
-- Why A is wrong: It moves attention to a neighboring control instead of making policy testing testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making policy testing testable in the scenario.
-- Why D is wrong: It keeps spot checks only in control instead of adding a measurable policy testing decision point.
-
-### Q48: A bank fraud team sees policy failures that need layered controls as an explicit control. The team has been using one final moderation pass; the next change needs to make layered controls explicit. Which action best addresses the problem?
-- ID: aai-hf-safety-ethics-and-compliance-006
-- Domain: Safety, Ethics, and Compliance
-- Topic: layered controls; agentic_ai_professional
-- Difficulty: hard
-- A. Prioritize approval gates before validating the failure signal around layered controls.
-- B. Bundle layered controls, policy testing, and prompt changes into one release with one aggregate score.
-- C. Use layered controls as the control boundary and require the system to combine input, retrieval, tool, and output controls.
-- D. Keep one final moderation pass as the primary release control and record only final outputs.
-- Answer: C
-- Explanation: The scenario is about layered controls. The strongest answer fixes the failing layer directly: combine input, retrieval, tool, and output controls.
-- Why A is wrong: It moves attention to a neighboring control instead of making layered controls testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether layered controls fixed or caused the failure.
-- Why D is wrong: It keeps one final moderation pass in control instead of adding a measurable layered controls decision point.
-
-### Q49: An automotive support team is reviewing a governed agent workflow before rollout. The main risk is prompt injection: the system must treat retrieved text and tool output as data, not instructions. Which option keeps the decision at the right layer?
-- ID: aai-hf-safety-ethics-and-compliance-007
-- Domain: Safety, Ethics, and Compliance
-- Topic: prompt injection; agentic_ai_professional
-- Difficulty: hard
-- A. Prioritize approval gates before validating the failure signal around prompt injection.
-- B. Bundle prompt injection, policy testing, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated prompt injection check.
-- D. Add a release gate for prompt injection: treat retrieved text and tool output as data, not instructions.
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose NeMo Guardrails; it provides programmable rails for controlling LLM and agent behavior across input, dialog, tool execution, retrieval, and output.
+- B. Use NGC when you need to pull NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- C. Select NIM; it owns serving and deployment work such as for packaged, supported, optimized model serving with APIs, profiles, observability, and Kubernetes/container deployment.
+- D. RAPIDS is the best fit for this layer: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
 - Answer: D
-- Explanation: The scenario is about prompt injection. The strongest answer fixes the failing layer directly: treat retrieved text and tool output as data, not instructions.
-- Why A is wrong: It moves attention to a neighboring control instead of making prompt injection testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether prompt injection fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the prompt injection gate until after users are exposed.
+- Explanation: RAPIDS is the best fit because it sits in Data preparation: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- Why A is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Data preparation.
+- Why B is wrong: NGC belongs to Serving and deployment, while this scenario asks for Data preparation.
+- Why C is wrong: NIM belongs to Serving and deployment, while this scenario asks for Data preparation.
 
-### Q50: A global retailer is reviewing a governed agent workflow before rollout. The main risk is least privilege: the system must scope credentials to tools and roles. Which option keeps the decision at the right layer?
-- ID: aai-hf-safety-ethics-and-compliance-008
-- Domain: Safety, Ethics, and Compliance
-- Topic: least privilege; agentic_ai_professional
-- Difficulty: easy
-- A. Change the design around least privilege so the system can scope credentials to tools and roles.
-- B. Bundle least privilege, policy testing, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated least privilege check.
-- D. Use policy testing as the main gate even though reviewers are asking for least privilege evidence.
-- Answer: A
-- Explanation: The scenario is about least privilege. The strongest answer fixes the failing layer directly: scope credentials to tools and roles.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether least privilege fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the least privilege gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making least privilege testable in the scenario.
+### Q35: A global retailer is reviewing the implementation plan. The implementation requirement is to accelerate pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs. Which NVIDIA option addresses the named layer?
+- ID: aai-hf-svc-rapids-005
+- Domain: Knowledge Integration and Data Handling
+- Topic: NVIDIA service: RAPIDS; lifecycle: Data preparation; Which NVIDIA stack accelerates dataframe-style preprocessing on GPUs?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Select Nsight Compute; it owns monitoring and profiling work such as diagnosing why a known kernel is memory-bound, compute-bound, or inefficient.
+- B. Nemotron models is the best fit for this layer: NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- C. Choose RAPIDS; it provides GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- D. Use NeMo Framework when you need to run SFT, PEFT, LoRA/QLoRA, continued pretraining, model customization, or large-scale model recipes.
+- Answer: C
+- Explanation: RAPIDS is the best fit because it sits in Data preparation: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- Why A is wrong: Nsight Compute belongs to Monitoring and profiling, while this scenario asks for Data preparation.
+- Why B is wrong: Nemotron models belongs to Model selection, while this scenario asks for Data preparation.
+- Why D is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for Data preparation.
 
-### Q51: A public-sector casework team is comparing two release designs for a governed agent workflow. One design centers on approval after execution; the other adds a measurable approval gates step. Which design is more appropriate for production?
-- ID: aai-hf-safety-ethics-and-compliance-009
-- Domain: Safety, Ethics, and Compliance
-- Topic: approval gates; agentic_ai_professional
-- Difficulty: hard
-- A. Keep approval after execution as the primary release control and record only final outputs.
-- B. Make approval gates explicit in the workflow: require human approval for high-impact mutations.
-- C. Wait for production incidents before adding a dedicated approval gates check.
-- D. Use prompt injection as the main gate even though reviewers are asking for approval gates evidence.
-- Answer: B
-- Explanation: The scenario is about approval gates. The strongest answer fixes the failing layer directly: require human approval for high-impact mutations.
-- Why A is wrong: It keeps approval after execution in control instead of adding a measurable approval gates decision point.
-- Why C is wrong: Waiting for incidents postpones the approval gates gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making approval gates testable in the scenario.
-
-### Q52: A semiconductor design group is comparing two release designs for a governed agent workflow. One design centers on spot checks only; the other adds a measurable policy testing step. Which design is more appropriate for production?
-- ID: aai-hf-safety-ethics-and-compliance-010
-- Domain: Safety, Ethics, and Compliance
-- Topic: policy testing; agentic_ai_professional
+### Q36: A logistics planning team is setting a release gate. The implementation requirement is to prepare raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA platform layer is the right match?
+- ID: aai-hf-svc-nemo-curator-001
+- Domain: Knowledge Integration and Data Handling
+- Topic: NVIDIA service: NeMo Curator; lifecycle: Data preparation; Which NVIDIA toolkit provides Pipeline stages, classifiers, and dedup workflows for training-data curation?
 - Difficulty: expert
-- A. Use approval gates as the main gate even though reviewers are asking for policy testing evidence.
-- B. Keep spot checks only as the primary release control and record only final outputs.
-- C. Prioritize least privilege before validating the failure signal around policy testing.
-- D. Use policy testing as the control boundary and require the system to test refusals, jailbreaks, and unsafe tool proposals.
-- Answer: D
-- Explanation: The scenario is about policy testing. The strongest answer fixes the failing layer directly: test refusals, jailbreaks, and unsafe tool proposals.
-- Why A is wrong: It moves attention to a neighboring control instead of making policy testing testable in the scenario.
-- Why B is wrong: It keeps spot checks only in control instead of adding a measurable policy testing decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making policy testing testable in the scenario.
-
-### Q53: A bank fraud team sees policy failures that need layered controls as an explicit control. The team has been using one final moderation pass; the next change needs to make layered controls explicit. Which action best addresses the problem?
-- ID: aai-hf-safety-ethics-and-compliance-011
-- Domain: Safety, Ethics, and Compliance
-- Topic: layered controls; agentic_ai_professional
-- Difficulty: medium
-- A. Prioritize approval gates before validating the failure signal around layered controls.
-- B. Bundle layered controls, policy testing, and prompt changes into one release with one aggregate score.
-- C. Add a release gate for layered controls: combine input, retrieval, tool, and output controls.
-- D. Keep one final moderation pass as the primary release control and record only final outputs.
-- Answer: C
-- Explanation: The scenario is about layered controls. The strongest answer fixes the failing layer directly: combine input, retrieval, tool, and output controls.
-- Why A is wrong: It moves attention to a neighboring control instead of making layered controls testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether layered controls fixed or caused the failure.
-- Why D is wrong: It keeps one final moderation pass in control instead of adding a measurable layered controls decision point.
-
-### Q54: A hospital operations team is reviewing a governed agent workflow before rollout. The main risk is prompt injection: the system must treat retrieved text and tool output as data, not instructions. Which option keeps the decision at the right layer?
-- ID: aai-hf-safety-ethics-and-compliance-012
-- Domain: Safety, Ethics, and Compliance
-- Topic: prompt injection; agentic_ai_professional
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated prompt injection check.
-- B. Change the design around prompt injection so the system can treat retrieved text and tool output as data, not instructions.
-- C. Prioritize approval gates before validating the failure signal around prompt injection.
-- D. Bundle prompt injection, policy testing, and prompt changes into one release with one aggregate score.
+- Scope: nvidia_specific
+- Source: generated
+- A. Nemotron models is the best fit for this layer: NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- B. Choose NeMo Curator; it provides a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- C. Use NCCL when you need to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- D. Select NIM Operator; it owns serving and deployment work such as managing K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
 - Answer: B
-- Explanation: The scenario is about prompt injection. The strongest answer fixes the failing layer directly: treat retrieved text and tool output as data, not instructions.
-- Why A is wrong: Waiting for incidents postpones the prompt injection gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making prompt injection testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether prompt injection fixed or caused the failure.
+- Explanation: NeMo Curator is the best fit because it sits in Data preparation: Pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- Why A is wrong: Nemotron models belongs to Model selection, while this scenario asks for Data preparation.
+- Why C is wrong: NCCL belongs to Training and customization, while this scenario asks for Data preparation.
+- Why D is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Data preparation.
 
-### Q55: A global retailer sees policy failures that need least privilege as an explicit control. The team has been using giving the LLM API keys; the next change needs to make least privilege explicit. Which action best addresses the problem?
-- ID: aai-hf-safety-ethics-and-compliance-013
-- Domain: Safety, Ethics, and Compliance
-- Topic: least privilege; agentic_ai_professional
+### Q37: An insurance claims group is preparing a production rollout. The rollout is blocked until the team can prepare raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: aai-hf-svc-nemo-curator-002
+- Domain: Knowledge Integration and Data Handling
+- Topic: NVIDIA service: NeMo Curator; lifecycle: Data preparation; Which NVIDIA toolkit provides Pipeline stages, classifiers, and dedup workflows for training-data curation?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. NeMo Agent Toolkit is the best fit for this layer: a config-driven NAT workflow runtime for agent control flow across tools, retrievers, memory, MCP, tracing, eval, and serving.
+- B. Choose RAPIDS; it provides GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- C. Use NeMo Curator when you need to prepare raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation.
+- D. Select NeMo Customizer; it owns training and customization work such as running API-driven LoRA/PEFT customization without standing up a full training stack.
+- Answer: C
+- Explanation: NeMo Curator is the best fit because it sits in Data preparation: Pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- Why A is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Data preparation.
+- Why B is wrong: RAPIDS is a neighboring data preparation component, but this signal asks specifically for NeMo Curator: to prepare raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation.
+- Why D is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Data preparation.
+
+### Q38: A cybersecurity response team needs to choose the right implementation surface. The trace points to the need to prepare raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA service fits this requirement?
+- ID: aai-hf-svc-nemo-curator-003
+- Domain: Knowledge Integration and Data Handling
+- Topic: NVIDIA service: NeMo Curator; lifecycle: Data preparation; Which NVIDIA toolkit provides Pipeline stages, classifiers, and dedup workflows for training-data curation?
 - Difficulty: hard
-- A. Make least privilege explicit in the workflow: scope credentials to tools and roles.
-- B. Bundle least privilege, policy testing, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated least privilege check.
-- D. Use policy testing as the main gate even though reviewers are asking for least privilege evidence.
-- Answer: A
-- Explanation: The scenario is about least privilege. The strongest answer fixes the failing layer directly: scope credentials to tools and roles.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether least privilege fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the least privilege gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making least privilege testable in the scenario.
+- Scope: nvidia_specific
+- Source: generated
+- A. NeMo Agent Toolkit is the best fit for this layer: a config-driven NAT workflow runtime for agent control flow across tools, retrievers, memory, MCP, tracing, eval, and serving.
+- B. Choose NeMo Guardrails; it provides programmable rails for controlling LLM and agent behavior across input, dialog, tool execution, retrieval, and output.
+- C. Use RAPIDS when you need to accelerate pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- D. Select NeMo Curator; it owns data preparation work such as preparing raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation.
+- Answer: D
+- Explanation: NeMo Curator is the best fit because it sits in Data preparation: Pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- Why A is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Data preparation.
+- Why B is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Data preparation.
+- Why C is wrong: RAPIDS is a neighboring data preparation component, but this signal asks specifically for NeMo Curator: to prepare raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation.
 
-### Q56: A pharmaceutical research team sees policy failures that need approval gates as an explicit control. The team has been using approval after execution; the next change needs to make approval gates explicit. Which action best addresses the problem?
-- ID: aai-hf-safety-ethics-and-compliance-014
-- Domain: Safety, Ethics, and Compliance
-- Topic: approval gates; agentic_ai_professional
+### Q39: A public-sector casework team is fixing the layer called out by the trace and design review. The work to finish before release is preparing raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: aai-hf-svc-nemo-curator-004
+- Domain: Knowledge Integration and Data Handling
+- Topic: NVIDIA service: NeMo Curator; lifecycle: Data preparation; Which NVIDIA toolkit provides Pipeline stages, classifiers, and dedup workflows for training-data curation?
 - Difficulty: expert
-- A. Wait for production incidents before adding a dedicated approval gates check.
-- B. Use prompt injection as the main gate even though reviewers are asking for approval gates evidence.
-- C. Keep approval after execution as the primary release control and record only final outputs.
-- D. Use approval gates as the control boundary and require the system to require human approval for high-impact mutations.
-- Answer: D
-- Explanation: The scenario is about approval gates. The strongest answer fixes the failing layer directly: require human approval for high-impact mutations.
-- Why A is wrong: Waiting for incidents postpones the approval gates gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making approval gates testable in the scenario.
-- Why C is wrong: It keeps approval after execution in control instead of adding a measurable approval gates decision point.
-
-### Q57: A bank fraud team sees policy failures that need policy testing as an explicit control. The team has been using spot checks only; the next change needs to make policy testing explicit. Which action best addresses the problem?
-- ID: aai-hf-safety-ethics-and-compliance-015
-- Domain: Safety, Ethics, and Compliance
-- Topic: policy testing; agentic_ai_professional
-- Difficulty: medium
-- A. Keep spot checks only as the primary release control and record only final outputs.
-- B. Prioritize least privilege before validating the failure signal around policy testing.
-- C. Add a release gate for policy testing: test refusals, jailbreaks, and unsafe tool proposals.
-- D. Use approval gates as the main gate even though reviewers are asking for policy testing evidence.
-- Answer: C
-- Explanation: The scenario is about policy testing. The strongest answer fixes the failing layer directly: test refusals, jailbreaks, and unsafe tool proposals.
-- Why A is wrong: It keeps spot checks only in control instead of adding a measurable policy testing decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making policy testing testable in the scenario.
-- Why D is wrong: It moves attention to a neighboring control instead of making policy testing testable in the scenario.
-
-### Q58: A manufacturing quality team is reviewing a governed agent workflow before rollout. The main risk is layered controls: the system must combine input, retrieval, tool, and output controls. Which option keeps the decision at the right layer?
-- ID: aai-hf-safety-ethics-and-compliance-016
-- Domain: Safety, Ethics, and Compliance
-- Topic: layered controls; agentic_ai_professional
-- Difficulty: hard
-- A. Bundle layered controls, approval gates, and prompt changes into one release with one aggregate score.
-- B. Change the design around layered controls so the system can combine input, retrieval, tool, and output controls.
-- C. Keep one final moderation pass as the primary release control and record only final outputs.
-- D. Prioritize policy testing before validating the failure signal around layered controls.
-- Answer: B
-- Explanation: The scenario is about layered controls. The strongest answer fixes the failing layer directly: combine input, retrieval, tool, and output controls.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether layered controls fixed or caused the failure.
-- Why C is wrong: It keeps one final moderation pass in control instead of adding a measurable layered controls decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making layered controls testable in the scenario.
-
-### Q59: A global retailer is comparing two release designs for a governed agent workflow. One design centers on letting documents override system policy; the other adds a measurable prompt injection step. Which design is more appropriate for production?
-- ID: aai-hf-safety-ethics-and-compliance-017
-- Domain: Safety, Ethics, and Compliance
-- Topic: prompt injection; agentic_ai_professional
-- Difficulty: hard
-- A. Make prompt injection explicit in the workflow: treat retrieved text and tool output as data, not instructions.
-- B. Prioritize least privilege before validating the failure signal around prompt injection.
-- C. Bundle prompt injection, layered controls, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated prompt injection check.
+- Scope: nvidia_specific
+- Source: generated
+- A. NeMo Curator is the best fit for this layer: a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- B. Choose Nsight Systems; it provides a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- C. Use NCCL when you need to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- D. Select Nemotron models; it owns model selection work such as choosing a model family for NVIDIA-aligned reasoning, reward, instruction, or agentic workflows.
 - Answer: A
-- Explanation: The scenario is about prompt injection. The strongest answer fixes the failing layer directly: treat retrieved text and tool output as data, not instructions.
-- Why B is wrong: It moves attention to a neighboring control instead of making prompt injection testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether prompt injection fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the prompt injection gate until after users are exposed.
+- Explanation: NeMo Curator is the best fit because it sits in Data preparation: Pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- Why B is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Data preparation.
+- Why C is wrong: NCCL belongs to Training and customization, while this scenario asks for Data preparation.
+- Why D is wrong: Nemotron models belongs to Model selection, while this scenario asks for Data preparation.
 
-### Q60: An automotive support team sees policy failures that need least privilege as an explicit control. The team has been using giving the LLM API keys; the next change needs to make least privilege explicit. Which action best addresses the problem?
-- ID: aai-hf-safety-ethics-and-compliance-018
-- Domain: Safety, Ethics, and Compliance
-- Topic: least privilege; agentic_ai_professional
+### Q40: A logistics planning team needs to choose the right implementation surface. The blocker is preparing raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation. Which NVIDIA service fits this requirement?
+- ID: aai-hf-svc-nemo-curator-005
+- Domain: Knowledge Integration and Data Handling
+- Topic: NVIDIA service: NeMo Curator; lifecycle: Data preparation; Which NVIDIA toolkit provides Pipeline stages, classifiers, and dedup workflows for training-data curation?
 - Difficulty: medium
-- A. Bundle least privilege, approval gates, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated least privilege check.
-- C. Use approval gates as the main gate even though reviewers are asking for least privilege evidence.
-- D. Use least privilege as the control boundary and require the system to scope credentials to tools and roles.
-- Answer: D
-- Explanation: The scenario is about least privilege. The strongest answer fixes the failing layer directly: scope credentials to tools and roles.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether least privilege fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the least privilege gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making least privilege testable in the scenario.
+- Scope: nvidia_specific
+- Source: generated
+- A. Nemotron models is the best fit for this layer: NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- B. Choose NeMo Curator; it provides a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- C. Use NIM Operator when you need to manage K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
+- D. Select NIM; it owns serving and deployment work such as for packaged, supported, optimized model serving with APIs, profiles, observability, and Kubernetes/container deployment.
+- Answer: B
+- Explanation: NeMo Curator is the best fit because it sits in Data preparation: Pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- Why A is wrong: Nemotron models belongs to Model selection, while this scenario asks for Data preparation.
+- Why C is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Data preparation.
+- Why D is wrong: NIM belongs to Serving and deployment, while this scenario asks for Data preparation.
 
-### Q61: A semiconductor design group is reviewing a governed agent workflow before rollout. The main risk is approval gates: the system must require human approval for high-impact mutations. Which option keeps the decision at the right layer?
-- ID: aai-hf-safety-ethics-and-compliance-019
-- Domain: Safety, Ethics, and Compliance
-- Topic: approval gates; agentic_ai_professional
-- Difficulty: hard
-- A. Use least privilege as the main gate even though reviewers are asking for approval gates evidence.
-- B. Keep approval after execution as the primary release control and record only final outputs.
-- C. Add a release gate for approval gates: require human approval for high-impact mutations.
-- D. Wait for production incidents before adding a dedicated approval gates check.
-- Answer: C
-- Explanation: The scenario is about approval gates. The strongest answer fixes the failing layer directly: require human approval for high-impact mutations.
-- Why A is wrong: It moves attention to a neighboring control instead of making approval gates testable in the scenario.
-- Why B is wrong: It keeps approval after execution in control instead of adding a measurable approval gates decision point.
-- Why D is wrong: Waiting for incidents postpones the approval gates gate until after users are exposed.
-
-### Q62: A manufacturing quality team sees policy failures that need policy testing as an explicit control. The team has been using spot checks only; the next change needs to make policy testing explicit. Which action best addresses the problem?
-- ID: aai-hf-safety-ethics-and-compliance-020
-- Domain: Safety, Ethics, and Compliance
-- Topic: policy testing; agentic_ai_professional
-- Difficulty: hard
-- A. Keep spot checks only as the primary release control and record only final outputs.
-- B. Prioritize approval gates before validating the failure signal around policy testing.
-- C. Change the design around policy testing so the system can test refusals, jailbreaks, and unsafe tool proposals.
-- D. Use least privilege as the main gate even though reviewers are asking for policy testing evidence.
-- Answer: C
-- Explanation: The scenario is about policy testing. The strongest answer fixes the failing layer directly: test refusals, jailbreaks, and unsafe tool proposals.
-- Why A is wrong: It keeps spot checks only in control instead of adding a measurable policy testing decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making policy testing testable in the scenario.
-- Why D is wrong: It moves attention to a neighboring control instead of making policy testing testable in the scenario.
-
-### Q63: A manufacturing quality team is comparing two release designs for a governed agent workflow. One design centers on one final moderation pass; the other adds a measurable layered controls step. Which design is more appropriate for production?
-- ID: aai-hf-safety-ethics-and-compliance-021
-- Domain: Safety, Ethics, and Compliance
-- Topic: layered controls; agentic_ai_professional
+### Q41: A manufacturing quality team is fixing the layer called out by the trace and design review. The enterprise wants a hosted service that fine-tunes a base model on domain instructions via API. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: aai-hf-svc-nemo-customizer-001
+- Domain: Evaluation and Tuning
+- Topic: NVIDIA service: NeMo Customizer; lifecycle: Training and customization; Which NVIDIA microservice provides API-driven PEFT customization?
 - Difficulty: expert
-- A. Keep one final moderation pass as the primary release control and record only final outputs.
-- B. Prioritize policy testing before validating the failure signal around layered controls.
-- C. Bundle layered controls, approval gates, and prompt changes into one release with one aggregate score.
-- D. Make layered controls explicit in the workflow: combine input, retrieval, tool, and output controls.
-- Answer: D
-- Explanation: The scenario is about layered controls. The strongest answer fixes the failing layer directly: combine input, retrieval, tool, and output controls.
-- Why A is wrong: It keeps one final moderation pass in control instead of adding a measurable layered controls decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making layered controls testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether layered controls fixed or caused the failure.
-
-### Q64: A cybersecurity response team is preparing a governed agent workflow for release. The current design relies on letting documents override system policy, but the release gate needs to treat retrieved text and tool output as data, not instructions. Which action best fits the requirement?
-- ID: aai-hf-safety-ethics-and-compliance-022
-- Domain: Safety, Ethics, and Compliance
-- Topic: prompt injection; agentic_ai_professional
-- Difficulty: medium
-- A. Use prompt injection as the control boundary and require the system to treat retrieved text and tool output as data, not instructions.
-- B. Prioritize policy testing before validating the failure signal around prompt injection.
-- C. Bundle prompt injection, approval gates, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated prompt injection check.
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose NeMo Customizer; it provides a microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- B. Use NeMo Guardrails when you need to enforce policy flows, safe dialog behavior, prompt-injection defenses, tool restrictions, or output checks.
+- C. Select TensorRT-LLM; it owns inference optimization work such as building optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT.
+- D. NIM Operator is the best fit for this layer: a Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
 - Answer: A
-- Explanation: The scenario is about prompt injection. The strongest answer fixes the failing layer directly: treat retrieved text and tool output as data, not instructions.
-- Why B is wrong: It moves attention to a neighboring control instead of making prompt injection testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether prompt injection fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the prompt injection gate until after users are exposed.
+- Explanation: NeMo Customizer is the best fit because it sits in Training and customization: Microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- Why B is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Training and customization.
+- Why C is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Training and customization.
+- Why D is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Training and customization.
 
-### Q65: A pharmaceutical research team is reviewing a governed agent workflow before rollout. The main risk is least privilege: the system must scope credentials to tools and roles. Which option keeps the decision at the right layer?
-- ID: aai-hf-safety-ethics-and-compliance-023
-- Domain: Safety, Ethics, and Compliance
-- Topic: least privilege; agentic_ai_professional
+### Q42: A semiconductor design group is reviewing the implementation plan. The blocker is running API-driven LoRA/PEFT customization without standing up a full training stack. Which NVIDIA option addresses the named layer?
+- ID: aai-hf-svc-nemo-customizer-002
+- Domain: NVIDIA Platform Implementation
+- Topic: NVIDIA service: NeMo Customizer; lifecycle: Training and customization; Which NVIDIA microservice provides API-driven PEFT customization?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Select Dynamo (Triton Dynamo); it owns serving and deployment work such as supporting disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale.
+- B. NIM Operator is the best fit for this layer: a Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
+- C. Choose NeMo Curator; it provides a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- D. Use NeMo Customizer when you need to run API-driven LoRA/PEFT customization without standing up a full training stack.
+- Answer: D
+- Explanation: NeMo Customizer is the best fit because it sits in Training and customization: Microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- Why A is wrong: Dynamo (Triton Dynamo) belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why B is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why C is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Training and customization.
+
+### Q43: An insurance claims group has narrowed the next engineering decision. The next release blocker is running distributed training or customization before an artifact is approved for serving. Which NVIDIA tool should the team start with?
+- ID: aai-hf-svc-nemo-customizer-003
+- Domain: Evaluation and Tuning
+- Topic: NVIDIA service: NeMo Customizer; lifecycle: Training and customization; Which NVIDIA microservice provides API-driven PEFT customization?
 - Difficulty: hard
-- A. Use approval gates as the main gate even though reviewers are asking for least privilege evidence.
-- B. Add a release gate for least privilege: scope credentials to tools and roles.
-- C. Bundle least privilege, approval gates, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated least privilege check.
-- Answer: B
-- Explanation: The scenario is about least privilege. The strongest answer fixes the failing layer directly: scope credentials to tools and roles.
-- Why A is wrong: It moves attention to a neighboring control instead of making least privilege testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether least privilege fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the least privilege gate until after users are exposed.
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose NeMo Curator; it provides a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- B. Use NeMo Evaluator when you need to run standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge.
+- C. Select NeMo Customizer; it owns training and customization work such as running API-driven LoRA/PEFT customization without standing up a full training stack.
+- D. NIM is the best fit for this layer: inference microservices for deploying optimized models with production APIs and model profiles.
+- Answer: C
+- Explanation: NeMo Customizer is the best fit because it sits in Training and customization: Microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- Why A is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Training and customization.
+- Why B is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Training and customization.
+- Why D is wrong: NIM belongs to Serving and deployment, while this scenario asks for Training and customization.
 
-### Q66: A logistics planning team has a production-readiness review for a governed agent workflow. The review is focused on approval gates, because the system must require human approval for high-impact mutations. Which control should be added before rollout?
-- ID: aai-hf-safety-ethics-and-compliance-024
-- Domain: Safety, Ethics, and Compliance
-- Topic: approval gates; agentic_ai_professional
+### Q44: A logistics planning team is reviewing the implementation plan. The blocker is running API-driven LoRA/PEFT customization without standing up a full training stack. Which NVIDIA option addresses the named layer?
+- ID: aai-hf-svc-nemo-customizer-004
+- Domain: NVIDIA Platform Implementation
+- Topic: NVIDIA service: NeMo Customizer; lifecycle: Training and customization; Which NVIDIA microservice provides API-driven PEFT customization?
 - Difficulty: expert
-- A. Use layered controls as the main gate even though reviewers are asking for approval gates evidence.
-- B. Keep approval after execution as the primary release control and record only final outputs.
-- C. Change the design around approval gates so the system can require human approval for high-impact mutations.
-- D. Wait for production incidents before adding a dedicated approval gates check.
-- Answer: C
-- Explanation: The scenario is about approval gates. The strongest answer fixes the failing layer directly: require human approval for high-impact mutations.
-- Why A is wrong: It moves attention to a neighboring control instead of making approval gates testable in the scenario.
-- Why B is wrong: It keeps approval after execution in control instead of adding a measurable approval gates decision point.
-- Why D is wrong: Waiting for incidents postpones the approval gates gate until after users are exposed.
-
-### Q67: A hospital operations team is comparing two release designs for a governed agent workflow. One design centers on spot checks only; the other adds a measurable policy testing step. Which design is more appropriate for production?
-- ID: aai-hf-safety-ethics-and-compliance-025
-- Domain: Safety, Ethics, and Compliance
-- Topic: policy testing; agentic_ai_professional
-- Difficulty: medium
-- A. Use least privilege as the main gate even though reviewers are asking for policy testing evidence.
-- B. Keep spot checks only as the primary release control and record only final outputs.
-- C. Prioritize approval gates before validating the failure signal around policy testing.
-- D. Make policy testing explicit in the workflow: test refusals, jailbreaks, and unsafe tool proposals.
-- Answer: D
-- Explanation: The scenario is about policy testing. The strongest answer fixes the failing layer directly: test refusals, jailbreaks, and unsafe tool proposals.
-- Why A is wrong: It moves attention to a neighboring control instead of making policy testing testable in the scenario.
-- Why B is wrong: It keeps spot checks only in control instead of adding a measurable policy testing decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making policy testing testable in the scenario.
-
-### Q68: A cybersecurity response team is comparing two release designs for a governed agent workflow. One design centers on one final moderation pass; the other adds a measurable layered controls step. Which design is more appropriate for production?
-- ID: aai-hf-safety-ethics-and-compliance-026
-- Domain: Safety, Ethics, and Compliance
-- Topic: layered controls; agentic_ai_professional
-- Difficulty: hard
-- A. Use layered controls as the control boundary and require the system to combine input, retrieval, tool, and output controls.
-- B. Keep one final moderation pass as the primary release control and record only final outputs.
-- C. Prioritize approval gates before validating the failure signal around layered controls.
-- D. Bundle layered controls, policy testing, and prompt changes into one release with one aggregate score.
-- Answer: A
-- Explanation: The scenario is about layered controls. The strongest answer fixes the failing layer directly: combine input, retrieval, tool, and output controls.
-- Why B is wrong: It keeps one final moderation pass in control instead of adding a measurable layered controls decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making layered controls testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether layered controls fixed or caused the failure.
-
-### Q69: An automotive support team is comparing two release designs for a governed agent workflow. One design centers on letting documents override system policy; the other adds a measurable prompt injection step. Which design is more appropriate for production?
-- ID: aai-hf-safety-ethics-and-compliance-027
-- Domain: Safety, Ethics, and Compliance
-- Topic: prompt injection; agentic_ai_professional
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated prompt injection check.
-- B. Add a release gate for prompt injection: treat retrieved text and tool output as data, not instructions.
-- C. Prioritize layered controls before validating the failure signal around prompt injection.
-- D. Bundle prompt injection, least privilege, and prompt changes into one release with one aggregate score.
+- Scope: nvidia_specific
+- Source: generated
+- A. Select RAPIDS; it owns data preparation work such as accelerating pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- B. NeMo Customizer is the best fit for this layer: a microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- C. Choose NeMo Agent Toolkit; it provides a config-driven NAT workflow runtime for agent control flow across tools, retrievers, memory, MCP, tracing, eval, and serving.
+- D. Use Nsight Systems when you need to identify where time is going across CPU, GPU, launches, waits, and communication.
 - Answer: B
-- Explanation: The scenario is about prompt injection. The strongest answer fixes the failing layer directly: treat retrieved text and tool output as data, not instructions.
-- Why A is wrong: Waiting for incidents postpones the prompt injection gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making prompt injection testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether prompt injection fixed or caused the failure.
+- Explanation: NeMo Customizer is the best fit because it sits in Training and customization: Microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- Why A is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Training and customization.
+- Why C is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Training and customization.
+- Why D is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Training and customization.
 
-### Q70: A logistics planning team is comparing two release designs for a governed agent workflow. One design centers on giving the LLM API keys; the other adds a measurable least privilege step. Which design is more appropriate for production?
-- ID: aai-hf-safety-ethics-and-compliance-028
-- Domain: Safety, Ethics, and Compliance
-- Topic: least privilege; agentic_ai_professional
-- Difficulty: easy
-- A. Wait for production incidents before adding a dedicated least privilege check.
-- B. Use policy testing as the main gate even though reviewers are asking for least privilege evidence.
-- C. Change the design around least privilege so the system can scope credentials to tools and roles.
-- D. Bundle least privilege, policy testing, and prompt changes into one release with one aggregate score.
-- Answer: C
-- Explanation: The scenario is about least privilege. The strongest answer fixes the failing layer directly: scope credentials to tools and roles.
-- Why A is wrong: Waiting for incidents postpones the least privilege gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making least privilege testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether least privilege fixed or caused the failure.
+### Q45: A public-sector casework team is fixing the layer called out by the trace and design review. The enterprise wants a hosted service that fine-tunes a base model on domain instructions via API. Which NVIDIA product owns this requirement?
+- ID: aai-hf-svc-nemo-customizer-005
+- Domain: Evaluation and Tuning
+- Topic: NVIDIA service: NeMo Customizer; lifecycle: Training and customization; Which NVIDIA microservice provides API-driven PEFT customization?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose NeMo Customizer; it provides a microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- B. Use NeMo Curator when you need to prepare raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation.
+- C. Select NGC; it owns serving and deployment work such as pulling NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- D. NCCL is the best fit for this layer: a collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- Answer: A
+- Explanation: NeMo Customizer is the best fit because it sits in Training and customization: Microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- Why B is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Training and customization.
+- Why C is wrong: NGC belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why D is wrong: NCCL is a neighboring training and customization component, but this signal asks specifically for NeMo Customizer: to run API-driven LoRA/PEFT customization without standing up a full training stack.
 
-### Q71: A manufacturing quality team is preparing a governed agent workflow for release. The current design relies on approval after execution, but the release gate needs to require human approval for high-impact mutations. Which design is the best first change?
-- ID: aai-hf-safety-ethics-and-compliance-029
-- Domain: Safety, Ethics, and Compliance
-- Topic: approval gates; agentic_ai_professional
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated approval gates check.
-- B. Use policy testing as the main gate even though reviewers are asking for approval gates evidence.
-- C. Keep approval after execution as the primary release control and record only final outputs.
-- D. Make approval gates explicit in the workflow: require human approval for high-impact mutations.
-- Answer: D
-- Explanation: The scenario is about approval gates. The strongest answer fixes the failing layer directly: require human approval for high-impact mutations.
-- Why A is wrong: Waiting for incidents postpones the approval gates gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making approval gates testable in the scenario.
-- Why C is wrong: It keeps approval after execution in control instead of adding a measurable approval gates decision point.
-
-### Q72: A bank fraud team is comparing two release designs for a governed agent workflow. One design centers on spot checks only; the other adds a measurable policy testing step. Which design is more appropriate for production?
-- ID: aai-hf-safety-ethics-and-compliance-030
-- Domain: Safety, Ethics, and Compliance
-- Topic: policy testing; agentic_ai_professional
+### Q46: An automotive support team has narrowed the next engineering decision. The project team needs reproducible LLM benchmarks plus LLM-as-judge scoring before each release. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA tool should the team start with?
+- ID: aai-hf-svc-nemo-evaluator-001
+- Domain: Evaluation and Tuning
+- Topic: NVIDIA service: NeMo Evaluator; lifecycle: Evaluation; Which NVIDIA microservice runs LLM evaluation pipelines and judge models?
 - Difficulty: expert
-- A. Prioritize least privilege before validating the failure signal around policy testing.
-- B. Use policy testing as the control boundary and require the system to test refusals, jailbreaks, and unsafe tool proposals.
-- C. Use approval gates as the main gate even though reviewers are asking for policy testing evidence.
-- D. Keep spot checks only as the primary release control and record only final outputs.
-- Answer: B
-- Explanation: The scenario is about policy testing. The strongest answer fixes the failing layer directly: test refusals, jailbreaks, and unsafe tool proposals.
-- Why A is wrong: It moves attention to a neighboring control instead of making policy testing testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making policy testing testable in the scenario.
-- Why D is wrong: It keeps spot checks only in control instead of adding a measurable policy testing decision point.
-
-### Q73: A global retailer is reviewing a governed agent workflow before rollout. The main risk is layered controls: the system must combine input, retrieval, tool, and output controls. Which option keeps the decision at the right layer?
-- ID: aai-hf-safety-ethics-and-compliance-031
-- Domain: Safety, Ethics, and Compliance
-- Topic: layered controls; agentic_ai_professional
-- Difficulty: medium
-- A. Add a release gate for layered controls: combine input, retrieval, tool, and output controls.
-- B. Keep one final moderation pass as the primary release control and record only final outputs.
-- C. Prioritize prompt injection before validating the failure signal around layered controls.
-- D. Bundle layered controls, least privilege, and prompt changes into one release with one aggregate score.
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose NeMo Evaluator; it provides a microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- B. Use NeMo Retriever when you need to connect proprietary data to RAG: parse documents, embed chunks/queries, index/search, apply permissions, or rerank candidate passages.
+- C. Select NGC; it owns serving and deployment work such as pulling NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- D. NCCL is the best fit for this layer: a collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
 - Answer: A
-- Explanation: The scenario is about layered controls. The strongest answer fixes the failing layer directly: combine input, retrieval, tool, and output controls.
-- Why B is wrong: It keeps one final moderation pass in control instead of adding a measurable layered controls decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making layered controls testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether layered controls fixed or caused the failure.
+- Explanation: NeMo Evaluator is the best fit because it sits in Evaluation: Microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- Why B is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Evaluation.
+- Why C is wrong: NGC belongs to Serving and deployment, while this scenario asks for Evaluation.
+- Why D is wrong: NCCL belongs to Training and customization, while this scenario asks for Evaluation.
 
-### Q74: A pharmaceutical research team is reviewing a governed agent workflow before rollout. The main risk is prompt injection: the system must treat retrieved text and tool output as data, not instructions. Which option keeps the decision at the right layer?
-- ID: aai-hf-safety-ethics-and-compliance-032
-- Domain: Safety, Ethics, and Compliance
-- Topic: prompt injection; agentic_ai_professional
-- Difficulty: hard
-- A. Prioritize layered controls before validating the failure signal around prompt injection.
-- B. Bundle prompt injection, least privilege, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated prompt injection check.
-- D. Change the design around prompt injection so the system can treat retrieved text and tool output as data, not instructions.
+### Q47: A global retailer needs to choose the right implementation surface. The trace points to the need to run standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge. Which NVIDIA platform layer is the right match?
+- ID: aai-hf-svc-nemo-evaluator-002
+- Domain: Evaluation and Tuning
+- Topic: NVIDIA service: NeMo Evaluator; lifecycle: Evaluation; Which NVIDIA microservice runs LLM evaluation pipelines and judge models?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Select Dynamo (Triton Dynamo); it owns serving and deployment work such as supporting disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale.
+- B. NCCL is the best fit for this layer: a collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- C. Choose TensorRT-LLM; it provides an optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- D. Use NeMo Evaluator when you need to run standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge.
 - Answer: D
-- Explanation: The scenario is about prompt injection. The strongest answer fixes the failing layer directly: treat retrieved text and tool output as data, not instructions.
-- Why A is wrong: It moves attention to a neighboring control instead of making prompt injection testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether prompt injection fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the prompt injection gate until after users are exposed.
+- Explanation: NeMo Evaluator is the best fit because it sits in Evaluation: Microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- Why A is wrong: Dynamo (Triton Dynamo) belongs to Serving and deployment, while this scenario asks for Evaluation.
+- Why B is wrong: NCCL belongs to Training and customization, while this scenario asks for Evaluation.
+- Why C is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Evaluation.
 
-### Q75: A cybersecurity response team is comparing two release designs for a governed agent workflow. One design centers on giving the LLM API keys; the other adds a measurable least privilege step. Which design is more appropriate for production?
-- ID: aai-hf-safety-ethics-and-compliance-033
-- Domain: Safety, Ethics, and Compliance
-- Topic: least privilege; agentic_ai_professional
+### Q48: A hospital operations team has narrowed the next engineering decision. The next release blocker is comparing variants before release and catch quality or safety regressions. Which NVIDIA product owns this requirement?
+- ID: aai-hf-svc-nemo-evaluator-003
+- Domain: Evaluation and Tuning
+- Topic: NVIDIA service: NeMo Evaluator; lifecycle: Evaluation; Which NVIDIA microservice runs LLM evaluation pipelines and judge models?
 - Difficulty: hard
-- A. Wait for production incidents before adding a dedicated least privilege check.
-- B. Use prompt injection as the main gate even though reviewers are asking for least privilege evidence.
-- C. Make least privilege explicit in the workflow: scope credentials to tools and roles.
-- D. Bundle least privilege, prompt injection, and prompt changes into one release with one aggregate score.
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose NeMo Agent Toolkit; it provides a config-driven NAT workflow runtime for agent control flow across tools, retrievers, memory, MCP, tracing, eval, and serving.
+- B. Use NIM when you need to for packaged, supported, optimized model serving with APIs, profiles, observability, and Kubernetes/container deployment.
+- C. Select NeMo Evaluator; it owns evaluation work such as running standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge.
+- D. TensorRT-LLM is the best fit for this layer: an optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
 - Answer: C
-- Explanation: The scenario is about least privilege. The strongest answer fixes the failing layer directly: scope credentials to tools and roles.
-- Why A is wrong: Waiting for incidents postpones the least privilege gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making least privilege testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether least privilege fixed or caused the failure.
+- Explanation: NeMo Evaluator is the best fit because it sits in Evaluation: Microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- Why A is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Evaluation.
+- Why B is wrong: NIM belongs to Serving and deployment, while this scenario asks for Evaluation.
+- Why D is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Evaluation.
 
-### Q76: A hospital operations team has a production-readiness review for a governed agent workflow. The review is focused on approval gates, because the system must require human approval for high-impact mutations. Which implementation path is most appropriate?
-- ID: aai-hf-safety-ethics-and-compliance-034
-- Domain: Safety, Ethics, and Compliance
-- Topic: approval gates; agentic_ai_professional
+### Q49: A cybersecurity response team is setting a release gate. The implementation requirement is to run standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge. What is the best first implementation choice?
+- ID: aai-hf-svc-nemo-evaluator-004
+- Domain: Evaluation and Tuning
+- Topic: NVIDIA service: NeMo Evaluator; lifecycle: Evaluation; Which NVIDIA microservice runs LLM evaluation pipelines and judge models?
 - Difficulty: expert
-- A. Keep approval after execution as the primary release control and record only final outputs.
-- B. Use approval gates as the control boundary and require the system to require human approval for high-impact mutations.
-- C. Wait for production incidents before adding a dedicated approval gates check.
-- D. Use policy testing as the main gate even though reviewers are asking for approval gates evidence.
+- Scope: nvidia_specific
+- Source: generated
+- A. Select NeMo Curator; it owns data preparation work such as preparing raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation.
+- B. NeMo Evaluator is the best fit for this layer: a microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- C. Choose NeMo Guardrails; it provides programmable rails for controlling LLM and agent behavior across input, dialog, tool execution, retrieval, and output.
+- D. Use NIM when you need to for packaged, supported, optimized model serving with APIs, profiles, observability, and Kubernetes/container deployment.
 - Answer: B
-- Explanation: The scenario is about approval gates. The strongest answer fixes the failing layer directly: require human approval for high-impact mutations.
-- Why A is wrong: It keeps approval after execution in control instead of adding a measurable approval gates decision point.
-- Why C is wrong: Waiting for incidents postpones the approval gates gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making approval gates testable in the scenario.
+- Explanation: NeMo Evaluator is the best fit because it sits in Evaluation: Microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- Why A is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Evaluation.
+- Why C is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Evaluation.
+- Why D is wrong: NIM belongs to Serving and deployment, while this scenario asks for Evaluation.
 
-### Q77: A global retailer is preparing a governed agent workflow for release. The current design relies on spot checks only, but the release gate needs to test refusals, jailbreaks, and unsafe tool proposals. Which architecture keeps the boundary cleanest?
-- ID: aai-hf-safety-ethics-and-compliance-035
-- Domain: Safety, Ethics, and Compliance
-- Topic: policy testing; agentic_ai_professional
+### Q50: An insurance claims group has narrowed the next engineering decision. The project team needs reproducible LLM benchmarks plus LLM-as-judge scoring before each release. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA service should be selected first?
+- ID: aai-hf-svc-nemo-evaluator-005
+- Domain: Evaluation and Tuning
+- Topic: NVIDIA service: NeMo Evaluator; lifecycle: Evaluation; Which NVIDIA microservice runs LLM evaluation pipelines and judge models?
 - Difficulty: medium
-- A. Add a release gate for policy testing: test refusals, jailbreaks, and unsafe tool proposals.
-- B. Use prompt injection as the main gate even though reviewers are asking for policy testing evidence.
-- C. Keep spot checks only as the primary release control and record only final outputs.
-- D. Prioritize layered controls before validating the failure signal around policy testing.
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose NeMo Evaluator; it provides a microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- B. Use NeMo Customizer when you need to run API-driven LoRA/PEFT customization without standing up a full training stack.
+- C. Select NeMo Guardrails; it owns safety and guardrails work such as enforcing policy flows, safe dialog behavior, prompt-injection defenses, tool restrictions, or output checks.
+- D. NeMo Curator is the best fit for this layer: a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
 - Answer: A
-- Explanation: The scenario is about policy testing. The strongest answer fixes the failing layer directly: test refusals, jailbreaks, and unsafe tool proposals.
-- Why B is wrong: It moves attention to a neighboring control instead of making policy testing testable in the scenario.
-- Why C is wrong: It keeps spot checks only in control instead of adding a measurable policy testing decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making policy testing testable in the scenario.
+- Explanation: NeMo Evaluator is the best fit because it sits in Evaluation: Microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- Why B is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Evaluation.
+- Why C is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Evaluation.
+- Why D is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Evaluation.
 
-### Q78: An automotive support team is preparing a governed agent workflow for release. The current design relies on one final moderation pass, but the release gate needs to combine input, retrieval, tool, and output controls. Which design is the best first change?
-- ID: aai-hf-safety-ethics-and-compliance-036
-- Domain: Safety, Ethics, and Compliance
-- Topic: layered controls; agentic_ai_professional
-- Difficulty: hard
-- A. Keep one final moderation pass as the primary release control and record only final outputs.
-- B. Prioritize least privilege before validating the failure signal around layered controls.
-- C. Bundle layered controls, prompt injection, and prompt changes into one release with one aggregate score.
-- D. Change the design around layered controls so the system can combine input, retrieval, tool, and output controls.
-- Answer: D
-- Explanation: The scenario is about layered controls. The strongest answer fixes the failing layer directly: combine input, retrieval, tool, and output controls.
-- Why A is wrong: It keeps one final moderation pass in control instead of adding a measurable layered controls decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making layered controls testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether layered controls fixed or caused the failure.
-
-### Q79: A bank fraud team is reviewing a governed agent workflow before rollout. The main risk is prompt injection: the system must treat retrieved text and tool output as data, not instructions. Which option keeps the decision at the right layer?
-- ID: aai-hf-safety-ethics-and-compliance-037
-- Domain: Safety, Ethics, and Compliance
-- Topic: prompt injection; agentic_ai_professional
-- Difficulty: hard
-- A. Bundle prompt injection, approval gates, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated prompt injection check.
-- C. Make prompt injection explicit in the workflow: treat retrieved text and tool output as data, not instructions.
-- D. Prioritize policy testing before validating the failure signal around prompt injection.
-- Answer: C
-- Explanation: The scenario is about prompt injection. The strongest answer fixes the failing layer directly: treat retrieved text and tool output as data, not instructions.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether prompt injection fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the prompt injection gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making prompt injection testable in the scenario.
-
-### Q80: A manufacturing quality team is comparing two release designs for a governed agent workflow. One design centers on giving the LLM API keys; the other adds a measurable least privilege step. Which design is more appropriate for production?
-- ID: aai-hf-safety-ethics-and-compliance-038
-- Domain: Safety, Ethics, and Compliance
-- Topic: least privilege; agentic_ai_professional
-- Difficulty: medium
-- A. Use layered controls as the main gate even though reviewers are asking for least privilege evidence.
-- B. Use least privilege as the control boundary and require the system to scope credentials to tools and roles.
-- C. Bundle least privilege, layered controls, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated least privilege check.
-- Answer: B
-- Explanation: The scenario is about least privilege. The strongest answer fixes the failing layer directly: scope credentials to tools and roles.
-- Why A is wrong: It moves attention to a neighboring control instead of making least privilege testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether least privilege fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the least privilege gate until after users are exposed.
-
-### Q81: A logistics planning team has a production-readiness review for a governed agent workflow. The review is focused on approval gates, because the system must require human approval for high-impact mutations. Which architecture keeps the boundary cleanest?
-- ID: aai-hf-safety-ethics-and-compliance-039
-- Domain: Safety, Ethics, and Compliance
-- Topic: approval gates; agentic_ai_professional
-- Difficulty: hard
-- A. Add a release gate for approval gates: require human approval for high-impact mutations.
-- B. Wait for production incidents before adding a dedicated approval gates check.
-- C. Use layered controls as the main gate even though reviewers are asking for approval gates evidence.
-- D. Keep approval after execution as the primary release control and record only final outputs.
-- Answer: A
-- Explanation: The scenario is about approval gates. The strongest answer fixes the failing layer directly: require human approval for high-impact mutations.
-- Why B is wrong: Waiting for incidents postpones the approval gates gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making approval gates testable in the scenario.
-- Why D is wrong: It keeps approval after execution in control instead of adding a measurable approval gates decision point.
-
-### Q82: An automotive support team is comparing two release designs for a governed agent workflow. One design centers on spot checks only; the other adds a measurable policy testing step. Which design is more appropriate for production?
-- ID: aai-hf-safety-ethics-and-compliance-040
-- Domain: Safety, Ethics, and Compliance
-- Topic: policy testing; agentic_ai_professional
-- Difficulty: hard
-- A. Change the design around policy testing so the system can test refusals, jailbreaks, and unsafe tool proposals.
-- B. Use layered controls as the main gate even though reviewers are asking for policy testing evidence.
-- C. Keep spot checks only as the primary release control and record only final outputs.
-- D. Prioritize prompt injection before validating the failure signal around policy testing.
-- Answer: A
-- Explanation: The scenario is about policy testing. The strongest answer fixes the failing layer directly: test refusals, jailbreaks, and unsafe tool proposals.
-- Why B is wrong: It moves attention to a neighboring control instead of making policy testing testable in the scenario.
-- Why C is wrong: It keeps spot checks only in control instead of adding a measurable policy testing decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making policy testing testable in the scenario.
-
-### Q83: An insurance claims group has a production-readiness review for a governed agent workflow. The review is focused on layered controls, because the system must combine input, retrieval, tool, and output controls. Which choice addresses the root cause?
-- ID: aai-hf-safety-ethics-and-compliance-041
-- Domain: Safety, Ethics, and Compliance
-- Topic: layered controls; agentic_ai_professional
+### Q51: A pharmaceutical research team has narrowed the next engineering decision. An ops team must autoscale NIM endpoints with version pinning and zero-downtime upgrades on K8s. Which NVIDIA product owns this requirement?
+- ID: aai-hf-svc-nim-operator-001
+- Domain: Deployment and Scaling
+- Topic: NVIDIA service: NIM Operator; lifecycle: Serving and deployment; Which NVIDIA component owns NIM lifecycle on Kubernetes?
 - Difficulty: expert
-- A. Bundle layered controls, prompt injection, and prompt changes into one release with one aggregate score.
-- B. Make layered controls explicit in the workflow: combine input, retrieval, tool, and output controls.
-- C. Keep one final moderation pass as the primary release control and record only final outputs.
-- D. Prioritize least privilege before validating the failure signal around layered controls.
-- Answer: B
-- Explanation: The scenario is about layered controls. The strongest answer fixes the failing layer directly: combine input, retrieval, tool, and output controls.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether layered controls fixed or caused the failure.
-- Why C is wrong: It keeps one final moderation pass in control instead of adding a measurable layered controls decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making layered controls testable in the scenario.
-
-### Q84: A telecom network operations team has a production-readiness review for a governed agent workflow. The review is focused on prompt injection, because the system must treat retrieved text and tool output as data, not instructions. Which architecture keeps the boundary cleanest?
-- ID: aai-hf-safety-ethics-and-compliance-042
-- Domain: Safety, Ethics, and Compliance
-- Topic: prompt injection; agentic_ai_professional
-- Difficulty: medium
-- A. Bundle prompt injection, layered controls, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated prompt injection check.
-- C. Use prompt injection as the control boundary and require the system to treat retrieved text and tool output as data, not instructions.
-- D. Prioritize least privilege before validating the failure signal around prompt injection.
+- Scope: nvidia_specific
+- Source: generated
+- A. Select NeMo Guardrails; it owns safety and guardrails work such as enforcing policy flows, safe dialog behavior, prompt-injection defenses, tool restrictions, or output checks.
+- B. NeMo Framework is the best fit for this layer: a framework for training, customizing, aligning, and evaluating generative AI models.
+- C. Choose NIM Operator; it provides a Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
+- D. Use Triton Inference Server when you need to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
 - Answer: C
-- Explanation: The scenario is about prompt injection. The strongest answer fixes the failing layer directly: treat retrieved text and tool output as data, not instructions.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether prompt injection fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the prompt injection gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making prompt injection testable in the scenario.
+- Explanation: NIM Operator is the best fit because it sits in Serving and deployment: Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
+- Why A is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Serving and deployment.
+- Why B is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for Serving and deployment.
+- Why D is wrong: Triton Inference Server is a neighboring serving and deployment component, but this signal asks specifically for NIM Operator: to manage K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
 
-### Q85: A hospital operations team is reviewing a governed agent workflow before rollout. The main risk is least privilege: the system must scope credentials to tools and roles. Which option keeps the decision at the right layer?
-- ID: aai-hf-safety-ethics-and-compliance-043
-- Domain: Safety, Ethics, and Compliance
-- Topic: least privilege; agentic_ai_professional
+### Q52: A telecom network operations team needs to choose the right implementation surface. The blocker is managing K8s-native NIM lifecycle, autoscaling, or rolling model upgrades. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA option addresses the named layer?
+- ID: aai-hf-svc-nim-operator-002
+- Domain: Deployment and Scaling
+- Topic: NVIDIA service: NIM Operator; lifecycle: Serving and deployment; Which NVIDIA component owns NIM lifecycle on Kubernetes?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose Nsight Systems; it provides a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- B. Use NIM Operator when you need to manage K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
+- C. Select TensorRT-LLM; it owns inference optimization work such as building optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT.
+- D. NeMo Retriever is the best fit for this layer: the NVIDIA Retriever microservice family for document extraction, embeddings, indexing/search, and reranking in enterprise RAG.
+- Answer: B
+- Explanation: NIM Operator is the best fit because it sits in Serving and deployment: Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
+- Why A is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Serving and deployment.
+- Why C is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Serving and deployment.
+- Why D is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Serving and deployment.
+
+### Q53: A manufacturing quality team is fixing the layer called out by the trace and design review. The next release blocker is packaging or managing production model endpoints, artifacts, routing, and rollout. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: aai-hf-svc-nim-operator-003
+- Domain: Deployment and Scaling
+- Topic: NVIDIA service: NIM Operator; lifecycle: Serving and deployment; Which NVIDIA component owns NIM lifecycle on Kubernetes?
 - Difficulty: hard
-- A. Bundle least privilege, layered controls, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated least privilege check.
-- C. Use layered controls as the main gate even though reviewers are asking for least privilege evidence.
-- D. Add a release gate for least privilege: scope credentials to tools and roles.
-- Answer: D
-- Explanation: The scenario is about least privilege. The strongest answer fixes the failing layer directly: scope credentials to tools and roles.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether least privilege fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the least privilege gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making least privilege testable in the scenario.
+- Scope: nvidia_specific
+- Source: generated
+- A. Select NIM Operator; it owns serving and deployment work such as managing K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
+- B. Triton Inference Server is the best fit for this layer: a production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- C. Choose NeMo Customizer; it provides a microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- D. Use NCCL when you need to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- Answer: A
+- Explanation: NIM Operator is the best fit because it sits in Serving and deployment: Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
+- Why B is wrong: Triton Inference Server is a neighboring serving and deployment component, but this signal asks specifically for NIM Operator: to manage K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
+- Why C is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Serving and deployment.
+- Why D is wrong: NCCL belongs to Training and customization, while this scenario asks for Serving and deployment.
 
-### Q86: A cybersecurity response team sees policy failures that need approval gates as an explicit control. The team has been using approval after execution; the next change needs to make approval gates explicit. Which action best addresses the problem?
-- ID: aai-hf-safety-ethics-and-compliance-044
-- Domain: Safety, Ethics, and Compliance
-- Topic: approval gates; agentic_ai_professional
+### Q54: A semiconductor design group is reviewing the implementation plan. The implementation requirement is to manage K8s-native NIM lifecycle, autoscaling, or rolling model upgrades. Which NVIDIA option addresses the named layer?
+- ID: aai-hf-svc-nim-operator-004
+- Domain: Deployment and Scaling
+- Topic: NVIDIA service: NIM Operator; lifecycle: Serving and deployment; Which NVIDIA component owns NIM lifecycle on Kubernetes?
 - Difficulty: expert
-- A. Change the design around approval gates so the system can require human approval for high-impact mutations.
-- B. Wait for production incidents before adding a dedicated approval gates check.
-- C. Use least privilege as the main gate even though reviewers are asking for approval gates evidence.
-- D. Keep approval after execution as the primary release control and record only final outputs.
-- Answer: A
-- Explanation: The scenario is about approval gates. The strongest answer fixes the failing layer directly: require human approval for high-impact mutations.
-- Why B is wrong: Waiting for incidents postpones the approval gates gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making approval gates testable in the scenario.
-- Why D is wrong: It keeps approval after execution in control instead of adding a measurable approval gates decision point.
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose NeMo Evaluator; it provides a microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- B. Use NCCL when you need to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- C. Select Triton Inference Server; it owns serving and deployment work such as running multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
+- D. NIM Operator is the best fit for this layer: a Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
+- Answer: D
+- Explanation: NIM Operator is the best fit because it sits in Serving and deployment: Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
+- Why A is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Serving and deployment.
+- Why B is wrong: NCCL belongs to Training and customization, while this scenario asks for Serving and deployment.
+- Why C is wrong: Triton Inference Server is a neighboring serving and deployment component, but this signal asks specifically for NIM Operator: to manage K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
 
-### Q87: An automotive support team sees policy failures that need policy testing as an explicit control. The team has been using spot checks only; the next change needs to make policy testing explicit. Which action best addresses the problem?
-- ID: aai-hf-safety-ethics-and-compliance-045
-- Domain: Safety, Ethics, and Compliance
-- Topic: policy testing; agentic_ai_professional
+### Q55: An automotive support team is preparing a production rollout. An ops team must autoscale NIM endpoints with version pinning and zero-downtime upgrades on K8s. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: aai-hf-svc-nim-operator-005
+- Domain: Deployment and Scaling
+- Topic: NVIDIA service: NIM Operator; lifecycle: Serving and deployment; Which NVIDIA component owns NIM lifecycle on Kubernetes?
 - Difficulty: medium
-- A. Prioritize prompt injection before validating the failure signal around policy testing.
-- B. Make policy testing explicit in the workflow: test refusals, jailbreaks, and unsafe tool proposals.
-- C. Use layered controls as the main gate even though reviewers are asking for policy testing evidence.
-- D. Keep spot checks only as the primary release control and record only final outputs.
-- Answer: B
-- Explanation: The scenario is about policy testing. The strongest answer fixes the failing layer directly: test refusals, jailbreaks, and unsafe tool proposals.
-- Why A is wrong: It moves attention to a neighboring control instead of making policy testing testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making policy testing testable in the scenario.
-- Why D is wrong: It keeps spot checks only in control instead of adding a measurable policy testing decision point.
-
-### Q88: A telecom network operations team sees policy failures that need layered controls as an explicit control. The team has been using one final moderation pass; the next change needs to make layered controls explicit. Which action best addresses the problem?
-- ID: aai-hf-safety-ethics-and-compliance-046
-- Domain: Safety, Ethics, and Compliance
-- Topic: layered controls; agentic_ai_professional
-- Difficulty: hard
-- A. Prioritize prompt injection before validating the failure signal around layered controls.
-- B. Bundle layered controls, least privilege, and prompt changes into one release with one aggregate score.
-- C. Use layered controls as the control boundary and require the system to combine input, retrieval, tool, and output controls.
-- D. Keep one final moderation pass as the primary release control and record only final outputs.
+- Scope: nvidia_specific
+- Source: generated
+- A. Select TensorRT-LLM; it owns inference optimization work such as building optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT.
+- B. NeMo Retriever is the best fit for this layer: the NVIDIA Retriever microservice family for document extraction, embeddings, indexing/search, and reranking in enterprise RAG.
+- C. Choose NIM Operator; it provides a Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
+- D. Use NeMo Customizer when you need to run API-driven LoRA/PEFT customization without standing up a full training stack.
 - Answer: C
-- Explanation: The scenario is about layered controls. The strongest answer fixes the failing layer directly: combine input, retrieval, tool, and output controls.
-- Why A is wrong: It moves attention to a neighboring control instead of making layered controls testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether layered controls fixed or caused the failure.
-- Why D is wrong: It keeps one final moderation pass in control instead of adding a measurable layered controls decision point.
+- Explanation: NIM Operator is the best fit because it sits in Serving and deployment: Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
+- Why A is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Serving and deployment.
+- Why B is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Serving and deployment.
+- Why D is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Serving and deployment.
 
-### Q89: A manufacturing quality team is reviewing a governed agent workflow before rollout. The main risk is prompt injection: the system must treat retrieved text and tool output as data, not instructions. Which option keeps the decision at the right layer?
-- ID: aai-hf-safety-ethics-and-compliance-047
-- Domain: Safety, Ethics, and Compliance
-- Topic: prompt injection; agentic_ai_professional
-- Difficulty: hard
-- A. Prioritize approval gates before validating the failure signal around prompt injection.
-- B. Bundle prompt injection, policy testing, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated prompt injection check.
-- D. Add a release gate for prompt injection: treat retrieved text and tool output as data, not instructions.
-- Answer: D
-- Explanation: The scenario is about prompt injection. The strongest answer fixes the failing layer directly: treat retrieved text and tool output as data, not instructions.
-- Why A is wrong: It moves attention to a neighboring control instead of making prompt injection testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether prompt injection fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the prompt injection gate until after users are exposed.
-
-### Q90: A pharmaceutical research team is reviewing a reviewer-facing agent workflow before rollout. The main risk is human-in-the-loop: the system must require approval before high-risk actions. Which option keeps the decision at the right layer?
-- ID: aai-hf-human-ai-interaction-and-oversight-001
-- Domain: Human-AI Interaction and Oversight
-- Topic: human-in-the-loop; agentic_ai_professional
-- Difficulty: medium
-- A. Keep review after irreversible mutations as the primary release control and record only final outputs.
-- B. Prioritize transparent handoff before validating the failure signal around human-in-the-loop.
-- C. Bundle human-in-the-loop, feedback loop, and prompt changes into one release with one aggregate score.
-- D. Make human-in-the-loop explicit in the workflow: require approval before high-risk actions.
-- Answer: D
-- Explanation: The scenario is about human-in-the-loop. The strongest answer fixes the failing layer directly: require approval before high-risk actions.
-- Why A is wrong: It keeps review after irreversible mutations in control instead of adding a measurable human-in-the-loop decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making human-in-the-loop testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether human-in-the-loop fixed or caused the failure.
-
-### Q91: A telecom network operations team sees reviewers lacking the human-on-the-loop evidence needed for decisions. The team has been using manual approval for every low-risk step; the next change needs to make human-on-the-loop explicit. Which action best addresses the problem?
-- ID: aai-hf-human-ai-interaction-and-oversight-002
-- Domain: Human-AI Interaction and Oversight
-- Topic: human-on-the-loop; agentic_ai_professional
-- Difficulty: hard
-- A. Use human-on-the-loop as the control boundary and require the system to sample low-risk decisions and monitor drift.
-- B. Prioritize human-in-the-loop before validating the failure signal around human-on-the-loop.
-- C. Bundle human-on-the-loop, review queues, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated human-on-the-loop check.
-- Answer: A
-- Explanation: The scenario is about human-on-the-loop. The strongest answer fixes the failing layer directly: sample low-risk decisions and monitor drift.
-- Why B is wrong: It moves attention to a neighboring control instead of making human-on-the-loop testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether human-on-the-loop fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the human-on-the-loop gate until after users are exposed.
-
-### Q92: A manufacturing quality team is preparing a reviewer-facing agent workflow for release. The current design relies on first-in-first-out for all cases, but the release gate needs to prioritize by risk, uncertainty, and impact. Which implementation path is most appropriate?
-- ID: aai-hf-human-ai-interaction-and-oversight-003
-- Domain: Human-AI Interaction and Oversight
-- Topic: review queues; agentic_ai_professional
+### Q56: A semiconductor design group is reviewing the implementation plan. The trace points to the need to support disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA service fits this requirement?
+- ID: aai-hf-svc-dynamo-triton-dynamo-001
+- Domain: Deployment and Scaling
+- Topic: NVIDIA service: Dynamo (Triton Dynamo); lifecycle: Serving and deployment; Which NVIDIA stack handles disaggregated multi-node LLM inference?
 - Difficulty: expert
-- A. Use feedback loop as the main gate even though reviewers are asking for review queues evidence.
-- B. Add a release gate for review queues: prioritize by risk, uncertainty, and impact.
-- C. Bundle review queues, feedback loop, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated review queues check.
-- Answer: B
-- Explanation: The scenario is about review queues. The strongest answer fixes the failing layer directly: prioritize by risk, uncertainty, and impact.
-- Why A is wrong: It moves attention to a neighboring control instead of making review queues testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether review queues fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the review queues gate until after users are exposed.
-
-### Q93: A bank fraud team is preparing a reviewer-facing agent workflow for release. The current design relies on collecting comments with no downstream owner, but the release gate needs to turn review labels into evals, prompt fixes, or training data. Which architecture keeps the boundary cleanest?
-- ID: aai-hf-human-ai-interaction-and-oversight-004
-- Domain: Human-AI Interaction and Oversight
-- Topic: feedback loop; agentic_ai_professional
-- Difficulty: medium
-- A. Use review queues as the main gate even though reviewers are asking for feedback loop evidence.
-- B. Keep collecting comments with no downstream owner as the primary release control and record only final outputs.
-- C. Change the design around feedback loop so the system can turn review labels into evals, prompt fixes, or training data.
-- D. Wait for production incidents before adding a dedicated feedback loop check.
-- Answer: C
-- Explanation: The scenario is about feedback loop. The strongest answer fixes the failing layer directly: turn review labels into evals, prompt fixes, or training data.
-- Why A is wrong: It moves attention to a neighboring control instead of making feedback loop testable in the scenario.
-- Why B is wrong: It keeps collecting comments with no downstream owner in control instead of adding a measurable feedback loop decision point.
-- Why D is wrong: Waiting for incidents postpones the feedback loop gate until after users are exposed.
-
-### Q94: A pharmaceutical research team is preparing a reviewer-facing agent workflow for release. The current design relies on asking reviewers to judge opaque outputs, but the release gate needs to show evidence, confidence, and pending tool actions to reviewers. Which implementation path is most appropriate?
-- ID: aai-hf-human-ai-interaction-and-oversight-005
-- Domain: Human-AI Interaction and Oversight
-- Topic: transparent handoff; agentic_ai_professional
-- Difficulty: hard
-- A. Use human-in-the-loop as the main gate even though reviewers are asking for transparent handoff evidence.
-- B. Keep asking reviewers to judge opaque outputs as the primary release control and record only final outputs.
-- C. Prioritize human-on-the-loop before validating the failure signal around transparent handoff.
-- D. Make transparent handoff explicit in the workflow: show evidence, confidence, and pending tool actions to reviewers.
+- Scope: nvidia_specific
+- Source: generated
+- A. Use TensorRT-LLM when you need to build optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT.
+- B. Select NeMo Guardrails; it owns safety and guardrails work such as enforcing policy flows, safe dialog behavior, prompt-injection defenses, tool restrictions, or output checks.
+- C. NGC is the best fit for this layer: a catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- D. Choose Dynamo (Triton Dynamo); it provides a distributed inference serving stack for LLMs: disaggregated prefill/decode, KV-cache routing, multi-node scaling.
 - Answer: D
-- Explanation: The scenario is about transparent handoff. The strongest answer fixes the failing layer directly: show evidence, confidence, and pending tool actions to reviewers.
-- Why A is wrong: It moves attention to a neighboring control instead of making transparent handoff testable in the scenario.
-- Why B is wrong: It keeps asking reviewers to judge opaque outputs in control instead of adding a measurable transparent handoff decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making transparent handoff testable in the scenario.
+- Explanation: Dynamo (Triton Dynamo) is the best fit because it sits in Serving and deployment: Distributed inference serving stack for LLMs: disaggregated prefill/decode, KV-cache routing, multi-node scaling.
+- Why A is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Serving and deployment.
+- Why B is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Serving and deployment.
+- Why C is wrong: NGC is a neighboring serving and deployment component, but this signal asks specifically for Dynamo (Triton Dynamo): to support disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale.
 
-### Q95: A global retailer has a production-readiness review for a reviewer-facing agent workflow. The review is focused on human-in-the-loop, because the system must require approval before high-risk actions. Which action best fits the requirement?
-- ID: aai-hf-human-ai-interaction-and-oversight-006
-- Domain: Human-AI Interaction and Oversight
-- Topic: human-in-the-loop; agentic_ai_professional
-- Difficulty: hard
-- A. Use human-in-the-loop as the control boundary and require the system to require approval before high-risk actions.
-- B. Keep review after irreversible mutations as the primary release control and record only final outputs.
-- C. Prioritize feedback loop before validating the failure signal around human-in-the-loop.
-- D. Bundle human-in-the-loop, transparent handoff, and prompt changes into one release with one aggregate score.
+### Q57: A manufacturing quality team is preparing a production rollout. The rollout is blocked until the team can support disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA tool should the team start with?
+- ID: aai-hf-svc-dynamo-triton-dynamo-002
+- Domain: Deployment and Scaling
+- Topic: NVIDIA service: Dynamo (Triton Dynamo); lifecycle: Serving and deployment; Which NVIDIA stack handles disaggregated multi-node LLM inference?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Use Dynamo (Triton Dynamo) when you need to support disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale.
+- B. Select NGC; it owns serving and deployment work such as pulling NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- C. NIM is the best fit for this layer: inference microservices for deploying optimized models with production APIs and model profiles.
+- D. Choose Nsight Systems; it provides a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
 - Answer: A
-- Explanation: The scenario is about human-in-the-loop. The strongest answer fixes the failing layer directly: require approval before high-risk actions.
-- Why B is wrong: It keeps review after irreversible mutations in control instead of adding a measurable human-in-the-loop decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making human-in-the-loop testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether human-in-the-loop fixed or caused the failure.
+- Explanation: Dynamo (Triton Dynamo) is the best fit because it sits in Serving and deployment: Distributed inference serving stack for LLMs: disaggregated prefill/decode, KV-cache routing, multi-node scaling.
+- Why B is wrong: NGC is a neighboring serving and deployment component, but this signal asks specifically for Dynamo (Triton Dynamo): to support disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale.
+- Why C is wrong: NIM is a neighboring serving and deployment component, but this signal asks specifically for Dynamo (Triton Dynamo): to support disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale.
+- Why D is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Serving and deployment.
 
-### Q96: A manufacturing quality team has a production-readiness review for a reviewer-facing agent workflow. The review is focused on human-on-the-loop, because the system must sample low-risk decisions and monitor drift. Which implementation path is most appropriate?
-- ID: aai-hf-human-ai-interaction-and-oversight-007
-- Domain: Human-AI Interaction and Oversight
-- Topic: human-on-the-loop; agentic_ai_professional
-- Difficulty: easy
-- A. Wait for production incidents before adding a dedicated human-on-the-loop check.
-- B. Add a release gate for human-on-the-loop: sample low-risk decisions and monitor drift.
-- C. Prioritize transparent handoff before validating the failure signal around human-on-the-loop.
-- D. Bundle human-on-the-loop, feedback loop, and prompt changes into one release with one aggregate score.
-- Answer: B
-- Explanation: The scenario is about human-on-the-loop. The strongest answer fixes the failing layer directly: sample low-risk decisions and monitor drift.
-- Why A is wrong: Waiting for incidents postpones the human-on-the-loop gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making human-on-the-loop testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether human-on-the-loop fixed or caused the failure.
-
-### Q97: A bank fraud team is comparing two release designs for a reviewer-facing agent workflow. One design centers on first-in-first-out for all cases; the other adds a measurable review queues step. Which design is more appropriate for production?
-- ID: aai-hf-human-ai-interaction-and-oversight-008
-- Domain: Human-AI Interaction and Oversight
-- Topic: review queues; agentic_ai_professional
+### Q58: A logistics planning team is setting a release gate. The blocker is supporting disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA service fits this requirement?
+- ID: aai-hf-svc-dynamo-triton-dynamo-003
+- Domain: Deployment and Scaling
+- Topic: NVIDIA service: Dynamo (Triton Dynamo); lifecycle: Serving and deployment; Which NVIDIA stack handles disaggregated multi-node LLM inference?
 - Difficulty: hard
-- A. Wait for production incidents before adding a dedicated review queues check.
-- B. Use transparent handoff as the main gate even though reviewers are asking for review queues evidence.
-- C. Change the design around review queues so the system can prioritize by risk, uncertainty, and impact.
-- D. Bundle review queues, transparent handoff, and prompt changes into one release with one aggregate score.
-- Answer: C
-- Explanation: The scenario is about review queues. The strongest answer fixes the failing layer directly: prioritize by risk, uncertainty, and impact.
-- Why A is wrong: Waiting for incidents postpones the review queues gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making review queues testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether review queues fixed or caused the failure.
+- Scope: nvidia_specific
+- Source: generated
+- A. Use Nsight Compute when you need to diagnose why a known kernel is memory-bound, compute-bound, or inefficient.
+- B. Select Dynamo (Triton Dynamo); it owns serving and deployment work such as supporting disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale.
+- C. NeMo Retriever is the best fit for this layer: the NVIDIA Retriever microservice family for document extraction, embeddings, indexing/search, and reranking in enterprise RAG.
+- D. Choose NeMo Evaluator; it provides a microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- Answer: B
+- Explanation: Dynamo (Triton Dynamo) is the best fit because it sits in Serving and deployment: Distributed inference serving stack for LLMs: disaggregated prefill/decode, KV-cache routing, multi-node scaling.
+- Why A is wrong: Nsight Compute belongs to Monitoring and profiling, while this scenario asks for Serving and deployment.
+- Why C is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Serving and deployment.
+- Why D is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Serving and deployment.
 
-### Q98: An automotive support team sees reviewers lacking the feedback loop evidence needed for decisions. The team has been using collecting comments with no downstream owner; the next change needs to make feedback loop explicit. Which action best addresses the problem?
-- ID: aai-hf-human-ai-interaction-and-oversight-009
-- Domain: Human-AI Interaction and Oversight
-- Topic: feedback loop; agentic_ai_professional
+### Q59: A pharmaceutical research team is preparing a production rollout. The work to finish before release is supporting disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: aai-hf-svc-dynamo-triton-dynamo-004
+- Domain: Deployment and Scaling
+- Topic: NVIDIA service: Dynamo (Triton Dynamo); lifecycle: Serving and deployment; Which NVIDIA stack handles disaggregated multi-node LLM inference?
 - Difficulty: expert
-- A. Wait for production incidents before adding a dedicated feedback loop check.
-- B. Use human-on-the-loop as the main gate even though reviewers are asking for feedback loop evidence.
-- C. Keep collecting comments with no downstream owner as the primary release control and record only final outputs.
-- D. Make feedback loop explicit in the workflow: turn review labels into evals, prompt fixes, or training data.
-- Answer: D
-- Explanation: The scenario is about feedback loop. The strongest answer fixes the failing layer directly: turn review labels into evals, prompt fixes, or training data.
-- Why A is wrong: Waiting for incidents postpones the feedback loop gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making feedback loop testable in the scenario.
-- Why C is wrong: It keeps collecting comments with no downstream owner in control instead of adding a measurable feedback loop decision point.
+- Scope: nvidia_specific
+- Source: generated
+- A. Use Nemotron models when you need to choose a model family for NVIDIA-aligned reasoning, reward, instruction, or agentic workflows.
+- B. Select NeMo Evaluator; it owns evaluation work such as running standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge.
+- C. Dynamo (Triton Dynamo) is the best fit for this layer: a distributed inference serving stack for LLMs: disaggregated prefill/decode, KV-cache routing, multi-node scaling.
+- D. Choose Nsight Compute; it provides a CUDA kernel profiler for detailed metrics, occupancy, memory throughput, warp behavior, and kernel bottlenecks.
+- Answer: C
+- Explanation: Dynamo (Triton Dynamo) is the best fit because it sits in Serving and deployment: Distributed inference serving stack for LLMs: disaggregated prefill/decode, KV-cache routing, multi-node scaling.
+- Why A is wrong: Nemotron models belongs to Model selection, while this scenario asks for Serving and deployment.
+- Why B is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Serving and deployment.
+- Why D is wrong: Nsight Compute belongs to Monitoring and profiling, while this scenario asks for Serving and deployment.
 
-### Q99: A global retailer has a production-readiness review for a reviewer-facing agent workflow. The review is focused on transparent handoff, because the system must show evidence, confidence, and pending tool actions to reviewers. Which control should be added before rollout?
-- ID: aai-hf-human-ai-interaction-and-oversight-010
-- Domain: Human-AI Interaction and Oversight
-- Topic: transparent handoff; agentic_ai_professional
+### Q60: A semiconductor design group is setting a release gate. The trace points to the need to support disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale. What is the best first implementation choice?
+- ID: aai-hf-svc-dynamo-triton-dynamo-005
+- Domain: Deployment and Scaling
+- Topic: NVIDIA service: Dynamo (Triton Dynamo); lifecycle: Serving and deployment; Which NVIDIA stack handles disaggregated multi-node LLM inference?
 - Difficulty: medium
-- A. Prioritize human-in-the-loop before validating the failure signal around transparent handoff.
-- B. Use transparent handoff as the control boundary and require the system to show evidence, confidence, and pending tool actions to reviewers.
-- C. Use human-on-the-loop as the main gate even though reviewers are asking for transparent handoff evidence.
-- D. Keep asking reviewers to judge opaque outputs as the primary release control and record only final outputs.
-- Answer: B
-- Explanation: The scenario is about transparent handoff. The strongest answer fixes the failing layer directly: show evidence, confidence, and pending tool actions to reviewers.
-- Why A is wrong: It moves attention to a neighboring control instead of making transparent handoff testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making transparent handoff testable in the scenario.
-- Why D is wrong: It keeps asking reviewers to judge opaque outputs in control instead of adding a measurable transparent handoff decision point.
-
-### Q100: A telecom network operations team is preparing a reviewer-facing agent workflow for release. The current design relies on review after irreversible mutations, but the release gate needs to require approval before high-risk actions. Which control should be added before rollout?
-- ID: aai-hf-human-ai-interaction-and-oversight-011
-- Domain: Human-AI Interaction and Oversight
-- Topic: human-in-the-loop; agentic_ai_professional
-- Difficulty: hard
-- A. Add a release gate for human-in-the-loop: require approval before high-risk actions.
-- B. Keep review after irreversible mutations as the primary release control and record only final outputs.
-- C. Prioritize feedback loop before validating the failure signal around human-in-the-loop.
-- D. Bundle human-in-the-loop, transparent handoff, and prompt changes into one release with one aggregate score.
-- Answer: A
-- Explanation: The scenario is about human-in-the-loop. The strongest answer fixes the failing layer directly: require approval before high-risk actions.
-- Why B is wrong: It keeps review after irreversible mutations in control instead of adding a measurable human-in-the-loop decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making human-in-the-loop testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether human-in-the-loop fixed or caused the failure.
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NeMo Customizer when you need to run API-driven LoRA/PEFT customization without standing up a full training stack.
+- B. Select NIM; it owns serving and deployment work such as for packaged, supported, optimized model serving with APIs, profiles, observability, and Kubernetes/container deployment.
+- C. NIM Operator is the best fit for this layer: a Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
+- D. Choose Dynamo (Triton Dynamo); it provides a distributed inference serving stack for LLMs: disaggregated prefill/decode, KV-cache routing, multi-node scaling.
+- Answer: D
+- Explanation: Dynamo (Triton Dynamo) is the best fit because it sits in Serving and deployment: Distributed inference serving stack for LLMs: disaggregated prefill/decode, KV-cache routing, multi-node scaling.
+- Why A is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Serving and deployment.
+- Why B is wrong: NIM is a neighboring serving and deployment component, but this signal asks specifically for Dynamo (Triton Dynamo): to support disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale.
+- Why C is wrong: NIM Operator is a neighboring serving and deployment component, but this signal asks specifically for Dynamo (Triton Dynamo): to support disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale.

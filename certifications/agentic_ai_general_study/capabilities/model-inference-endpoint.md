@@ -6,6 +6,18 @@ source_lens: general-study
 
 # Model Inference Endpoint
 
+## Actual implementation / How you use it
+
+```bash
+curl https://endpoint.example/v1/chat/completions \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"model":"approved-model-v3","messages":[{"role":"user","content":"Answer with citations"}],"stream":true}'
+```
+
+| Input | Endpoint owns | Output |
+|---|---|---|
+| Approved model or adapter plus request | API contract, auth, batching/profile, health, metrics, rollout | Generation, embedding, rerank, or classification response with operational telemetry |
+
 ## What to study first
 
 - **Core idea:** You are building the production API wrapper around an approved model artifact. It exposes inference requests with auth, health checks, model profile, metrics, rollout hooks, and operational configuration.

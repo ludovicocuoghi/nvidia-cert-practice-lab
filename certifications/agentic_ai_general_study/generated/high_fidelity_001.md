@@ -2,1502 +2,1702 @@
 
 ## Questions
 
-### Q1: An insurance claims group is preparing an agent lifecycle design for release. The current design relies on unbounded autonomy, but the release gate needs to use explicit states and gates for predictable or high-risk processes. Which design is the best first change?
+### Q1: An insurance claims group is building an agent lifecycle design. The current design still relies on calling every LLM-backed flow an agent. Reviewers need a control that can choose the least autonomous pattern that satisfies the task and risk. Which design is the best first change?
 - ID: ags-hf-agent-lifecycle-and-architecture-001
 - Domain: Agent Lifecycle and Architecture
-- Topic: workflow graph; agentic_ai_general_study
+- Topic: agent vs workflow; agentic_ai_general_study
 - Difficulty: expert
-- A. Make workflow graph explicit in the workflow: use explicit states and gates for predictable or high-risk processes.
-- B. Keep unbounded autonomy as the primary release control and record only final outputs.
-- C. Prioritize supervisor orchestration before validating the failure signal around workflow graph.
-- D. Bundle workflow graph, observe-reason-act loop, and prompt changes into one release with one aggregate score.
+- Scope: general_concept
+- Source: generated
+- A. Make agent vs workflow explicit in the workflow: choose the least autonomous pattern that satisfies the task and risk.
+- B. Keep calling every LLM-backed flow an agent as the main control and add a dashboard for final outputs.
+- C. Prioritize risk router even though the observed failure is around agent vs workflow.
+- D. Release prompt, model, and evidence gate changes together with one aggregate score.
 - Answer: A
-- Explanation: The scenario is about workflow graph. The strongest answer fixes the failing layer directly: use explicit states and gates for predictable or high-risk processes.
-- Why B is wrong: It keeps unbounded autonomy in control instead of adding a measurable workflow graph decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making workflow graph testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether workflow graph fixed or caused the failure.
+- Explanation: Agent vs workflow is the missing control in this scenario. The right answer makes it explicit so the system can choose the least autonomous pattern that satisfies the task and risk.
+- Why B is wrong: It keeps calling every LLM-backed flow an agent in control instead of adding a measurable agent vs workflow decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making agent vs workflow testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether agent vs workflow fixed the failure.
 
-### Q2: A telecom network operations team is reviewing an agent lifecycle design before rollout. The main risk is supervisor orchestration: the system must centralize routing, approvals, and handoffs across specialist agents. Which option keeps the decision at the right layer?
+### Q2: A telecom network operations team is choosing between a design centered on unbounded autonomy and one that makes workflow graph explicit for an agent lifecycle design. Which design should win?
 - ID: ags-hf-agent-lifecycle-and-architecture-002
 - Domain: Agent Lifecycle and Architecture
-- Topic: supervisor orchestration; agentic_ai_general_study
-- Difficulty: medium
-- A. Prioritize risk router before validating the failure signal around supervisor orchestration.
-- B. Bundle supervisor orchestration, evidence gate, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated supervisor orchestration check.
-- D. Use supervisor orchestration as the control boundary and require the system to centralize routing, approvals, and handoffs across specialist agents.
-- Answer: D
-- Explanation: The scenario is about supervisor orchestration. The strongest answer fixes the failing layer directly: centralize routing, approvals, and handoffs across specialist agents.
-- Why A is wrong: It moves attention to a neighboring control instead of making supervisor orchestration testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether supervisor orchestration fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the supervisor orchestration gate until after users are exposed.
-
-### Q3: A hospital operations team sees a production failure tied to observe-reason-act loop. The team has been using one-shot planning for streaming incidents; the next change needs to make observe-reason-act loop explicit. Which action best addresses the problem?
-- ID: ags-hf-agent-lifecycle-and-architecture-003
-- Domain: Agent Lifecycle and Architecture
-- Topic: observe-reason-act loop; agentic_ai_general_study
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated observe-reason-act loop check.
-- B. Use evidence gate as the main gate even though reviewers are asking for observe-reason-act loop evidence.
-- C. Add a release gate for observe-reason-act loop: use iterative observation and re-planning when the environment changes.
-- D. Bundle observe-reason-act loop, evidence gate, and prompt changes into one release with one aggregate score.
-- Answer: C
-- Explanation: The scenario is about observe-reason-act loop. The strongest answer fixes the failing layer directly: use iterative observation and re-planning when the environment changes.
-- Why A is wrong: Waiting for incidents postpones the observe-reason-act loop gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making observe-reason-act loop testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether observe-reason-act loop fixed or caused the failure.
-
-### Q4: A semiconductor design group is preparing an agent lifecycle design for release. The current design relies on letting the first retrieved document decide, but the release gate needs to require retrieval and tool observations before a decision node. Which action best fits the requirement?
-- ID: ags-hf-agent-lifecycle-and-architecture-004
-- Domain: Agent Lifecycle and Architecture
-- Topic: evidence gate; agentic_ai_general_study
-- Difficulty: expert
-- A. Keep letting the first retrieved document decide as the primary release control and record only final outputs.
-- B. Change the design around evidence gate so the system can require retrieval and tool observations before a decision node.
-- C. Wait for production incidents before adding a dedicated evidence gate check.
-- D. Use risk router as the main gate even though reviewers are asking for evidence gate evidence.
-- Answer: B
-- Explanation: The scenario is about evidence gate. The strongest answer fixes the failing layer directly: require retrieval and tool observations before a decision node.
-- Why A is wrong: It keeps letting the first retrieved document decide in control instead of adding a measurable evidence gate decision point.
-- Why C is wrong: Waiting for incidents postpones the evidence gate gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making evidence gate testable in the scenario.
-
-### Q5: An automotive support team is preparing an agent lifecycle design for release. The current design relies on largest model for every request, but the release gate needs to route simple cases to deterministic paths and high-risk cases to review. Which choice addresses the root cause?
-- ID: ags-hf-agent-lifecycle-and-architecture-005
-- Domain: Agent Lifecycle and Architecture
-- Topic: risk router; agentic_ai_general_study
-- Difficulty: medium
-- A. Make risk router explicit in the workflow: route simple cases to deterministic paths and high-risk cases to review.
-- B. Use workflow graph as the main gate even though reviewers are asking for risk router evidence.
-- C. Keep largest model for every request as the primary release control and record only final outputs.
-- D. Prioritize supervisor orchestration before validating the failure signal around risk router.
-- Answer: A
-- Explanation: The scenario is about risk router. The strongest answer fixes the failing layer directly: route simple cases to deterministic paths and high-risk cases to review.
-- Why B is wrong: It moves attention to a neighboring control instead of making risk router testable in the scenario.
-- Why C is wrong: It keeps largest model for every request in control instead of adding a measurable risk router decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making risk router testable in the scenario.
-
-### Q6: A telecom network operations team is preparing an agent lifecycle design for release. The current design relies on unbounded autonomy, but the release gate needs to use explicit states and gates for predictable or high-risk processes. Which control should be added before rollout?
-- ID: ags-hf-agent-lifecycle-and-architecture-006
-- Domain: Agent Lifecycle and Architecture
 - Topic: workflow graph; agentic_ai_general_study
-- Difficulty: hard
-- A. Keep unbounded autonomy as the primary release control and record only final outputs.
-- B. Prioritize observe-reason-act loop before validating the failure signal around workflow graph.
-- C. Bundle workflow graph, supervisor orchestration, and prompt changes into one release with one aggregate score.
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Prioritize tool boundary even though the observed failure is around workflow graph.
+- B. Release prompt, model, and plan-and-execute changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving workflow graph implicit.
 - D. Use workflow graph as the control boundary and require the system to use explicit states and gates for predictable or high-risk processes.
 - Answer: D
-- Explanation: The scenario is about workflow graph. The strongest answer fixes the failing layer directly: use explicit states and gates for predictable or high-risk processes.
-- Why A is wrong: It keeps unbounded autonomy in control instead of adding a measurable workflow graph decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making workflow graph testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether workflow graph fixed or caused the failure.
+- Explanation: Workflow graph is the missing control in this scenario. The right answer makes it explicit so the system can use explicit states and gates for predictable or high-risk processes.
+- Why A is wrong: It moves attention to a neighboring control instead of making workflow graph testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether workflow graph fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
 
-### Q7: A public-sector casework team sees a production failure tied to supervisor orchestration. The team has been using peer agents triggering production actions directly; the next change needs to make supervisor orchestration explicit. Which action best addresses the problem?
+### Q3: A hospital operations team passes the happy-path demo for an agent lifecycle design, but the failure is tied to router. The safer design is the one that can classify intent, risk, and evidence need before choosing a path. Which change should be made before release?
+- ID: ags-hf-agent-lifecycle-and-architecture-003
+- Domain: Agent Lifecycle and Architecture
+- Topic: router; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving router implicit.
+- B. Use risk router as the main gate even though reviewers are asking for router evidence.
+- C. Add a release gate for router: classify intent, risk, and evidence need before choosing a path.
+- D. Release prompt, model, and risk router changes together with one aggregate score.
+- Answer: C
+- Explanation: Router is the missing control in this scenario. The right answer makes it explicit so the system can classify intent, risk, and evidence need before choosing a path.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making router testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether router fixed the failure.
+
+### Q4: A semiconductor design group is building an agent lifecycle design. One-shot planning for changing tool results is being used as the shortcut, but it does not give the team a reliable way to iterate observe, reason, act, and verify with stopping criteria. Which action best fits the requirement?
+- ID: ags-hf-agent-lifecycle-and-architecture-004
+- Domain: Agent Lifecycle and Architecture
+- Topic: ReAct loop; agentic_ai_general_study
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for ReAct loop.
+- B. Change the design around ReAct loop so the system can iterate observe, reason, act, and verify with stopping criteria.
+- C. Increase model capacity or context length while leaving ReAct loop implicit.
+- D. Use agent vs workflow as the main gate even though reviewers are asking for ReAct loop evidence.
+- Answer: B
+- Explanation: ReAct loop is the missing control in this scenario. The right answer makes it explicit so the system can iterate observe, reason, act, and verify with stopping criteria.
+- Why A is wrong: Monitoring is useful, but this scenario needs ReAct loop controlled before release or execution.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making ReAct loop testable in the scenario.
+
+### Q5: An automotive support team is building an agent lifecycle design. The failure appears when the system keeps continuing a stale plan as the workaround. The release needs a design step that can plan subgoals, execute steps, and replan when observations invalidate the plan. Which choice addresses the root cause?
+- ID: ags-hf-agent-lifecycle-and-architecture-005
+- Domain: Agent Lifecycle and Architecture
+- Topic: plan-and-execute; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Instrument and enforce plan-and-execute; the system must plan subgoals, execute steps, and replan when observations invalidate the plan.
+- B. Use evidence gate as the main gate even though reviewers are asking for plan-and-execute evidence.
+- C. Move the check to post-release monitoring without changing the release path for plan-and-execute.
+- D. Keep continuing a stale plan as the main control and add a dashboard for final outputs.
+- Answer: A
+- Explanation: Plan-and-execute is the missing control in this scenario. The right answer makes it explicit so the system can plan subgoals, execute steps, and replan when observations invalidate the plan.
+- Why B is wrong: It moves attention to a neighboring control instead of making plan-and-execute testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs plan-and-execute controlled before release or execution.
+- Why D is wrong: It keeps continuing a stale plan in control instead of adding a measurable plan-and-execute decision point.
+
+### Q6: A telecom network operations team is building an agent lifecycle design. The team can reproduce the failure around peer agents triggering production actions directly. The missing control is the one that can centralize routing, approvals, and handoffs across specialist agents. Which control should be added before rollout?
+- ID: ags-hf-agent-lifecycle-and-architecture-006
+- Domain: Agent Lifecycle and Architecture
+- Topic: supervisor orchestration; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for supervisor orchestration.
+- B. Keep peer agents triggering production actions directly as the main control and add a dashboard for final outputs.
+- C. Prioritize router even though the observed failure is around supervisor orchestration.
+- D. Put supervisor orchestration before rollout so the team can centralize routing, approvals, and handoffs across specialist agents.
+- Answer: D
+- Explanation: Supervisor orchestration is the missing control in this scenario. The right answer makes it explicit so the system can centralize routing, approvals, and handoffs across specialist agents.
+- Why A is wrong: Monitoring is useful, but this scenario needs supervisor orchestration controlled before release or execution.
+- Why B is wrong: It keeps peer agents triggering production actions directly in control instead of adding a measurable supervisor orchestration decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making supervisor orchestration testable in the scenario.
+
+### Q7: A public-sector casework team passes the happy-path demo for an agent lifecycle design, but the current design still relies on adding agents to increase intelligence. Reviewers need a control that can split agents only when roles, tools, or permissions are meaningfully different. Which change should be made before release?
 - ID: ags-hf-agent-lifecycle-and-architecture-007
 - Domain: Agent Lifecycle and Architecture
-- Topic: supervisor orchestration; agentic_ai_general_study
+- Topic: multi-agent roles; agentic_ai_general_study
 - Difficulty: hard
-- A. Bundle supervisor orchestration, observe-reason-act loop, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated supervisor orchestration check.
-- C. Add a release gate for supervisor orchestration: centralize routing, approvals, and handoffs across specialist agents.
-- D. Prioritize workflow graph before validating the failure signal around supervisor orchestration.
+- Scope: general_concept
+- Source: generated
+- A. Prioritize tool boundary even though the observed failure is around multi-agent roles.
+- B. Release prompt, model, and observe-reason-act loop changes together with one aggregate score.
+- C. Make multi-agent roles explicit in the workflow: split agents only when roles, tools, or permissions are meaningfully different.
+- D. Keep adding agents to increase intelligence as the main control and add a dashboard for final outputs.
 - Answer: C
-- Explanation: The scenario is about supervisor orchestration. The strongest answer fixes the failing layer directly: centralize routing, approvals, and handoffs across specialist agents.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether supervisor orchestration fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the supervisor orchestration gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making supervisor orchestration testable in the scenario.
+- Explanation: Multi-agent roles is the missing control in this scenario. The right answer makes it explicit so the system can split agents only when roles, tools, or permissions are meaningfully different.
+- Why A is wrong: It moves attention to a neighboring control instead of making multi-agent roles testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether multi-agent roles fixed the failure.
+- Why D is wrong: It keeps adding agents to increase intelligence in control instead of adding a measurable multi-agent roles decision point.
 
-### Q8: A semiconductor design group is preparing an agent lifecycle design for release. The current design relies on one-shot planning for streaming incidents, but the release gate needs to use iterative observation and re-planning when the environment changes. Which architecture keeps the boundary cleanest?
+### Q8: A semiconductor design group is building an agent lifecycle design. The failure appears when the system keeps letting prompt text grant tool access as the workaround. The release needs a design step that can keep model reasoning separate from server-side execution authority. Which architecture keeps the boundary cleanest?
 - ID: ags-hf-agent-lifecycle-and-architecture-008
 - Domain: Agent Lifecycle and Architecture
-- Topic: observe-reason-act loop; agentic_ai_general_study
+- Topic: tool boundary; agentic_ai_general_study
 - Difficulty: easy
-- A. Use risk router as the main gate even though reviewers are asking for observe-reason-act loop evidence.
-- B. Change the design around observe-reason-act loop so the system can use iterative observation and re-planning when the environment changes.
-- C. Bundle observe-reason-act loop, risk router, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated observe-reason-act loop check.
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving tool boundary implicit.
+- B. Use tool boundary as the control boundary and require the system to keep model reasoning separate from server-side execution authority.
+- C. Prioritize workflow graph even though the observed failure is around tool boundary.
+- D. Release prompt, model, and agent vs workflow changes together with one aggregate score.
 - Answer: B
-- Explanation: The scenario is about observe-reason-act loop. The strongest answer fixes the failing layer directly: use iterative observation and re-planning when the environment changes.
-- Why A is wrong: It moves attention to a neighboring control instead of making observe-reason-act loop testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether observe-reason-act loop fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the observe-reason-act loop gate until after users are exposed.
+- Explanation: Tool boundary is the missing control in this scenario. The right answer makes it explicit so the system can keep model reasoning separate from server-side execution authority.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making tool boundary testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether tool boundary fixed the failure.
 
-### Q9: An automotive support team is reviewing an agent lifecycle design before rollout. The main risk is evidence gate: the system must require retrieval and tool observations before a decision node. Which option keeps the decision at the right layer?
+### Q9: An automotive support team is choosing between a design centered on one-shot planning for streaming incidents and one that makes observe-reason-act loop explicit for an agent lifecycle design. Which design should win?
 - ID: ags-hf-agent-lifecycle-and-architecture-009
 - Domain: Agent Lifecycle and Architecture
-- Topic: evidence gate; agentic_ai_general_study
-- Difficulty: hard
-- A. Make evidence gate explicit in the workflow: require retrieval and tool observations before a decision node.
-- B. Wait for production incidents before adding a dedicated evidence gate check.
-- C. Use workflow graph as the main gate even though reviewers are asking for evidence gate evidence.
-- D. Keep letting the first retrieved document decide as the primary release control and record only final outputs.
-- Answer: A
-- Explanation: The scenario is about evidence gate. The strongest answer fixes the failing layer directly: require retrieval and tool observations before a decision node.
-- Why B is wrong: Waiting for incidents postpones the evidence gate gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making evidence gate testable in the scenario.
-- Why D is wrong: It keeps letting the first retrieved document decide in control instead of adding a measurable evidence gate decision point.
-
-### Q10: A telecom network operations team is comparing two release designs for an agent lifecycle design. One design centers on largest model for every request; the other adds a measurable risk router step. Which design is more appropriate for production?
-- ID: ags-hf-agent-lifecycle-and-architecture-010
-- Domain: Agent Lifecycle and Architecture
-- Topic: risk router; agentic_ai_general_study
-- Difficulty: expert
-- A. Keep largest model for every request as the primary release control and record only final outputs.
-- B. Prioritize workflow graph before validating the failure signal around risk router.
-- C. Use risk router as the control boundary and require the system to route simple cases to deterministic paths and high-risk cases to review.
-- D. Use supervisor orchestration as the main gate even though reviewers are asking for risk router evidence.
-- Answer: C
-- Explanation: The scenario is about risk router. The strongest answer fixes the failing layer directly: route simple cases to deterministic paths and high-risk cases to review.
-- Why A is wrong: It keeps largest model for every request in control instead of adding a measurable risk router decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making risk router testable in the scenario.
-- Why D is wrong: It moves attention to a neighboring control instead of making risk router testable in the scenario.
-
-### Q11: A telecom network operations team is reviewing an agent lifecycle design before rollout. The main risk is workflow graph: the system must use explicit states and gates for predictable or high-risk processes. Which option keeps the decision at the right layer?
-- ID: ags-hf-agent-lifecycle-and-architecture-011
-- Domain: Agent Lifecycle and Architecture
-- Topic: workflow graph; agentic_ai_general_study
-- Difficulty: medium
-- A. Keep unbounded autonomy as the primary release control and record only final outputs.
-- B. Prioritize risk router before validating the failure signal around workflow graph.
-- C. Bundle workflow graph, evidence gate, and prompt changes into one release with one aggregate score.
-- D. Add a release gate for workflow graph: use explicit states and gates for predictable or high-risk processes.
-- Answer: D
-- Explanation: The scenario is about workflow graph. The strongest answer fixes the failing layer directly: use explicit states and gates for predictable or high-risk processes.
-- Why A is wrong: It keeps unbounded autonomy in control instead of adding a measurable workflow graph decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making workflow graph testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether workflow graph fixed or caused the failure.
-
-### Q12: A pharmaceutical research team sees a production failure tied to supervisor orchestration. The team has been using peer agents triggering production actions directly; the next change needs to make supervisor orchestration explicit. Which action best addresses the problem?
-- ID: ags-hf-agent-lifecycle-and-architecture-012
-- Domain: Agent Lifecycle and Architecture
-- Topic: supervisor orchestration; agentic_ai_general_study
-- Difficulty: hard
-- A. Change the design around supervisor orchestration so the system can centralize routing, approvals, and handoffs across specialist agents.
-- B. Prioritize workflow graph before validating the failure signal around supervisor orchestration.
-- C. Bundle supervisor orchestration, observe-reason-act loop, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated supervisor orchestration check.
-- Answer: A
-- Explanation: The scenario is about supervisor orchestration. The strongest answer fixes the failing layer directly: centralize routing, approvals, and handoffs across specialist agents.
-- Why B is wrong: It moves attention to a neighboring control instead of making supervisor orchestration testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether supervisor orchestration fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the supervisor orchestration gate until after users are exposed.
-
-### Q13: A cybersecurity response team has a production-readiness review for an agent lifecycle design. The review is focused on observe-reason-act loop, because the system must use iterative observation and re-planning when the environment changes. Which control should be added before rollout?
-- ID: ags-hf-agent-lifecycle-and-architecture-013
-- Domain: Agent Lifecycle and Architecture
 - Topic: observe-reason-act loop; agentic_ai_general_study
 - Difficulty: hard
-- A. Use risk router as the main gate even though reviewers are asking for observe-reason-act loop evidence.
-- B. Make observe-reason-act loop explicit in the workflow: use iterative observation and re-planning when the environment changes.
-- C. Bundle observe-reason-act loop, risk router, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated observe-reason-act loop check.
-- Answer: B
-- Explanation: The scenario is about observe-reason-act loop. The strongest answer fixes the failing layer directly: use iterative observation and re-planning when the environment changes.
-- Why A is wrong: It moves attention to a neighboring control instead of making observe-reason-act loop testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether observe-reason-act loop fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the observe-reason-act loop gate until after users are exposed.
-
-### Q14: A hospital operations team is reviewing an agent lifecycle design before rollout. The main risk is evidence gate: the system must require retrieval and tool observations before a decision node. Which option keeps the decision at the right layer?
-- ID: ags-hf-agent-lifecycle-and-architecture-014
-- Domain: Agent Lifecycle and Architecture
-- Topic: evidence gate; agentic_ai_general_study
-- Difficulty: expert
-- A. Use observe-reason-act loop as the main gate even though reviewers are asking for evidence gate evidence.
-- B. Keep letting the first retrieved document decide as the primary release control and record only final outputs.
-- C. Use evidence gate as the control boundary and require the system to require retrieval and tool observations before a decision node.
-- D. Wait for production incidents before adding a dedicated evidence gate check.
-- Answer: C
-- Explanation: The scenario is about evidence gate. The strongest answer fixes the failing layer directly: require retrieval and tool observations before a decision node.
-- Why A is wrong: It moves attention to a neighboring control instead of making evidence gate testable in the scenario.
-- Why B is wrong: It keeps letting the first retrieved document decide in control instead of adding a measurable evidence gate decision point.
-- Why D is wrong: Waiting for incidents postpones the evidence gate gate until after users are exposed.
-
-### Q15: A telecom network operations team is preparing an agent lifecycle design for release. The current design relies on largest model for every request, but the release gate needs to route simple cases to deterministic paths and high-risk cases to review. Which action best fits the requirement?
-- ID: ags-hf-agent-lifecycle-and-architecture-015
-- Domain: Agent Lifecycle and Architecture
-- Topic: risk router; agentic_ai_general_study
-- Difficulty: medium
-- A. Use supervisor orchestration as the main gate even though reviewers are asking for risk router evidence.
-- B. Keep largest model for every request as the primary release control and record only final outputs.
-- C. Prioritize workflow graph before validating the failure signal around risk router.
-- D. Add a release gate for risk router: route simple cases to deterministic paths and high-risk cases to review.
-- Answer: D
-- Explanation: The scenario is about risk router. The strongest answer fixes the failing layer directly: route simple cases to deterministic paths and high-risk cases to review.
-- Why A is wrong: It moves attention to a neighboring control instead of making risk router testable in the scenario.
-- Why B is wrong: It keeps largest model for every request in control instead of adding a measurable risk router decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making risk router testable in the scenario.
-
-### Q16: A pharmaceutical research team sees a production failure tied to workflow graph. The team has been using unbounded autonomy; the next change needs to make workflow graph explicit. Which action best addresses the problem?
-- ID: ags-hf-agent-lifecycle-and-architecture-016
-- Domain: Agent Lifecycle and Architecture
-- Topic: workflow graph; agentic_ai_general_study
-- Difficulty: hard
-- A. Change the design around workflow graph so the system can use explicit states and gates for predictable or high-risk processes.
-- B. Keep unbounded autonomy as the primary release control and record only final outputs.
-- C. Prioritize evidence gate before validating the failure signal around workflow graph.
-- D. Bundle workflow graph, risk router, and prompt changes into one release with one aggregate score.
-- Answer: A
-- Explanation: The scenario is about workflow graph. The strongest answer fixes the failing layer directly: use explicit states and gates for predictable or high-risk processes.
-- Why B is wrong: It keeps unbounded autonomy in control instead of adding a measurable workflow graph decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making workflow graph testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether workflow graph fixed or caused the failure.
-
-### Q17: A semiconductor design group is reviewing an agent lifecycle design before rollout. The main risk is supervisor orchestration: the system must centralize routing, approvals, and handoffs across specialist agents. Which option keeps the decision at the right layer?
-- ID: ags-hf-agent-lifecycle-and-architecture-017
-- Domain: Agent Lifecycle and Architecture
-- Topic: supervisor orchestration; agentic_ai_general_study
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated supervisor orchestration check.
-- B. Make supervisor orchestration explicit in the workflow: centralize routing, approvals, and handoffs across specialist agents.
-- C. Prioritize risk router before validating the failure signal around supervisor orchestration.
-- D. Bundle supervisor orchestration, evidence gate, and prompt changes into one release with one aggregate score.
-- Answer: B
-- Explanation: The scenario is about supervisor orchestration. The strongest answer fixes the failing layer directly: centralize routing, approvals, and handoffs across specialist agents.
-- Why A is wrong: Waiting for incidents postpones the supervisor orchestration gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making supervisor orchestration testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether supervisor orchestration fixed or caused the failure.
-
-### Q18: A hospital operations team is reviewing an agent lifecycle design before rollout. The main risk is observe-reason-act loop: the system must use iterative observation and re-planning when the environment changes. Which option keeps the decision at the right layer?
-- ID: ags-hf-agent-lifecycle-and-architecture-018
-- Domain: Agent Lifecycle and Architecture
-- Topic: observe-reason-act loop; agentic_ai_general_study
-- Difficulty: medium
-- A. Wait for production incidents before adding a dedicated observe-reason-act loop check.
-- B. Use evidence gate as the main gate even though reviewers are asking for observe-reason-act loop evidence.
-- C. Use observe-reason-act loop as the control boundary and require the system to use iterative observation and re-planning when the environment changes.
-- D. Bundle observe-reason-act loop, evidence gate, and prompt changes into one release with one aggregate score.
-- Answer: C
-- Explanation: The scenario is about observe-reason-act loop. The strongest answer fixes the failing layer directly: use iterative observation and re-planning when the environment changes.
-- Why A is wrong: Waiting for incidents postpones the observe-reason-act loop gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making observe-reason-act loop testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether observe-reason-act loop fixed or caused the failure.
-
-### Q19: A logistics planning team has a production-readiness review for an agent lifecycle design. The review is focused on evidence gate, because the system must require retrieval and tool observations before a decision node. Which control should be added before rollout?
-- ID: ags-hf-agent-lifecycle-and-architecture-019
-- Domain: Agent Lifecycle and Architecture
-- Topic: evidence gate; agentic_ai_general_study
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated evidence gate check.
-- B. Use supervisor orchestration as the main gate even though reviewers are asking for evidence gate evidence.
-- C. Keep letting the first retrieved document decide as the primary release control and record only final outputs.
-- D. Add a release gate for evidence gate: require retrieval and tool observations before a decision node.
-- Answer: D
-- Explanation: The scenario is about evidence gate. The strongest answer fixes the failing layer directly: require retrieval and tool observations before a decision node.
-- Why A is wrong: Waiting for incidents postpones the evidence gate gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making evidence gate testable in the scenario.
-- Why C is wrong: It keeps letting the first retrieved document decide in control instead of adding a measurable evidence gate decision point.
-
-### Q20: An insurance claims group is comparing two release designs for an agent lifecycle design. One design centers on largest model for every request; the other adds a measurable risk router step. Which design is more appropriate for production?
-- ID: ags-hf-agent-lifecycle-and-architecture-020
-- Domain: Agent Lifecycle and Architecture
-- Topic: risk router; agentic_ai_general_study
-- Difficulty: hard
-- A. Use workflow graph as the main gate even though reviewers are asking for risk router evidence.
-- B. Keep largest model for every request as the primary release control and record only final outputs.
-- C. Prioritize supervisor orchestration before validating the failure signal around risk router.
-- D. Change the design around risk router so the system can route simple cases to deterministic paths and high-risk cases to review.
-- Answer: D
-- Explanation: The scenario is about risk router. The strongest answer fixes the failing layer directly: route simple cases to deterministic paths and high-risk cases to review.
-- Why A is wrong: It moves attention to a neighboring control instead of making risk router testable in the scenario.
-- Why B is wrong: It keeps largest model for every request in control instead of adding a measurable risk router decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making risk router testable in the scenario.
-
-### Q21: A pharmaceutical research team is preparing an agent lifecycle design for release. The current design relies on unbounded autonomy, but the release gate needs to use explicit states and gates for predictable or high-risk processes. Which choice addresses the root cause?
-- ID: ags-hf-agent-lifecycle-and-architecture-021
-- Domain: Agent Lifecycle and Architecture
-- Topic: workflow graph; agentic_ai_general_study
-- Difficulty: expert
-- A. Prioritize evidence gate before validating the failure signal around workflow graph.
-- B. Bundle workflow graph, risk router, and prompt changes into one release with one aggregate score.
-- C. Make workflow graph explicit in the workflow: use explicit states and gates for predictable or high-risk processes.
-- D. Keep unbounded autonomy as the primary release control and record only final outputs.
-- Answer: C
-- Explanation: The scenario is about workflow graph. The strongest answer fixes the failing layer directly: use explicit states and gates for predictable or high-risk processes.
-- Why A is wrong: It moves attention to a neighboring control instead of making workflow graph testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether workflow graph fixed or caused the failure.
-- Why D is wrong: It keeps unbounded autonomy in control instead of adding a measurable workflow graph decision point.
-
-### Q22: A global retailer sees a production failure tied to supervisor orchestration. The team has been using peer agents triggering production actions directly; the next change needs to make supervisor orchestration explicit. Which action best addresses the problem?
-- ID: ags-hf-agent-lifecycle-and-architecture-022
-- Domain: Agent Lifecycle and Architecture
-- Topic: supervisor orchestration; agentic_ai_general_study
-- Difficulty: medium
-- A. Wait for production incidents before adding a dedicated supervisor orchestration check.
-- B. Use supervisor orchestration as the control boundary and require the system to centralize routing, approvals, and handoffs across specialist agents.
-- C. Prioritize observe-reason-act loop before validating the failure signal around supervisor orchestration.
-- D. Bundle supervisor orchestration, workflow graph, and prompt changes into one release with one aggregate score.
-- Answer: B
-- Explanation: The scenario is about supervisor orchestration. The strongest answer fixes the failing layer directly: centralize routing, approvals, and handoffs across specialist agents.
-- Why A is wrong: Waiting for incidents postpones the supervisor orchestration gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making supervisor orchestration testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether supervisor orchestration fixed or caused the failure.
-
-### Q23: A manufacturing quality team sees a production failure tied to observe-reason-act loop. The team has been using one-shot planning for streaming incidents; the next change needs to make observe-reason-act loop explicit. Which action best addresses the problem?
-- ID: ags-hf-agent-lifecycle-and-architecture-023
-- Domain: Agent Lifecycle and Architecture
-- Topic: observe-reason-act loop; agentic_ai_general_study
-- Difficulty: hard
+- Scope: general_concept
+- Source: generated
 - A. Add a release gate for observe-reason-act loop: use iterative observation and re-planning when the environment changes.
-- B. Bundle observe-reason-act loop, evidence gate, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated observe-reason-act loop check.
-- D. Use evidence gate as the main gate even though reviewers are asking for observe-reason-act loop evidence.
+- B. Release prompt, model, and workflow graph changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving observe-reason-act loop implicit.
+- D. Use workflow graph as the main gate even though reviewers are asking for observe-reason-act loop evidence.
 - Answer: A
-- Explanation: The scenario is about observe-reason-act loop. The strongest answer fixes the failing layer directly: use iterative observation and re-planning when the environment changes.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether observe-reason-act loop fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the observe-reason-act loop gate until after users are exposed.
+- Explanation: Observe-reason-act loop is the missing control in this scenario. The right answer makes it explicit so the system can use iterative observation and re-planning when the environment changes.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether observe-reason-act loop fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
 - Why D is wrong: It moves attention to a neighboring control instead of making observe-reason-act loop testable in the scenario.
 
-### Q24: A cybersecurity response team has a production-readiness review for an agent lifecycle design. The review is focused on evidence gate, because the system must require retrieval and tool observations before a decision node. Which action best fits the requirement?
-- ID: ags-hf-agent-lifecycle-and-architecture-024
+### Q10: During an architecture review, a telecom network operations team finds that letting the first retrieved document decide is being used as the shortcut, but it does not give the team a reliable way to require retrieval and tool observations before a decision node. What is the best next step?
+- ID: ags-hf-agent-lifecycle-and-architecture-010
 - Domain: Agent Lifecycle and Architecture
 - Topic: evidence gate; agentic_ai_general_study
 - Difficulty: expert
-- A. Wait for production incidents before adding a dedicated evidence gate check.
-- B. Use risk router as the main gate even though reviewers are asking for evidence gate evidence.
-- C. Keep letting the first retrieved document decide as the primary release control and record only final outputs.
-- D. Change the design around evidence gate so the system can require retrieval and tool observations before a decision node.
-- Answer: D
-- Explanation: The scenario is about evidence gate. The strongest answer fixes the failing layer directly: require retrieval and tool observations before a decision node.
-- Why A is wrong: Waiting for incidents postpones the evidence gate gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making evidence gate testable in the scenario.
-- Why C is wrong: It keeps letting the first retrieved document decide in control instead of adding a measurable evidence gate decision point.
+- Scope: general_concept
+- Source: generated
+- A. Use ReAct loop as the main gate even though reviewers are asking for evidence gate evidence.
+- B. Move the check to post-release monitoring without changing the release path for evidence gate.
+- C. Change the design around evidence gate so the system can require retrieval and tool observations before a decision node.
+- D. Increase model capacity or context length while leaving evidence gate implicit.
+- Answer: C
+- Explanation: Evidence gate is the missing control in this scenario. The right answer makes it explicit so the system can require retrieval and tool observations before a decision node.
+- Why A is wrong: It moves attention to a neighboring control instead of making evidence gate testable in the scenario.
+- Why B is wrong: Monitoring is useful, but this scenario needs evidence gate controlled before release or execution.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
 
-### Q25: A pharmaceutical research team is preparing an agent lifecycle design for release. The current design relies on largest model for every request, but the release gate needs to route simple cases to deterministic paths and high-risk cases to review. Which implementation path is most appropriate?
-- ID: ags-hf-agent-lifecycle-and-architecture-025
+### Q11: A telecom network operations team is choosing between a design centered on free-form autonomy for all requests and one that makes risk router explicit for an agent lifecycle design. Which design should win?
+- ID: ags-hf-agent-lifecycle-and-architecture-011
 - Domain: Agent Lifecycle and Architecture
 - Topic: risk router; agentic_ai_general_study
 - Difficulty: medium
-- A. Keep largest model for every request as the primary release control and record only final outputs.
-- B. Prioritize supervisor orchestration before validating the failure signal around risk router.
-- C. Make risk router explicit in the workflow: route simple cases to deterministic paths and high-risk cases to review.
-- D. Use workflow graph as the main gate even though reviewers are asking for risk router evidence.
-- Answer: C
-- Explanation: The scenario is about risk router. The strongest answer fixes the failing layer directly: route simple cases to deterministic paths and high-risk cases to review.
-- Why A is wrong: It keeps largest model for every request in control instead of adding a measurable risk router decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making risk router testable in the scenario.
-- Why D is wrong: It moves attention to a neighboring control instead of making risk router testable in the scenario.
+- Scope: general_concept
+- Source: generated
+- A. Use multi-agent roles as the main gate even though reviewers are asking for risk router evidence.
+- B. Move the check to post-release monitoring without changing the release path for risk router.
+- C. Keep free-form autonomy for all requests as the main control and add a dashboard for final outputs.
+- D. Instrument and enforce risk router; the system must route simple cases to deterministic paths and high-risk cases to review.
+- Answer: D
+- Explanation: Risk router is the missing control in this scenario. The right answer makes it explicit so the system can route simple cases to deterministic paths and high-risk cases to review.
+- Why A is wrong: It moves attention to a neighboring control instead of making risk router testable in the scenario.
+- Why B is wrong: Monitoring is useful, but this scenario needs risk router controlled before release or execution.
+- Why C is wrong: It keeps free-form autonomy for all requests in control instead of adding a measurable risk router decision point.
 
-### Q26: A telecom network operations team is reviewing an agent lifecycle design before rollout. The main risk is workflow graph: the system must use explicit states and gates for predictable or high-risk processes. Which option keeps the decision at the right layer?
+### Q12: A pharmaceutical research team passes the happy-path demo for an agent lifecycle design, but peer agents overwriting each other is being used as the shortcut, but it does not give the team a reliable way to assign one runtime owner for state transitions and handoffs. Which change should be made before release?
+- ID: ags-hf-agent-lifecycle-and-architecture-012
+- Domain: Agent Lifecycle and Architecture
+- Topic: state owner; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Put state owner before rollout so the team can assign one runtime owner for state transitions and handoffs.
+- B. Move the check to post-release monitoring without changing the release path for state owner.
+- C. Keep peer agents overwriting each other as the main control and add a dashboard for final outputs.
+- D. Prioritize ReAct loop even though the observed failure is around state owner.
+- Answer: A
+- Explanation: State owner is the missing control in this scenario. The right answer makes it explicit so the system can assign one runtime owner for state transitions and handoffs.
+- Why B is wrong: Monitoring is useful, but this scenario needs state owner controlled before release or execution.
+- Why C is wrong: It keeps peer agents overwriting each other in control instead of adding a measurable state owner decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making state owner testable in the scenario.
+
+### Q13: A cybersecurity response team is triaging a failed pilot for an agent lifecycle design. The current design still relies on calling every LLM-backed flow an agent. Reviewers need a control that can choose the least autonomous pattern that satisfies the task and risk. Which control addresses the root cause?
+- ID: ags-hf-agent-lifecycle-and-architecture-013
+- Domain: Agent Lifecycle and Architecture
+- Topic: agent vs workflow; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and state owner changes together with one aggregate score.
+- B. Make agent vs workflow explicit in the workflow: choose the least autonomous pattern that satisfies the task and risk.
+- C. Keep calling every LLM-backed flow an agent as the main control and add a dashboard for final outputs.
+- D. Prioritize risk router even though the observed failure is around agent vs workflow.
+- Answer: B
+- Explanation: Agent vs workflow is the missing control in this scenario. The right answer makes it explicit so the system can choose the least autonomous pattern that satisfies the task and risk.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether agent vs workflow fixed the failure.
+- Why C is wrong: It keeps calling every LLM-backed flow an agent in control instead of adding a measurable agent vs workflow decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making agent vs workflow testable in the scenario.
+
+### Q14: A hospital operations team is choosing between a design centered on unbounded autonomy and one that makes workflow graph explicit for an agent lifecycle design. Which design should win?
+- ID: ags-hf-agent-lifecycle-and-architecture-014
+- Domain: Agent Lifecycle and Architecture
+- Topic: workflow graph; agentic_ai_general_study
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and supervisor orchestration changes together with one aggregate score.
+- B. Increase model capacity or context length while leaving workflow graph implicit.
+- C. Use workflow graph as the control boundary and require the system to use explicit states and gates for predictable or high-risk processes.
+- D. Prioritize multi-agent roles even though the observed failure is around workflow graph.
+- Answer: C
+- Explanation: Workflow graph is the missing control in this scenario. The right answer makes it explicit so the system can use explicit states and gates for predictable or high-risk processes.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether workflow graph fixed the failure.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making workflow graph testable in the scenario.
+
+### Q15: A telecom network operations team is building an agent lifecycle design. The current design still relies on largest model for every request. Reviewers need a control that can classify intent, risk, and evidence need before choosing a path. Which action best fits the requirement?
+- ID: ags-hf-agent-lifecycle-and-architecture-015
+- Domain: Agent Lifecycle and Architecture
+- Topic: router; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and tool boundary changes together with one aggregate score.
+- B. Increase model capacity or context length while leaving router implicit.
+- C. Use tool boundary as the main gate even though reviewers are asking for router evidence.
+- D. Add a release gate for router: classify intent, risk, and evidence need before choosing a path.
+- Answer: D
+- Explanation: Router is the missing control in this scenario. The right answer makes it explicit so the system can classify intent, risk, and evidence need before choosing a path.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether router fixed the failure.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making router testable in the scenario.
+
+### Q16: A pharmaceutical research team passes the happy-path demo for an agent lifecycle design, but one-shot planning for changing tool results is being used as the shortcut, but it does not give the team a reliable way to iterate observe, reason, act, and verify with stopping criteria. Which change should be made before release?
+- ID: ags-hf-agent-lifecycle-and-architecture-016
+- Domain: Agent Lifecycle and Architecture
+- Topic: ReAct loop; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Change the design around ReAct loop so the system can iterate observe, reason, act, and verify with stopping criteria.
+- B. Increase model capacity or context length while leaving ReAct loop implicit.
+- C. Use plan-and-execute as the main gate even though reviewers are asking for ReAct loop evidence.
+- D. Move the check to post-release monitoring without changing the release path for ReAct loop.
+- Answer: A
+- Explanation: ReAct loop is the missing control in this scenario. The right answer makes it explicit so the system can iterate observe, reason, act, and verify with stopping criteria.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making ReAct loop testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs ReAct loop controlled before release or execution.
+
+### Q17: A semiconductor design group is choosing between a design centered on continuing a stale plan and one that makes plan-and-execute explicit for an agent lifecycle design. Which design should win?
+- ID: ags-hf-agent-lifecycle-and-architecture-017
+- Domain: Agent Lifecycle and Architecture
+- Topic: plan-and-execute; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Keep continuing a stale plan as the main control and add a dashboard for final outputs.
+- B. Instrument and enforce plan-and-execute; the system must plan subgoals, execute steps, and replan when observations invalidate the plan.
+- C. Use supervisor orchestration as the main gate even though reviewers are asking for plan-and-execute evidence.
+- D. Move the check to post-release monitoring without changing the release path for plan-and-execute.
+- Answer: B
+- Explanation: Plan-and-execute is the missing control in this scenario. The right answer makes it explicit so the system can plan subgoals, execute steps, and replan when observations invalidate the plan.
+- Why A is wrong: It keeps continuing a stale plan in control instead of adding a measurable plan-and-execute decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making plan-and-execute testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs plan-and-execute controlled before release or execution.
+
+### Q18: A hospital operations team is choosing between a design centered on peer agents triggering production actions directly and one that makes supervisor orchestration explicit for an agent lifecycle design. Which design should win?
+- ID: ags-hf-agent-lifecycle-and-architecture-018
+- Domain: Agent Lifecycle and Architecture
+- Topic: supervisor orchestration; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Keep peer agents triggering production actions directly as the main control and add a dashboard for final outputs.
+- B. Prioritize evidence gate even though the observed failure is around supervisor orchestration.
+- C. Put supervisor orchestration before rollout so the team can centralize routing, approvals, and handoffs across specialist agents.
+- D. Move the check to post-release monitoring without changing the release path for supervisor orchestration.
+- Answer: C
+- Explanation: Supervisor orchestration is the missing control in this scenario. The right answer makes it explicit so the system can centralize routing, approvals, and handoffs across specialist agents.
+- Why A is wrong: It keeps peer agents triggering production actions directly in control instead of adding a measurable supervisor orchestration decision point.
+- Why B is wrong: It moves attention to a neighboring control instead of making supervisor orchestration testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs supervisor orchestration controlled before release or execution.
+
+### Q19: A logistics planning team is triaging a failed pilot for an agent lifecycle design. The failure appears when the system keeps adding agents to increase intelligence as the workaround. The release needs a design step that can split agents only when roles, tools, or permissions are meaningfully different. Which control addresses the root cause?
+- ID: ags-hf-agent-lifecycle-and-architecture-019
+- Domain: Agent Lifecycle and Architecture
+- Topic: multi-agent roles; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Keep adding agents to increase intelligence as the main control and add a dashboard for final outputs.
+- B. Prioritize supervisor orchestration even though the observed failure is around multi-agent roles.
+- C. Release prompt, model, and evidence gate changes together with one aggregate score.
+- D. Make multi-agent roles explicit in the workflow: split agents only when roles, tools, or permissions are meaningfully different.
+- Answer: D
+- Explanation: Multi-agent roles is the missing control in this scenario. The right answer makes it explicit so the system can split agents only when roles, tools, or permissions are meaningfully different.
+- Why A is wrong: It keeps adding agents to increase intelligence in control instead of adding a measurable multi-agent roles decision point.
+- Why B is wrong: It moves attention to a neighboring control instead of making multi-agent roles testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether multi-agent roles fixed the failure.
+
+### Q20: During an architecture review, an insurance claims group finds that the failure appears when the system keeps letting prompt text grant tool access as the workaround. The release needs a design step that can keep model reasoning separate from server-side execution authority. What is the best next step?
+- ID: ags-hf-agent-lifecycle-and-architecture-020
+- Domain: Agent Lifecycle and Architecture
+- Topic: tool boundary; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Prioritize multi-agent roles even though the observed failure is around tool boundary.
+- B. Release prompt, model, and ReAct loop changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving tool boundary implicit.
+- D. Use tool boundary as the control boundary and require the system to keep model reasoning separate from server-side execution authority.
+- Answer: D
+- Explanation: Tool boundary is the missing control in this scenario. The right answer makes it explicit so the system can keep model reasoning separate from server-side execution authority.
+- Why A is wrong: It moves attention to a neighboring control instead of making tool boundary testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether tool boundary fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q21: A pharmaceutical research team is building an agent lifecycle design. One-shot planning for streaming incidents is being used as the shortcut, but it does not give the team a reliable way to use iterative observation and re-planning when the environment changes. Which choice addresses the root cause?
+- ID: ags-hf-agent-lifecycle-and-architecture-021
+- Domain: Agent Lifecycle and Architecture
+- Topic: observe-reason-act loop; agentic_ai_general_study
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving observe-reason-act loop implicit.
+- B. Use router as the main gate even though reviewers are asking for observe-reason-act loop evidence.
+- C. Add a release gate for observe-reason-act loop: use iterative observation and re-planning when the environment changes.
+- D. Release prompt, model, and router changes together with one aggregate score.
+- Answer: C
+- Explanation: Observe-reason-act loop is the missing control in this scenario. The right answer makes it explicit so the system can use iterative observation and re-planning when the environment changes.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making observe-reason-act loop testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether observe-reason-act loop fixed the failure.
+
+### Q22: A global retailer passes the happy-path demo for an agent lifecycle design, but the failure appears when the system keeps letting the first retrieved document decide as the workaround. The release needs a design step that can require retrieval and tool observations before a decision node. Which change should be made before release?
+- ID: ags-hf-agent-lifecycle-and-architecture-022
+- Domain: Agent Lifecycle and Architecture
+- Topic: evidence gate; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for evidence gate.
+- B. Change the design around evidence gate so the system can require retrieval and tool observations before a decision node.
+- C. Increase model capacity or context length while leaving evidence gate implicit.
+- D. Use agent vs workflow as the main gate even though reviewers are asking for evidence gate evidence.
+- Answer: B
+- Explanation: Evidence gate is the missing control in this scenario. The right answer makes it explicit so the system can require retrieval and tool observations before a decision node.
+- Why A is wrong: Monitoring is useful, but this scenario needs evidence gate controlled before release or execution.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making evidence gate testable in the scenario.
+
+### Q23: A manufacturing quality team passes the happy-path demo for an agent lifecycle design, but free-form autonomy for all requests is being used as the shortcut, but it does not give the team a reliable way to route simple cases to deterministic paths and high-risk cases to review. Which change should be made before release?
+- ID: ags-hf-agent-lifecycle-and-architecture-023
+- Domain: Agent Lifecycle and Architecture
+- Topic: risk router; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Instrument and enforce risk router; the system must route simple cases to deterministic paths and high-risk cases to review.
+- B. Use multi-agent roles as the main gate even though reviewers are asking for risk router evidence.
+- C. Move the check to post-release monitoring without changing the release path for risk router.
+- D. Keep free-form autonomy for all requests as the main control and add a dashboard for final outputs.
+- Answer: A
+- Explanation: Risk router is the missing control in this scenario. The right answer makes it explicit so the system can route simple cases to deterministic paths and high-risk cases to review.
+- Why B is wrong: It moves attention to a neighboring control instead of making risk router testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs risk router controlled before release or execution.
+- Why D is wrong: It keeps free-form autonomy for all requests in control instead of adding a measurable risk router decision point.
+
+### Q24: A cybersecurity response team is triaging a failed pilot for an agent lifecycle design. Peer agents overwriting each other is being used as the shortcut, but it does not give the team a reliable way to assign one runtime owner for state transitions and handoffs. Which control addresses the root cause?
+- ID: ags-hf-agent-lifecycle-and-architecture-024
+- Domain: Agent Lifecycle and Architecture
+- Topic: state owner; agentic_ai_general_study
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for state owner.
+- B. Keep peer agents overwriting each other as the main control and add a dashboard for final outputs.
+- C. Prioritize tool boundary even though the observed failure is around state owner.
+- D. Put state owner before rollout so the team can assign one runtime owner for state transitions and handoffs.
+- Answer: D
+- Explanation: State owner is the missing control in this scenario. The right answer makes it explicit so the system can assign one runtime owner for state transitions and handoffs.
+- Why A is wrong: Monitoring is useful, but this scenario needs state owner controlled before release or execution.
+- Why B is wrong: It keeps peer agents overwriting each other in control instead of adding a measurable state owner decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making state owner testable in the scenario.
+
+### Q25: A pharmaceutical research team is building an agent lifecycle design. Calling every LLM-backed flow an agent is being used as the shortcut, but it does not give the team a reliable way to choose the least autonomous pattern that satisfies the task and risk. Which implementation path is most appropriate?
+- ID: ags-hf-agent-lifecycle-and-architecture-025
+- Domain: Agent Lifecycle and Architecture
+- Topic: agent vs workflow; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Prioritize workflow graph even though the observed failure is around agent vs workflow.
+- B. Release prompt, model, and plan-and-execute changes together with one aggregate score.
+- C. Make agent vs workflow explicit in the workflow: choose the least autonomous pattern that satisfies the task and risk.
+- D. Keep calling every LLM-backed flow an agent as the main control and add a dashboard for final outputs.
+- Answer: C
+- Explanation: Agent vs workflow is the missing control in this scenario. The right answer makes it explicit so the system can choose the least autonomous pattern that satisfies the task and risk.
+- Why A is wrong: It moves attention to a neighboring control instead of making agent vs workflow testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether agent vs workflow fixed the failure.
+- Why D is wrong: It keeps calling every LLM-backed flow an agent in control instead of adding a measurable agent vs workflow decision point.
+
+### Q26: A telecom network operations team is choosing between a design centered on unbounded autonomy and one that makes workflow graph explicit for an agent lifecycle design. Which design should win?
 - ID: ags-hf-agent-lifecycle-and-architecture-026
 - Domain: Agent Lifecycle and Architecture
 - Topic: workflow graph; agentic_ai_general_study
 - Difficulty: hard
-- A. Bundle workflow graph, evidence gate, and prompt changes into one release with one aggregate score.
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving workflow graph implicit.
 - B. Use workflow graph as the control boundary and require the system to use explicit states and gates for predictable or high-risk processes.
-- C. Keep unbounded autonomy as the primary release control and record only final outputs.
-- D. Prioritize risk router before validating the failure signal around workflow graph.
+- C. Prioritize router even though the observed failure is around workflow graph.
+- D. Release prompt, model, and ReAct loop changes together with one aggregate score.
 - Answer: B
-- Explanation: The scenario is about workflow graph. The strongest answer fixes the failing layer directly: use explicit states and gates for predictable or high-risk processes.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether workflow graph fixed or caused the failure.
-- Why C is wrong: It keeps unbounded autonomy in control instead of adding a measurable workflow graph decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making workflow graph testable in the scenario.
+- Explanation: Workflow graph is the missing control in this scenario. The right answer makes it explicit so the system can use explicit states and gates for predictable or high-risk processes.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making workflow graph testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether workflow graph fixed the failure.
 
-### Q27: A manufacturing quality team is reviewing an agent lifecycle design before rollout. The main risk is supervisor orchestration: the system must centralize routing, approvals, and handoffs across specialist agents. Which option keeps the decision at the right layer?
+### Q27: A manufacturing quality team is choosing between a design centered on largest model for every request and one that makes router explicit for an agent lifecycle design. Which design should win?
 - ID: ags-hf-agent-lifecycle-and-architecture-027
 - Domain: Agent Lifecycle and Architecture
-- Topic: supervisor orchestration; agentic_ai_general_study
+- Topic: router; agentic_ai_general_study
 - Difficulty: hard
-- A. Add a release gate for supervisor orchestration: centralize routing, approvals, and handoffs across specialist agents.
-- B. Prioritize evidence gate before validating the failure signal around supervisor orchestration.
-- C. Bundle supervisor orchestration, risk router, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated supervisor orchestration check.
+- Scope: general_concept
+- Source: generated
+- A. Add a release gate for router: classify intent, risk, and evidence need before choosing a path.
+- B. Release prompt, model, and agent vs workflow changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving router implicit.
+- D. Use agent vs workflow as the main gate even though reviewers are asking for router evidence.
 - Answer: A
-- Explanation: The scenario is about supervisor orchestration. The strongest answer fixes the failing layer directly: centralize routing, approvals, and handoffs across specialist agents.
-- Why B is wrong: It moves attention to a neighboring control instead of making supervisor orchestration testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether supervisor orchestration fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the supervisor orchestration gate until after users are exposed.
+- Explanation: Router is the missing control in this scenario. The right answer makes it explicit so the system can classify intent, risk, and evidence need before choosing a path.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether router fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making router testable in the scenario.
 
-### Q28: A cybersecurity response team has a production-readiness review for an agent lifecycle design. The review is focused on observe-reason-act loop, because the system must use iterative observation and re-planning when the environment changes. Which control should be added before rollout?
+### Q28: A cybersecurity response team is triaging a failed pilot for an agent lifecycle design. The current design still relies on one-shot planning for changing tool results. Reviewers need a control that can iterate observe, reason, act, and verify with stopping criteria. Which control addresses the root cause?
 - ID: ags-hf-agent-lifecycle-and-architecture-028
 - Domain: Agent Lifecycle and Architecture
-- Topic: observe-reason-act loop; agentic_ai_general_study
+- Topic: ReAct loop; agentic_ai_general_study
 - Difficulty: easy
-- A. Bundle observe-reason-act loop, risk router, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated observe-reason-act loop check.
-- C. Use risk router as the main gate even though reviewers are asking for observe-reason-act loop evidence.
-- D. Change the design around observe-reason-act loop so the system can use iterative observation and re-planning when the environment changes.
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving ReAct loop implicit.
+- B. Use observe-reason-act loop as the main gate even though reviewers are asking for ReAct loop evidence.
+- C. Move the check to post-release monitoring without changing the release path for ReAct loop.
+- D. Change the design around ReAct loop so the system can iterate observe, reason, act, and verify with stopping criteria.
 - Answer: D
-- Explanation: The scenario is about observe-reason-act loop. The strongest answer fixes the failing layer directly: use iterative observation and re-planning when the environment changes.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether observe-reason-act loop fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the observe-reason-act loop gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making observe-reason-act loop testable in the scenario.
+- Explanation: ReAct loop is the missing control in this scenario. The right answer makes it explicit so the system can iterate observe, reason, act, and verify with stopping criteria.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making ReAct loop testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs ReAct loop controlled before release or execution.
 
-### Q29: An automotive support team has a production-readiness review for an agent lifecycle design. The review is focused on evidence gate, because the system must require retrieval and tool observations before a decision node. Which design is the best first change?
+### Q29: An automotive support team is triaging a failed pilot for an agent lifecycle design. Continuing a stale plan is being used as the shortcut, but it does not give the team a reliable way to plan subgoals, execute steps, and replan when observations invalidate the plan. Which control addresses the root cause?
 - ID: ags-hf-agent-lifecycle-and-architecture-029
 - Domain: Agent Lifecycle and Architecture
-- Topic: evidence gate; agentic_ai_general_study
+- Topic: plan-and-execute; agentic_ai_general_study
 - Difficulty: hard
-- A. Use workflow graph as the main gate even though reviewers are asking for evidence gate evidence.
-- B. Keep letting the first retrieved document decide as the primary release control and record only final outputs.
-- C. Make evidence gate explicit in the workflow: require retrieval and tool observations before a decision node.
-- D. Wait for production incidents before adding a dedicated evidence gate check.
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for plan-and-execute.
+- B. Keep continuing a stale plan as the main control and add a dashboard for final outputs.
+- C. Instrument and enforce plan-and-execute; the system must plan subgoals, execute steps, and replan when observations invalidate the plan.
+- D. Use supervisor orchestration as the main gate even though reviewers are asking for plan-and-execute evidence.
 - Answer: C
-- Explanation: The scenario is about evidence gate. The strongest answer fixes the failing layer directly: require retrieval and tool observations before a decision node.
-- Why A is wrong: It moves attention to a neighboring control instead of making evidence gate testable in the scenario.
-- Why B is wrong: It keeps letting the first retrieved document decide in control instead of adding a measurable evidence gate decision point.
-- Why D is wrong: Waiting for incidents postpones the evidence gate gate until after users are exposed.
+- Explanation: Plan-and-execute is the missing control in this scenario. The right answer makes it explicit so the system can plan subgoals, execute steps, and replan when observations invalidate the plan.
+- Why A is wrong: Monitoring is useful, but this scenario needs plan-and-execute controlled before release or execution.
+- Why B is wrong: It keeps continuing a stale plan in control instead of adding a measurable plan-and-execute decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making plan-and-execute testable in the scenario.
 
-### Q30: A telecom network operations team has a production-readiness review for an agent lifecycle design. The review is focused on risk router, because the system must route simple cases to deterministic paths and high-risk cases to review. Which control should be added before rollout?
+### Q30: A telecom network operations team is triaging a failed pilot for an agent lifecycle design. Peer agents triggering production actions directly is being used as the shortcut, but it does not give the team a reliable way to centralize routing, approvals, and handoffs across specialist agents. Which control addresses the root cause?
 - ID: ags-hf-agent-lifecycle-and-architecture-030
 - Domain: Agent Lifecycle and Architecture
-- Topic: risk router; agentic_ai_general_study
+- Topic: supervisor orchestration; agentic_ai_general_study
 - Difficulty: expert
-- A. Use risk router as the control boundary and require the system to route simple cases to deterministic paths and high-risk cases to review.
-- B. Use supervisor orchestration as the main gate even though reviewers are asking for risk router evidence.
-- C. Keep largest model for every request as the primary release control and record only final outputs.
-- D. Prioritize workflow graph before validating the failure signal around risk router.
+- Scope: general_concept
+- Source: generated
+- A. Put supervisor orchestration before rollout so the team can centralize routing, approvals, and handoffs across specialist agents.
+- B. Move the check to post-release monitoring without changing the release path for supervisor orchestration.
+- C. Keep peer agents triggering production actions directly as the main control and add a dashboard for final outputs.
+- D. Prioritize multi-agent roles even though the observed failure is around supervisor orchestration.
 - Answer: A
-- Explanation: The scenario is about risk router. The strongest answer fixes the failing layer directly: route simple cases to deterministic paths and high-risk cases to review.
-- Why B is wrong: It moves attention to a neighboring control instead of making risk router testable in the scenario.
-- Why C is wrong: It keeps largest model for every request in control instead of adding a measurable risk router decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making risk router testable in the scenario.
+- Explanation: Supervisor orchestration is the missing control in this scenario. The right answer makes it explicit so the system can centralize routing, approvals, and handoffs across specialist agents.
+- Why B is wrong: Monitoring is useful, but this scenario needs supervisor orchestration controlled before release or execution.
+- Why C is wrong: It keeps peer agents triggering production actions directly in control instead of adding a measurable supervisor orchestration decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making supervisor orchestration testable in the scenario.
 
-### Q31: A cybersecurity response team sees a production failure tied to workflow graph. The team has been using unbounded autonomy; the next change needs to make workflow graph explicit. Which action best addresses the problem?
+### Q31: A cybersecurity response team passes the happy-path demo for an agent lifecycle design, but the current design still relies on adding agents to increase intelligence. Reviewers need a control that can split agents only when roles, tools, or permissions are meaningfully different. Which change should be made before release?
 - ID: ags-hf-agent-lifecycle-and-architecture-031
 - Domain: Agent Lifecycle and Architecture
-- Topic: workflow graph; agentic_ai_general_study
+- Topic: multi-agent roles; agentic_ai_general_study
 - Difficulty: medium
-- A. Bundle workflow graph, supervisor orchestration, and prompt changes into one release with one aggregate score.
-- B. Add a release gate for workflow graph: use explicit states and gates for predictable or high-risk processes.
-- C. Keep unbounded autonomy as the primary release control and record only final outputs.
-- D. Prioritize observe-reason-act loop before validating the failure signal around workflow graph.
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and evidence gate changes together with one aggregate score.
+- B. Make multi-agent roles explicit in the workflow: split agents only when roles, tools, or permissions are meaningfully different.
+- C. Keep adding agents to increase intelligence as the main control and add a dashboard for final outputs.
+- D. Prioritize risk router even though the observed failure is around multi-agent roles.
 - Answer: B
-- Explanation: The scenario is about workflow graph. The strongest answer fixes the failing layer directly: use explicit states and gates for predictable or high-risk processes.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether workflow graph fixed or caused the failure.
-- Why C is wrong: It keeps unbounded autonomy in control instead of adding a measurable workflow graph decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making workflow graph testable in the scenario.
+- Explanation: Multi-agent roles is the missing control in this scenario. The right answer makes it explicit so the system can split agents only when roles, tools, or permissions are meaningfully different.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether multi-agent roles fixed the failure.
+- Why C is wrong: It keeps adding agents to increase intelligence in control instead of adding a measurable multi-agent roles decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making multi-agent roles testable in the scenario.
 
-### Q32: A public-sector casework team has a production-readiness review for an agent lifecycle design. The review is focused on supervisor orchestration, because the system must centralize routing, approvals, and handoffs across specialist agents. Which implementation path is most appropriate?
+### Q32: A public-sector casework team is triaging a failed pilot for an agent lifecycle design. Letting prompt text grant tool access is being used as the shortcut, but it does not give the team a reliable way to keep model reasoning separate from server-side execution authority. Which control addresses the root cause?
 - ID: ags-hf-agent-lifecycle-and-architecture-032
 - Domain: Agent Lifecycle and Architecture
-- Topic: supervisor orchestration; agentic_ai_general_study
+- Topic: tool boundary; agentic_ai_general_study
 - Difficulty: hard
-- A. Bundle supervisor orchestration, risk router, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated supervisor orchestration check.
-- C. Change the design around supervisor orchestration so the system can centralize routing, approvals, and handoffs across specialist agents.
-- D. Prioritize evidence gate before validating the failure signal around supervisor orchestration.
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and state owner changes together with one aggregate score.
+- B. Increase model capacity or context length while leaving tool boundary implicit.
+- C. Use tool boundary as the control boundary and require the system to keep model reasoning separate from server-side execution authority.
+- D. Prioritize risk router even though the observed failure is around tool boundary.
 - Answer: C
-- Explanation: The scenario is about supervisor orchestration. The strongest answer fixes the failing layer directly: centralize routing, approvals, and handoffs across specialist agents.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether supervisor orchestration fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the supervisor orchestration gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making supervisor orchestration testable in the scenario.
+- Explanation: Tool boundary is the missing control in this scenario. The right answer makes it explicit so the system can keep model reasoning separate from server-side execution authority.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether tool boundary fixed the failure.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making tool boundary testable in the scenario.
 
-### Q33: A logistics planning team sees a production failure tied to observe-reason-act loop. The team has been using one-shot planning for streaming incidents; the next change needs to make observe-reason-act loop explicit. Which action best addresses the problem?
-- ID: ags-hf-agent-lifecycle-and-architecture-033
-- Domain: Agent Lifecycle and Architecture
-- Topic: observe-reason-act loop; agentic_ai_general_study
-- Difficulty: hard
-- A. Bundle observe-reason-act loop, supervisor orchestration, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated observe-reason-act loop check.
-- C. Use supervisor orchestration as the main gate even though reviewers are asking for observe-reason-act loop evidence.
-- D. Make observe-reason-act loop explicit in the workflow: use iterative observation and re-planning when the environment changes.
-- Answer: D
-- Explanation: The scenario is about observe-reason-act loop. The strongest answer fixes the failing layer directly: use iterative observation and re-planning when the environment changes.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether observe-reason-act loop fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the observe-reason-act loop gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making observe-reason-act loop testable in the scenario.
-
-### Q34: A pharmaceutical research team sees a production failure tied to evidence gate. The team has been using letting the first retrieved document decide; the next change needs to make evidence gate explicit. Which action best addresses the problem?
-- ID: ags-hf-agent-lifecycle-and-architecture-034
-- Domain: Agent Lifecycle and Architecture
-- Topic: evidence gate; agentic_ai_general_study
-- Difficulty: expert
-- A. Use evidence gate as the control boundary and require the system to require retrieval and tool observations before a decision node.
-- B. Wait for production incidents before adding a dedicated evidence gate check.
-- C. Use workflow graph as the main gate even though reviewers are asking for evidence gate evidence.
-- D. Keep letting the first retrieved document decide as the primary release control and record only final outputs.
-- Answer: A
-- Explanation: The scenario is about evidence gate. The strongest answer fixes the failing layer directly: require retrieval and tool observations before a decision node.
-- Why B is wrong: Waiting for incidents postpones the evidence gate gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making evidence gate testable in the scenario.
-- Why D is wrong: It keeps letting the first retrieved document decide in control instead of adding a measurable evidence gate decision point.
-
-### Q35: A semiconductor design group has a production-readiness review for an agent lifecycle design. The review is focused on risk router, because the system must route simple cases to deterministic paths and high-risk cases to review. Which control should be added before rollout?
-- ID: ags-hf-agent-lifecycle-and-architecture-035
-- Domain: Agent Lifecycle and Architecture
-- Topic: risk router; agentic_ai_general_study
-- Difficulty: medium
-- A. Prioritize observe-reason-act loop before validating the failure signal around risk router.
-- B. Add a release gate for risk router: route simple cases to deterministic paths and high-risk cases to review.
-- C. Use evidence gate as the main gate even though reviewers are asking for risk router evidence.
-- D. Keep largest model for every request as the primary release control and record only final outputs.
-- Answer: B
-- Explanation: The scenario is about risk router. The strongest answer fixes the failing layer directly: route simple cases to deterministic paths and high-risk cases to review.
-- Why A is wrong: It moves attention to a neighboring control instead of making risk router testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making risk router testable in the scenario.
-- Why D is wrong: It keeps largest model for every request in control instead of adding a measurable risk router decision point.
-
-### Q36: A manufacturing quality team is preparing an agent lifecycle design for release. The current design relies on unbounded autonomy, but the release gate needs to use explicit states and gates for predictable or high-risk processes. Which implementation path is most appropriate?
-- ID: ags-hf-agent-lifecycle-and-architecture-036
-- Domain: Agent Lifecycle and Architecture
-- Topic: workflow graph; agentic_ai_general_study
-- Difficulty: hard
-- A. Prioritize supervisor orchestration before validating the failure signal around workflow graph.
-- B. Bundle workflow graph, observe-reason-act loop, and prompt changes into one release with one aggregate score.
-- C. Change the design around workflow graph so the system can use explicit states and gates for predictable or high-risk processes.
-- D. Keep unbounded autonomy as the primary release control and record only final outputs.
-- Answer: C
-- Explanation: The scenario is about workflow graph. The strongest answer fixes the failing layer directly: use explicit states and gates for predictable or high-risk processes.
-- Why A is wrong: It moves attention to a neighboring control instead of making workflow graph testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether workflow graph fixed or caused the failure.
-- Why D is wrong: It keeps unbounded autonomy in control instead of adding a measurable workflow graph decision point.
-
-### Q37: A global retailer is reviewing an agent lifecycle design before rollout. The main risk is supervisor orchestration: the system must centralize routing, approvals, and handoffs across specialist agents. Which option keeps the decision at the right layer?
-- ID: ags-hf-agent-lifecycle-and-architecture-037
-- Domain: Agent Lifecycle and Architecture
-- Topic: supervisor orchestration; agentic_ai_general_study
-- Difficulty: hard
-- A. Prioritize observe-reason-act loop before validating the failure signal around supervisor orchestration.
-- B. Bundle supervisor orchestration, workflow graph, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated supervisor orchestration check.
-- D. Make supervisor orchestration explicit in the workflow: centralize routing, approvals, and handoffs across specialist agents.
-- Answer: D
-- Explanation: The scenario is about supervisor orchestration. The strongest answer fixes the failing layer directly: centralize routing, approvals, and handoffs across specialist agents.
-- Why A is wrong: It moves attention to a neighboring control instead of making supervisor orchestration testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether supervisor orchestration fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the supervisor orchestration gate until after users are exposed.
-
-### Q38: An insurance claims group has a production-readiness review for an agent lifecycle design. The review is focused on observe-reason-act loop, because the system must use iterative observation and re-planning when the environment changes. Which design is the best first change?
-- ID: ags-hf-agent-lifecycle-and-architecture-038
-- Domain: Agent Lifecycle and Architecture
-- Topic: observe-reason-act loop; agentic_ai_general_study
-- Difficulty: medium
-- A. Use observe-reason-act loop as the control boundary and require the system to use iterative observation and re-planning when the environment changes.
-- B. Bundle observe-reason-act loop, workflow graph, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated observe-reason-act loop check.
-- D. Use workflow graph as the main gate even though reviewers are asking for observe-reason-act loop evidence.
-- Answer: A
-- Explanation: The scenario is about observe-reason-act loop. The strongest answer fixes the failing layer directly: use iterative observation and re-planning when the environment changes.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether observe-reason-act loop fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the observe-reason-act loop gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making observe-reason-act loop testable in the scenario.
-
-### Q39: A bank fraud team is comparing two release designs for an agent lifecycle design. One design centers on letting the first retrieved document decide; the other adds a measurable evidence gate step. Which design is more appropriate for production?
-- ID: ags-hf-agent-lifecycle-and-architecture-039
-- Domain: Agent Lifecycle and Architecture
-- Topic: evidence gate; agentic_ai_general_study
-- Difficulty: hard
-- A. Keep letting the first retrieved document decide as the primary release control and record only final outputs.
-- B. Add a release gate for evidence gate: require retrieval and tool observations before a decision node.
-- C. Wait for production incidents before adding a dedicated evidence gate check.
-- D. Use risk router as the main gate even though reviewers are asking for evidence gate evidence.
-- Answer: B
-- Explanation: The scenario is about evidence gate. The strongest answer fixes the failing layer directly: require retrieval and tool observations before a decision node.
-- Why A is wrong: It keeps letting the first retrieved document decide in control instead of adding a measurable evidence gate decision point.
-- Why C is wrong: Waiting for incidents postpones the evidence gate gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making evidence gate testable in the scenario.
-
-### Q40: A manufacturing quality team is reviewing an agent lifecycle design before rollout. The main risk is risk router: the system must route simple cases to deterministic paths and high-risk cases to review. Which option keeps the decision at the right layer?
-- ID: ags-hf-agent-lifecycle-and-architecture-040
-- Domain: Agent Lifecycle and Architecture
-- Topic: risk router; agentic_ai_general_study
-- Difficulty: hard
-- A. Prioritize evidence gate before validating the failure signal around risk router.
-- B. Change the design around risk router so the system can route simple cases to deterministic paths and high-risk cases to review.
-- C. Use observe-reason-act loop as the main gate even though reviewers are asking for risk router evidence.
-- D. Keep largest model for every request as the primary release control and record only final outputs.
-- Answer: B
-- Explanation: The scenario is about risk router. The strongest answer fixes the failing layer directly: route simple cases to deterministic paths and high-risk cases to review.
-- Why A is wrong: It moves attention to a neighboring control instead of making risk router testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making risk router testable in the scenario.
-- Why D is wrong: It keeps largest model for every request in control instead of adding a measurable risk router decision point.
-
-### Q41: A public-sector casework team is reviewing an agent lifecycle design before rollout. The main risk is workflow graph: the system must use explicit states and gates for predictable or high-risk processes. Which option keeps the decision at the right layer?
-- ID: ags-hf-agent-lifecycle-and-architecture-041
-- Domain: Agent Lifecycle and Architecture
-- Topic: workflow graph; agentic_ai_general_study
-- Difficulty: expert
-- A. Make workflow graph explicit in the workflow: use explicit states and gates for predictable or high-risk processes.
-- B. Keep unbounded autonomy as the primary release control and record only final outputs.
-- C. Prioritize supervisor orchestration before validating the failure signal around workflow graph.
-- D. Bundle workflow graph, observe-reason-act loop, and prompt changes into one release with one aggregate score.
-- Answer: A
-- Explanation: The scenario is about workflow graph. The strongest answer fixes the failing layer directly: use explicit states and gates for predictable or high-risk processes.
-- Why B is wrong: It keeps unbounded autonomy in control instead of adding a measurable workflow graph decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making workflow graph testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether workflow graph fixed or caused the failure.
-
-### Q42: A cybersecurity response team has a production-readiness review for an agent lifecycle design. The review is focused on supervisor orchestration, because the system must centralize routing, approvals, and handoffs across specialist agents. Which architecture keeps the boundary cleanest?
-- ID: ags-hf-agent-lifecycle-and-architecture-042
-- Domain: Agent Lifecycle and Architecture
-- Topic: supervisor orchestration; agentic_ai_general_study
-- Difficulty: medium
-- A. Prioritize risk router before validating the failure signal around supervisor orchestration.
-- B. Bundle supervisor orchestration, evidence gate, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated supervisor orchestration check.
-- D. Use supervisor orchestration as the control boundary and require the system to centralize routing, approvals, and handoffs across specialist agents.
-- Answer: D
-- Explanation: The scenario is about supervisor orchestration. The strongest answer fixes the failing layer directly: centralize routing, approvals, and handoffs across specialist agents.
-- Why A is wrong: It moves attention to a neighboring control instead of making supervisor orchestration testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether supervisor orchestration fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the supervisor orchestration gate until after users are exposed.
-
-### Q43: An insurance claims group has a production-readiness review for an agent lifecycle design. The review is focused on observe-reason-act loop, because the system must use iterative observation and re-planning when the environment changes. Which design is the best first change?
-- ID: ags-hf-agent-lifecycle-and-architecture-043
-- Domain: Agent Lifecycle and Architecture
-- Topic: observe-reason-act loop; agentic_ai_general_study
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated observe-reason-act loop check.
-- B. Use workflow graph as the main gate even though reviewers are asking for observe-reason-act loop evidence.
-- C. Add a release gate for observe-reason-act loop: use iterative observation and re-planning when the environment changes.
-- D. Bundle observe-reason-act loop, workflow graph, and prompt changes into one release with one aggregate score.
-- Answer: C
-- Explanation: The scenario is about observe-reason-act loop. The strongest answer fixes the failing layer directly: use iterative observation and re-planning when the environment changes.
-- Why A is wrong: Waiting for incidents postpones the observe-reason-act loop gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making observe-reason-act loop testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether observe-reason-act loop fixed or caused the failure.
-
-### Q44: A global retailer is comparing two release designs for an agent lifecycle design. One design centers on letting the first retrieved document decide; the other adds a measurable evidence gate step. Which design is more appropriate for production?
-- ID: ags-hf-agent-lifecycle-and-architecture-044
-- Domain: Agent Lifecycle and Architecture
-- Topic: evidence gate; agentic_ai_general_study
-- Difficulty: expert
-- A. Keep letting the first retrieved document decide as the primary release control and record only final outputs.
-- B. Change the design around evidence gate so the system can require retrieval and tool observations before a decision node.
-- C. Wait for production incidents before adding a dedicated evidence gate check.
-- D. Use supervisor orchestration as the main gate even though reviewers are asking for evidence gate evidence.
-- Answer: B
-- Explanation: The scenario is about evidence gate. The strongest answer fixes the failing layer directly: require retrieval and tool observations before a decision node.
-- Why A is wrong: It keeps letting the first retrieved document decide in control instead of adding a measurable evidence gate decision point.
-- Why C is wrong: Waiting for incidents postpones the evidence gate gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making evidence gate testable in the scenario.
-
-### Q45: A hospital operations team is preparing an agent lifecycle design for release. The current design relies on largest model for every request, but the release gate needs to route simple cases to deterministic paths and high-risk cases to review. Which implementation path is most appropriate?
-- ID: ags-hf-agent-lifecycle-and-architecture-045
-- Domain: Agent Lifecycle and Architecture
-- Topic: risk router; agentic_ai_general_study
-- Difficulty: medium
-- A. Make risk router explicit in the workflow: route simple cases to deterministic paths and high-risk cases to review.
-- B. Use observe-reason-act loop as the main gate even though reviewers are asking for risk router evidence.
-- C. Keep largest model for every request as the primary release control and record only final outputs.
-- D. Prioritize evidence gate before validating the failure signal around risk router.
-- Answer: A
-- Explanation: The scenario is about risk router. The strongest answer fixes the failing layer directly: route simple cases to deterministic paths and high-risk cases to review.
-- Why B is wrong: It moves attention to a neighboring control instead of making risk router testable in the scenario.
-- Why C is wrong: It keeps largest model for every request in control instead of adding a measurable risk router decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making risk router testable in the scenario.
-
-### Q46: A semiconductor design group is reviewing an agent lifecycle design before rollout. The main risk is workflow graph: the system must use explicit states and gates for predictable or high-risk processes. Which option keeps the decision at the right layer?
-- ID: ags-hf-agent-lifecycle-and-architecture-046
-- Domain: Agent Lifecycle and Architecture
-- Topic: workflow graph; agentic_ai_general_study
-- Difficulty: hard
-- A. Keep unbounded autonomy as the primary release control and record only final outputs.
-- B. Prioritize observe-reason-act loop before validating the failure signal around workflow graph.
-- C. Bundle workflow graph, supervisor orchestration, and prompt changes into one release with one aggregate score.
-- D. Use workflow graph as the control boundary and require the system to use explicit states and gates for predictable or high-risk processes.
-- Answer: D
-- Explanation: The scenario is about workflow graph. The strongest answer fixes the failing layer directly: use explicit states and gates for predictable or high-risk processes.
-- Why A is wrong: It keeps unbounded autonomy in control instead of adding a measurable workflow graph decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making workflow graph testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether workflow graph fixed or caused the failure.
-
-### Q47: An insurance claims group has a production-readiness review for an agent lifecycle design. The review is focused on supervisor orchestration, because the system must centralize routing, approvals, and handoffs across specialist agents. Which choice addresses the root cause?
-- ID: ags-hf-agent-lifecycle-and-architecture-047
-- Domain: Agent Lifecycle and Architecture
-- Topic: supervisor orchestration; agentic_ai_general_study
-- Difficulty: hard
-- A. Bundle supervisor orchestration, observe-reason-act loop, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated supervisor orchestration check.
-- C. Add a release gate for supervisor orchestration: centralize routing, approvals, and handoffs across specialist agents.
-- D. Prioritize workflow graph before validating the failure signal around supervisor orchestration.
-- Answer: C
-- Explanation: The scenario is about supervisor orchestration. The strongest answer fixes the failing layer directly: centralize routing, approvals, and handoffs across specialist agents.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether supervisor orchestration fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the supervisor orchestration gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making supervisor orchestration testable in the scenario.
-
-### Q48: An automotive support team has a production-readiness review for a data and grounding pipeline. The review is focused on permissioned RAG, because the system must filter by ACL before chunks enter context. Which implementation path is most appropriate?
+### Q33: An automotive support team is triaging a failed pilot for a data and grounding pipeline. The failure appears when the system keeps post-answer filtering as the workaround. The release needs a design step that can filter by ACL before chunks enter context. Which control addresses the root cause?
 - ID: ags-hf-data-curation-and-knowledge-grounding-001
 - Domain: Data Curation and Knowledge Grounding
 - Topic: permissioned RAG; agentic_ai_general_study
 - Difficulty: expert
-- A. Keep post-answer filtering as the primary release control and record only final outputs.
-- B. Prioritize grounded citations before validating the failure signal around permissioned RAG.
-- C. Bundle permissioned RAG, data freshness, and prompt changes into one release with one aggregate score.
+- Scope: general_concept
+- Source: generated
+- A. Keep post-answer filtering as the main control and add a dashboard for final outputs.
+- B. Prioritize corpus governance even though the observed failure is around permissioned RAG.
+- C. Release prompt, model, and knowledge graph changes together with one aggregate score.
 - D. Make permissioned RAG explicit in the workflow: filter by ACL before chunks enter context.
 - Answer: D
-- Explanation: The scenario is about permissioned RAG. The strongest answer fixes the failing layer directly: filter by ACL before chunks enter context.
+- Explanation: Permissioned RAG is the missing control in this scenario. The right answer makes it explicit so the system can filter by ACL before chunks enter context.
 - Why A is wrong: It keeps post-answer filtering in control instead of adding a measurable permissioned RAG decision point.
 - Why B is wrong: It moves attention to a neighboring control instead of making permissioned RAG testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether permissioned RAG fixed or caused the failure.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether permissioned RAG fixed the failure.
 
-### Q49: A global retailer is comparing two release designs for a data and grounding pipeline. One design centers on anonymous chunks with no lineage; the other adds a measurable chunking and metadata step. Which design is more appropriate for production?
+### Q34: During an architecture review, a global retailer finds that raw PDFs pasted into prompts is being used as the shortcut, but it does not give the team a reliable way to extract, clean, segment, and normalize documents before indexing. What is the best next step?
 - ID: ags-hf-data-curation-and-knowledge-grounding-002
 - Domain: Data Curation and Knowledge Grounding
-- Topic: chunking and metadata; agentic_ai_general_study
+- Topic: document ETL; agentic_ai_general_study
 - Difficulty: medium
-- A. Use chunking and metadata as the control boundary and require the system to preserve source, tenant, time, and sensitivity metadata.
-- B. Prioritize reranking before validating the failure signal around chunking and metadata.
-- C. Bundle chunking and metadata, permissioned RAG, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated chunking and metadata check.
+- Scope: general_concept
+- Source: generated
+- A. Use document ETL as the control boundary and require the system to extract, clean, segment, and normalize documents before indexing.
+- B. Prioritize data freshness even though the observed failure is around document ETL.
+- C. Release prompt, model, and vector database changes together with one aggregate score.
+- D. Increase model capacity or context length while leaving document ETL implicit.
 - Answer: A
-- Explanation: The scenario is about chunking and metadata. The strongest answer fixes the failing layer directly: preserve source, tenant, time, and sensitivity metadata.
-- Why B is wrong: It moves attention to a neighboring control instead of making chunking and metadata testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether chunking and metadata fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the chunking and metadata gate until after users are exposed.
+- Explanation: Document ETL is the missing control in this scenario. The right answer makes it explicit so the system can extract, clean, segment, and normalize documents before indexing.
+- Why B is wrong: It moves attention to a neighboring control instead of making document ETL testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether document ETL fixed the failure.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
 
-### Q50: A hospital operations team is comparing two release designs for a data and grounding pipeline. One design centers on larger context as the only fix; the other adds a measurable reranking step. Which design is more appropriate for production?
+### Q35: During an architecture review, a hospital operations team finds that the failure is tied to chunking and metadata. The safer design is the one that can preserve source, tenant, time, and sensitivity metadata. What is the best next step?
 - ID: ags-hf-data-curation-and-knowledge-grounding-003
 - Domain: Data Curation and Knowledge Grounding
-- Topic: reranking; agentic_ai_general_study
+- Topic: chunking and metadata; agentic_ai_general_study
 - Difficulty: hard
-- A. Use chunking and metadata as the main gate even though reviewers are asking for reranking evidence.
-- B. Add a release gate for reranking: rerank candidate chunks before context assembly.
-- C. Bundle reranking, chunking and metadata, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated reranking check.
+- Scope: general_concept
+- Source: generated
+- A. Use vector database as the main gate even though reviewers are asking for chunking and metadata evidence.
+- B. Add a release gate for chunking and metadata: preserve source, tenant, time, and sensitivity metadata.
+- C. Release prompt, model, and vector database changes together with one aggregate score.
+- D. Increase model capacity or context length while leaving chunking and metadata implicit.
 - Answer: B
-- Explanation: The scenario is about reranking. The strongest answer fixes the failing layer directly: rerank candidate chunks before context assembly.
-- Why A is wrong: It moves attention to a neighboring control instead of making reranking testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether reranking fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the reranking gate until after users are exposed.
+- Explanation: Chunking and metadata is the missing control in this scenario. The right answer makes it explicit so the system can preserve source, tenant, time, and sensitivity metadata.
+- Why A is wrong: It moves attention to a neighboring control instead of making chunking and metadata testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether chunking and metadata fixed the failure.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
 
-### Q51: A semiconductor design group has a production-readiness review for a data and grounding pipeline. The review is focused on data freshness, because the system must use retrieval for changing facts. Which architecture keeps the boundary cleanest?
+### Q36: A semiconductor design group is triaging a failed pilot for a data and grounding pipeline. Chat completion models as vector indexes is being used as the shortcut, but it does not give the team a reliable way to represent chunks and queries for semantic retrieval. Which control addresses the root cause?
 - ID: ags-hf-data-curation-and-knowledge-grounding-004
 - Domain: Data Curation and Knowledge Grounding
-- Topic: data freshness; agentic_ai_general_study
+- Topic: embeddings; agentic_ai_general_study
 - Difficulty: expert
-- A. Use permissioned RAG as the main gate even though reviewers are asking for data freshness evidence.
-- B. Keep fine-tuning on volatile policy documents as the primary release control and record only final outputs.
-- C. Change the design around data freshness so the system can use retrieval for changing facts.
-- D. Wait for production incidents before adding a dedicated data freshness check.
+- Scope: general_concept
+- Source: generated
+- A. Use reranking as the main gate even though reviewers are asking for embeddings evidence.
+- B. Move the check to post-release monitoring without changing the release path for embeddings.
+- C. Change the design around embeddings so the system can represent chunks and queries for semantic retrieval.
+- D. Increase model capacity or context length while leaving embeddings implicit.
 - Answer: C
-- Explanation: The scenario is about data freshness. The strongest answer fixes the failing layer directly: use retrieval for changing facts.
-- Why A is wrong: It moves attention to a neighboring control instead of making data freshness testable in the scenario.
-- Why B is wrong: It keeps fine-tuning on volatile policy documents in control instead of adding a measurable data freshness decision point.
-- Why D is wrong: Waiting for incidents postpones the data freshness gate until after users are exposed.
+- Explanation: Embeddings is the missing control in this scenario. The right answer makes it explicit so the system can represent chunks and queries for semantic retrieval.
+- Why A is wrong: It moves attention to a neighboring control instead of making embeddings testable in the scenario.
+- Why B is wrong: Monitoring is useful, but this scenario needs embeddings controlled before release or execution.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
 
-### Q52: An automotive support team has a production-readiness review for a data and grounding pipeline. The review is focused on grounded citations, because the system must return answer evidence linked to source chunks. Which choice addresses the root cause?
+### Q37: An automotive support team is triaging a failed pilot for a data and grounding pipeline. The current design still relies on prompt context as the database. Reviewers need a control that can index embeddings with metadata filters and update policy. Which control addresses the root cause?
 - ID: ags-hf-data-curation-and-knowledge-grounding-005
 - Domain: Data Curation and Knowledge Grounding
-- Topic: grounded citations; agentic_ai_general_study
+- Topic: vector database; agentic_ai_general_study
 - Difficulty: medium
-- A. Use reranking as the main gate even though reviewers are asking for grounded citations evidence.
-- B. Keep uncited summaries as the primary release control and record only final outputs.
-- C. Prioritize data freshness before validating the failure signal around grounded citations.
-- D. Make grounded citations explicit in the workflow: return answer evidence linked to source chunks.
+- Scope: general_concept
+- Source: generated
+- A. Use hybrid search as the main gate even though reviewers are asking for vector database evidence.
+- B. Move the check to post-release monitoring without changing the release path for vector database.
+- C. Keep prompt context as the database as the main control and add a dashboard for final outputs.
+- D. Instrument and enforce vector database; the system must index embeddings with metadata filters and update policy.
 - Answer: D
-- Explanation: The scenario is about grounded citations. The strongest answer fixes the failing layer directly: return answer evidence linked to source chunks.
-- Why A is wrong: It moves attention to a neighboring control instead of making grounded citations testable in the scenario.
-- Why B is wrong: It keeps uncited summaries in control instead of adding a measurable grounded citations decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making grounded citations testable in the scenario.
+- Explanation: Vector database is the missing control in this scenario. The right answer makes it explicit so the system can index embeddings with metadata filters and update policy.
+- Why A is wrong: It moves attention to a neighboring control instead of making vector database testable in the scenario.
+- Why B is wrong: Monitoring is useful, but this scenario needs vector database controlled before release or execution.
+- Why C is wrong: It keeps prompt context as the database in control instead of adding a measurable vector database decision point.
 
-### Q53: A telecom network operations team is preparing a data and grounding pipeline for release. The current design relies on post-answer filtering, but the release gate needs to filter by ACL before chunks enter context. Which action best fits the requirement?
+### Q38: A telecom network operations team is building a data and grounding pipeline. The team can reproduce the failure around semantic search only. The missing control is the one that can combine lexical and vector retrieval when exact terms and semantics both matter. Which action best fits the requirement?
 - ID: ags-hf-data-curation-and-knowledge-grounding-006
 - Domain: Data Curation and Knowledge Grounding
-- Topic: permissioned RAG; agentic_ai_general_study
+- Topic: hybrid search; agentic_ai_general_study
 - Difficulty: hard
-- A. Use permissioned RAG as the control boundary and require the system to filter by ACL before chunks enter context.
-- B. Keep post-answer filtering as the primary release control and record only final outputs.
-- C. Prioritize data freshness before validating the failure signal around permissioned RAG.
-- D. Bundle permissioned RAG, grounded citations, and prompt changes into one release with one aggregate score.
+- Scope: general_concept
+- Source: generated
+- A. Put hybrid search before rollout so the team can combine lexical and vector retrieval when exact terms and semantics both matter.
+- B. Move the check to post-release monitoring without changing the release path for hybrid search.
+- C. Keep semantic search only as the main control and add a dashboard for final outputs.
+- D. Prioritize permissioned RAG even though the observed failure is around hybrid search.
 - Answer: A
-- Explanation: The scenario is about permissioned RAG. The strongest answer fixes the failing layer directly: filter by ACL before chunks enter context.
-- Why B is wrong: It keeps post-answer filtering in control instead of adding a measurable permissioned RAG decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making permissioned RAG testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether permissioned RAG fixed or caused the failure.
+- Explanation: Hybrid search is the missing control in this scenario. The right answer makes it explicit so the system can combine lexical and vector retrieval when exact terms and semantics both matter.
+- Why B is wrong: Monitoring is useful, but this scenario needs hybrid search controlled before release or execution.
+- Why C is wrong: It keeps semantic search only in control instead of adding a measurable hybrid search decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making hybrid search testable in the scenario.
 
-### Q54: A manufacturing quality team is preparing a data and grounding pipeline for release. The current design relies on anonymous chunks with no lineage, but the release gate needs to preserve source, tenant, time, and sensitivity metadata. Which implementation path is most appropriate?
+### Q39: A manufacturing quality team is building a data and grounding pipeline. The failure is tied to reranking. The safer design is the one that can rerank candidate chunks before context assembly. Which implementation path is most appropriate?
 - ID: ags-hf-data-curation-and-knowledge-grounding-007
 - Domain: Data Curation and Knowledge Grounding
-- Topic: chunking and metadata; agentic_ai_general_study
+- Topic: reranking; agentic_ai_general_study
 - Difficulty: hard
-- A. Wait for production incidents before adding a dedicated chunking and metadata check.
-- B. Add a release gate for chunking and metadata: preserve source, tenant, time, and sensitivity metadata.
-- C. Prioritize data freshness before validating the failure signal around chunking and metadata.
-- D. Bundle chunking and metadata, grounded citations, and prompt changes into one release with one aggregate score.
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and embeddings changes together with one aggregate score.
+- B. Make reranking explicit in the workflow: rerank candidate chunks before context assembly.
+- C. Keep larger context as the only fix as the main control and add a dashboard for final outputs.
+- D. Prioritize data freshness even though the observed failure is around reranking.
 - Answer: B
-- Explanation: The scenario is about chunking and metadata. The strongest answer fixes the failing layer directly: preserve source, tenant, time, and sensitivity metadata.
-- Why A is wrong: Waiting for incidents postpones the chunking and metadata gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making chunking and metadata testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether chunking and metadata fixed or caused the failure.
+- Explanation: Reranking is the missing control in this scenario. The right answer makes it explicit so the system can rerank candidate chunks before context assembly.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether reranking fixed the failure.
+- Why C is wrong: It keeps larger context as the only fix in control instead of adding a measurable reranking decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making reranking testable in the scenario.
 
-### Q55: A bank fraud team is reviewing a data and grounding pipeline before rollout. The main risk is reranking: the system must rerank candidate chunks before context assembly. Which option keeps the decision at the right layer?
+### Q40: A bank fraud team is choosing between a design centered on fine-tuning on volatile policy documents and one that makes data freshness explicit for a data and grounding pipeline. Which design should win?
 - ID: ags-hf-data-curation-and-knowledge-grounding-008
 - Domain: Data Curation and Knowledge Grounding
-- Topic: reranking; agentic_ai_general_study
+- Topic: data freshness; agentic_ai_general_study
 - Difficulty: easy
-- A. Wait for production incidents before adding a dedicated reranking check.
-- B. Use permissioned RAG as the main gate even though reviewers are asking for reranking evidence.
-- C. Change the design around reranking so the system can rerank candidate chunks before context assembly.
-- D. Bundle reranking, permissioned RAG, and prompt changes into one release with one aggregate score.
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and knowledge graph changes together with one aggregate score.
+- B. Increase model capacity or context length while leaving data freshness implicit.
+- C. Use data freshness as the control boundary and require the system to use retrieval for changing facts.
+- D. Prioritize hybrid search even though the observed failure is around data freshness.
 - Answer: C
-- Explanation: The scenario is about reranking. The strongest answer fixes the failing layer directly: rerank candidate chunks before context assembly.
-- Why A is wrong: Waiting for incidents postpones the reranking gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making reranking testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether reranking fixed or caused the failure.
-
-### Q56: An automotive support team is reviewing a data and grounding pipeline before rollout. The main risk is data freshness: the system must use retrieval for changing facts. Which option keeps the decision at the right layer?
-- ID: ags-hf-data-curation-and-knowledge-grounding-009
-- Domain: Data Curation and Knowledge Grounding
-- Topic: data freshness; agentic_ai_general_study
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated data freshness check.
-- B. Use grounded citations as the main gate even though reviewers are asking for data freshness evidence.
-- C. Keep fine-tuning on volatile policy documents as the primary release control and record only final outputs.
-- D. Make data freshness explicit in the workflow: use retrieval for changing facts.
-- Answer: D
-- Explanation: The scenario is about data freshness. The strongest answer fixes the failing layer directly: use retrieval for changing facts.
-- Why A is wrong: Waiting for incidents postpones the data freshness gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making data freshness testable in the scenario.
-- Why C is wrong: It keeps fine-tuning on volatile policy documents in control instead of adding a measurable data freshness decision point.
-
-### Q57: A global retailer is comparing two release designs for a data and grounding pipeline. One design centers on uncited summaries; the other adds a measurable grounded citations step. Which design is more appropriate for production?
-- ID: ags-hf-data-curation-and-knowledge-grounding-010
-- Domain: Data Curation and Knowledge Grounding
-- Topic: grounded citations; agentic_ai_general_study
-- Difficulty: expert
-- A. Prioritize reranking before validating the failure signal around grounded citations.
-- B. Use grounded citations as the control boundary and require the system to return answer evidence linked to source chunks.
-- C. Use data freshness as the main gate even though reviewers are asking for grounded citations evidence.
-- D. Keep uncited summaries as the primary release control and record only final outputs.
-- Answer: B
-- Explanation: The scenario is about grounded citations. The strongest answer fixes the failing layer directly: return answer evidence linked to source chunks.
-- Why A is wrong: It moves attention to a neighboring control instead of making grounded citations testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making grounded citations testable in the scenario.
-- Why D is wrong: It keeps uncited summaries in control instead of adding a measurable grounded citations decision point.
-
-### Q58: A global retailer is preparing a data and grounding pipeline for release. The current design relies on post-answer filtering, but the release gate needs to filter by ACL before chunks enter context. Which control should be added before rollout?
-- ID: ags-hf-data-curation-and-knowledge-grounding-011
-- Domain: Data Curation and Knowledge Grounding
-- Topic: permissioned RAG; agentic_ai_general_study
-- Difficulty: medium
-- A. Add a release gate for permissioned RAG: filter by ACL before chunks enter context.
-- B. Keep post-answer filtering as the primary release control and record only final outputs.
-- C. Prioritize data freshness before validating the failure signal around permissioned RAG.
-- D. Bundle permissioned RAG, grounded citations, and prompt changes into one release with one aggregate score.
-- Answer: A
-- Explanation: The scenario is about permissioned RAG. The strongest answer fixes the failing layer directly: filter by ACL before chunks enter context.
-- Why B is wrong: It keeps post-answer filtering in control instead of adding a measurable permissioned RAG decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making permissioned RAG testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether permissioned RAG fixed or caused the failure.
-
-### Q59: An insurance claims group sees a production failure tied to chunking and metadata. The team has been using anonymous chunks with no lineage; the next change needs to make chunking and metadata explicit. Which action best addresses the problem?
-- ID: ags-hf-data-curation-and-knowledge-grounding-012
-- Domain: Data Curation and Knowledge Grounding
-- Topic: chunking and metadata; agentic_ai_general_study
-- Difficulty: hard
-- A. Prioritize data freshness before validating the failure signal around chunking and metadata.
-- B. Bundle chunking and metadata, grounded citations, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated chunking and metadata check.
-- D. Change the design around chunking and metadata so the system can preserve source, tenant, time, and sensitivity metadata.
-- Answer: D
-- Explanation: The scenario is about chunking and metadata. The strongest answer fixes the failing layer directly: preserve source, tenant, time, and sensitivity metadata.
-- Why A is wrong: It moves attention to a neighboring control instead of making chunking and metadata testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether chunking and metadata fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the chunking and metadata gate until after users are exposed.
-
-### Q60: A cybersecurity response team has a production-readiness review for a data and grounding pipeline. The review is focused on reranking, because the system must rerank candidate chunks before context assembly. Which action best fits the requirement?
-- ID: ags-hf-data-curation-and-knowledge-grounding-013
-- Domain: Data Curation and Knowledge Grounding
-- Topic: reranking; agentic_ai_general_study
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated reranking check.
-- B. Use data freshness as the main gate even though reviewers are asking for reranking evidence.
-- C. Make reranking explicit in the workflow: rerank candidate chunks before context assembly.
-- D. Bundle reranking, data freshness, and prompt changes into one release with one aggregate score.
-- Answer: C
-- Explanation: The scenario is about reranking. The strongest answer fixes the failing layer directly: rerank candidate chunks before context assembly.
-- Why A is wrong: Waiting for incidents postpones the reranking gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making reranking testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether reranking fixed or caused the failure.
-
-### Q61: A hospital operations team has a production-readiness review for a data and grounding pipeline. The review is focused on data freshness, because the system must use retrieval for changing facts. Which choice addresses the root cause?
-- ID: ags-hf-data-curation-and-knowledge-grounding-014
-- Domain: Data Curation and Knowledge Grounding
-- Topic: data freshness; agentic_ai_general_study
-- Difficulty: expert
-- A. Keep fine-tuning on volatile policy documents as the primary release control and record only final outputs.
-- B. Use data freshness as the control boundary and require the system to use retrieval for changing facts.
-- C. Wait for production incidents before adding a dedicated data freshness check.
-- D. Use grounded citations as the main gate even though reviewers are asking for data freshness evidence.
-- Answer: B
-- Explanation: The scenario is about data freshness. The strongest answer fixes the failing layer directly: use retrieval for changing facts.
-- Why A is wrong: It keeps fine-tuning on volatile policy documents in control instead of adding a measurable data freshness decision point.
-- Why C is wrong: Waiting for incidents postpones the data freshness gate until after users are exposed.
+- Explanation: Data freshness is the missing control in this scenario. The right answer makes it explicit so the system can use retrieval for changing facts.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether data freshness fixed the failure.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
 - Why D is wrong: It moves attention to a neighboring control instead of making data freshness testable in the scenario.
 
-### Q62: A logistics planning team is comparing two release designs for a data and grounding pipeline. One design centers on uncited summaries; the other adds a measurable grounded citations step. Which design is more appropriate for production?
-- ID: ags-hf-data-curation-and-knowledge-grounding-015
+### Q41: An automotive support team is choosing between a design centered on uncited summaries and one that makes grounded citations explicit for a data and grounding pipeline. Which design should win?
+- ID: ags-hf-data-curation-and-knowledge-grounding-009
 - Domain: Data Curation and Knowledge Grounding
 - Topic: grounded citations; agentic_ai_general_study
-- Difficulty: medium
-- A. Add a release gate for grounded citations: return answer evidence linked to source chunks.
-- B. Use data freshness as the main gate even though reviewers are asking for grounded citations evidence.
-- C. Keep uncited summaries as the primary release control and record only final outputs.
-- D. Prioritize reranking before validating the failure signal around grounded citations.
-- Answer: A
-- Explanation: The scenario is about grounded citations. The strongest answer fixes the failing layer directly: return answer evidence linked to source chunks.
-- Why B is wrong: It moves attention to a neighboring control instead of making grounded citations testable in the scenario.
-- Why C is wrong: It keeps uncited summaries in control instead of adding a measurable grounded citations decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making grounded citations testable in the scenario.
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and permissioned RAG changes together with one aggregate score.
+- B. Increase model capacity or context length while leaving grounded citations implicit.
+- C. Use permissioned RAG as the main gate even though reviewers are asking for grounded citations evidence.
+- D. Add a release gate for grounded citations: return answer evidence linked to source chunks.
+- Answer: D
+- Explanation: Grounded citations is the missing control in this scenario. The right answer makes it explicit so the system can return answer evidence linked to source chunks.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether grounded citations fixed the failure.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making grounded citations testable in the scenario.
 
-### Q63: An automotive support team has a production-readiness review for a data and grounding pipeline. The review is focused on permissioned RAG, because the system must filter by ACL before chunks enter context. Which choice addresses the root cause?
-- ID: ags-hf-data-curation-and-knowledge-grounding-016
+### Q42: During an architecture review, a global retailer finds that flat chunks for every graph problem is being used as the shortcut, but it does not give the team a reliable way to represent entities and relationships when relationship reasoning matters. What is the best next step?
+- ID: ags-hf-data-curation-and-knowledge-grounding-010
+- Domain: Data Curation and Knowledge Grounding
+- Topic: knowledge graph; agentic_ai_general_study
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for knowledge graph.
+- B. Change the design around knowledge graph so the system can represent entities and relationships when relationship reasoning matters.
+- C. Increase model capacity or context length while leaving knowledge graph implicit.
+- D. Use hybrid search as the main gate even though reviewers are asking for knowledge graph evidence.
+- Answer: B
+- Explanation: Knowledge graph is the missing control in this scenario. The right answer makes it explicit so the system can represent entities and relationships when relationship reasoning matters.
+- Why A is wrong: Monitoring is useful, but this scenario needs knowledge graph controlled before release or execution.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making knowledge graph testable in the scenario.
+
+### Q43: A global retailer is building a data and grounding pipeline. Unversioned document dumps is being used as the shortcut, but it does not give the team a reliable way to track source, license, sensitivity, retention, and lineage. Which control should be added before rollout?
+- ID: ags-hf-data-curation-and-knowledge-grounding-011
+- Domain: Data Curation and Knowledge Grounding
+- Topic: corpus governance; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Instrument and enforce corpus governance; the system must track source, license, sensitivity, retention, and lineage.
+- B. Use data freshness as the main gate even though reviewers are asking for corpus governance evidence.
+- C. Move the check to post-release monitoring without changing the release path for corpus governance.
+- D. Keep unversioned document dumps as the main control and add a dashboard for final outputs.
+- Answer: A
+- Explanation: Corpus governance is the missing control in this scenario. The right answer makes it explicit so the system can track source, license, sensitivity, retention, and lineage.
+- Why B is wrong: It moves attention to a neighboring control instead of making corpus governance testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs corpus governance controlled before release or execution.
+- Why D is wrong: It keeps unversioned document dumps in control instead of adding a measurable corpus governance decision point.
+
+### Q44: An insurance claims group passes the happy-path demo for a data and grounding pipeline, but the failure appears when the system keeps post-answer filtering as the workaround. The release needs a design step that can filter by ACL before chunks enter context. Which change should be made before release?
+- ID: ags-hf-data-curation-and-knowledge-grounding-012
 - Domain: Data Curation and Knowledge Grounding
 - Topic: permissioned RAG; agentic_ai_general_study
 - Difficulty: hard
-- A. Keep post-answer filtering as the primary release control and record only final outputs.
-- B. Prioritize grounded citations before validating the failure signal around permissioned RAG.
-- C. Bundle permissioned RAG, data freshness, and prompt changes into one release with one aggregate score.
-- D. Change the design around permissioned RAG so the system can filter by ACL before chunks enter context.
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for permissioned RAG.
+- B. Keep post-answer filtering as the main control and add a dashboard for final outputs.
+- C. Prioritize grounded citations even though the observed failure is around permissioned RAG.
+- D. Put permissioned RAG before rollout so the team can filter by ACL before chunks enter context.
 - Answer: D
-- Explanation: The scenario is about permissioned RAG. The strongest answer fixes the failing layer directly: filter by ACL before chunks enter context.
-- Why A is wrong: It keeps post-answer filtering in control instead of adding a measurable permissioned RAG decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making permissioned RAG testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether permissioned RAG fixed or caused the failure.
+- Explanation: Permissioned RAG is the missing control in this scenario. The right answer makes it explicit so the system can filter by ACL before chunks enter context.
+- Why A is wrong: Monitoring is useful, but this scenario needs permissioned RAG controlled before release or execution.
+- Why B is wrong: It keeps post-answer filtering in control instead of adding a measurable permissioned RAG decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making permissioned RAG testable in the scenario.
 
-### Q64: A cybersecurity response team is reviewing a data and grounding pipeline before rollout. The main risk is chunking and metadata: the system must preserve source, tenant, time, and sensitivity metadata. Which option keeps the decision at the right layer?
-- ID: ags-hf-data-curation-and-knowledge-grounding-017
+### Q45: A cybersecurity response team is triaging a failed pilot for a data and grounding pipeline. Raw PDFs pasted into prompts is being used as the shortcut, but it does not give the team a reliable way to extract, clean, segment, and normalize documents before indexing. Which control addresses the root cause?
+- ID: ags-hf-data-curation-and-knowledge-grounding-013
+- Domain: Data Curation and Knowledge Grounding
+- Topic: document ETL; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Prioritize knowledge graph even though the observed failure is around document ETL.
+- B. Release prompt, model, and corpus governance changes together with one aggregate score.
+- C. Make document ETL explicit in the workflow: extract, clean, segment, and normalize documents before indexing.
+- D. Keep raw PDFs pasted into prompts as the main control and add a dashboard for final outputs.
+- Answer: C
+- Explanation: Document ETL is the missing control in this scenario. The right answer makes it explicit so the system can extract, clean, segment, and normalize documents before indexing.
+- Why A is wrong: It moves attention to a neighboring control instead of making document ETL testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether document ETL fixed the failure.
+- Why D is wrong: It keeps raw PDFs pasted into prompts in control instead of adding a measurable document ETL decision point.
+
+### Q46: A hospital operations team is triaging a failed pilot for a data and grounding pipeline. The failure is tied to chunking and metadata. The safer design is the one that can preserve source, tenant, time, and sensitivity metadata. Which control addresses the root cause?
+- ID: ags-hf-data-curation-and-knowledge-grounding-014
 - Domain: Data Curation and Knowledge Grounding
 - Topic: chunking and metadata; agentic_ai_general_study
-- Difficulty: hard
-- A. Bundle chunking and metadata, permissioned RAG, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated chunking and metadata check.
-- C. Make chunking and metadata explicit in the workflow: preserve source, tenant, time, and sensitivity metadata.
-- D. Prioritize reranking before validating the failure signal around chunking and metadata.
-- Answer: C
-- Explanation: The scenario is about chunking and metadata. The strongest answer fixes the failing layer directly: preserve source, tenant, time, and sensitivity metadata.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether chunking and metadata fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the chunking and metadata gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making chunking and metadata testable in the scenario.
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving chunking and metadata implicit.
+- B. Use chunking and metadata as the control boundary and require the system to preserve source, tenant, time, and sensitivity metadata.
+- C. Prioritize embeddings even though the observed failure is around chunking and metadata.
+- D. Release prompt, model, and corpus governance changes together with one aggregate score.
+- Answer: B
+- Explanation: Chunking and metadata is the missing control in this scenario. The right answer makes it explicit so the system can preserve source, tenant, time, and sensitivity metadata.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making chunking and metadata testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether chunking and metadata fixed the failure.
 
-### Q65: A hospital operations team is comparing two release designs for a data and grounding pipeline. One design centers on larger context as the only fix; the other adds a measurable reranking step. Which design is more appropriate for production?
+### Q47: During an architecture review, a logistics planning team finds that the current design still relies on chat completion models as vector indexes. Reviewers need a control that can represent chunks and queries for semantic retrieval. What is the best next step?
+- ID: ags-hf-data-curation-and-knowledge-grounding-015
+- Domain: Data Curation and Knowledge Grounding
+- Topic: embeddings; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Add a release gate for embeddings: represent chunks and queries for semantic retrieval.
+- B. Release prompt, model, and corpus governance changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving embeddings implicit.
+- D. Use corpus governance as the main gate even though reviewers are asking for embeddings evidence.
+- Answer: A
+- Explanation: Embeddings is the missing control in this scenario. The right answer makes it explicit so the system can represent chunks and queries for semantic retrieval.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether embeddings fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making embeddings testable in the scenario.
+
+### Q48: An automotive support team is triaging a failed pilot for a data and grounding pipeline. The team can reproduce the failure around prompt context as the database. The missing control is the one that can index embeddings with metadata filters and update policy. Which control addresses the root cause?
+- ID: ags-hf-data-curation-and-knowledge-grounding-016
+- Domain: Data Curation and Knowledge Grounding
+- Topic: vector database; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving vector database implicit.
+- B. Use permissioned RAG as the main gate even though reviewers are asking for vector database evidence.
+- C. Move the check to post-release monitoring without changing the release path for vector database.
+- D. Change the design around vector database so the system can index embeddings with metadata filters and update policy.
+- Answer: D
+- Explanation: Vector database is the missing control in this scenario. The right answer makes it explicit so the system can index embeddings with metadata filters and update policy.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making vector database testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs vector database controlled before release or execution.
+
+### Q49: A cybersecurity response team is choosing between a design centered on semantic search only and one that makes hybrid search explicit for a data and grounding pipeline. Which design should win?
+- ID: ags-hf-data-curation-and-knowledge-grounding-017
+- Domain: Data Curation and Knowledge Grounding
+- Topic: hybrid search; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for hybrid search.
+- B. Keep semantic search only as the main control and add a dashboard for final outputs.
+- C. Instrument and enforce hybrid search; the system must combine lexical and vector retrieval when exact terms and semantics both matter.
+- D. Use document ETL as the main gate even though reviewers are asking for hybrid search evidence.
+- Answer: C
+- Explanation: Hybrid search is the missing control in this scenario. The right answer makes it explicit so the system can combine lexical and vector retrieval when exact terms and semantics both matter.
+- Why A is wrong: Monitoring is useful, but this scenario needs hybrid search controlled before release or execution.
+- Why B is wrong: It keeps semantic search only in control instead of adding a measurable hybrid search decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making hybrid search testable in the scenario.
+
+### Q50: During an architecture review, a hospital operations team finds that larger context as the only fix is being used as the shortcut, but it does not give the team a reliable way to rerank candidate chunks before context assembly. What is the best next step?
 - ID: ags-hf-data-curation-and-knowledge-grounding-018
 - Domain: Data Curation and Knowledge Grounding
 - Topic: reranking; agentic_ai_general_study
 - Difficulty: medium
-- A. Use grounded citations as the main gate even though reviewers are asking for reranking evidence.
-- B. Use reranking as the control boundary and require the system to rerank candidate chunks before context assembly.
-- C. Bundle reranking, grounded citations, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated reranking check.
+- Scope: general_concept
+- Source: generated
+- A. Prioritize data freshness even though the observed failure is around reranking.
+- B. Put reranking before rollout so the team can rerank candidate chunks before context assembly.
+- C. Move the check to post-release monitoring without changing the release path for reranking.
+- D. Keep larger context as the only fix as the main control and add a dashboard for final outputs.
 - Answer: B
-- Explanation: The scenario is about reranking. The strongest answer fixes the failing layer directly: rerank candidate chunks before context assembly.
+- Explanation: Reranking is the missing control in this scenario. The right answer makes it explicit so the system can rerank candidate chunks before context assembly.
 - Why A is wrong: It moves attention to a neighboring control instead of making reranking testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether reranking fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the reranking gate until after users are exposed.
+- Why C is wrong: Monitoring is useful, but this scenario needs reranking controlled before release or execution.
+- Why D is wrong: It keeps larger context as the only fix in control instead of adding a measurable reranking decision point.
 
-### Q66: A logistics planning team is comparing two release designs for a data and grounding pipeline. One design centers on fine-tuning on volatile policy documents; the other adds a measurable data freshness step. Which design is more appropriate for production?
+### Q51: During an architecture review, a logistics planning team finds that the current design still relies on fine-tuning on volatile policy documents. Reviewers need a control that can use retrieval for changing facts. What is the best next step?
 - ID: ags-hf-data-curation-and-knowledge-grounding-019
 - Domain: Data Curation and Knowledge Grounding
 - Topic: data freshness; agentic_ai_general_study
 - Difficulty: hard
-- A. Add a release gate for data freshness: use retrieval for changing facts.
-- B. Wait for production incidents before adding a dedicated data freshness check.
-- C. Use permissioned RAG as the main gate even though reviewers are asking for data freshness evidence.
-- D. Keep fine-tuning on volatile policy documents as the primary release control and record only final outputs.
+- Scope: general_concept
+- Source: generated
+- A. Make data freshness explicit in the workflow: use retrieval for changing facts.
+- B. Keep fine-tuning on volatile policy documents as the main control and add a dashboard for final outputs.
+- C. Prioritize hybrid search even though the observed failure is around data freshness.
+- D. Release prompt, model, and knowledge graph changes together with one aggregate score.
 - Answer: A
-- Explanation: The scenario is about data freshness. The strongest answer fixes the failing layer directly: use retrieval for changing facts.
-- Why B is wrong: Waiting for incidents postpones the data freshness gate until after users are exposed.
+- Explanation: Data freshness is the missing control in this scenario. The right answer makes it explicit so the system can use retrieval for changing facts.
+- Why B is wrong: It keeps fine-tuning on volatile policy documents in control instead of adding a measurable data freshness decision point.
 - Why C is wrong: It moves attention to a neighboring control instead of making data freshness testable in the scenario.
-- Why D is wrong: It keeps fine-tuning on volatile policy documents in control instead of adding a measurable data freshness decision point.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether data freshness fixed the failure.
 
-### Q67: A pharmaceutical research team is preparing a data and grounding pipeline for release. The current design relies on uncited summaries, but the release gate needs to return answer evidence linked to source chunks. Which choice addresses the root cause?
+### Q52: A pharmaceutical research team is building a data and grounding pipeline. The team can reproduce the failure around uncited summaries. The missing control is the one that can return answer evidence linked to source chunks. Which choice addresses the root cause?
 - ID: ags-hf-data-curation-and-knowledge-grounding-020
 - Domain: Data Curation and Knowledge Grounding
 - Topic: grounded citations; agentic_ai_general_study
 - Difficulty: hard
-- A. Change the design around grounded citations so the system can return answer evidence linked to source chunks.
-- B. Use reranking as the main gate even though reviewers are asking for grounded citations evidence.
-- C. Keep uncited summaries as the primary release control and record only final outputs.
-- D. Prioritize data freshness before validating the failure signal around grounded citations.
+- Scope: general_concept
+- Source: generated
+- A. Use grounded citations as the control boundary and require the system to return answer evidence linked to source chunks.
+- B. Prioritize data freshness even though the observed failure is around grounded citations.
+- C. Release prompt, model, and reranking changes together with one aggregate score.
+- D. Increase model capacity or context length while leaving grounded citations implicit.
 - Answer: A
-- Explanation: The scenario is about grounded citations. The strongest answer fixes the failing layer directly: return answer evidence linked to source chunks.
+- Explanation: Grounded citations is the missing control in this scenario. The right answer makes it explicit so the system can return answer evidence linked to source chunks.
 - Why B is wrong: It moves attention to a neighboring control instead of making grounded citations testable in the scenario.
-- Why C is wrong: It keeps uncited summaries in control instead of adding a measurable grounded citations decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making grounded citations testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether grounded citations fixed the failure.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
 
-### Q68: A pharmaceutical research team has a production-readiness review for a data and grounding pipeline. The review is focused on permissioned RAG, because the system must filter by ACL before chunks enter context. Which implementation path is most appropriate?
+### Q53: A pharmaceutical research team is triaging a failed pilot for a data and grounding pipeline. The team can reproduce the failure around flat chunks for every graph problem. The missing control is the one that can represent entities and relationships when relationship reasoning matters. Which control addresses the root cause?
 - ID: ags-hf-data-curation-and-knowledge-grounding-021
 - Domain: Data Curation and Knowledge Grounding
-- Topic: permissioned RAG; agentic_ai_general_study
+- Topic: knowledge graph; agentic_ai_general_study
 - Difficulty: expert
-- A. Bundle permissioned RAG, data freshness, and prompt changes into one release with one aggregate score.
-- B. Make permissioned RAG explicit in the workflow: filter by ACL before chunks enter context.
-- C. Keep post-answer filtering as the primary release control and record only final outputs.
-- D. Prioritize grounded citations before validating the failure signal around permissioned RAG.
+- Scope: general_concept
+- Source: generated
+- A. Use chunking and metadata as the main gate even though reviewers are asking for knowledge graph evidence.
+- B. Add a release gate for knowledge graph: represent entities and relationships when relationship reasoning matters.
+- C. Release prompt, model, and chunking and metadata changes together with one aggregate score.
+- D. Increase model capacity or context length while leaving knowledge graph implicit.
 - Answer: B
-- Explanation: The scenario is about permissioned RAG. The strongest answer fixes the failing layer directly: filter by ACL before chunks enter context.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether permissioned RAG fixed or caused the failure.
-- Why C is wrong: It keeps post-answer filtering in control instead of adding a measurable permissioned RAG decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making permissioned RAG testable in the scenario.
+- Explanation: Knowledge graph is the missing control in this scenario. The right answer makes it explicit so the system can represent entities and relationships when relationship reasoning matters.
+- Why A is wrong: It moves attention to a neighboring control instead of making knowledge graph testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether knowledge graph fixed the failure.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
 
-### Q69: A global retailer is comparing two release designs for a data and grounding pipeline. One design centers on anonymous chunks with no lineage; the other adds a measurable chunking and metadata step. Which design is more appropriate for production?
+### Q54: During an architecture review, a global retailer finds that the team can reproduce the failure around unversioned document dumps. The missing control is the one that can track source, license, sensitivity, retention, and lineage. What is the best next step?
 - ID: ags-hf-data-curation-and-knowledge-grounding-022
 - Domain: Data Curation and Knowledge Grounding
-- Topic: chunking and metadata; agentic_ai_general_study
+- Topic: corpus governance; agentic_ai_general_study
 - Difficulty: medium
-- A. Bundle chunking and metadata, data freshness, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated chunking and metadata check.
-- C. Use chunking and metadata as the control boundary and require the system to preserve source, tenant, time, and sensitivity metadata.
-- D. Prioritize grounded citations before validating the failure signal around chunking and metadata.
+- Scope: general_concept
+- Source: generated
+- A. Use knowledge graph as the main gate even though reviewers are asking for corpus governance evidence.
+- B. Move the check to post-release monitoring without changing the release path for corpus governance.
+- C. Change the design around corpus governance so the system can track source, license, sensitivity, retention, and lineage.
+- D. Increase model capacity or context length while leaving corpus governance implicit.
 - Answer: C
-- Explanation: The scenario is about chunking and metadata. The strongest answer fixes the failing layer directly: preserve source, tenant, time, and sensitivity metadata.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether chunking and metadata fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the chunking and metadata gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making chunking and metadata testable in the scenario.
+- Explanation: Corpus governance is the missing control in this scenario. The right answer makes it explicit so the system can track source, license, sensitivity, retention, and lineage.
+- Why A is wrong: It moves attention to a neighboring control instead of making corpus governance testable in the scenario.
+- Why B is wrong: Monitoring is useful, but this scenario needs corpus governance controlled before release or execution.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
 
-### Q70: A public-sector casework team is reviewing a data and grounding pipeline before rollout. The main risk is reranking: the system must rerank candidate chunks before context assembly. Which option keeps the decision at the right layer?
+### Q55: A public-sector casework team is choosing between a design centered on post-answer filtering and one that makes permissioned RAG explicit for a data and grounding pipeline. Which design should win?
 - ID: ags-hf-data-curation-and-knowledge-grounding-023
 - Domain: Data Curation and Knowledge Grounding
-- Topic: reranking; agentic_ai_general_study
+- Topic: permissioned RAG; agentic_ai_general_study
 - Difficulty: hard
-- A. Bundle reranking, grounded citations, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated reranking check.
-- C. Use grounded citations as the main gate even though reviewers are asking for reranking evidence.
-- D. Add a release gate for reranking: rerank candidate chunks before context assembly.
+- Scope: general_concept
+- Source: generated
+- A. Use document ETL as the main gate even though reviewers are asking for permissioned RAG evidence.
+- B. Move the check to post-release monitoring without changing the release path for permissioned RAG.
+- C. Keep post-answer filtering as the main control and add a dashboard for final outputs.
+- D. Instrument and enforce permissioned RAG; the system must filter by ACL before chunks enter context.
 - Answer: D
-- Explanation: The scenario is about reranking. The strongest answer fixes the failing layer directly: rerank candidate chunks before context assembly.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether reranking fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the reranking gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making reranking testable in the scenario.
+- Explanation: Permissioned RAG is the missing control in this scenario. The right answer makes it explicit so the system can filter by ACL before chunks enter context.
+- Why A is wrong: It moves attention to a neighboring control instead of making permissioned RAG testable in the scenario.
+- Why B is wrong: Monitoring is useful, but this scenario needs permissioned RAG controlled before release or execution.
+- Why C is wrong: It keeps post-answer filtering in control instead of adding a measurable permissioned RAG decision point.
 
-### Q71: A bank fraud team has a production-readiness review for a data and grounding pipeline. The review is focused on data freshness, because the system must use retrieval for changing facts. Which architecture keeps the boundary cleanest?
+### Q56: A bank fraud team is triaging a failed pilot for a data and grounding pipeline. Raw PDFs pasted into prompts is being used as the shortcut, but it does not give the team a reliable way to extract, clean, segment, and normalize documents before indexing. Which control addresses the root cause?
 - ID: ags-hf-data-curation-and-knowledge-grounding-024
 - Domain: Data Curation and Knowledge Grounding
-- Topic: data freshness; agentic_ai_general_study
+- Topic: document ETL; agentic_ai_general_study
 - Difficulty: expert
-- A. Change the design around data freshness so the system can use retrieval for changing facts.
-- B. Wait for production incidents before adding a dedicated data freshness check.
-- C. Use reranking as the main gate even though reviewers are asking for data freshness evidence.
-- D. Keep fine-tuning on volatile policy documents as the primary release control and record only final outputs.
+- Scope: general_concept
+- Source: generated
+- A. Put document ETL before rollout so the team can extract, clean, segment, and normalize documents before indexing.
+- B. Move the check to post-release monitoring without changing the release path for document ETL.
+- C. Keep raw PDFs pasted into prompts as the main control and add a dashboard for final outputs.
+- D. Prioritize knowledge graph even though the observed failure is around document ETL.
 - Answer: A
-- Explanation: The scenario is about data freshness. The strongest answer fixes the failing layer directly: use retrieval for changing facts.
-- Why B is wrong: Waiting for incidents postpones the data freshness gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making data freshness testable in the scenario.
-- Why D is wrong: It keeps fine-tuning on volatile policy documents in control instead of adding a measurable data freshness decision point.
+- Explanation: Document ETL is the missing control in this scenario. The right answer makes it explicit so the system can extract, clean, segment, and normalize documents before indexing.
+- Why B is wrong: Monitoring is useful, but this scenario needs document ETL controlled before release or execution.
+- Why C is wrong: It keeps raw PDFs pasted into prompts in control instead of adding a measurable document ETL decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making document ETL testable in the scenario.
 
-### Q72: A pharmaceutical research team sees a production failure tied to grounded citations. The team has been using uncited summaries; the next change needs to make grounded citations explicit. Which action best addresses the problem?
+### Q57: A pharmaceutical research team passes the happy-path demo for a data and grounding pipeline, but the failure appears when the system keeps anonymous chunks with no lineage as the workaround. The release needs a design step that can preserve source, tenant, time, and sensitivity metadata. Which change should be made before release?
 - ID: ags-hf-data-curation-and-knowledge-grounding-025
 - Domain: Data Curation and Knowledge Grounding
-- Topic: grounded citations; agentic_ai_general_study
+- Topic: chunking and metadata; agentic_ai_general_study
 - Difficulty: medium
-- A. Prioritize data freshness before validating the failure signal around grounded citations.
-- B. Make grounded citations explicit in the workflow: return answer evidence linked to source chunks.
-- C. Use reranking as the main gate even though reviewers are asking for grounded citations evidence.
-- D. Keep uncited summaries as the primary release control and record only final outputs.
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and vector database changes together with one aggregate score.
+- B. Make chunking and metadata explicit in the workflow: preserve source, tenant, time, and sensitivity metadata.
+- C. Keep anonymous chunks with no lineage as the main control and add a dashboard for final outputs.
+- D. Prioritize embeddings even though the observed failure is around chunking and metadata.
 - Answer: B
-- Explanation: The scenario is about grounded citations. The strongest answer fixes the failing layer directly: return answer evidence linked to source chunks.
-- Why A is wrong: It moves attention to a neighboring control instead of making grounded citations testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making grounded citations testable in the scenario.
-- Why D is wrong: It keeps uncited summaries in control instead of adding a measurable grounded citations decision point.
+- Explanation: Chunking and metadata is the missing control in this scenario. The right answer makes it explicit so the system can preserve source, tenant, time, and sensitivity metadata.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether chunking and metadata fixed the failure.
+- Why C is wrong: It keeps anonymous chunks with no lineage in control instead of adding a measurable chunking and metadata decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making chunking and metadata testable in the scenario.
 
-### Q73: A telecom network operations team sees a production failure tied to permissioned RAG. The team has been using post-answer filtering; the next change needs to make permissioned RAG explicit. Which action best addresses the problem?
+### Q58: A telecom network operations team passes the happy-path demo for a data and grounding pipeline, but chat completion models as vector indexes is being used as the shortcut, but it does not give the team a reliable way to represent chunks and queries for semantic retrieval. Which change should be made before release?
 - ID: ags-hf-data-curation-and-knowledge-grounding-026
 - Domain: Data Curation and Knowledge Grounding
-- Topic: permissioned RAG; agentic_ai_general_study
+- Topic: embeddings; agentic_ai_general_study
 - Difficulty: hard
-- A. Prioritize data freshness before validating the failure signal around permissioned RAG.
-- B. Bundle permissioned RAG, grounded citations, and prompt changes into one release with one aggregate score.
-- C. Use permissioned RAG as the control boundary and require the system to filter by ACL before chunks enter context.
-- D. Keep post-answer filtering as the primary release control and record only final outputs.
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and reranking changes together with one aggregate score.
+- B. Increase model capacity or context length while leaving embeddings implicit.
+- C. Use embeddings as the control boundary and require the system to represent chunks and queries for semantic retrieval.
+- D. Prioritize knowledge graph even though the observed failure is around embeddings.
 - Answer: C
-- Explanation: The scenario is about permissioned RAG. The strongest answer fixes the failing layer directly: filter by ACL before chunks enter context.
-- Why A is wrong: It moves attention to a neighboring control instead of making permissioned RAG testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether permissioned RAG fixed or caused the failure.
-- Why D is wrong: It keeps post-answer filtering in control instead of adding a measurable permissioned RAG decision point.
+- Explanation: Embeddings is the missing control in this scenario. The right answer makes it explicit so the system can represent chunks and queries for semantic retrieval.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether embeddings fixed the failure.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making embeddings testable in the scenario.
 
-### Q74: A public-sector casework team is reviewing a data and grounding pipeline before rollout. The main risk is chunking and metadata: the system must preserve source, tenant, time, and sensitivity metadata. Which option keeps the decision at the right layer?
+### Q59: A public-sector casework team is choosing between a design centered on prompt context as the database and one that makes vector database explicit for a data and grounding pipeline. Which design should win?
 - ID: ags-hf-data-curation-and-knowledge-grounding-027
 - Domain: Data Curation and Knowledge Grounding
-- Topic: chunking and metadata; agentic_ai_general_study
+- Topic: vector database; agentic_ai_general_study
 - Difficulty: hard
-- A. Prioritize permissioned RAG before validating the failure signal around chunking and metadata.
-- B. Bundle chunking and metadata, reranking, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated chunking and metadata check.
-- D. Add a release gate for chunking and metadata: preserve source, tenant, time, and sensitivity metadata.
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and chunking and metadata changes together with one aggregate score.
+- B. Increase model capacity or context length while leaving vector database implicit.
+- C. Use chunking and metadata as the main gate even though reviewers are asking for vector database evidence.
+- D. Add a release gate for vector database: index embeddings with metadata filters and update policy.
 - Answer: D
-- Explanation: The scenario is about chunking and metadata. The strongest answer fixes the failing layer directly: preserve source, tenant, time, and sensitivity metadata.
-- Why A is wrong: It moves attention to a neighboring control instead of making chunking and metadata testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether chunking and metadata fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the chunking and metadata gate until after users are exposed.
+- Explanation: Vector database is the missing control in this scenario. The right answer makes it explicit so the system can index embeddings with metadata filters and update policy.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether vector database fixed the failure.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making vector database testable in the scenario.
 
-### Q75: A cybersecurity response team has a production-readiness review for a data and grounding pipeline. The review is focused on reranking, because the system must rerank candidate chunks before context assembly. Which architecture keeps the boundary cleanest?
+### Q60: A cybersecurity response team is triaging a failed pilot for a data and grounding pipeline. The failure is tied to hybrid search. The safer design is the one that can combine lexical and vector retrieval when exact terms and semantics both matter. Which control addresses the root cause?
 - ID: ags-hf-data-curation-and-knowledge-grounding-028
 - Domain: Data Curation and Knowledge Grounding
-- Topic: reranking; agentic_ai_general_study
+- Topic: hybrid search; agentic_ai_general_study
 - Difficulty: easy
-- A. Change the design around reranking so the system can rerank candidate chunks before context assembly.
-- B. Bundle reranking, data freshness, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated reranking check.
-- D. Use data freshness as the main gate even though reviewers are asking for reranking evidence.
+- Scope: general_concept
+- Source: generated
+- A. Change the design around hybrid search so the system can combine lexical and vector retrieval when exact terms and semantics both matter.
+- B. Increase model capacity or context length while leaving hybrid search implicit.
+- C. Use corpus governance as the main gate even though reviewers are asking for hybrid search evidence.
+- D. Move the check to post-release monitoring without changing the release path for hybrid search.
 - Answer: A
-- Explanation: The scenario is about reranking. The strongest answer fixes the failing layer directly: rerank candidate chunks before context assembly.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether reranking fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the reranking gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making reranking testable in the scenario.
+- Explanation: Hybrid search is the missing control in this scenario. The right answer makes it explicit so the system can combine lexical and vector retrieval when exact terms and semantics both matter.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making hybrid search testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs hybrid search controlled before release or execution.
 
-### Q76: A pharmaceutical research team is reviewing a data and grounding pipeline before rollout. The main risk is data freshness: the system must use retrieval for changing facts. Which option keeps the decision at the right layer?
+### Q61: A pharmaceutical research team is choosing between a design centered on larger context as the only fix and one that makes reranking explicit for a data and grounding pipeline. Which design should win?
 - ID: ags-hf-data-curation-and-knowledge-grounding-029
 - Domain: Data Curation and Knowledge Grounding
-- Topic: data freshness; agentic_ai_general_study
+- Topic: reranking; agentic_ai_general_study
 - Difficulty: hard
-- A. Keep fine-tuning on volatile policy documents as the primary release control and record only final outputs.
-- B. Make data freshness explicit in the workflow: use retrieval for changing facts.
-- C. Wait for production incidents before adding a dedicated data freshness check.
-- D. Use chunking and metadata as the main gate even though reviewers are asking for data freshness evidence.
+- Scope: general_concept
+- Source: generated
+- A. Keep larger context as the only fix as the main control and add a dashboard for final outputs.
+- B. Instrument and enforce reranking; the system must rerank candidate chunks before context assembly.
+- C. Use document ETL as the main gate even though reviewers are asking for reranking evidence.
+- D. Move the check to post-release monitoring without changing the release path for reranking.
 - Answer: B
-- Explanation: The scenario is about data freshness. The strongest answer fixes the failing layer directly: use retrieval for changing facts.
-- Why A is wrong: It keeps fine-tuning on volatile policy documents in control instead of adding a measurable data freshness decision point.
-- Why C is wrong: Waiting for incidents postpones the data freshness gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making data freshness testable in the scenario.
+- Explanation: Reranking is the missing control in this scenario. The right answer makes it explicit so the system can rerank candidate chunks before context assembly.
+- Why A is wrong: It keeps larger context as the only fix in control instead of adding a measurable reranking decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making reranking testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs reranking controlled before release or execution.
 
-### Q77: A global retailer is reviewing a data and grounding pipeline before rollout. The main risk is grounded citations: the system must return answer evidence linked to source chunks. Which option keeps the decision at the right layer?
+### Q62: A global retailer is choosing between a design centered on fine-tuning on volatile policy documents and one that makes data freshness explicit for a data and grounding pipeline. Which design should win?
 - ID: ags-hf-data-curation-and-knowledge-grounding-030
 - Domain: Data Curation and Knowledge Grounding
-- Topic: grounded citations; agentic_ai_general_study
+- Topic: data freshness; agentic_ai_general_study
 - Difficulty: expert
-- A. Use data freshness as the main gate even though reviewers are asking for grounded citations evidence.
-- B. Keep uncited summaries as the primary release control and record only final outputs.
-- C. Prioritize reranking before validating the failure signal around grounded citations.
-- D. Use grounded citations as the control boundary and require the system to return answer evidence linked to source chunks.
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for data freshness.
+- B. Keep fine-tuning on volatile policy documents as the main control and add a dashboard for final outputs.
+- C. Prioritize embeddings even though the observed failure is around data freshness.
+- D. Put data freshness before rollout so the team can use retrieval for changing facts.
 - Answer: D
-- Explanation: The scenario is about grounded citations. The strongest answer fixes the failing layer directly: return answer evidence linked to source chunks.
-- Why A is wrong: It moves attention to a neighboring control instead of making grounded citations testable in the scenario.
-- Why B is wrong: It keeps uncited summaries in control instead of adding a measurable grounded citations decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making grounded citations testable in the scenario.
+- Explanation: Data freshness is the missing control in this scenario. The right answer makes it explicit so the system can use retrieval for changing facts.
+- Why A is wrong: Monitoring is useful, but this scenario needs data freshness controlled before release or execution.
+- Why B is wrong: It keeps fine-tuning on volatile policy documents in control instead of adding a measurable data freshness decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making data freshness testable in the scenario.
 
-### Q78: A bank fraud team is preparing a data and grounding pipeline for release. The current design relies on post-answer filtering, but the release gate needs to filter by ACL before chunks enter context. Which action best fits the requirement?
+### Q63: A bank fraud team is building a data and grounding pipeline. The failure is tied to grounded citations. The safer design is the one that can return answer evidence linked to source chunks. Which action best fits the requirement?
 - ID: ags-hf-data-curation-and-knowledge-grounding-031
 - Domain: Data Curation and Knowledge Grounding
-- Topic: permissioned RAG; agentic_ai_general_study
+- Topic: grounded citations; agentic_ai_general_study
 - Difficulty: medium
-- A. Prioritize chunking and metadata before validating the failure signal around permissioned RAG.
-- B. Bundle permissioned RAG, reranking, and prompt changes into one release with one aggregate score.
-- C. Add a release gate for permissioned RAG: filter by ACL before chunks enter context.
-- D. Keep post-answer filtering as the primary release control and record only final outputs.
+- Scope: general_concept
+- Source: generated
+- A. Prioritize chunking and metadata even though the observed failure is around grounded citations.
+- B. Release prompt, model, and corpus governance changes together with one aggregate score.
+- C. Make grounded citations explicit in the workflow: return answer evidence linked to source chunks.
+- D. Keep uncited summaries as the main control and add a dashboard for final outputs.
 - Answer: C
-- Explanation: The scenario is about permissioned RAG. The strongest answer fixes the failing layer directly: filter by ACL before chunks enter context.
-- Why A is wrong: It moves attention to a neighboring control instead of making permissioned RAG testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether permissioned RAG fixed or caused the failure.
-- Why D is wrong: It keeps post-answer filtering in control instead of adding a measurable permissioned RAG decision point.
+- Explanation: Grounded citations is the missing control in this scenario. The right answer makes it explicit so the system can return answer evidence linked to source chunks.
+- Why A is wrong: It moves attention to a neighboring control instead of making grounded citations testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether grounded citations fixed the failure.
+- Why D is wrong: It keeps uncited summaries in control instead of adding a measurable grounded citations decision point.
 
-### Q79: A public-sector casework team has a production-readiness review for a data and grounding pipeline. The review is focused on chunking and metadata, because the system must preserve source, tenant, time, and sensitivity metadata. Which choice addresses the root cause?
+### Q64: A public-sector casework team is triaging a failed pilot for a data and grounding pipeline. The failure appears when the system keeps flat chunks for every graph problem as the workaround. The release needs a design step that can represent entities and relationships when relationship reasoning matters. Which control addresses the root cause?
 - ID: ags-hf-data-curation-and-knowledge-grounding-032
 - Domain: Data Curation and Knowledge Grounding
-- Topic: chunking and metadata; agentic_ai_general_study
+- Topic: knowledge graph; agentic_ai_general_study
 - Difficulty: hard
-- A. Wait for production incidents before adding a dedicated chunking and metadata check.
-- B. Change the design around chunking and metadata so the system can preserve source, tenant, time, and sensitivity metadata.
-- C. Prioritize permissioned RAG before validating the failure signal around chunking and metadata.
-- D. Bundle chunking and metadata, reranking, and prompt changes into one release with one aggregate score.
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving knowledge graph implicit.
+- B. Use knowledge graph as the control boundary and require the system to represent entities and relationships when relationship reasoning matters.
+- C. Prioritize corpus governance even though the observed failure is around knowledge graph.
+- D. Release prompt, model, and grounded citations changes together with one aggregate score.
 - Answer: B
-- Explanation: The scenario is about chunking and metadata. The strongest answer fixes the failing layer directly: preserve source, tenant, time, and sensitivity metadata.
-- Why A is wrong: Waiting for incidents postpones the chunking and metadata gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making chunking and metadata testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether chunking and metadata fixed or caused the failure.
+- Explanation: Knowledge graph is the missing control in this scenario. The right answer makes it explicit so the system can represent entities and relationships when relationship reasoning matters.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making knowledge graph testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether knowledge graph fixed the failure.
 
-### Q80: A global retailer has a production-readiness review for a data and grounding pipeline. The review is focused on reranking, because the system must rerank candidate chunks before context assembly. Which control should be added before rollout?
-- ID: ags-hf-data-curation-and-knowledge-grounding-033
-- Domain: Data Curation and Knowledge Grounding
-- Topic: reranking; agentic_ai_general_study
-- Difficulty: hard
-- A. Make reranking explicit in the workflow: rerank candidate chunks before context assembly.
-- B. Bundle reranking, permissioned RAG, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated reranking check.
-- D. Use permissioned RAG as the main gate even though reviewers are asking for reranking evidence.
-- Answer: A
-- Explanation: The scenario is about reranking. The strongest answer fixes the failing layer directly: rerank candidate chunks before context assembly.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether reranking fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the reranking gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making reranking testable in the scenario.
-
-### Q81: A pharmaceutical research team is comparing two release designs for a data and grounding pipeline. One design centers on fine-tuning on volatile policy documents; the other adds a measurable data freshness step. Which design is more appropriate for production?
-- ID: ags-hf-data-curation-and-knowledge-grounding-034
-- Domain: Data Curation and Knowledge Grounding
-- Topic: data freshness; agentic_ai_general_study
-- Difficulty: expert
-- A. Wait for production incidents before adding a dedicated data freshness check.
-- B. Use chunking and metadata as the main gate even though reviewers are asking for data freshness evidence.
-- C. Keep fine-tuning on volatile policy documents as the primary release control and record only final outputs.
-- D. Use data freshness as the control boundary and require the system to use retrieval for changing facts.
-- Answer: D
-- Explanation: The scenario is about data freshness. The strongest answer fixes the failing layer directly: use retrieval for changing facts.
-- Why A is wrong: Waiting for incidents postpones the data freshness gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making data freshness testable in the scenario.
-- Why C is wrong: It keeps fine-tuning on volatile policy documents in control instead of adding a measurable data freshness decision point.
-
-### Q82: A semiconductor design group is reviewing a data and grounding pipeline before rollout. The main risk is grounded citations: the system must return answer evidence linked to source chunks. Which option keeps the decision at the right layer?
-- ID: ags-hf-data-curation-and-knowledge-grounding-035
-- Domain: Data Curation and Knowledge Grounding
-- Topic: grounded citations; agentic_ai_general_study
-- Difficulty: medium
-- A. Keep uncited summaries as the primary release control and record only final outputs.
-- B. Prioritize permissioned RAG before validating the failure signal around grounded citations.
-- C. Add a release gate for grounded citations: return answer evidence linked to source chunks.
-- D. Use chunking and metadata as the main gate even though reviewers are asking for grounded citations evidence.
-- Answer: C
-- Explanation: The scenario is about grounded citations. The strongest answer fixes the failing layer directly: return answer evidence linked to source chunks.
-- Why A is wrong: It keeps uncited summaries in control instead of adding a measurable grounded citations decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making grounded citations testable in the scenario.
-- Why D is wrong: It moves attention to a neighboring control instead of making grounded citations testable in the scenario.
-
-### Q83: A manufacturing quality team sees a production failure tied to permissioned RAG. The team has been using post-answer filtering; the next change needs to make permissioned RAG explicit. Which action best addresses the problem?
-- ID: ags-hf-data-curation-and-knowledge-grounding-036
-- Domain: Data Curation and Knowledge Grounding
-- Topic: permissioned RAG; agentic_ai_general_study
-- Difficulty: hard
-- A. Bundle permissioned RAG, chunking and metadata, and prompt changes into one release with one aggregate score.
-- B. Change the design around permissioned RAG so the system can filter by ACL before chunks enter context.
-- C. Keep post-answer filtering as the primary release control and record only final outputs.
-- D. Prioritize reranking before validating the failure signal around permissioned RAG.
-- Answer: B
-- Explanation: The scenario is about permissioned RAG. The strongest answer fixes the failing layer directly: filter by ACL before chunks enter context.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether permissioned RAG fixed or caused the failure.
-- Why C is wrong: It keeps post-answer filtering in control instead of adding a measurable permissioned RAG decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making permissioned RAG testable in the scenario.
-
-### Q84: A logistics planning team sees a production failure tied to chunking and metadata. The team has been using anonymous chunks with no lineage; the next change needs to make chunking and metadata explicit. Which action best addresses the problem?
-- ID: ags-hf-data-curation-and-knowledge-grounding-037
-- Domain: Data Curation and Knowledge Grounding
-- Topic: chunking and metadata; agentic_ai_general_study
-- Difficulty: hard
-- A. Make chunking and metadata explicit in the workflow: preserve source, tenant, time, and sensitivity metadata.
-- B. Prioritize grounded citations before validating the failure signal around chunking and metadata.
-- C. Bundle chunking and metadata, data freshness, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated chunking and metadata check.
-- Answer: A
-- Explanation: The scenario is about chunking and metadata. The strongest answer fixes the failing layer directly: preserve source, tenant, time, and sensitivity metadata.
-- Why B is wrong: It moves attention to a neighboring control instead of making chunking and metadata testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether chunking and metadata fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the chunking and metadata gate until after users are exposed.
-
-### Q85: A pharmaceutical research team is comparing two release designs for a data and grounding pipeline. One design centers on larger context as the only fix; the other adds a measurable reranking step. Which design is more appropriate for production?
-- ID: ags-hf-data-curation-and-knowledge-grounding-038
-- Domain: Data Curation and Knowledge Grounding
-- Topic: reranking; agentic_ai_general_study
-- Difficulty: medium
-- A. Bundle reranking, chunking and metadata, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated reranking check.
-- C. Use chunking and metadata as the main gate even though reviewers are asking for reranking evidence.
-- D. Use reranking as the control boundary and require the system to rerank candidate chunks before context assembly.
-- Answer: D
-- Explanation: The scenario is about reranking. The strongest answer fixes the failing layer directly: rerank candidate chunks before context assembly.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether reranking fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the reranking gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making reranking testable in the scenario.
-
-### Q86: A bank fraud team is preparing a data and grounding pipeline for release. The current design relies on fine-tuning on volatile policy documents, but the release gate needs to use retrieval for changing facts. Which control should be added before rollout?
-- ID: ags-hf-data-curation-and-knowledge-grounding-039
-- Domain: Data Curation and Knowledge Grounding
-- Topic: data freshness; agentic_ai_general_study
-- Difficulty: hard
-- A. Use reranking as the main gate even though reviewers are asking for data freshness evidence.
-- B. Keep fine-tuning on volatile policy documents as the primary release control and record only final outputs.
-- C. Add a release gate for data freshness: use retrieval for changing facts.
-- D. Wait for production incidents before adding a dedicated data freshness check.
-- Answer: C
-- Explanation: The scenario is about data freshness. The strongest answer fixes the failing layer directly: use retrieval for changing facts.
-- Why A is wrong: It moves attention to a neighboring control instead of making data freshness testable in the scenario.
-- Why B is wrong: It keeps fine-tuning on volatile policy documents in control instead of adding a measurable data freshness decision point.
-- Why D is wrong: Waiting for incidents postpones the data freshness gate until after users are exposed.
-
-### Q87: A manufacturing quality team is reviewing a data and grounding pipeline before rollout. The main risk is grounded citations: the system must return answer evidence linked to source chunks. Which option keeps the decision at the right layer?
-- ID: ags-hf-data-curation-and-knowledge-grounding-040
-- Domain: Data Curation and Knowledge Grounding
-- Topic: grounded citations; agentic_ai_general_study
-- Difficulty: hard
-- A. Keep uncited summaries as the primary release control and record only final outputs.
-- B. Prioritize chunking and metadata before validating the failure signal around grounded citations.
-- C. Change the design around grounded citations so the system can return answer evidence linked to source chunks.
-- D. Use permissioned RAG as the main gate even though reviewers are asking for grounded citations evidence.
-- Answer: C
-- Explanation: The scenario is about grounded citations. The strongest answer fixes the failing layer directly: return answer evidence linked to source chunks.
-- Why A is wrong: It keeps uncited summaries in control instead of adding a measurable grounded citations decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making grounded citations testable in the scenario.
-- Why D is wrong: It moves attention to a neighboring control instead of making grounded citations testable in the scenario.
-
-### Q88: A public-sector casework team sees a production failure tied to permissioned RAG. The team has been using post-answer filtering; the next change needs to make permissioned RAG explicit. Which action best addresses the problem?
-- ID: ags-hf-data-curation-and-knowledge-grounding-041
-- Domain: Data Curation and Knowledge Grounding
-- Topic: permissioned RAG; agentic_ai_general_study
-- Difficulty: expert
-- A. Keep post-answer filtering as the primary release control and record only final outputs.
-- B. Prioritize reranking before validating the failure signal around permissioned RAG.
-- C. Bundle permissioned RAG, chunking and metadata, and prompt changes into one release with one aggregate score.
-- D. Make permissioned RAG explicit in the workflow: filter by ACL before chunks enter context.
-- Answer: D
-- Explanation: The scenario is about permissioned RAG. The strongest answer fixes the failing layer directly: filter by ACL before chunks enter context.
-- Why A is wrong: It keeps post-answer filtering in control instead of adding a measurable permissioned RAG decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making permissioned RAG testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether permissioned RAG fixed or caused the failure.
-
-### Q89: A semiconductor design group is comparing two release designs for a data and grounding pipeline. One design centers on anonymous chunks with no lineage; the other adds a measurable chunking and metadata step. Which design is more appropriate for production?
-- ID: ags-hf-data-curation-and-knowledge-grounding-042
-- Domain: Data Curation and Knowledge Grounding
-- Topic: chunking and metadata; agentic_ai_general_study
-- Difficulty: medium
-- A. Use chunking and metadata as the control boundary and require the system to preserve source, tenant, time, and sensitivity metadata.
-- B. Prioritize reranking before validating the failure signal around chunking and metadata.
-- C. Bundle chunking and metadata, permissioned RAG, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated chunking and metadata check.
-- Answer: A
-- Explanation: The scenario is about chunking and metadata. The strongest answer fixes the failing layer directly: preserve source, tenant, time, and sensitivity metadata.
-- Why B is wrong: It moves attention to a neighboring control instead of making chunking and metadata testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether chunking and metadata fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the chunking and metadata gate until after users are exposed.
-
-### Q90: A pharmaceutical research team sees a production failure tied to reranking. The team has been using larger context as the only fix; the next change needs to make reranking explicit. Which action best addresses the problem?
-- ID: ags-hf-data-curation-and-knowledge-grounding-043
-- Domain: Data Curation and Knowledge Grounding
-- Topic: reranking; agentic_ai_general_study
-- Difficulty: hard
-- A. Use chunking and metadata as the main gate even though reviewers are asking for reranking evidence.
-- B. Add a release gate for reranking: rerank candidate chunks before context assembly.
-- C. Bundle reranking, chunking and metadata, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated reranking check.
-- Answer: B
-- Explanation: The scenario is about reranking. The strongest answer fixes the failing layer directly: rerank candidate chunks before context assembly.
-- Why A is wrong: It moves attention to a neighboring control instead of making reranking testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether reranking fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the reranking gate until after users are exposed.
-
-### Q91: A global retailer is reviewing a data and grounding pipeline before rollout. The main risk is data freshness: the system must use retrieval for changing facts. Which option keeps the decision at the right layer?
-- ID: ags-hf-data-curation-and-knowledge-grounding-044
-- Domain: Data Curation and Knowledge Grounding
-- Topic: data freshness; agentic_ai_general_study
-- Difficulty: expert
-- A. Use permissioned RAG as the main gate even though reviewers are asking for data freshness evidence.
-- B. Keep fine-tuning on volatile policy documents as the primary release control and record only final outputs.
-- C. Change the design around data freshness so the system can use retrieval for changing facts.
-- D. Wait for production incidents before adding a dedicated data freshness check.
-- Answer: C
-- Explanation: The scenario is about data freshness. The strongest answer fixes the failing layer directly: use retrieval for changing facts.
-- Why A is wrong: It moves attention to a neighboring control instead of making data freshness testable in the scenario.
-- Why B is wrong: It keeps fine-tuning on volatile policy documents in control instead of adding a measurable data freshness decision point.
-- Why D is wrong: Waiting for incidents postpones the data freshness gate until after users are exposed.
-
-### Q92: A manufacturing quality team has a production-readiness review for a data and grounding pipeline. The review is focused on grounded citations, because the system must return answer evidence linked to source chunks. Which choice addresses the root cause?
-- ID: ags-hf-data-curation-and-knowledge-grounding-045
-- Domain: Data Curation and Knowledge Grounding
-- Topic: grounded citations; agentic_ai_general_study
-- Difficulty: medium
-- A. Use permissioned RAG as the main gate even though reviewers are asking for grounded citations evidence.
-- B. Keep uncited summaries as the primary release control and record only final outputs.
-- C. Prioritize chunking and metadata before validating the failure signal around grounded citations.
-- D. Make grounded citations explicit in the workflow: return answer evidence linked to source chunks.
-- Answer: D
-- Explanation: The scenario is about grounded citations. The strongest answer fixes the failing layer directly: return answer evidence linked to source chunks.
-- Why A is wrong: It moves attention to a neighboring control instead of making grounded citations testable in the scenario.
-- Why B is wrong: It keeps uncited summaries in control instead of adding a measurable grounded citations decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making grounded citations testable in the scenario.
-
-### Q93: A bank fraud team sees a production failure tied to permissioned RAG. The team has been using post-answer filtering; the next change needs to make permissioned RAG explicit. Which action best addresses the problem?
-- ID: ags-hf-data-curation-and-knowledge-grounding-046
-- Domain: Data Curation and Knowledge Grounding
-- Topic: permissioned RAG; agentic_ai_general_study
-- Difficulty: hard
-- A. Use permissioned RAG as the control boundary and require the system to filter by ACL before chunks enter context.
-- B. Keep post-answer filtering as the primary release control and record only final outputs.
-- C. Prioritize chunking and metadata before validating the failure signal around permissioned RAG.
-- D. Bundle permissioned RAG, reranking, and prompt changes into one release with one aggregate score.
-- Answer: A
-- Explanation: The scenario is about permissioned RAG. The strongest answer fixes the failing layer directly: filter by ACL before chunks enter context.
-- Why B is wrong: It keeps post-answer filtering in control instead of adding a measurable permissioned RAG decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making permissioned RAG testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether permissioned RAG fixed or caused the failure.
-
-### Q94: An automotive support team sees a production failure tied to chunking and metadata. The team has been using anonymous chunks with no lineage; the next change needs to make chunking and metadata explicit. Which action best addresses the problem?
-- ID: ags-hf-data-curation-and-knowledge-grounding-047
-- Domain: Data Curation and Knowledge Grounding
-- Topic: chunking and metadata; agentic_ai_general_study
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated chunking and metadata check.
-- B. Add a release gate for chunking and metadata: preserve source, tenant, time, and sensitivity metadata.
-- C. Prioritize data freshness before validating the failure signal around chunking and metadata.
-- D. Bundle chunking and metadata, grounded citations, and prompt changes into one release with one aggregate score.
-- Answer: B
-- Explanation: The scenario is about chunking and metadata. The strongest answer fixes the failing layer directly: preserve source, tenant, time, and sensitivity metadata.
-- Why A is wrong: Waiting for incidents postpones the chunking and metadata gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making chunking and metadata testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether chunking and metadata fixed or caused the failure.
-
-### Q95: An automotive support team has a production-readiness review for a model selection and customization path. The review is focused on MoE routing, because the system must activate sparse experts to increase capacity without full dense compute. Which design is the best first change?
+### Q65: An automotive support team is triaging a failed pilot for a model selection and customization path. The team can reproduce the failure around all experts active for every token. The missing control is the one that can activate sparse experts to increase capacity without full dense compute. Which control addresses the root cause?
 - ID: ags-hf-model-selection-and-customization-001
 - Domain: Model Selection and Customization
 - Topic: MoE routing; agentic_ai_general_study
 - Difficulty: expert
-- A. Prioritize DPO before validating the failure signal around MoE routing.
-- B. Bundle MoE routing, embedding models, and prompt changes into one release with one aggregate score.
+- Scope: general_concept
+- Source: generated
+- A. Prioritize DPO even though the observed failure is around MoE routing.
+- B. Release prompt, model, and embedding models changes together with one aggregate score.
 - C. Make MoE routing explicit in the workflow: activate sparse experts to increase capacity without full dense compute.
-- D. Keep all experts active for every token as the primary release control and record only final outputs.
+- D. Keep all experts active for every token as the main control and add a dashboard for final outputs.
 - Answer: C
-- Explanation: The scenario is about MoE routing. The strongest answer fixes the failing layer directly: activate sparse experts to increase capacity without full dense compute.
+- Explanation: MoE routing is the missing control in this scenario. The right answer makes it explicit so the system can activate sparse experts to increase capacity without full dense compute.
 - Why A is wrong: It moves attention to a neighboring control instead of making MoE routing testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether MoE routing fixed or caused the failure.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether MoE routing fixed the failure.
 - Why D is wrong: It keeps all experts active for every token in control instead of adding a measurable MoE routing decision point.
 
-### Q96: A telecom network operations team sees a production failure tied to embedding models. The team has been using using a chat model endpoint for vector search; the next change needs to make embedding models explicit. Which action best addresses the problem?
+### Q66: A telecom network operations team passes the happy-path demo for a model selection and customization path, but the failure appears when the system keeps using a chat model endpoint for vector search as the workaround. The release needs a design step that can produce vector representations for retrieval and similarity. Which change should be made before release?
 - ID: ags-hf-model-selection-and-customization-002
 - Domain: Model Selection and Customization
 - Topic: embedding models; agentic_ai_general_study
 - Difficulty: medium
-- A. Wait for production incidents before adding a dedicated embedding models check.
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving embedding models implicit.
 - B. Use embedding models as the control boundary and require the system to produce vector representations for retrieval and similarity.
-- C. Prioritize LoRA/QLoRA before validating the failure signal around embedding models.
-- D. Bundle embedding models, MoE routing, and prompt changes into one release with one aggregate score.
+- C. Prioritize LoRA/QLoRA even though the observed failure is around embedding models.
+- D. Release prompt, model, and MoE routing changes together with one aggregate score.
 - Answer: B
-- Explanation: The scenario is about embedding models. The strongest answer fixes the failing layer directly: produce vector representations for retrieval and similarity.
-- Why A is wrong: Waiting for incidents postpones the embedding models gate until after users are exposed.
+- Explanation: Embedding models is the missing control in this scenario. The right answer makes it explicit so the system can produce vector representations for retrieval and similarity.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
 - Why C is wrong: It moves attention to a neighboring control instead of making embedding models testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether embedding models fixed or caused the failure.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether embedding models fixed the failure.
 
-### Q97: A public-sector casework team is preparing a model selection and customization path for release. The current design relies on embedding similarity as the final answer, but the release gate needs to rescore retrieved candidates for relevance before generation. Which choice addresses the root cause?
+### Q67: A public-sector casework team is building a model selection and customization path. The failure appears when the system keeps embedding similarity as the final answer as the workaround. The release needs a design step that can rescore retrieved candidates for relevance before generation. Which choice addresses the root cause?
 - ID: ags-hf-model-selection-and-customization-003
 - Domain: Model Selection and Customization
 - Topic: rerankers; agentic_ai_general_study
 - Difficulty: hard
+- Scope: general_concept
+- Source: generated
 - A. Add a release gate for rerankers: rescore retrieved candidates for relevance before generation.
-- B. Bundle rerankers, embedding models, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated rerankers check.
+- B. Release prompt, model, and embedding models changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving rerankers implicit.
 - D. Use embedding models as the main gate even though reviewers are asking for rerankers evidence.
 - Answer: A
-- Explanation: The scenario is about rerankers. The strongest answer fixes the failing layer directly: rescore retrieved candidates for relevance before generation.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether rerankers fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the rerankers gate until after users are exposed.
+- Explanation: Rerankers is the missing control in this scenario. The right answer makes it explicit so the system can rescore retrieved candidates for relevance before generation.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether rerankers fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
 - Why D is wrong: It moves attention to a neighboring control instead of making rerankers testable in the scenario.
 
-### Q98: A cybersecurity response team has a production-readiness review for a model selection and customization path. The review is focused on LoRA/QLoRA, because the system must adapt behavior with small trainable adapters. Which control should be added before rollout?
+### Q68: A cybersecurity response team is triaging a failed pilot for a model selection and customization path. The failure is tied to LoRA/QLoRA. The safer design is the one that can adapt behavior with small trainable adapters. Which control addresses the root cause?
 - ID: ags-hf-model-selection-and-customization-004
 - Domain: Model Selection and Customization
 - Topic: LoRA/QLoRA; agentic_ai_general_study
 - Difficulty: expert
-- A. Wait for production incidents before adding a dedicated LoRA/QLoRA check.
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving LoRA/QLoRA implicit.
 - B. Use rerankers as the main gate even though reviewers are asking for LoRA/QLoRA evidence.
-- C. Keep full pretraining for a narrow style change as the primary release control and record only final outputs.
+- C. Move the check to post-release monitoring without changing the release path for LoRA/QLoRA.
 - D. Change the design around LoRA/QLoRA so the system can adapt behavior with small trainable adapters.
 - Answer: D
-- Explanation: The scenario is about LoRA/QLoRA. The strongest answer fixes the failing layer directly: adapt behavior with small trainable adapters.
-- Why A is wrong: Waiting for incidents postpones the LoRA/QLoRA gate until after users are exposed.
+- Explanation: LoRA/QLoRA is the missing control in this scenario. The right answer makes it explicit so the system can adapt behavior with small trainable adapters.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
 - Why B is wrong: It moves attention to a neighboring control instead of making LoRA/QLoRA testable in the scenario.
-- Why C is wrong: It keeps full pretraining for a narrow style change in control instead of adding a measurable LoRA/QLoRA decision point.
+- Why C is wrong: Monitoring is useful, but this scenario needs LoRA/QLoRA controlled before release or execution.
 
-### Q99: An insurance claims group has a production-readiness review for a model selection and customization path. The review is focused on SFT, because the system must train on high-quality instruction-response examples. Which choice addresses the root cause?
+### Q69: An insurance claims group is triaging a failed pilot for a model selection and customization path. The current design still relies on unlabeled raw documents as SFT data. Reviewers need a control that can train on high-quality instruction-response examples. Which control addresses the root cause?
 - ID: ags-hf-model-selection-and-customization-005
 - Domain: Model Selection and Customization
 - Topic: SFT; agentic_ai_general_study
 - Difficulty: medium
-- A. Keep unlabeled raw documents as SFT data as the primary release control and record only final outputs.
-- B. Prioritize MoE routing before validating the failure signal around SFT.
-- C. Make SFT explicit in the workflow: train on high-quality instruction-response examples.
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for SFT.
+- B. Keep unlabeled raw documents as SFT data as the main control and add a dashboard for final outputs.
+- C. Instrument and enforce SFT; the system must train on high-quality instruction-response examples.
 - D. Use rerankers as the main gate even though reviewers are asking for SFT evidence.
 - Answer: C
-- Explanation: The scenario is about SFT. The strongest answer fixes the failing layer directly: train on high-quality instruction-response examples.
-- Why A is wrong: It keeps unlabeled raw documents as SFT data in control instead of adding a measurable SFT decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making SFT testable in the scenario.
+- Explanation: SFT is the missing control in this scenario. The right answer makes it explicit so the system can train on high-quality instruction-response examples.
+- Why A is wrong: Monitoring is useful, but this scenario needs SFT controlled before release or execution.
+- Why B is wrong: It keeps unlabeled raw documents as SFT data in control instead of adding a measurable SFT decision point.
 - Why D is wrong: It moves attention to a neighboring control instead of making SFT testable in the scenario.
 
-### Q100: A logistics planning team is comparing two release designs for a model selection and customization path. One design centers on single-answer labels for preference alignment; the other adds a measurable DPO step. Which design is more appropriate for production?
+### Q70: During an architecture review, a logistics planning team finds that single-answer labels for preference alignment is being used as the shortcut, but it does not give the team a reliable way to learn preferences from chosen/rejected pairs. What is the best next step?
 - ID: ags-hf-model-selection-and-customization-006
 - Domain: Model Selection and Customization
 - Topic: DPO; agentic_ai_general_study
 - Difficulty: hard
-- A. Bundle DPO, LoRA/QLoRA, and prompt changes into one release with one aggregate score.
-- B. Use DPO as the control boundary and require the system to learn preferences from chosen/rejected pairs.
-- C. Keep single-answer labels for preference alignment as the primary release control and record only final outputs.
-- D. Prioritize SFT before validating the failure signal around DPO.
+- Scope: general_concept
+- Source: generated
+- A. Prioritize SFT even though the observed failure is around DPO.
+- B. Put DPO before rollout so the team can learn preferences from chosen/rejected pairs.
+- C. Move the check to post-release monitoring without changing the release path for DPO.
+- D. Keep single-answer labels for preference alignment as the main control and add a dashboard for final outputs.
 - Answer: B
-- Explanation: The scenario is about DPO. The strongest answer fixes the failing layer directly: learn preferences from chosen/rejected pairs.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether DPO fixed or caused the failure.
+- Explanation: DPO is the missing control in this scenario. The right answer makes it explicit so the system can learn preferences from chosen/rejected pairs.
+- Why A is wrong: It moves attention to a neighboring control instead of making DPO testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs DPO controlled before release or execution.
+- Why D is wrong: It keeps single-answer labels for preference alignment in control instead of adding a measurable DPO decision point.
+
+### Q71: A manufacturing quality team passes the happy-path demo for a model selection and customization path, but the team can reproduce the failure around all experts active for every token. The missing control is the one that can activate sparse experts to increase capacity without full dense compute. Which change should be made before release?
+- ID: ags-hf-model-selection-and-customization-007
+- Domain: Model Selection and Customization
+- Topic: MoE routing; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Make MoE routing explicit in the workflow: activate sparse experts to increase capacity without full dense compute.
+- B. Keep all experts active for every token as the main control and add a dashboard for final outputs.
+- C. Prioritize SFT even though the observed failure is around MoE routing.
+- D. Release prompt, model, and embedding models changes together with one aggregate score.
+- Answer: A
+- Explanation: MoE routing is the missing control in this scenario. The right answer makes it explicit so the system can activate sparse experts to increase capacity without full dense compute.
+- Why B is wrong: It keeps all experts active for every token in control instead of adding a measurable MoE routing decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making MoE routing testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether MoE routing fixed the failure.
+
+### Q72: During an architecture review, a semiconductor design group finds that using a chat model endpoint for vector search is being used as the shortcut, but it does not give the team a reliable way to produce vector representations for retrieval and similarity. What is the best next step?
+- ID: ags-hf-model-selection-and-customization-008
+- Domain: Model Selection and Customization
+- Topic: embedding models; agentic_ai_general_study
+- Difficulty: easy
+- Scope: general_concept
+- Source: generated
+- A. Prioritize MoE routing even though the observed failure is around embedding models.
+- B. Release prompt, model, and DPO changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving embedding models implicit.
+- D. Use embedding models as the control boundary and require the system to produce vector representations for retrieval and similarity.
+- Answer: D
+- Explanation: Embedding models is the missing control in this scenario. The right answer makes it explicit so the system can produce vector representations for retrieval and similarity.
+- Why A is wrong: It moves attention to a neighboring control instead of making embedding models testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether embedding models fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q73: During an architecture review, an insurance claims group finds that the failure is tied to rerankers. The safer design is the one that can rescore retrieved candidates for relevance before generation. What is the best next step?
+- ID: ags-hf-model-selection-and-customization-009
+- Domain: Model Selection and Customization
+- Topic: rerankers; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving rerankers implicit.
+- B. Use DPO as the main gate even though reviewers are asking for rerankers evidence.
+- C. Add a release gate for rerankers: rescore retrieved candidates for relevance before generation.
+- D. Release prompt, model, and DPO changes together with one aggregate score.
+- Answer: C
+- Explanation: Rerankers is the missing control in this scenario. The right answer makes it explicit so the system can rescore retrieved candidates for relevance before generation.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making rerankers testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether rerankers fixed the failure.
+
+### Q74: A telecom network operations team is triaging a failed pilot for a model selection and customization path. The current design still relies on full pretraining for a narrow style change. Reviewers need a control that can adapt behavior with small trainable adapters. Which control addresses the root cause?
+- ID: ags-hf-model-selection-and-customization-010
+- Domain: Model Selection and Customization
+- Topic: LoRA/QLoRA; agentic_ai_general_study
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Change the design around LoRA/QLoRA so the system can adapt behavior with small trainable adapters.
+- B. Increase model capacity or context length while leaving LoRA/QLoRA implicit.
+- C. Use rerankers as the main gate even though reviewers are asking for LoRA/QLoRA evidence.
+- D. Move the check to post-release monitoring without changing the release path for LoRA/QLoRA.
+- Answer: A
+- Explanation: LoRA/QLoRA is the missing control in this scenario. The right answer makes it explicit so the system can adapt behavior with small trainable adapters.
+- Why B is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making LoRA/QLoRA testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs LoRA/QLoRA controlled before release or execution.
+
+### Q75: A global retailer is building a model selection and customization path. Unlabeled raw documents as SFT data is being used as the shortcut, but it does not give the team a reliable way to train on high-quality instruction-response examples. Which control should be added before rollout?
+- ID: ags-hf-model-selection-and-customization-011
+- Domain: Model Selection and Customization
+- Topic: SFT; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Keep unlabeled raw documents as SFT data as the main control and add a dashboard for final outputs.
+- B. Instrument and enforce SFT; the system must train on high-quality instruction-response examples.
+- C. Use LoRA/QLoRA as the main gate even though reviewers are asking for SFT evidence.
+- D. Move the check to post-release monitoring without changing the release path for SFT.
+- Answer: B
+- Explanation: SFT is the missing control in this scenario. The right answer makes it explicit so the system can train on high-quality instruction-response examples.
+- Why A is wrong: It keeps unlabeled raw documents as SFT data in control instead of adding a measurable SFT decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making SFT testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs SFT controlled before release or execution.
+
+### Q76: An automotive support team is triaging a failed pilot for a model selection and customization path. Single-answer labels for preference alignment is being used as the shortcut, but it does not give the team a reliable way to learn preferences from chosen/rejected pairs. Which control addresses the root cause?
+- ID: ags-hf-model-selection-and-customization-012
+- Domain: Model Selection and Customization
+- Topic: DPO; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Keep single-answer labels for preference alignment as the main control and add a dashboard for final outputs.
+- B. Prioritize MoE routing even though the observed failure is around DPO.
+- C. Put DPO before rollout so the team can learn preferences from chosen/rejected pairs.
+- D. Move the check to post-release monitoring without changing the release path for DPO.
+- Answer: C
+- Explanation: DPO is the missing control in this scenario. The right answer makes it explicit so the system can learn preferences from chosen/rejected pairs.
+- Why A is wrong: It keeps single-answer labels for preference alignment in control instead of adding a measurable DPO decision point.
+- Why B is wrong: It moves attention to a neighboring control instead of making DPO testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs DPO controlled before release or execution.
+
+### Q77: A bank fraud team passes the happy-path demo for a model selection and customization path, but the failure is tied to MoE routing. The safer design is the one that can activate sparse experts to increase capacity without full dense compute. Which change should be made before release?
+- ID: ags-hf-model-selection-and-customization-013
+- Domain: Model Selection and Customization
+- Topic: MoE routing; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Keep all experts active for every token as the main control and add a dashboard for final outputs.
+- B. Prioritize SFT even though the observed failure is around MoE routing.
+- C. Release prompt, model, and LoRA/QLoRA changes together with one aggregate score.
+- D. Make MoE routing explicit in the workflow: activate sparse experts to increase capacity without full dense compute.
+- Answer: D
+- Explanation: MoE routing is the missing control in this scenario. The right answer makes it explicit so the system can activate sparse experts to increase capacity without full dense compute.
+- Why A is wrong: It keeps all experts active for every token in control instead of adding a measurable MoE routing decision point.
+- Why B is wrong: It moves attention to a neighboring control instead of making MoE routing testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether MoE routing fixed the failure.
+
+### Q78: A manufacturing quality team is building a model selection and customization path. The failure appears when the system keeps using a chat model endpoint for vector search as the workaround. The release needs a design step that can produce vector representations for retrieval and similarity. Which choice addresses the root cause?
+- ID: ags-hf-model-selection-and-customization-014
+- Domain: Model Selection and Customization
+- Topic: embedding models; agentic_ai_general_study
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Use embedding models as the control boundary and require the system to produce vector representations for retrieval and similarity.
+- B. Prioritize rerankers even though the observed failure is around embedding models.
+- C. Release prompt, model, and SFT changes together with one aggregate score.
+- D. Increase model capacity or context length while leaving embedding models implicit.
+- Answer: A
+- Explanation: Embedding models is the missing control in this scenario. The right answer makes it explicit so the system can produce vector representations for retrieval and similarity.
+- Why B is wrong: It moves attention to a neighboring control instead of making embedding models testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether embedding models fixed the failure.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q79: During an architecture review, a logistics planning team finds that the current design still relies on embedding similarity as the final answer. Reviewers need a control that can rescore retrieved candidates for relevance before generation. What is the best next step?
+- ID: ags-hf-model-selection-and-customization-015
+- Domain: Model Selection and Customization
+- Topic: rerankers; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Use LoRA/QLoRA as the main gate even though reviewers are asking for rerankers evidence.
+- B. Add a release gate for rerankers: rescore retrieved candidates for relevance before generation.
+- C. Release prompt, model, and LoRA/QLoRA changes together with one aggregate score.
+- D. Increase model capacity or context length while leaving rerankers implicit.
+- Answer: B
+- Explanation: Rerankers is the missing control in this scenario. The right answer makes it explicit so the system can rescore retrieved candidates for relevance before generation.
+- Why A is wrong: It moves attention to a neighboring control instead of making rerankers testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether rerankers fixed the failure.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q80: An automotive support team is triaging a failed pilot for a model selection and customization path. Full pretraining for a narrow style change is being used as the shortcut, but it does not give the team a reliable way to adapt behavior with small trainable adapters. Which control addresses the root cause?
+- ID: ags-hf-model-selection-and-customization-016
+- Domain: Model Selection and Customization
+- Topic: LoRA/QLoRA; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Use embedding models as the main gate even though reviewers are asking for LoRA/QLoRA evidence.
+- B. Move the check to post-release monitoring without changing the release path for LoRA/QLoRA.
+- C. Change the design around LoRA/QLoRA so the system can adapt behavior with small trainable adapters.
+- D. Increase model capacity or context length while leaving LoRA/QLoRA implicit.
+- Answer: C
+- Explanation: LoRA/QLoRA is the missing control in this scenario. The right answer makes it explicit so the system can adapt behavior with small trainable adapters.
+- Why A is wrong: It moves attention to a neighboring control instead of making LoRA/QLoRA testable in the scenario.
+- Why B is wrong: Monitoring is useful, but this scenario needs LoRA/QLoRA controlled before release or execution.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q81: A semiconductor design group is triaging a failed pilot for a model selection and customization path. Unlabeled raw documents as SFT data is being used as the shortcut, but it does not give the team a reliable way to train on high-quality instruction-response examples. Which control addresses the root cause?
+- ID: ags-hf-model-selection-and-customization-017
+- Domain: Model Selection and Customization
+- Topic: SFT; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Use LoRA/QLoRA as the main gate even though reviewers are asking for SFT evidence.
+- B. Move the check to post-release monitoring without changing the release path for SFT.
+- C. Keep unlabeled raw documents as SFT data as the main control and add a dashboard for final outputs.
+- D. Instrument and enforce SFT; the system must train on high-quality instruction-response examples.
+- Answer: D
+- Explanation: SFT is the missing control in this scenario. The right answer makes it explicit so the system can train on high-quality instruction-response examples.
+- Why A is wrong: It moves attention to a neighboring control instead of making SFT testable in the scenario.
+- Why B is wrong: Monitoring is useful, but this scenario needs SFT controlled before release or execution.
+- Why C is wrong: It keeps unlabeled raw documents as SFT data in control instead of adding a measurable SFT decision point.
+
+### Q82: A hospital operations team is choosing between a design centered on single-answer labels for preference alignment and one that makes DPO explicit for a model selection and customization path. Which design should win?
+- ID: ags-hf-model-selection-and-customization-018
+- Domain: Model Selection and Customization
+- Topic: DPO; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Put DPO before rollout so the team can learn preferences from chosen/rejected pairs.
+- B. Move the check to post-release monitoring without changing the release path for DPO.
+- C. Keep single-answer labels for preference alignment as the main control and add a dashboard for final outputs.
+- D. Prioritize LoRA/QLoRA even though the observed failure is around DPO.
+- Answer: A
+- Explanation: DPO is the missing control in this scenario. The right answer makes it explicit so the system can learn preferences from chosen/rejected pairs.
+- Why B is wrong: Monitoring is useful, but this scenario needs DPO controlled before release or execution.
 - Why C is wrong: It keeps single-answer labels for preference alignment in control instead of adding a measurable DPO decision point.
 - Why D is wrong: It moves attention to a neighboring control instead of making DPO testable in the scenario.
+
+### Q83: A global retailer is triaging a failed pilot for a model selection and customization path. The team can reproduce the failure around all experts active for every token. The missing control is the one that can activate sparse experts to increase capacity without full dense compute. Which control addresses the root cause?
+- ID: ags-hf-model-selection-and-customization-019
+- Domain: Model Selection and Customization
+- Topic: MoE routing; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Release prompt, model, and DPO changes together with one aggregate score.
+- B. Make MoE routing explicit in the workflow: activate sparse experts to increase capacity without full dense compute.
+- C. Keep all experts active for every token as the main control and add a dashboard for final outputs.
+- D. Prioritize rerankers even though the observed failure is around MoE routing.
+- Answer: B
+- Explanation: MoE routing is the missing control in this scenario. The right answer makes it explicit so the system can activate sparse experts to increase capacity without full dense compute.
+- Why A is wrong: Changing several layers at once makes it harder to prove whether MoE routing fixed the failure.
+- Why C is wrong: It keeps all experts active for every token in control instead of adding a measurable MoE routing decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making MoE routing testable in the scenario.
+
+### Q84: During an architecture review, an automotive support team finds that the failure appears when the system keeps using a chat model endpoint for vector search as the workaround. The release needs a design step that can produce vector representations for retrieval and similarity. What is the best next step?
+- ID: ags-hf-model-selection-and-customization-020
+- Domain: Model Selection and Customization
+- Topic: embedding models; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving embedding models implicit.
+- B. Use embedding models as the control boundary and require the system to produce vector representations for retrieval and similarity.
+- C. Prioritize MoE routing even though the observed failure is around embedding models.
+- D. Release prompt, model, and rerankers changes together with one aggregate score.
+- Answer: B
+- Explanation: Embedding models is the missing control in this scenario. The right answer makes it explicit so the system can produce vector representations for retrieval and similarity.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making embedding models testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether embedding models fixed the failure.
+
+### Q85: During an architecture review, a pharmaceutical research team finds that the team can reproduce the failure around embedding similarity as the final answer. The missing control is the one that can rescore retrieved candidates for relevance before generation. What is the best next step?
+- ID: ags-hf-model-selection-and-customization-021
+- Domain: Model Selection and Customization
+- Topic: rerankers; agentic_ai_general_study
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Add a release gate for rerankers: rescore retrieved candidates for relevance before generation.
+- B. Release prompt, model, and LoRA/QLoRA changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving rerankers implicit.
+- D. Use LoRA/QLoRA as the main gate even though reviewers are asking for rerankers evidence.
+- Answer: A
+- Explanation: Rerankers is the missing control in this scenario. The right answer makes it explicit so the system can rescore retrieved candidates for relevance before generation.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether rerankers fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making rerankers testable in the scenario.
+
+### Q86: A logistics planning team is triaging a failed pilot for a model selection and customization path. The failure appears when the system keeps full pretraining for a narrow style change as the workaround. The release needs a design step that can adapt behavior with small trainable adapters. Which control addresses the root cause?
+- ID: ags-hf-model-selection-and-customization-022
+- Domain: Model Selection and Customization
+- Topic: LoRA/QLoRA; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving LoRA/QLoRA implicit.
+- B. Use DPO as the main gate even though reviewers are asking for LoRA/QLoRA evidence.
+- C. Move the check to post-release monitoring without changing the release path for LoRA/QLoRA.
+- D. Change the design around LoRA/QLoRA so the system can adapt behavior with small trainable adapters.
+- Answer: D
+- Explanation: LoRA/QLoRA is the missing control in this scenario. The right answer makes it explicit so the system can adapt behavior with small trainable adapters.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making LoRA/QLoRA testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs LoRA/QLoRA controlled before release or execution.
+
+### Q87: A hospital operations team passes the happy-path demo for a model selection and customization path, but unlabeled raw documents as SFT data is being used as the shortcut, but it does not give the team a reliable way to train on high-quality instruction-response examples. Which change should be made before release?
+- ID: ags-hf-model-selection-and-customization-023
+- Domain: Model Selection and Customization
+- Topic: SFT; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for SFT.
+- B. Keep unlabeled raw documents as SFT data as the main control and add a dashboard for final outputs.
+- C. Instrument and enforce SFT; the system must train on high-quality instruction-response examples.
+- D. Use MoE routing as the main gate even though reviewers are asking for SFT evidence.
+- Answer: C
+- Explanation: SFT is the missing control in this scenario. The right answer makes it explicit so the system can train on high-quality instruction-response examples.
+- Why A is wrong: Monitoring is useful, but this scenario needs SFT controlled before release or execution.
+- Why B is wrong: It keeps unlabeled raw documents as SFT data in control instead of adding a measurable SFT decision point.
+- Why D is wrong: It moves attention to a neighboring control instead of making SFT testable in the scenario.
+
+### Q88: A semiconductor design group passes the happy-path demo for a model selection and customization path, but single-answer labels for preference alignment is being used as the shortcut, but it does not give the team a reliable way to learn preferences from chosen/rejected pairs. Which change should be made before release?
+- ID: ags-hf-model-selection-and-customization-024
+- Domain: Model Selection and Customization
+- Topic: DPO; agentic_ai_general_study
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Prioritize MoE routing even though the observed failure is around DPO.
+- B. Put DPO before rollout so the team can learn preferences from chosen/rejected pairs.
+- C. Move the check to post-release monitoring without changing the release path for DPO.
+- D. Keep single-answer labels for preference alignment as the main control and add a dashboard for final outputs.
+- Answer: B
+- Explanation: DPO is the missing control in this scenario. The right answer makes it explicit so the system can learn preferences from chosen/rejected pairs.
+- Why A is wrong: It moves attention to a neighboring control instead of making DPO testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs DPO controlled before release or execution.
+- Why D is wrong: It keeps single-answer labels for preference alignment in control instead of adding a measurable DPO decision point.
+
+### Q89: An automotive support team is choosing between a design centered on all experts active for every token and one that makes MoE routing explicit for a model selection and customization path. Which design should win?
+- ID: ags-hf-model-selection-and-customization-025
+- Domain: Model Selection and Customization
+- Topic: MoE routing; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Make MoE routing explicit in the workflow: activate sparse experts to increase capacity without full dense compute.
+- B. Keep all experts active for every token as the main control and add a dashboard for final outputs.
+- C. Prioritize DPO even though the observed failure is around MoE routing.
+- D. Release prompt, model, and rerankers changes together with one aggregate score.
+- Answer: A
+- Explanation: MoE routing is the missing control in this scenario. The right answer makes it explicit so the system can activate sparse experts to increase capacity without full dense compute.
+- Why B is wrong: It keeps all experts active for every token in control instead of adding a measurable MoE routing decision point.
+- Why C is wrong: It moves attention to a neighboring control instead of making MoE routing testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether MoE routing fixed the failure.
+
+### Q90: During an architecture review, a logistics planning team finds that the failure appears when the system keeps using a chat model endpoint for vector search as the workaround. The release needs a design step that can produce vector representations for retrieval and similarity. What is the best next step?
+- ID: ags-hf-model-selection-and-customization-026
+- Domain: Model Selection and Customization
+- Topic: embedding models; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Prioritize LoRA/QLoRA even though the observed failure is around embedding models.
+- B. Release prompt, model, and rerankers changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving embedding models implicit.
+- D. Use embedding models as the control boundary and require the system to produce vector representations for retrieval and similarity.
+- Answer: D
+- Explanation: Embedding models is the missing control in this scenario. The right answer makes it explicit so the system can produce vector representations for retrieval and similarity.
+- Why A is wrong: It moves attention to a neighboring control instead of making embedding models testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether embedding models fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q91: A manufacturing quality team passes the happy-path demo for a model selection and customization path, but embedding similarity as the final answer is being used as the shortcut, but it does not give the team a reliable way to rescore retrieved candidates for relevance before generation. Which change should be made before release?
+- ID: ags-hf-model-selection-and-customization-027
+- Domain: Model Selection and Customization
+- Topic: rerankers; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving rerankers implicit.
+- B. Use embedding models as the main gate even though reviewers are asking for rerankers evidence.
+- C. Add a release gate for rerankers: rescore retrieved candidates for relevance before generation.
+- D. Release prompt, model, and embedding models changes together with one aggregate score.
+- Answer: C
+- Explanation: Rerankers is the missing control in this scenario. The right answer makes it explicit so the system can rescore retrieved candidates for relevance before generation.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making rerankers testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether rerankers fixed the failure.
+
+### Q92: A cybersecurity response team is building a model selection and customization path. The failure appears when the system keeps full pretraining for a narrow style change as the workaround. The release needs a design step that can adapt behavior with small trainable adapters. Which architecture keeps the boundary cleanest?
+- ID: ags-hf-model-selection-and-customization-028
+- Domain: Model Selection and Customization
+- Topic: LoRA/QLoRA; agentic_ai_general_study
+- Difficulty: easy
+- Scope: general_concept
+- Source: generated
+- A. Move the check to post-release monitoring without changing the release path for LoRA/QLoRA.
+- B. Change the design around LoRA/QLoRA so the system can adapt behavior with small trainable adapters.
+- C. Increase model capacity or context length while leaving LoRA/QLoRA implicit.
+- D. Use rerankers as the main gate even though reviewers are asking for LoRA/QLoRA evidence.
+- Answer: B
+- Explanation: LoRA/QLoRA is the missing control in this scenario. The right answer makes it explicit so the system can adapt behavior with small trainable adapters.
+- Why A is wrong: Monitoring is useful, but this scenario needs LoRA/QLoRA controlled before release or execution.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making LoRA/QLoRA testable in the scenario.
+
+### Q93: An insurance claims group is building a model selection and customization path. Unlabeled raw documents as SFT data is being used as the shortcut, but it does not give the team a reliable way to train on high-quality instruction-response examples. Which design is the best first change?
+- ID: ags-hf-model-selection-and-customization-029
+- Domain: Model Selection and Customization
+- Topic: SFT; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Instrument and enforce SFT; the system must train on high-quality instruction-response examples.
+- B. Use MoE routing as the main gate even though reviewers are asking for SFT evidence.
+- C. Move the check to post-release monitoring without changing the release path for SFT.
+- D. Keep unlabeled raw documents as SFT data as the main control and add a dashboard for final outputs.
+- Answer: A
+- Explanation: SFT is the missing control in this scenario. The right answer makes it explicit so the system can train on high-quality instruction-response examples.
+- Why B is wrong: It moves attention to a neighboring control instead of making SFT testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs SFT controlled before release or execution.
+- Why D is wrong: It keeps unlabeled raw documents as SFT data in control instead of adding a measurable SFT decision point.
+
+### Q94: A logistics planning team passes the happy-path demo for a model selection and customization path, but the failure appears when the system keeps single-answer labels for preference alignment as the workaround. The release needs a design step that can learn preferences from chosen/rejected pairs. Which change should be made before release?
+- ID: ags-hf-model-selection-and-customization-030
+- Domain: Model Selection and Customization
+- Topic: DPO; agentic_ai_general_study
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Keep single-answer labels for preference alignment as the main control and add a dashboard for final outputs.
+- B. Prioritize rerankers even though the observed failure is around DPO.
+- C. Put DPO before rollout so the team can learn preferences from chosen/rejected pairs.
+- D. Move the check to post-release monitoring without changing the release path for DPO.
+- Answer: C
+- Explanation: DPO is the missing control in this scenario. The right answer makes it explicit so the system can learn preferences from chosen/rejected pairs.
+- Why A is wrong: It keeps single-answer labels for preference alignment in control instead of adding a measurable DPO decision point.
+- Why B is wrong: It moves attention to a neighboring control instead of making DPO testable in the scenario.
+- Why D is wrong: Monitoring is useful, but this scenario needs DPO controlled before release or execution.
+
+### Q95: A semiconductor design group passes the happy-path demo for a model selection and customization path, but the failure appears when the system keeps all experts active for every token as the workaround. The release needs a design step that can activate sparse experts to increase capacity without full dense compute. Which change should be made before release?
+- ID: ags-hf-model-selection-and-customization-031
+- Domain: Model Selection and Customization
+- Topic: MoE routing; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Keep all experts active for every token as the main control and add a dashboard for final outputs.
+- B. Prioritize LoRA/QLoRA even though the observed failure is around MoE routing.
+- C. Release prompt, model, and rerankers changes together with one aggregate score.
+- D. Make MoE routing explicit in the workflow: activate sparse experts to increase capacity without full dense compute.
+- Answer: D
+- Explanation: MoE routing is the missing control in this scenario. The right answer makes it explicit so the system can activate sparse experts to increase capacity without full dense compute.
+- Why A is wrong: It keeps all experts active for every token in control instead of adding a measurable MoE routing decision point.
+- Why B is wrong: It moves attention to a neighboring control instead of making MoE routing testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether MoE routing fixed the failure.
+
+### Q96: A public-sector casework team is triaging a failed pilot for a model selection and customization path. The failure appears when the system keeps using a chat model endpoint for vector search as the workaround. The release needs a design step that can produce vector representations for retrieval and similarity. Which control addresses the root cause?
+- ID: ags-hf-model-selection-and-customization-032
+- Domain: Model Selection and Customization
+- Topic: embedding models; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Use embedding models as the control boundary and require the system to produce vector representations for retrieval and similarity.
+- B. Prioritize SFT even though the observed failure is around embedding models.
+- C. Release prompt, model, and MoE routing changes together with one aggregate score.
+- D. Increase model capacity or context length while leaving embedding models implicit.
+- Answer: A
+- Explanation: Embedding models is the missing control in this scenario. The right answer makes it explicit so the system can produce vector representations for retrieval and similarity.
+- Why B is wrong: It moves attention to a neighboring control instead of making embedding models testable in the scenario.
+- Why C is wrong: Changing several layers at once makes it harder to prove whether embedding models fixed the failure.
+- Why D is wrong: It changes capacity or wording before fixing the measured root cause.
+
+### Q97: An insurance claims group is building a tool-using agent workflow. The current design still relies on asking the model to promise valid JSON. Reviewers need a control that can validate tool arguments before execution. Which implementation path is most appropriate?
+- ID: ags-hf-tooling-orchestration-and-memory-001
+- Domain: Tooling, Orchestration, and Memory
+- Topic: schema validation; agentic_ai_general_study
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Prioritize planning budget even though the observed failure is around schema validation.
+- B. Release prompt, model, and task decomposition changes together with one aggregate score.
+- C. Make schema validation explicit in the workflow: validate tool arguments before execution.
+- D. Keep asking the model to promise valid JSON as the main control and add a dashboard for final outputs.
+- Answer: C
+- Explanation: Schema validation is the missing control in this scenario. The right answer makes it explicit so the system can validate tool arguments before execution.
+- Why A is wrong: It moves attention to a neighboring control instead of making schema validation testable in the scenario.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether schema validation fixed the failure.
+- Why D is wrong: It keeps asking the model to promise valid JSON in control instead of adding a measurable schema validation decision point.
+
+### Q98: A telecom network operations team passes the happy-path demo for a tool-using agent workflow, but exposing every tool to every agent is being used as the shortcut, but it does not give the team a reliable way to choose tools from task need, preconditions, and allowed actions. Which change should be made before release?
+- ID: ags-hf-tooling-orchestration-and-memory-002
+- Domain: Tooling, Orchestration, and Memory
+- Topic: tool selection; agentic_ai_general_study
+- Difficulty: medium
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving tool selection implicit.
+- B. Use tool selection as the control boundary and require the system to choose tools from task need, preconditions, and allowed actions.
+- C. Prioritize reflection even though the observed failure is around tool selection.
+- D. Release prompt, model, and schema validation changes together with one aggregate score.
+- Answer: B
+- Explanation: Tool selection is the missing control in this scenario. The right answer makes it explicit so the system can choose tools from task need, preconditions, and allowed actions.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why C is wrong: It moves attention to a neighboring control instead of making tool selection testable in the scenario.
+- Why D is wrong: Changing several layers at once makes it harder to prove whether tool selection fixed the failure.
+
+### Q99: A hospital operations team is building a tool-using agent workflow. The team can reproduce the failure around letting the model execute side effects directly. The missing control is the one that can bind model proposals to typed server-side functions. Which design is the best first change?
+- ID: ags-hf-tooling-orchestration-and-memory-003
+- Domain: Tooling, Orchestration, and Memory
+- Topic: function calling; agentic_ai_general_study
+- Difficulty: hard
+- Scope: general_concept
+- Source: generated
+- A. Add a release gate for function calling: bind model proposals to typed server-side functions.
+- B. Release prompt, model, and schema validation changes together with one aggregate score.
+- C. Increase model capacity or context length while leaving function calling implicit.
+- D. Use schema validation as the main gate even though reviewers are asking for function calling evidence.
+- Answer: A
+- Explanation: Function calling is the missing control in this scenario. The right answer makes it explicit so the system can bind model proposals to typed server-side functions.
+- Why B is wrong: Changing several layers at once makes it harder to prove whether function calling fixed the failure.
+- Why C is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why D is wrong: It moves attention to a neighboring control instead of making function calling testable in the scenario.
+
+### Q100: A semiconductor design group is triaging a failed pilot for a tool-using agent workflow. The team can reproduce the failure around single prompt for every long task. The missing control is the one that can break a complex goal into explicit subgoals and dependencies. Which control addresses the root cause?
+- ID: ags-hf-tooling-orchestration-and-memory-004
+- Domain: Tooling, Orchestration, and Memory
+- Topic: task decomposition; agentic_ai_general_study
+- Difficulty: expert
+- Scope: general_concept
+- Source: generated
+- A. Increase model capacity or context length while leaving task decomposition implicit.
+- B. Use tool selection as the main gate even though reviewers are asking for task decomposition evidence.
+- C. Move the check to post-release monitoring without changing the release path for task decomposition.
+- D. Change the design around task decomposition so the system can break a complex goal into explicit subgoals and dependencies.
+- Answer: D
+- Explanation: Task decomposition is the missing control in this scenario. The right answer makes it explicit so the system can break a complex goal into explicit subgoals and dependencies.
+- Why A is wrong: It changes capacity or wording before fixing the measured root cause.
+- Why B is wrong: It moves attention to a neighboring control instead of making task decomposition testable in the scenario.
+- Why C is wrong: Monitoring is useful, but this scenario needs task decomposition controlled before release or execution.

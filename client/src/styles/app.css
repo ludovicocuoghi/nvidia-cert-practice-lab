@@ -1782,7 +1782,7 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 }
 
 .lifecycle-path-stage {
-  min-height: 142px;
+  min-height: 185px;
   padding: 14px;
   gap: 6px;
 }
@@ -1809,6 +1809,16 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 .lifecycle-lane-safety-evaluation-and-operations .lifecycle-lane-title { border-left: 4px solid #be123c; background: #fff6f7; }
 .lifecycle-lane-data-training-and-customization .lifecycle-lane-title,
 .lifecycle-lane-data-and-model-preparation .lifecycle-lane-title { border-left: 4px solid var(--accent); background: #f8fdf1; }
+.lifecycle-lane-1-agent-architecture-and-design .lifecycle-lane-title { border-left: 4px solid #0f766e; background: #effdfa; }
+.lifecycle-lane-2-agent-development .lifecycle-lane-title { border-left: 4px solid #151a15; background: #f4f6f3; }
+.lifecycle-lane-3-evaluation-and-tuning .lifecycle-lane-title { border-left: 4px solid #be123c; background: #fff6f7; }
+.lifecycle-lane-4-deployment-and-scaling .lifecycle-lane-title { border-left: 4px solid #2f7da8; background: #f0f7fb; }
+.lifecycle-lane-5-cognition-planning-and-memory .lifecycle-lane-title { border-left: 4px solid #7c3aed; background: #f5f3ff; }
+.lifecycle-lane-6-knowledge-integration-and-data-handling .lifecycle-lane-title { border-left: 4px solid var(--accent); background: #f8fdf1; }
+.lifecycle-lane-7-nvidia-platform-implementation .lifecycle-lane-title { border-left: 4px solid #4f46e5; background: #f5f6ff; }
+.lifecycle-lane-8-run-monitor-and-maintain .lifecycle-lane-title { border-left: 4px solid #8a5a13; background: #fff9ec; }
+.lifecycle-lane-9-safety-ethics-and-compliance .lifecycle-lane-title { border-left: 4px solid #be123c; background: #fff6f7; }
+.lifecycle-lane-10-human-ai-interaction-and-oversight .lifecycle-lane-title { border-left: 4px solid #7c3aed; background: #f5f3ff; }
 .lifecycle-lane-inference-optimization-and-serving .lifecycle-lane-title,
 .lifecycle-lane-inference-deployment-and-operations .lifecycle-lane-title { border-left: 4px solid #2f7da8; background: #f0f7fb; }
 .lifecycle-lane-rag-and-application-grounding .lifecycle-lane-title,
@@ -1934,12 +1944,64 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   color: var(--muted);
   line-height: 1.3;
 }
+
+.lifecycle-exam-sections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.lifecycle-exam-sections span {
+  border: 1px solid #cfe0ec;
+  border-radius: 999px;
+  background: #f2f8fc;
+  color: #245f84;
+  padding: 2px 6px;
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1.15;
+  cursor: pointer;
+  text-align: left;
+}
+
+.lifecycle-exam-sections span:hover,
+.lifecycle-exam-sections span:focus-visible {
+  border-color: var(--blue);
+  outline: 2px solid rgba(30, 113, 154, 0.16);
+}
+
+.lifecycle-stage-concepts {
+  margin: 7px 0 0;
+  padding-left: 14px;
+  color: var(--ink);
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+.lifecycle-stage-concepts li + li {
+  margin-top: 3px;
+}
 .lifecycle-tools {
   display: flex;
   flex-wrap: wrap;
   gap: 3px;
   margin-top: auto;
   padding: 4px 9px 9px;
+}
+
+.lifecycle-tools-agentic {
+  align-items: center;
+  border-top: 1px solid #eef1ed;
+  padding-top: 7px;
+}
+
+.lifecycle-tool-hint-label {
+  color: var(--muted);
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 .lifecycle-tools + .lifecycle-tools-optional {
   margin-top: 0;
@@ -1992,13 +2054,24 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 
 .lifecycle-pill-note .note-example.optional {
   border-color: #151a15;
-  background: #ffffff;
+  background: var(--field);
   color: #151a15;
 }
 
 .lifecycle-pill-note .note-example:hover {
   outline: 0;
   transform: none;
+}
+
+.lifecycle-pill-note-concepts {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+  padding: 8px 10px;
+}
+
+.lifecycle-pill-note-concepts strong {
+  color: var(--ink);
 }
 
 .lifecycle-priority-note {
@@ -2124,6 +2197,28 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   line-height: 1.15;
 }
 
+.lifecycle-stage-playbook .selected-service-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border-radius: 8px;
+  max-width: 230px;
+  white-space: normal;
+}
+
+.lifecycle-stage-playbook .selected-service-chip strong {
+  margin: 0;
+  font-size: 0.76rem;
+}
+
+.lifecycle-stage-playbook .selected-service-chip small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
 .selected-service-chip.core,
 .selected-service-chip.study-first {
   border-color: #0f766e;
@@ -2156,6 +2251,44 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 .lifecycle-stage-playbook .selected-service-chip.serving { border-color: #2f7da8; color: #19506f; background: #eaf4fa; }
 .lifecycle-stage-playbook .selected-service-chip.safety { border-color: #be123c; color: #9f1239; background: #fff1f2; }
 .lifecycle-stage-playbook .selected-service-chip.governance { border-color: #7c3aed; color: #5b21b6; background: #f5f3ff; }
+
+.lifecycle-concept-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(430px, 520px);
+  gap: 14px;
+  align-items: start;
+}
+
+.lifecycle-concept-map {
+  min-width: 0;
+}
+
+.lifecycle-concept-detail {
+  position: sticky;
+  top: 12px;
+  align-self: start;
+  min-width: 0;
+}
+
+.lifecycle-concept-detail .lifecycle-stage-playbook {
+  margin-top: 0;
+  max-height: calc(100vh - 24px);
+  overflow: auto;
+}
+
+.lifecycle-concept-detail .lifecycle-stage-playbook-grid {
+  grid-template-columns: 1fr;
+}
+
+.lifecycle-concept-detail .lifecycle-stage-playbook-grid article {
+  padding: 9px;
+}
+
+.lifecycle-study-chips span {
+  border-color: #cbdcc6;
+  background: #f7fbf4;
+  color: #315f20;
+}
 
 .lifecycle-detail {
   border: 1px solid var(--line);
@@ -2256,6 +2389,44 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   margin-top: 4px;
 }
 
+.lifecycle-section-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lifecycle-section-chips span,
+.lifecycle-section-chips button {
+  border: 1px solid #cfe0ec;
+  border-radius: 999px;
+  background: #f2f8fc;
+  color: #245f84;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.lifecycle-section-chips button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.lifecycle-section-chips button:hover,
+.lifecycle-section-chips button:focus-visible {
+  border-color: var(--blue);
+  outline: 2px solid rgba(30, 113, 154, 0.16);
+}
+
+.lifecycle-signal-line {
+  margin: -2px 0 8px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
 .lifecycle-stage-code {
   grid-column: span 1;
 }
@@ -2272,10 +2443,23 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   line-height: 1.4;
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1180px) {
   .lifecycle-selected-summary,
   .lifecycle-selected-groups {
     grid-template-columns: 1fr;
+  }
+
+  .lifecycle-concept-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .lifecycle-concept-detail {
+    order: -1;
+    position: static;
+  }
+
+  .lifecycle-concept-detail .lifecycle-stage-playbook {
+    max-height: none;
   }
 
   .lifecycle-stage-playbook-grid {
@@ -2667,7 +2851,7 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   gap: 8px;
   align-items: start;
   margin-bottom: 12px;
-  max-width: 980px;
+  max-width: 1120px;
 }
 
 .filter-group > span,
@@ -2678,6 +2862,83 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   font-size: 0.72rem;
   font-weight: 900;
   text-transform: uppercase;
+}
+
+.filter-group-exam-sections {
+  max-width: 1120px;
+}
+
+.exam-section-filter-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 8px;
+}
+
+.exam-section-filter-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-height: 62px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdfb;
+  color: var(--ink);
+  padding: 9px 10px;
+  text-align: left;
+  font: inherit;
+}
+
+.exam-section-filter-row.active {
+  border-color: var(--green);
+  background: rgba(var(--accent-rgb), 0.1);
+  box-shadow: inset 4px 0 0 var(--green);
+}
+
+.exam-section-filter-row:hover,
+.exam-section-filter-row:focus-visible {
+  border-color: var(--blue);
+  outline: 2px solid rgba(30, 113, 154, 0.16);
+}
+
+.exam-section-filter-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 30px;
+  border: 1px solid #cbd8c8;
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--green-dark);
+  font-size: 0.78rem;
+  font-weight: 950;
+}
+
+.exam-section-filter-main {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.exam-section-filter-main strong {
+  color: var(--ink);
+  font-size: 0.9rem;
+  line-height: 1.15;
+}
+
+.exam-section-filter-main small {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.exam-section-filter-count {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 900;
+  white-space: nowrap;
 }
 
 .service-jump-row {
@@ -4132,6 +4393,21 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   background: linear-gradient(135deg, #f0f7fb 0%, #fbfdfb 100%);
 }
 
+.section-service-guide-conditional {
+  border-left-color: #8b8f8a;
+  background: #fbfdfb;
+}
+
+.section-service-guide-conditional summary {
+  cursor: pointer;
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.section-service-guide-conditional[open] summary {
+  margin-bottom: 10px;
+}
+
 .section-service-guide-head {
   display: grid;
   gap: 3px;
@@ -4174,6 +4450,11 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   row-gap: 8px;
 }
 
+.section-service-guide-flow.is-compact {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
 .section-service-guide-card {
   flex: 1 1 0;
   min-width: 0;
@@ -4182,6 +4463,10 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   border-radius: 8px;
   background: #ffffff;
   padding: 8px 10px;
+}
+
+.section-service-guide-flow.is-compact .section-service-guide-card {
+  flex: initial;
 }
 
 .section-service-guide-step {
@@ -5487,6 +5772,51 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   grid-template-columns: 1fr 1fr;
 }
 
+.guided-plan-card .pp-card-body {
+  gap: 10px;
+}
+
+.guided-mix-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.guided-mix-summary span {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #f8fbf7;
+  padding: 8px 10px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.guided-mix-summary strong {
+  display: block;
+  color: var(--ink);
+  font-size: 1.08rem;
+  line-height: 1.1;
+}
+
+.guided-plan-actions {
+  gap: 9px;
+}
+
+.guided-secondary-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.guided-secondary-actions .pp-btn {
+  width: 100%;
+  justify-content: center;
+  white-space: normal;
+  line-height: 1.25;
+}
+
 .pp-card-hint {
   font-size: 0.78rem;
   color: var(--muted);
@@ -5723,6 +6053,13 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   color: var(--muted);
 }
 
+.practice-drill-summary em {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
 .practice-drill-actions {
   display: grid;
   grid-template-columns: 1fr;
@@ -5734,9 +6071,105 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   justify-content: center;
 }
 
+.practice-source-filter {
+  display: grid;
+  gap: 6px;
+}
+
+.practice-source-filter-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.practice-source-filter-head em {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.practice-source-filter-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.practice-source-filter-btn {
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.practice-source-filter-btn strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.practice-source-filter-btn span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.practice-source-filter-btn em {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.practice-source-filter-btn.active {
+  border-color: #111911;
+  background: #111911;
+  color: #fff;
+}
+
+.practice-source-filter-btn.active span,
+.practice-source-filter-btn.active em {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.practice-source-filter-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.practice-source-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--muted);
+}
+
+.practice-source-head span {
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.practice-source-head em {
+  font-size: 0.76rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
 .practice-source-actions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -5782,6 +6215,17 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 .pp-btn-generated-bank:hover {
   background: #e8def5;
   border-color: #a286cb;
+}
+
+.pp-btn-mixed {
+  background: #fff7e8;
+  border-color: #d7b66b;
+  color: #725113;
+}
+
+.pp-btn-mixed:hover {
+  background: #f8edcf;
+  border-color: #c59d43;
 }
 
 .practice-generate-more {
@@ -6180,6 +6624,7 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   .practice-main-grid,
   .practice-primary,
   .practice-drill-actions,
+  .practice-source-filter-actions,
   .practice-source-actions {
     grid-template-columns: 1fr;
   }
@@ -6225,6 +6670,8 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 @media (max-width: 620px) {
   .generic-practice .practice-dashboard,
   .generic-practice .practice-primary,
+  .guided-mix-summary,
+  .guided-secondary-actions,
   .drill-selectors {
     grid-template-columns: 1fr;
     max-width: none;
@@ -6478,6 +6925,8 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 :root[data-appearance="dark"] .track-card,
 :root[data-appearance="dark"] .study-tabs,
 :root[data-appearance="dark"] .filter-pills button,
+:root[data-appearance="dark"] .exam-section-filter-row,
+:root[data-appearance="dark"] .exam-section-filter-number,
 :root[data-appearance="dark"] .service-card,
 :root[data-appearance="dark"] .study-map section,
 :root[data-appearance="dark"] .service-detail-grid div,
@@ -6496,6 +6945,7 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 :root[data-appearance="dark"] .lifecycle-stage-context,
 :root[data-appearance="dark"] .legend-chip,
 :root[data-appearance="dark"] .lifecycle-tool,
+:root[data-appearance="dark"] .lifecycle-section-chips button,
 :root[data-appearance="dark"] .vendor-card,
 :root[data-appearance="dark"] .must-know-card,
 :root[data-appearance="dark"] .section-service-guide-card,
@@ -6506,9 +6956,11 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 :root[data-appearance="dark"] .study-assistant-panel .helper-chat-log,
 :root[data-appearance="dark"] .practice-stat,
 :root[data-appearance="dark"] .pp-profile-block,
+:root[data-appearance="dark"] .guided-mix-summary span,
 :root[data-appearance="dark"] .practice-scope-field select,
 :root[data-appearance="dark"] .practice-scope-field input,
 :root[data-appearance="dark"] .practice-source-checks label,
+:root[data-appearance="dark"] .practice-source-filter-btn,
 :root[data-appearance="dark"] .scope-bank-count,
 :root[data-appearance="dark"] .pp-card,
 :root[data-appearance="dark"] .pp-card-foot,
@@ -6529,9 +6981,26 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 :root[data-appearance="dark"] .choice.selected,
 :root[data-appearance="dark"] .choice.correct,
 :root[data-appearance="dark"] .mock-source-tab.active,
+:root[data-appearance="dark"] .practice-source-filter-btn.active,
 :root[data-appearance="dark"] .mock-inventory-set.active,
 :root[data-appearance="dark"] .mock-inventory li.selected {
   background: rgba(var(--accent-rgb), 0.18);
+}
+
+:root[data-appearance="dark"] .lifecycle-pill-note-concepts {
+  background: rgba(var(--accent-rgb), 0.12);
+  border-color: rgba(var(--accent-rgb), 0.36);
+  color: var(--muted);
+}
+
+:root[data-appearance="dark"] .lifecycle-pill-note-concepts strong {
+  color: var(--ink);
+}
+
+:root[data-appearance="dark"] .lifecycle-pill-note .note-example.optional {
+  background: var(--field);
+  border-color: var(--line);
+  color: var(--ink);
 }
 
 :root[data-appearance="dark"] .choice.wrong,

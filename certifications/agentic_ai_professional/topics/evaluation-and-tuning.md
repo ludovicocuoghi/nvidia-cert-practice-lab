@@ -21,6 +21,10 @@ status: populated
 
 This page is the NCP-AAI exam lens for agent evaluation and tuning. Keep trajectory, groundedness, safety, and cost metrics at certification depth. The reusable concept home is `Agentic AI General Study -> Evaluation and Safety`; NVIDIA evaluator and exam-distractor knowledge stays here.
 
+## General Study first
+
+Read `Agentic AI General Study -> Evaluation and Safety` and `Agentic AI General Study -> Evaluation and Regression Harness`. Use this overlay for official-domain wording about evaluation pipelines, task benchmarks, trajectory quality, user feedback, targeted optimization, and when NVIDIA Evaluator, Agent Toolkit traces, Guardrails, Curator, or Customizer belong in the answer.
+
 ## Core ideas you must hold in your head
 
 - **Trajectory evaluation** — evaluate the trajectory, not just the final answer. An agent can guess the right answer with the wrong tools. **Trajectory evaluation** scores **tool selection**, **tool arguments**, observations used, and reasoning quality — not just output correctness.

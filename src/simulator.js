@@ -113,6 +113,7 @@ function parseQuestionBlock(block, index) {
   let domain = "Uncategorized";
   let topic = "";
   let difficulty = "medium";
+  let questionScope = undefined;
   let answerLetter = "";
   let explanation = "";
 
@@ -132,6 +133,7 @@ function parseQuestionBlock(block, index) {
       if (key === "domain") domain = value;
       if (key === "topic") topic = value;
       if (key === "difficulty") difficulty = value.toLowerCase();
+      if ((key === "scope" || key === "question scope") && (value === "general_concept" || value === "nvidia_specific")) questionScope = value;
       if (key === "answer") answerLetter = value.toUpperCase();
       if (key === "explanation") explanation = value;
     }
@@ -152,6 +154,7 @@ function parseQuestionBlock(block, index) {
     topic,
     difficulty,
     source,
+    questionScope,
     question,
     choices,
     answer,

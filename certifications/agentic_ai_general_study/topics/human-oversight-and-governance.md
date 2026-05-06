@@ -6,6 +6,43 @@ status: populated
 
 # Human Oversight and Governance
 
+## Actual implementation / Pattern you use
+
+```yaml
+risk_tiers:
+  auto_allow:
+    when: low_risk_and_high_confidence
+  sample_review:
+    when: low_risk_but_needs_quality_monitoring
+  approval_required:
+    when: high_impact_action_or_low_confidence
+  block:
+    when: unauthorized_or_policy_forbidden
+
+review_card:
+  evidence: [user_intent, retrieved_sources, tool_plan, model_output]
+  versions: [model, prompt, policy, tool_schema, retrieval_index]
+  actions: [approve, edit, reject, escalate, create_eval_case]
+```
+
+| Governance object | Contains | Exam signal |
+|---|---|---|
+| Risk route | Auto, sampled review, approval, block | Reviewing everything is too slow; approving nothing is unsafe |
+| Review queue | Evidence, trace, policy, action buttons | Humans need enough context to decide, not raw chat only |
+| Audit record | Versions, reviewer, timestamp, decision reason | Regulated workflows need replayable evidence |
+| Feedback loop | Labels, incidents, eval cases, policy updates | Feedback must improve prompts, tools, evals, or data |
+
+## Exam coverage map
+
+Use this page first for these NCP-AAI sections:
+
+| NCP-AAI section | Why this page matters |
+|---|---|
+| Human-AI Interaction and Oversight | Covers HITL, human-on-the-loop, escalation, review queues, and approval gates. |
+| Safety, Ethics, and Compliance | Explains why high-risk actions need pre-execution controls and audit trails. |
+| Run, Monitor, and Maintain | Connects production review, incidents, and feedback to policy/eval updates. |
+| Agent Architecture and Design | Shows when architecture should route to deterministic review instead of open autonomy. |
+
 ## What to study first
 
 - **Core idea:** Risk-tiered approval, escalation, review queues, feedback loops, audit evidence, and governance operations.
@@ -79,6 +116,20 @@ Governance scorecards track approval precision, reviewer agreement, escalation r
 | Ambiguous case | Escalation | Autonomous final decision |
 | Review overload | Risk tiers | One queue for all |
 | Governance proof | Audit trail | Final answer only |
+
+### Deep dive: human oversight placement
+
+| Situation | Oversight pattern | Why |
+|---|---|---|
+| Payment, legal, medical, hiring, deletion, or external write | Human-in-the-loop before action | Approval after execution cannot undo all harm |
+| Routine answer quality monitoring | Human-on-the-loop sampled review | Keeps quality signal without blocking every user |
+| Low confidence or missing evidence | Escalation | The right behavior is to ask for help, not guess |
+| Repeated reviewer correction | Feedback-to-eval loop | Convert the pattern into regression cases before tuning |
+| Audit request | Decision trace with versions | Final answer text is not enough evidence |
+
+### Feedback data boundary
+
+Reviewer notes are not automatically training data. Before using them for prompts, tuning, or evals, check privacy, consent, duplicates, label quality, holdout contamination, and whether the feedback belongs in a policy update instead of a model update.
 
 ### Hands-on checks
 

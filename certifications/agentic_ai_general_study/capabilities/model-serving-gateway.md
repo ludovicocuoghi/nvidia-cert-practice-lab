@@ -6,6 +6,25 @@ source_lens: general-study
 
 # Model Serving Gateway
 
+## Actual implementation / How you use it
+
+```yaml
+routes:
+  simple:
+    endpoint: small_fast_model
+  complex:
+    endpoint: large_reasoning_model
+  embedding:
+    endpoint: embedding_model
+  rerank:
+    endpoint: reranker_model
+controls: [rate_limit, fallback, canary, circuit_breaker, batching_policy]
+```
+
+| Input | Gateway decision | Output |
+|---|---|---|
+| Request class, risk, route policy, endpoint health | Select endpoint, fallback, canary, or reject | Routed model call with metrics and rollback control |
+
 ## What to study first
 
 - **Core idea:** You are building the traffic layer in front of model endpoints. It routes requests, applies admission/rate limits, handles fallback, canaries, batching policy, endpoint selection, and multi-model operations.

@@ -6,6 +6,16 @@ source_lens: general-study
 
 # Observability and Trace Monitor
 
+## Actual implementation / How you use it
+
+```json
+{"trace_id":"task-001","route":"rag_agent","spans":[{"name":"retrieve","ms":180},{"name":"prefill","ms":510},{"name":"tool_call","ms":240}],"versions":{"model":"v3","prompt":"p12","index":"r14"},"outcome":{"task_success":true,"cost_usd":0.042}}
+```
+
+| Input | Monitor owns | Output |
+|---|---|---|
+| Live task traces and versioned spans | Latency, cost, quality signals, incidents, replay | Stage-level diagnosis and regression candidates |
+
 ## What to study first
 
 - **Core idea:** You are building the live monitoring layer for model calls, retrieval, tools, guardrails, routing, latency, cost, errors, quality signals, incidents, and replay.

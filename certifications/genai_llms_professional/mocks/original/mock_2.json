@@ -1,7 +1,7 @@
 {
   "id": "mock_2",
   "name": "Mock Test 2",
-  "description": "50-question mock covering all domains with different questions from Mock 1. Balanced by blueprint weights.",
+  "description": "Downloaded/original 50-question mock covering all domains with different questions from Mock 1. Use it as imported practice; generated mocks are balanced by blueprint weights.",
   "durationMinutes": 90,
   "passingScorePercent": 70,
   "questionIds": [

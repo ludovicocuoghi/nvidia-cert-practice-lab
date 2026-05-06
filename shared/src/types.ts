@@ -21,6 +21,7 @@ export type Question = {
   topic?: string;
   difficulty?: string;
   source?: "original" | "high_fidelity_generated" | "generated_draft";
+  questionScope?: "general_concept" | "nvidia_specific";
   question: string;
   choices: string[];
   answer: number;

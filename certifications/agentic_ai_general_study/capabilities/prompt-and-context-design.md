@@ -6,6 +6,23 @@ source_lens: general-study
 
 # Prompt and Context Design
 
+## Actual implementation / How you use it
+
+```yaml
+prompt_contract:
+  instructions: task_rules_and_refusal_policy
+  examples: few_shot_only_if_they_reduce_errors
+  output_schema: typed_json_or_fixed_sections
+  context_slots:
+    evidence: retrieved_text_as_data
+    tool_results: validated_observations
+  eval: prompt_regression_suite
+```
+
+| Input | Prompt/context owns | Output |
+|---|---|---|
+| Task, constraints, examples, retrieved/tool context | Instruction hierarchy, context packing, schema, prompt version | Reversible no-weight-change behavior control |
+
 ## What to study first
 
 - **Core idea:** You are building the no-weight-change control layer: system/developer instructions, few-shot examples, output schemas, context packing, prompt versions, and prompt evaluation. This is usually the first adaptation path because it is cheap, reversible, and easy to test.

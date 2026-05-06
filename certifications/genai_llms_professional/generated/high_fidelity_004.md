@@ -2,1502 +2,1702 @@
 
 ## Questions
 
-### Q1: A hospital operations team is preparing a monitored LLM service for release. The current design relies on silent fallback to lower quality, but the release gate needs to route around unhealthy models or tools with trace evidence. Which implementation path is most appropriate?
-- ID: genl-hf-production-monitoring-and-reliability-033
-- Domain: Production Monitoring and Reliability
-- Topic: fallback policy; genai_llms_professional
-- Difficulty: hard
-- A. Use drift detection as the main gate even though reviewers are asking for fallback policy evidence.
-- B. Make fallback policy explicit in the workflow: route around unhealthy models or tools with trace evidence.
-- C. Bundle fallback policy, drift detection, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated fallback policy check.
-- Answer: B
-- Explanation: The scenario is about fallback policy. The strongest answer fixes the failing layer directly: route around unhealthy models or tools with trace evidence.
-- Why A is wrong: It moves attention to a neighboring control instead of making fallback policy testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether fallback policy fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the fallback policy gate until after users are exposed.
-
-### Q2: A bank fraud team has a production-readiness review for a monitored LLM service. The review is focused on drift detection, because the system must track input mix, retrieval hit rate, output quality, and safety events. Which control should be added before rollout?
-- ID: genl-hf-production-monitoring-and-reliability-034
-- Domain: Production Monitoring and Reliability
-- Topic: drift detection; genai_llms_professional
-- Difficulty: medium
-- A. Use load shedding as the main gate even though reviewers are asking for drift detection evidence.
-- B. Keep GPU utilization alone as the primary release control and record only final outputs.
-- C. Use drift detection as the control boundary and require the system to track input mix, retrieval hit rate, output quality, and safety events.
-- D. Wait for production incidents before adding a dedicated drift detection check.
-- Answer: C
-- Explanation: The scenario is about drift detection. The strongest answer fixes the failing layer directly: track input mix, retrieval hit rate, output quality, and safety events.
-- Why A is wrong: It moves attention to a neighboring control instead of making drift detection testable in the scenario.
-- Why B is wrong: It keeps GPU utilization alone in control instead of adding a measurable drift detection decision point.
-- Why D is wrong: Waiting for incidents postpones the drift detection gate until after users are exposed.
-
-### Q3: An insurance claims group is preparing a monitored LLM service for release. The current design relies on letting queues grow unbounded, but the release gate needs to reject or defer low-priority work under saturation. Which design is the best first change?
-- ID: genl-hf-production-monitoring-and-reliability-035
-- Domain: Production Monitoring and Reliability
-- Topic: load shedding; genai_llms_professional
-- Difficulty: hard
-- A. Use fallback policy as the main gate even though reviewers are asking for load shedding evidence.
-- B. Keep letting queues grow unbounded as the primary release control and record only final outputs.
-- C. Prioritize drift detection before validating the failure signal around load shedding.
-- D. Add a release gate for load shedding: reject or defer low-priority work under saturation.
-- Answer: D
-- Explanation: The scenario is about load shedding. The strongest answer fixes the failing layer directly: reject or defer low-priority work under saturation.
-- Why A is wrong: It moves attention to a neighboring control instead of making load shedding testable in the scenario.
-- Why B is wrong: It keeps letting queues grow unbounded in control instead of adding a measurable load shedding decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making load shedding testable in the scenario.
-
-### Q4: A telecom network operations team is reviewing a monitored LLM service before rollout. The main risk is p95/p99 latency: the system must watch tail latency, queueing, retries, and error budgets. Which option keeps the decision at the right layer?
-- ID: genl-hf-production-monitoring-and-reliability-036
-- Domain: Production Monitoring and Reliability
-- Topic: p95/p99 latency; genai_llms_professional
-- Difficulty: hard
-- A. Change the design around p95/p99 latency so the system can watch tail latency, queueing, retries, and error budgets.
-- B. Keep average latency only as the primary release control and record only final outputs.
-- C. Prioritize fallback policy before validating the failure signal around p95/p99 latency.
-- D. Bundle p95/p99 latency, canary monitoring, and prompt changes into one release with one aggregate score.
-- Answer: A
-- Explanation: The scenario is about p95/p99 latency. The strongest answer fixes the failing layer directly: watch tail latency, queueing, retries, and error budgets.
-- Why B is wrong: It keeps average latency only in control instead of adding a measurable p95/p99 latency decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making p95/p99 latency testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether p95/p99 latency fixed or caused the failure.
-
-### Q5: A public-sector casework team has a production-readiness review for a monitored LLM service. The review is focused on canary monitoring, because the system must compare quality, safety, cost, and latency during rollout. Which implementation path is most appropriate?
-- ID: genl-hf-production-monitoring-and-reliability-037
-- Domain: Production Monitoring and Reliability
-- Topic: canary monitoring; genai_llms_professional
+### Q1: A cybersecurity response team is setting a release gate. The implementation requirement is to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs. What is the best first implementation choice?
+- ID: genl-hf-svc-triton-inference-server-001
+- Domain: Model Deployment
+- Topic: NVIDIA service: Triton Inference Server; lifecycle: Serving and deployment; Which service composes preprocessing, inference, and postprocessing as an ensemble?
 - Difficulty: expert
-- A. Wait for production incidents before adding a dedicated canary monitoring check.
-- B. Make canary monitoring explicit in the workflow: compare quality, safety, cost, and latency during rollout.
-- C. Prioritize fallback policy before validating the failure signal around canary monitoring.
-- D. Bundle canary monitoring, p95/p99 latency, and prompt changes into one release with one aggregate score.
-- Answer: B
-- Explanation: The scenario is about canary monitoring. The strongest answer fixes the failing layer directly: compare quality, safety, cost, and latency during rollout.
-- Why A is wrong: Waiting for incidents postpones the canary monitoring gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making canary monitoring testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether canary monitoring fixed or caused the failure.
-
-### Q6: A cybersecurity response team sees operational incidents that require fallback policy. The team has been using silent fallback to lower quality; the next change needs to make fallback policy explicit. Which action best addresses the problem?
-- ID: genl-hf-production-monitoring-and-reliability-038
-- Domain: Production Monitoring and Reliability
-- Topic: fallback policy; genai_llms_professional
-- Difficulty: medium
-- A. Wait for production incidents before adding a dedicated fallback policy check.
-- B. Use load shedding as the main gate even though reviewers are asking for fallback policy evidence.
-- C. Use fallback policy as the control boundary and require the system to route around unhealthy models or tools with trace evidence.
-- D. Bundle fallback policy, load shedding, and prompt changes into one release with one aggregate score.
-- Answer: C
-- Explanation: The scenario is about fallback policy. The strongest answer fixes the failing layer directly: route around unhealthy models or tools with trace evidence.
-- Why A is wrong: Waiting for incidents postpones the fallback policy gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making fallback policy testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether fallback policy fixed or caused the failure.
-
-### Q7: An automotive support team sees operational incidents that require drift detection. The team has been using GPU utilization alone; the next change needs to make drift detection explicit. Which action best addresses the problem?
-- ID: genl-hf-production-monitoring-and-reliability-039
-- Domain: Production Monitoring and Reliability
-- Topic: drift detection; genai_llms_professional
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated drift detection check.
-- B. Use p95/p99 latency as the main gate even though reviewers are asking for drift detection evidence.
-- C. Keep GPU utilization alone as the primary release control and record only final outputs.
-- D. Add a release gate for drift detection: track input mix, retrieval hit rate, output quality, and safety events.
-- Answer: D
-- Explanation: The scenario is about drift detection. The strongest answer fixes the failing layer directly: track input mix, retrieval hit rate, output quality, and safety events.
-- Why A is wrong: Waiting for incidents postpones the drift detection gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making drift detection testable in the scenario.
-- Why C is wrong: It keeps GPU utilization alone in control instead of adding a measurable drift detection decision point.
-
-### Q8: A logistics planning team is preparing a monitored LLM service for release. The current design relies on letting queues grow unbounded, but the release gate needs to reject or defer low-priority work under saturation. Which action best fits the requirement?
-- ID: genl-hf-production-monitoring-and-reliability-040
-- Domain: Production Monitoring and Reliability
-- Topic: load shedding; genai_llms_professional
-- Difficulty: expert
-- A. Use drift detection as the main gate even though reviewers are asking for load shedding evidence.
-- B. Keep letting queues grow unbounded as the primary release control and record only final outputs.
-- C. Prioritize fallback policy before validating the failure signal around load shedding.
-- D. Change the design around load shedding so the system can reject or defer low-priority work under saturation.
-- Answer: D
-- Explanation: The scenario is about load shedding. The strongest answer fixes the failing layer directly: reject or defer low-priority work under saturation.
-- Why A is wrong: It moves attention to a neighboring control instead of making load shedding testable in the scenario.
-- Why B is wrong: It keeps letting queues grow unbounded in control instead of adding a measurable load shedding decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making load shedding testable in the scenario.
-
-### Q9: A global retailer is reviewing a monitored LLM service before rollout. The main risk is p95/p99 latency: the system must watch tail latency, queueing, retries, and error budgets. Which option keeps the decision at the right layer?
-- ID: genl-hf-production-monitoring-and-reliability-041
-- Domain: Production Monitoring and Reliability
-- Topic: p95/p99 latency; genai_llms_professional
-- Difficulty: medium
-- A. Prioritize fallback policy before validating the failure signal around p95/p99 latency.
-- B. Bundle p95/p99 latency, canary monitoring, and prompt changes into one release with one aggregate score.
-- C. Make p95/p99 latency explicit in the workflow: watch tail latency, queueing, retries, and error budgets.
-- D. Keep average latency only as the primary release control and record only final outputs.
-- Answer: C
-- Explanation: The scenario is about p95/p99 latency. The strongest answer fixes the failing layer directly: watch tail latency, queueing, retries, and error budgets.
-- Why A is wrong: It moves attention to a neighboring control instead of making p95/p99 latency testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether p95/p99 latency fixed or caused the failure.
-- Why D is wrong: It keeps average latency only in control instead of adding a measurable p95/p99 latency decision point.
-
-### Q10: An automotive support team has a production-readiness review for a monitored LLM service. The review is focused on canary monitoring, because the system must compare quality, safety, cost, and latency during rollout. Which implementation path is most appropriate?
-- ID: genl-hf-production-monitoring-and-reliability-042
-- Domain: Production Monitoring and Reliability
-- Topic: canary monitoring; genai_llms_professional
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated canary monitoring check.
-- B. Use canary monitoring as the control boundary and require the system to compare quality, safety, cost, and latency during rollout.
-- C. Prioritize load shedding before validating the failure signal around canary monitoring.
-- D. Bundle canary monitoring, drift detection, and prompt changes into one release with one aggregate score.
-- Answer: B
-- Explanation: The scenario is about canary monitoring. The strongest answer fixes the failing layer directly: compare quality, safety, cost, and latency during rollout.
-- Why A is wrong: Waiting for incidents postpones the canary monitoring gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making canary monitoring testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether canary monitoring fixed or caused the failure.
-
-### Q11: A bank fraud team is reviewing a monitored LLM service before rollout. The main risk is fallback policy: the system must route around unhealthy models or tools with trace evidence. Which option keeps the decision at the right layer?
-- ID: genl-hf-production-monitoring-and-reliability-043
-- Domain: Production Monitoring and Reliability
-- Topic: fallback policy; genai_llms_professional
-- Difficulty: hard
-- A. Add a release gate for fallback policy: route around unhealthy models or tools with trace evidence.
-- B. Bundle fallback policy, load shedding, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated fallback policy check.
-- D. Use load shedding as the main gate even though reviewers are asking for fallback policy evidence.
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose Triton Inference Server; it provides a production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- B. Use NIM Operator when you need to manage K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
+- C. Select NIM; it owns serving and deployment work such as for packaged, supported, optimized model serving with APIs, profiles, observability, and Kubernetes/container deployment.
+- D. NCCL is the best fit for this layer: a collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
 - Answer: A
-- Explanation: The scenario is about fallback policy. The strongest answer fixes the failing layer directly: route around unhealthy models or tools with trace evidence.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether fallback policy fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the fallback policy gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making fallback policy testable in the scenario.
+- Explanation: Triton Inference Server is the best fit because it sits in Serving and deployment: Production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- Why B is wrong: NIM Operator is a neighboring serving and deployment component, but this signal asks specifically for Triton Inference Server: to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
+- Why C is wrong: NIM is a neighboring serving and deployment component, but this signal asks specifically for Triton Inference Server: to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
+- Why D is wrong: NCCL belongs to Training and customization, while this scenario asks for Serving and deployment.
 
-### Q12: A global retailer has a production-readiness review for a model-capability design. The review is focused on self-attention, because the system must let tokens attend to context and long-range dependencies. Which control should be added before rollout?
-- ID: genl-hf-llm-architecture-001
-- Domain: LLM Architecture
-- Topic: self-attention; genai_llms_professional
-- Difficulty: expert
-- A. Make self-attention explicit in the workflow: let tokens attend to context and long-range dependencies.
-- B. Keep recurrence as the transformer core as the primary release control and record only final outputs.
-- C. Prioritize rerankers before validating the failure signal around self-attention.
-- D. Bundle self-attention, embedding models, and prompt changes into one release with one aggregate score.
-- Answer: A
-- Explanation: The scenario is about self-attention. The strongest answer fixes the failing layer directly: let tokens attend to context and long-range dependencies.
-- Why B is wrong: It keeps recurrence as the transformer core in control instead of adding a measurable self-attention decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making self-attention testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether self-attention fixed or caused the failure.
-
-### Q13: An insurance claims group is reviewing a model-capability design before rollout. The main risk is causal masking: the system must prevent decoder positions from seeing future tokens. Which option keeps the decision at the right layer?
-- ID: genl-hf-llm-architecture-002
-- Domain: LLM Architecture
-- Topic: causal masking; genai_llms_professional
+### Q2: A hospital operations team is fixing the layer called out by the trace and design review. The rollout is blocked until the team can run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs. Which NVIDIA tool should the team start with?
+- ID: genl-hf-svc-triton-inference-server-002
+- Domain: Model Deployment
+- Topic: NVIDIA service: Triton Inference Server; lifecycle: Serving and deployment; Which service composes preprocessing, inference, and postprocessing as an ensemble?
 - Difficulty: medium
-- A. Prioritize embedding models before validating the failure signal around causal masking.
-- B. Bundle causal masking, rerankers, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated causal masking check.
-- D. Use causal masking as the control boundary and require the system to prevent decoder positions from seeing future tokens.
+- Scope: nvidia_specific
+- Source: generated
+- A. Select NGC; it owns serving and deployment work such as pulling NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- B. Nsight Systems is the best fit for this layer: a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- C. Choose NIM; it provides inference microservices for deploying optimized models with production APIs and model profiles.
+- D. Use Triton Inference Server when you need to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
 - Answer: D
-- Explanation: The scenario is about causal masking. The strongest answer fixes the failing layer directly: prevent decoder positions from seeing future tokens.
-- Why A is wrong: It moves attention to a neighboring control instead of making causal masking testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether causal masking fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the causal masking gate until after users are exposed.
+- Explanation: Triton Inference Server is the best fit because it sits in Serving and deployment: Production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- Why A is wrong: NGC is a neighboring serving and deployment component, but this signal asks specifically for Triton Inference Server: to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
+- Why B is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Serving and deployment.
+- Why C is wrong: NIM is a neighboring serving and deployment component, but this signal asks specifically for Triton Inference Server: to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
 
-### Q14: A cybersecurity response team is comparing two release designs for a model-capability design. One design centers on all experts active for every token; the other adds a measurable MoE routing step. Which design is more appropriate for production?
-- ID: genl-hf-llm-architecture-003
-- Domain: LLM Architecture
-- Topic: MoE routing; genai_llms_professional
+### Q3: A global retailer needs to choose the right implementation surface. The trace points to the need to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs. What is the best first implementation choice?
+- ID: genl-hf-svc-triton-inference-server-003
+- Domain: Model Deployment
+- Topic: NVIDIA service: Triton Inference Server; lifecycle: Serving and deployment; Which service composes preprocessing, inference, and postprocessing as an ensemble?
 - Difficulty: hard
-- A. Wait for production incidents before adding a dedicated MoE routing check.
-- B. Use self-attention as the main gate even though reviewers are asking for MoE routing evidence.
-- C. Add a release gate for MoE routing: activate sparse experts to increase capacity without full dense compute.
-- D. Bundle MoE routing, self-attention, and prompt changes into one release with one aggregate score.
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose Nemotron models; it provides NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- B. Use Nsight Systems when you need to identify where time is going across CPU, GPU, launches, waits, and communication.
+- C. Select Triton Inference Server; it owns serving and deployment work such as running multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
+- D. NeMo Framework is the best fit for this layer: a framework for training, customizing, aligning, and evaluating generative AI models.
 - Answer: C
-- Explanation: The scenario is about MoE routing. The strongest answer fixes the failing layer directly: activate sparse experts to increase capacity without full dense compute.
-- Why A is wrong: Waiting for incidents postpones the MoE routing gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making MoE routing testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether MoE routing fixed or caused the failure.
+- Explanation: Triton Inference Server is the best fit because it sits in Serving and deployment: Production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- Why A is wrong: Nemotron models belongs to Model selection, while this scenario asks for Serving and deployment.
+- Why B is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Serving and deployment.
+- Why D is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for Serving and deployment.
 
-### Q15: A public-sector casework team sees capability limits tied to embedding models. The team has been using using a chat model endpoint for vector search; the next change needs to make embedding models explicit. Which action best addresses the problem?
-- ID: genl-hf-llm-architecture-004
-- Domain: LLM Architecture
-- Topic: embedding models; genai_llms_professional
-- Difficulty: hard
-- A. Keep using a chat model endpoint for vector search as the primary release control and record only final outputs.
-- B. Change the design around embedding models so the system can produce vector representations for retrieval and similarity.
-- C. Wait for production incidents before adding a dedicated embedding models check.
-- D. Use causal masking as the main gate even though reviewers are asking for embedding models evidence.
+### Q4: A pharmaceutical research team is preparing a production rollout. The work to finish before release is running multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs. Which NVIDIA service should be selected first?
+- ID: genl-hf-svc-triton-inference-server-004
+- Domain: Model Deployment
+- Topic: NVIDIA service: Triton Inference Server; lifecycle: Serving and deployment; Which service composes preprocessing, inference, and postprocessing as an ensemble?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. Select Dynamo (Triton Dynamo); it owns serving and deployment work such as supporting disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale.
+- B. Triton Inference Server is the best fit for this layer: a production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- C. Choose Nemotron models; it provides NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- D. Use NIM Operator when you need to manage K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
 - Answer: B
-- Explanation: The scenario is about embedding models. The strongest answer fixes the failing layer directly: produce vector representations for retrieval and similarity.
-- Why A is wrong: It keeps using a chat model endpoint for vector search in control instead of adding a measurable embedding models decision point.
-- Why C is wrong: Waiting for incidents postpones the embedding models gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making embedding models testable in the scenario.
+- Explanation: Triton Inference Server is the best fit because it sits in Serving and deployment: Production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- Why A is wrong: Dynamo (Triton Dynamo) is a neighboring serving and deployment component, but this signal asks specifically for Triton Inference Server: to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
+- Why C is wrong: Nemotron models belongs to Model selection, while this scenario asks for Serving and deployment.
+- Why D is wrong: NIM Operator is a neighboring serving and deployment component, but this signal asks specifically for Triton Inference Server: to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
 
-### Q16: A telecom network operations team is reviewing a model-capability design before rollout. The main risk is rerankers: the system must rescore retrieved candidates for relevance before generation. Which option keeps the decision at the right layer?
-- ID: genl-hf-llm-architecture-005
-- Domain: LLM Architecture
-- Topic: rerankers; genai_llms_professional
+### Q5: A bank fraud team is reviewing the implementation plan. The trace points to the need to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA service fits this requirement?
+- ID: genl-hf-svc-triton-inference-server-005
+- Domain: Model Deployment
+- Topic: NVIDIA service: Triton Inference Server; lifecycle: Serving and deployment; Which service composes preprocessing, inference, and postprocessing as an ensemble?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose Triton Inference Server; it provides a production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- B. Use RAPIDS when you need to accelerate pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- C. Select NIM Operator; it owns serving and deployment work such as managing K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
+- D. NeMo Customizer is the best fit for this layer: a microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- Answer: A
+- Explanation: Triton Inference Server is the best fit because it sits in Serving and deployment: Production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- Why B is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Serving and deployment.
+- Why C is wrong: NIM Operator is a neighboring serving and deployment component, but this signal asks specifically for Triton Inference Server: to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
+- Why D is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Serving and deployment.
+
+### Q6: A manufacturing quality team is fixing the layer called out by the trace and design review. The rollout is blocked until the team can run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: genl-hf-svc-triton-inference-server-006
+- Domain: Model Deployment
+- Topic: NVIDIA service: Triton Inference Server; lifecycle: Serving and deployment; Which service composes preprocessing, inference, and postprocessing as an ensemble?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Select NIM Operator; it owns serving and deployment work such as managing K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
+- B. NeMo Agent Toolkit is the best fit for this layer: a config-driven NAT workflow runtime for agent control flow across tools, retrievers, memory, MCP, tracing, eval, and serving.
+- C. Choose NeMo Retriever; it provides the NVIDIA Retriever microservice family for document extraction, embeddings, indexing/search, and reranking in enterprise RAG.
+- D. Use Triton Inference Server when you need to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
+- Answer: D
+- Explanation: Triton Inference Server is the best fit because it sits in Serving and deployment: Production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- Why A is wrong: NIM Operator is a neighboring serving and deployment component, but this signal asks specifically for Triton Inference Server: to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
+- Why B is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Serving and deployment.
+- Why C is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Serving and deployment.
+
+### Q7: A logistics planning team is reviewing the implementation plan. The implementation requirement is to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs. What is the best first implementation choice?
+- ID: genl-hf-svc-triton-inference-server-007
+- Domain: Model Deployment
+- Topic: NVIDIA service: Triton Inference Server; lifecycle: Serving and deployment; Which service composes preprocessing, inference, and postprocessing as an ensemble?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose NeMo Guardrails; it provides programmable rails for controlling LLM and agent behavior across input, dialog, tool execution, retrieval, and output.
+- B. Use NeMo Curator when you need to prepare raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation.
+- C. Select Triton Inference Server; it owns serving and deployment work such as running multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
+- D. NeMo Customizer is the best fit for this layer: a microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- Answer: C
+- Explanation: Triton Inference Server is the best fit because it sits in Serving and deployment: Production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- Why A is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Serving and deployment.
+- Why B is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Serving and deployment.
+- Why D is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Serving and deployment.
+
+### Q8: An insurance claims group has narrowed the next engineering decision. The work to finish before release is running multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: genl-hf-svc-triton-inference-server-008
+- Domain: Model Deployment
+- Topic: NVIDIA service: Triton Inference Server; lifecycle: Serving and deployment; Which service composes preprocessing, inference, and postprocessing as an ensemble?
 - Difficulty: easy
-- A. Make rerankers explicit in the workflow: rescore retrieved candidates for relevance before generation.
-- B. Use MoE routing as the main gate even though reviewers are asking for rerankers evidence.
-- C. Keep embedding similarity as the final answer as the primary release control and record only final outputs.
-- D. Prioritize embedding models before validating the failure signal around rerankers.
-- Answer: A
-- Explanation: The scenario is about rerankers. The strongest answer fixes the failing layer directly: rescore retrieved candidates for relevance before generation.
-- Why B is wrong: It moves attention to a neighboring control instead of making rerankers testable in the scenario.
-- Why C is wrong: It keeps embedding similarity as the final answer in control instead of adding a measurable rerankers decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making rerankers testable in the scenario.
-
-### Q17: A pharmaceutical research team is preparing a model-capability design for release. The current design relies on recurrence as the transformer core, but the release gate needs to let tokens attend to context and long-range dependencies. Which design is the best first change?
-- ID: genl-hf-llm-architecture-006
-- Domain: LLM Architecture
-- Topic: self-attention; genai_llms_professional
-- Difficulty: hard
-- A. Keep recurrence as the transformer core as the primary release control and record only final outputs.
-- B. Prioritize embedding models before validating the failure signal around self-attention.
-- C. Bundle self-attention, rerankers, and prompt changes into one release with one aggregate score.
-- D. Use self-attention as the control boundary and require the system to let tokens attend to context and long-range dependencies.
-- Answer: D
-- Explanation: The scenario is about self-attention. The strongest answer fixes the failing layer directly: let tokens attend to context and long-range dependencies.
-- Why A is wrong: It keeps recurrence as the transformer core in control instead of adding a measurable self-attention decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making self-attention testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether self-attention fixed or caused the failure.
-
-### Q18: A bank fraud team sees capability limits tied to causal masking. The team has been using bidirectional attention for generation; the next change needs to make causal masking explicit. Which action best addresses the problem?
-- ID: genl-hf-llm-architecture-007
-- Domain: LLM Architecture
-- Topic: causal masking; genai_llms_professional
-- Difficulty: expert
-- A. Bundle causal masking, self-attention, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated causal masking check.
-- C. Add a release gate for causal masking: prevent decoder positions from seeing future tokens.
-- D. Prioritize MoE routing before validating the failure signal around causal masking.
-- Answer: C
-- Explanation: The scenario is about causal masking. The strongest answer fixes the failing layer directly: prevent decoder positions from seeing future tokens.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether causal masking fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the causal masking gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making causal masking testable in the scenario.
-
-### Q19: A manufacturing quality team is reviewing a model-capability design before rollout. The main risk is MoE routing: the system must activate sparse experts to increase capacity without full dense compute. Which option keeps the decision at the right layer?
-- ID: genl-hf-llm-architecture-008
-- Domain: LLM Architecture
-- Topic: MoE routing; genai_llms_professional
-- Difficulty: medium
-- A. Use causal masking as the main gate even though reviewers are asking for MoE routing evidence.
-- B. Change the design around MoE routing so the system can activate sparse experts to increase capacity without full dense compute.
-- C. Bundle MoE routing, causal masking, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated MoE routing check.
+- Scope: nvidia_specific
+- Source: generated
+- A. Select TensorRT-LLM; it owns inference optimization work such as building optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT.
+- B. Triton Inference Server is the best fit for this layer: a production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- C. Choose NeMo Customizer; it provides a microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- D. Use NIM Operator when you need to manage K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
 - Answer: B
-- Explanation: The scenario is about MoE routing. The strongest answer fixes the failing layer directly: activate sparse experts to increase capacity without full dense compute.
-- Why A is wrong: It moves attention to a neighboring control instead of making MoE routing testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether MoE routing fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the MoE routing gate until after users are exposed.
+- Explanation: Triton Inference Server is the best fit because it sits in Serving and deployment: Production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- Why A is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Serving and deployment.
+- Why C is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Serving and deployment.
+- Why D is wrong: NIM Operator is a neighboring serving and deployment component, but this signal asks specifically for Triton Inference Server: to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
 
-### Q20: A telecom network operations team is preparing a model-capability design for release. The current design relies on using a chat model endpoint for vector search, but the release gate needs to produce vector representations for retrieval and similarity. Which architecture keeps the boundary cleanest?
-- ID: genl-hf-llm-architecture-009
-- Domain: LLM Architecture
-- Topic: embedding models; genai_llms_professional
+### Q9: A cybersecurity response team is reviewing the implementation plan. The trace points to the need to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs. Which NVIDIA platform layer is the right match?
+- ID: genl-hf-svc-triton-inference-server-009
+- Domain: Model Deployment
+- Topic: NVIDIA service: Triton Inference Server; lifecycle: Serving and deployment; Which service composes preprocessing, inference, and postprocessing as an ensemble?
 - Difficulty: hard
-- A. Make embedding models explicit in the workflow: produce vector representations for retrieval and similarity.
-- B. Wait for production incidents before adding a dedicated embedding models check.
-- C. Use MoE routing as the main gate even though reviewers are asking for embedding models evidence.
-- D. Keep using a chat model endpoint for vector search as the primary release control and record only final outputs.
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose Triton Inference Server; it provides a production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- B. Use TensorRT-LLM when you need to build optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT.
+- C. Select NCCL; it owns training and customization work such as handling distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- D. Nsight Systems is the best fit for this layer: a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
 - Answer: A
-- Explanation: The scenario is about embedding models. The strongest answer fixes the failing layer directly: produce vector representations for retrieval and similarity.
-- Why B is wrong: Waiting for incidents postpones the embedding models gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making embedding models testable in the scenario.
-- Why D is wrong: It keeps using a chat model endpoint for vector search in control instead of adding a measurable embedding models decision point.
+- Explanation: Triton Inference Server is the best fit because it sits in Serving and deployment: Production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- Why B is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Serving and deployment.
+- Why C is wrong: NCCL belongs to Training and customization, while this scenario asks for Serving and deployment.
+- Why D is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Serving and deployment.
 
-### Q21: An insurance claims group is preparing a model-capability design for release. The current design relies on embedding similarity as the final answer, but the release gate needs to rescore retrieved candidates for relevance before generation. Which design is the best first change?
-- ID: genl-hf-llm-architecture-010
-- Domain: LLM Architecture
-- Topic: rerankers; genai_llms_professional
-- Difficulty: hard
-- A. Keep embedding similarity as the final answer as the primary release control and record only final outputs.
-- B. Prioritize MoE routing before validating the failure signal around rerankers.
-- C. Use rerankers as the control boundary and require the system to rescore retrieved candidates for relevance before generation.
-- D. Use embedding models as the main gate even though reviewers are asking for rerankers evidence.
-- Answer: C
-- Explanation: The scenario is about rerankers. The strongest answer fixes the failing layer directly: rescore retrieved candidates for relevance before generation.
-- Why A is wrong: It keeps embedding similarity as the final answer in control instead of adding a measurable rerankers decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making rerankers testable in the scenario.
-- Why D is wrong: It moves attention to a neighboring control instead of making rerankers testable in the scenario.
-
-### Q22: A hospital operations team sees capability limits tied to self-attention. The team has been using recurrence as the transformer core; the next change needs to make self-attention explicit. Which action best addresses the problem?
-- ID: genl-hf-llm-architecture-011
-- Domain: LLM Architecture
-- Topic: self-attention; genai_llms_professional
+### Q10: A public-sector casework team has narrowed the next engineering decision. The rollout is blocked until the team can run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA tool should the team start with?
+- ID: genl-hf-svc-triton-inference-server-010
+- Domain: Model Deployment
+- Topic: NVIDIA service: Triton Inference Server; lifecycle: Serving and deployment; Which service composes preprocessing, inference, and postprocessing as an ensemble?
 - Difficulty: expert
-- A. Keep recurrence as the transformer core as the primary release control and record only final outputs.
-- B. Prioritize embedding models before validating the failure signal around self-attention.
-- C. Bundle self-attention, rerankers, and prompt changes into one release with one aggregate score.
-- D. Add a release gate for self-attention: let tokens attend to context and long-range dependencies.
-- Answer: D
-- Explanation: The scenario is about self-attention. The strongest answer fixes the failing layer directly: let tokens attend to context and long-range dependencies.
-- Why A is wrong: It keeps recurrence as the transformer core in control instead of adding a measurable self-attention decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making self-attention testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether self-attention fixed or caused the failure.
-
-### Q23: A semiconductor design group sees capability limits tied to causal masking. The team has been using bidirectional attention for generation; the next change needs to make causal masking explicit. Which action best addresses the problem?
-- ID: genl-hf-llm-architecture-012
-- Domain: LLM Architecture
-- Topic: causal masking; genai_llms_professional
-- Difficulty: medium
-- A. Change the design around causal masking so the system can prevent decoder positions from seeing future tokens.
-- B. Prioritize rerankers before validating the failure signal around causal masking.
-- C. Bundle causal masking, embedding models, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated causal masking check.
-- Answer: A
-- Explanation: The scenario is about causal masking. The strongest answer fixes the failing layer directly: prevent decoder positions from seeing future tokens.
-- Why B is wrong: It moves attention to a neighboring control instead of making causal masking testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether causal masking fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the causal masking gate until after users are exposed.
-
-### Q24: A pharmaceutical research team is preparing a model-capability design for release. The current design relies on all experts active for every token, but the release gate needs to activate sparse experts to increase capacity without full dense compute. Which choice addresses the root cause?
-- ID: genl-hf-llm-architecture-013
-- Domain: LLM Architecture
-- Topic: MoE routing; genai_llms_professional
-- Difficulty: hard
-- A. Use causal masking as the main gate even though reviewers are asking for MoE routing evidence.
-- B. Make MoE routing explicit in the workflow: activate sparse experts to increase capacity without full dense compute.
-- C. Bundle MoE routing, causal masking, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated MoE routing check.
-- Answer: B
-- Explanation: The scenario is about MoE routing. The strongest answer fixes the failing layer directly: activate sparse experts to increase capacity without full dense compute.
-- Why A is wrong: It moves attention to a neighboring control instead of making MoE routing testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether MoE routing fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the MoE routing gate until after users are exposed.
-
-### Q25: A global retailer has a production-readiness review for a model-capability design. The review is focused on embedding models, because the system must produce vector representations for retrieval and similarity. Which action best fits the requirement?
-- ID: genl-hf-llm-architecture-014
-- Domain: LLM Architecture
-- Topic: embedding models; genai_llms_professional
-- Difficulty: hard
-- A. Use self-attention as the main gate even though reviewers are asking for embedding models evidence.
-- B. Keep using a chat model endpoint for vector search as the primary release control and record only final outputs.
-- C. Use embedding models as the control boundary and require the system to produce vector representations for retrieval and similarity.
-- D. Wait for production incidents before adding a dedicated embedding models check.
+- Scope: nvidia_specific
+- Source: generated
+- A. TensorRT-LLM is the best fit for this layer: an optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- B. Choose NIM Operator; it provides a Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
+- C. Use Triton Inference Server when you need to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
+- D. Select NeMo Agent Toolkit; it owns agent orchestration work such as a workflow must route requests, call tools/retrievers/memory, run sequential or parallel branches, expose an API/MCP server, or evaluate/profile agent traces.
 - Answer: C
-- Explanation: The scenario is about embedding models. The strongest answer fixes the failing layer directly: produce vector representations for retrieval and similarity.
-- Why A is wrong: It moves attention to a neighboring control instead of making embedding models testable in the scenario.
-- Why B is wrong: It keeps using a chat model endpoint for vector search in control instead of adding a measurable embedding models decision point.
-- Why D is wrong: Waiting for incidents postpones the embedding models gate until after users are exposed.
+- Explanation: Triton Inference Server is the best fit because it sits in Serving and deployment: Production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- Why A is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Serving and deployment.
+- Why B is wrong: NIM Operator is a neighboring serving and deployment component, but this signal asks specifically for Triton Inference Server: to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
+- Why D is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Serving and deployment.
 
-### Q26: A manufacturing quality team sees capability limits tied to rerankers. The team has been using embedding similarity as the final answer; the next change needs to make rerankers explicit. Which action best addresses the problem?
-- ID: genl-hf-llm-architecture-015
-- Domain: LLM Architecture
-- Topic: rerankers; genai_llms_professional
-- Difficulty: medium
-- A. Use embedding models as the main gate even though reviewers are asking for rerankers evidence.
-- B. Keep embedding similarity as the final answer as the primary release control and record only final outputs.
-- C. Prioritize MoE routing before validating the failure signal around rerankers.
-- D. Add a release gate for rerankers: rescore retrieved candidates for relevance before generation.
-- Answer: D
-- Explanation: The scenario is about rerankers. The strongest answer fixes the failing layer directly: rescore retrieved candidates for relevance before generation.
-- Why A is wrong: It moves attention to a neighboring control instead of making rerankers testable in the scenario.
-- Why B is wrong: It keeps embedding similarity as the final answer in control instead of adding a measurable rerankers decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making rerankers testable in the scenario.
-
-### Q27: A cybersecurity response team is comparing two release designs for a model-capability design. One design centers on recurrence as the transformer core; the other adds a measurable self-attention step. Which design is more appropriate for production?
-- ID: genl-hf-llm-architecture-016
-- Domain: LLM Architecture
-- Topic: self-attention; genai_llms_professional
-- Difficulty: hard
-- A. Change the design around self-attention so the system can let tokens attend to context and long-range dependencies.
-- B. Keep recurrence as the transformer core as the primary release control and record only final outputs.
-- C. Prioritize rerankers before validating the failure signal around self-attention.
-- D. Bundle self-attention, embedding models, and prompt changes into one release with one aggregate score.
-- Answer: A
-- Explanation: The scenario is about self-attention. The strongest answer fixes the failing layer directly: let tokens attend to context and long-range dependencies.
-- Why B is wrong: It keeps recurrence as the transformer core in control instead of adding a measurable self-attention decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making self-attention testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether self-attention fixed or caused the failure.
-
-### Q28: An insurance claims group is preparing a model-capability design for release. The current design relies on bidirectional attention for generation, but the release gate needs to prevent decoder positions from seeing future tokens. Which design is the best first change?
-- ID: genl-hf-llm-architecture-017
-- Domain: LLM Architecture
-- Topic: causal masking; genai_llms_professional
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated causal masking check.
-- B. Make causal masking explicit in the workflow: prevent decoder positions from seeing future tokens.
-- C. Prioritize self-attention before validating the failure signal around causal masking.
-- D. Bundle causal masking, MoE routing, and prompt changes into one release with one aggregate score.
-- Answer: B
-- Explanation: The scenario is about causal masking. The strongest answer fixes the failing layer directly: prevent decoder positions from seeing future tokens.
-- Why A is wrong: Waiting for incidents postpones the causal masking gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making causal masking testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether causal masking fixed or caused the failure.
-
-### Q29: A global retailer sees capability limits tied to MoE routing. The team has been using all experts active for every token; the next change needs to make MoE routing explicit. Which action best addresses the problem?
-- ID: genl-hf-llm-architecture-018
-- Domain: LLM Architecture
-- Topic: MoE routing; genai_llms_professional
+### Q11: An automotive support team is preparing a production rollout. A 70B chat model needs high concurrency with variable-length prompts and low TTFT. Which NVIDIA service should be selected first?
+- ID: genl-hf-svc-tensorrt-llm-001
+- Domain: Model Optimization
+- Topic: NVIDIA service: TensorRT-LLM; lifecycle: Inference optimization; What NVIDIA stack optimizes LLM generation with paged KV cache and continuous batching?
 - Difficulty: expert
-- A. Wait for production incidents before adding a dedicated MoE routing check.
-- B. Use self-attention as the main gate even though reviewers are asking for MoE routing evidence.
-- C. Use MoE routing as the control boundary and require the system to activate sparse experts to increase capacity without full dense compute.
-- D. Bundle MoE routing, self-attention, and prompt changes into one release with one aggregate score.
-- Answer: C
-- Explanation: The scenario is about MoE routing. The strongest answer fixes the failing layer directly: activate sparse experts to increase capacity without full dense compute.
-- Why A is wrong: Waiting for incidents postpones the MoE routing gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making MoE routing testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether MoE routing fixed or caused the failure.
-
-### Q30: A hospital operations team has a production-readiness review for a model-capability design. The review is focused on embedding models, because the system must produce vector representations for retrieval and similarity. Which implementation path is most appropriate?
-- ID: genl-hf-llm-architecture-019
-- Domain: LLM Architecture
-- Topic: embedding models; genai_llms_professional
-- Difficulty: medium
-- A. Wait for production incidents before adding a dedicated embedding models check.
-- B. Use rerankers as the main gate even though reviewers are asking for embedding models evidence.
-- C. Keep using a chat model endpoint for vector search as the primary release control and record only final outputs.
-- D. Add a release gate for embedding models: produce vector representations for retrieval and similarity.
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NGC when you need to pull NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- B. Select Nsight Compute; it owns monitoring and profiling work such as diagnosing why a known kernel is memory-bound, compute-bound, or inefficient.
+- C. NIM is the best fit for this layer: inference microservices for deploying optimized models with production APIs and model profiles.
+- D. Choose TensorRT-LLM; it provides an optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
 - Answer: D
-- Explanation: The scenario is about embedding models. The strongest answer fixes the failing layer directly: produce vector representations for retrieval and similarity.
-- Why A is wrong: Waiting for incidents postpones the embedding models gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making embedding models testable in the scenario.
-- Why C is wrong: It keeps using a chat model endpoint for vector search in control instead of adding a measurable embedding models decision point.
+- Explanation: TensorRT-LLM is the best fit because it sits in Inference optimization: Optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- Why A is wrong: NGC belongs to Serving and deployment, while this scenario asks for Inference optimization.
+- Why B is wrong: Nsight Compute belongs to Monitoring and profiling, while this scenario asks for Inference optimization.
+- Why C is wrong: NIM belongs to Serving and deployment, while this scenario asks for Inference optimization.
 
-### Q31: A semiconductor design group is reviewing a model-capability design before rollout. The main risk is rerankers: the system must rescore retrieved candidates for relevance before generation. Which option keeps the decision at the right layer?
-- ID: genl-hf-llm-architecture-020
-- Domain: LLM Architecture
-- Topic: rerankers; genai_llms_professional
-- Difficulty: hard
-- A. Use MoE routing as the main gate even though reviewers are asking for rerankers evidence.
-- B. Keep embedding similarity as the final answer as the primary release control and record only final outputs.
-- C. Prioritize embedding models before validating the failure signal around rerankers.
-- D. Change the design around rerankers so the system can rescore retrieved candidates for relevance before generation.
-- Answer: D
-- Explanation: The scenario is about rerankers. The strongest answer fixes the failing layer directly: rescore retrieved candidates for relevance before generation.
-- Why A is wrong: It moves attention to a neighboring control instead of making rerankers testable in the scenario.
-- Why B is wrong: It keeps embedding similarity as the final answer in control instead of adding a measurable rerankers decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making rerankers testable in the scenario.
-
-### Q32: A bank fraud team has a production-readiness review for a model-capability design. The review is focused on self-attention, because the system must let tokens attend to context and long-range dependencies. Which action best fits the requirement?
-- ID: genl-hf-llm-architecture-021
-- Domain: LLM Architecture
-- Topic: self-attention; genai_llms_professional
-- Difficulty: expert
-- A. Prioritize rerankers before validating the failure signal around self-attention.
-- B. Bundle self-attention, embedding models, and prompt changes into one release with one aggregate score.
-- C. Make self-attention explicit in the workflow: let tokens attend to context and long-range dependencies.
-- D. Keep recurrence as the transformer core as the primary release control and record only final outputs.
-- Answer: C
-- Explanation: The scenario is about self-attention. The strongest answer fixes the failing layer directly: let tokens attend to context and long-range dependencies.
-- Why A is wrong: It moves attention to a neighboring control instead of making self-attention testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether self-attention fixed or caused the failure.
-- Why D is wrong: It keeps recurrence as the transformer core in control instead of adding a measurable self-attention decision point.
-
-### Q33: A manufacturing quality team is preparing a model-capability design for release. The current design relies on bidirectional attention for generation, but the release gate needs to prevent decoder positions from seeing future tokens. Which choice addresses the root cause?
-- ID: genl-hf-llm-architecture-022
-- Domain: LLM Architecture
-- Topic: causal masking; genai_llms_professional
+### Q12: A telecom network operations team is reviewing the implementation plan. The trace points to the need to build optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT. Which NVIDIA option addresses the named layer?
+- ID: genl-hf-svc-tensorrt-llm-002
+- Domain: Model Optimization
+- Topic: NVIDIA service: TensorRT-LLM; lifecycle: Inference optimization; What NVIDIA stack optimizes LLM generation with paged KV cache and continuous batching?
 - Difficulty: medium
-- A. Wait for production incidents before adding a dedicated causal masking check.
-- B. Use causal masking as the control boundary and require the system to prevent decoder positions from seeing future tokens.
-- C. Prioritize embedding models before validating the failure signal around causal masking.
-- D. Bundle causal masking, rerankers, and prompt changes into one release with one aggregate score.
-- Answer: B
-- Explanation: The scenario is about causal masking. The strongest answer fixes the failing layer directly: prevent decoder positions from seeing future tokens.
-- Why A is wrong: Waiting for incidents postpones the causal masking gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making causal masking testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether causal masking fixed or caused the failure.
-
-### Q34: A telecom network operations team is preparing a model-capability design for release. The current design relies on all experts active for every token, but the release gate needs to activate sparse experts to increase capacity without full dense compute. Which architecture keeps the boundary cleanest?
-- ID: genl-hf-llm-architecture-023
-- Domain: LLM Architecture
-- Topic: MoE routing; genai_llms_professional
-- Difficulty: hard
-- A. Add a release gate for MoE routing: activate sparse experts to increase capacity without full dense compute.
-- B. Bundle MoE routing, self-attention, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated MoE routing check.
-- D. Use self-attention as the main gate even though reviewers are asking for MoE routing evidence.
+- Scope: nvidia_specific
+- Source: generated
+- A. Use TensorRT-LLM when you need to build optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT.
+- B. Select Nsight Compute; it owns monitoring and profiling work such as diagnosing why a known kernel is memory-bound, compute-bound, or inefficient.
+- C. NeMo Framework is the best fit for this layer: a framework for training, customizing, aligning, and evaluating generative AI models.
+- D. Choose Nsight Systems; it provides a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
 - Answer: A
-- Explanation: The scenario is about MoE routing. The strongest answer fixes the failing layer directly: activate sparse experts to increase capacity without full dense compute.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether MoE routing fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the MoE routing gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making MoE routing testable in the scenario.
+- Explanation: TensorRT-LLM is the best fit because it sits in Inference optimization: Optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- Why B is wrong: Nsight Compute belongs to Monitoring and profiling, while this scenario asks for Inference optimization.
+- Why C is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for Inference optimization.
+- Why D is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Inference optimization.
 
-### Q35: A pharmaceutical research team is comparing two release designs for a model-capability design. One design centers on using a chat model endpoint for vector search; the other adds a measurable embedding models step. Which design is more appropriate for production?
-- ID: genl-hf-llm-architecture-024
-- Domain: LLM Architecture
-- Topic: embedding models; genai_llms_professional
+### Q13: A public-sector casework team is preparing a production rollout. The next release blocker is reducing serving latency without changing training data. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: genl-hf-svc-tensorrt-llm-003
+- Domain: Model Optimization
+- Topic: NVIDIA service: TensorRT-LLM; lifecycle: Inference optimization; What NVIDIA stack optimizes LLM generation with paged KV cache and continuous batching?
 - Difficulty: hard
-- A. Wait for production incidents before adding a dedicated embedding models check.
-- B. Use causal masking as the main gate even though reviewers are asking for embedding models evidence.
-- C. Keep using a chat model endpoint for vector search as the primary release control and record only final outputs.
-- D. Change the design around embedding models so the system can produce vector representations for retrieval and similarity.
-- Answer: D
-- Explanation: The scenario is about embedding models. The strongest answer fixes the failing layer directly: produce vector representations for retrieval and similarity.
-- Why A is wrong: Waiting for incidents postpones the embedding models gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making embedding models testable in the scenario.
-- Why C is wrong: It keeps using a chat model endpoint for vector search in control instead of adding a measurable embedding models decision point.
+- Scope: nvidia_specific
+- Source: generated
+- A. Use Nemotron models when you need to choose a model family for NVIDIA-aligned reasoning, reward, instruction, or agentic workflows.
+- B. Select TensorRT-LLM; it owns inference optimization work such as building optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT.
+- C. RAPIDS is the best fit for this layer: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- D. Choose NCCL; it provides a collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- Answer: B
+- Explanation: TensorRT-LLM is the best fit because it sits in Inference optimization: Optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- Why A is wrong: Nemotron models belongs to Model selection, while this scenario asks for Inference optimization.
+- Why C is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Inference optimization.
+- Why D is wrong: NCCL belongs to Training and customization, while this scenario asks for Inference optimization.
 
-### Q36: A cybersecurity response team sees capability limits tied to rerankers. The team has been using embedding similarity as the final answer; the next change needs to make rerankers explicit. Which action best addresses the problem?
-- ID: genl-hf-llm-architecture-025
-- Domain: LLM Architecture
-- Topic: rerankers; genai_llms_professional
+### Q14: A cybersecurity response team is setting a release gate. The blocker is building optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA platform layer is the right match?
+- ID: genl-hf-svc-tensorrt-llm-004
+- Domain: Model Optimization
+- Topic: NVIDIA service: TensorRT-LLM; lifecycle: Inference optimization; What NVIDIA stack optimizes LLM generation with paged KV cache and continuous batching?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NeMo Customizer when you need to run API-driven LoRA/PEFT customization without standing up a full training stack.
+- B. Select Nemotron models; it owns model selection work such as choosing a model family for NVIDIA-aligned reasoning, reward, instruction, or agentic workflows.
+- C. TensorRT-LLM is the best fit for this layer: an optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- D. Choose NIM; it provides inference microservices for deploying optimized models with production APIs and model profiles.
+- Answer: C
+- Explanation: TensorRT-LLM is the best fit because it sits in Inference optimization: Optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- Why A is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Inference optimization.
+- Why B is wrong: Nemotron models belongs to Model selection, while this scenario asks for Inference optimization.
+- Why D is wrong: NIM belongs to Serving and deployment, while this scenario asks for Inference optimization.
+
+### Q15: An insurance claims group has narrowed the next engineering decision. A 70B chat model needs high concurrency with variable-length prompts and low TTFT. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: genl-hf-svc-tensorrt-llm-005
+- Domain: Model Optimization
+- Topic: NVIDIA service: TensorRT-LLM; lifecycle: Inference optimization; What NVIDIA stack optimizes LLM generation with paged KV cache and continuous batching?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NIM Operator when you need to manage K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
+- B. Select NeMo Retriever; it owns rAG and retrieval work such as connecting proprietary data to RAG: parse documents, embed chunks/queries, index/search, apply permissions, or rerank candidate passages.
+- C. NeMo Guardrails is the best fit for this layer: programmable rails for controlling LLM and agent behavior across input, dialog, tool execution, retrieval, and output.
+- D. Choose TensorRT-LLM; it provides an optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- Answer: D
+- Explanation: TensorRT-LLM is the best fit because it sits in Inference optimization: Optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- Why A is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Inference optimization.
+- Why B is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Inference optimization.
+- Why C is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Inference optimization.
+
+### Q16: A logistics planning team is reviewing the implementation plan. The blocker is building optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT. What is the best first implementation choice?
+- ID: genl-hf-svc-tensorrt-llm-006
+- Domain: Model Optimization
+- Topic: NVIDIA service: TensorRT-LLM; lifecycle: Inference optimization; What NVIDIA stack optimizes LLM generation with paged KV cache and continuous batching?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Use TensorRT-LLM when you need to build optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT.
+- B. Select NeMo Customizer; it owns training and customization work such as running API-driven LoRA/PEFT customization without standing up a full training stack.
+- C. NeMo Guardrails is the best fit for this layer: programmable rails for controlling LLM and agent behavior across input, dialog, tool execution, retrieval, and output.
+- D. Choose RAPIDS; it provides GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- Answer: A
+- Explanation: TensorRT-LLM is the best fit because it sits in Inference optimization: Optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- Why B is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Inference optimization.
+- Why C is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Inference optimization.
+- Why D is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Inference optimization.
+
+### Q17: A hospital operations team is preparing a production rollout. The next release blocker is optimizing LLM engines, batching, KV cache, quantization, and TTFT. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: genl-hf-svc-tensorrt-llm-007
+- Domain: Model Optimization
+- Topic: NVIDIA service: TensorRT-LLM; lifecycle: Inference optimization; What NVIDIA stack optimizes LLM generation with paged KV cache and continuous batching?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Use Triton Inference Server when you need to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
+- B. Select TensorRT-LLM; it owns inference optimization work such as building optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT.
+- C. NCCL is the best fit for this layer: a collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- D. Choose Nsight Systems; it provides a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- Answer: B
+- Explanation: TensorRT-LLM is the best fit because it sits in Inference optimization: Optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- Why A is wrong: Triton Inference Server belongs to Serving and deployment, while this scenario asks for Inference optimization.
+- Why C is wrong: NCCL belongs to Training and customization, while this scenario asks for Inference optimization.
+- Why D is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Inference optimization.
+
+### Q18: A semiconductor design group is reviewing the implementation plan. The implementation requirement is to build optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA option addresses the named layer?
+- ID: genl-hf-svc-tensorrt-llm-008
+- Domain: Model Optimization
+- Topic: NVIDIA service: TensorRT-LLM; lifecycle: Inference optimization; What NVIDIA stack optimizes LLM generation with paged KV cache and continuous batching?
 - Difficulty: easy
-- A. Keep embedding similarity as the final answer as the primary release control and record only final outputs.
-- B. Prioritize embedding models before validating the failure signal around rerankers.
-- C. Make rerankers explicit in the workflow: rescore retrieved candidates for relevance before generation.
-- D. Use MoE routing as the main gate even though reviewers are asking for rerankers evidence.
+- Scope: nvidia_specific
+- Source: generated
+- A. Use Dynamo (Triton Dynamo) when you need to support disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale.
+- B. Select NeMo Curator; it owns data preparation work such as preparing raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation.
+- C. TensorRT-LLM is the best fit for this layer: an optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- D. Choose NIM; it provides inference microservices for deploying optimized models with production APIs and model profiles.
 - Answer: C
-- Explanation: The scenario is about rerankers. The strongest answer fixes the failing layer directly: rescore retrieved candidates for relevance before generation.
-- Why A is wrong: It keeps embedding similarity as the final answer in control instead of adding a measurable rerankers decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making rerankers testable in the scenario.
-- Why D is wrong: It moves attention to a neighboring control instead of making rerankers testable in the scenario.
+- Explanation: TensorRT-LLM is the best fit because it sits in Inference optimization: Optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- Why A is wrong: Dynamo (Triton Dynamo) belongs to Serving and deployment, while this scenario asks for Inference optimization.
+- Why B is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Inference optimization.
+- Why D is wrong: NIM belongs to Serving and deployment, while this scenario asks for Inference optimization.
 
-### Q37: A public-sector casework team is preparing a model-capability design for release. The current design relies on recurrence as the transformer core, but the release gate needs to let tokens attend to context and long-range dependencies. Which choice addresses the root cause?
-- ID: genl-hf-llm-architecture-026
-- Domain: LLM Architecture
-- Topic: self-attention; genai_llms_professional
+### Q19: A pharmaceutical research team is preparing a production rollout. A 70B chat model needs high concurrency with variable-length prompts and low TTFT. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: genl-hf-svc-tensorrt-llm-009
+- Domain: Model Optimization
+- Topic: NVIDIA service: TensorRT-LLM; lifecycle: Inference optimization; What NVIDIA stack optimizes LLM generation with paged KV cache and continuous batching?
 - Difficulty: hard
-- A. Bundle self-attention, rerankers, and prompt changes into one release with one aggregate score.
-- B. Use self-attention as the control boundary and require the system to let tokens attend to context and long-range dependencies.
-- C. Keep recurrence as the transformer core as the primary release control and record only final outputs.
-- D. Prioritize embedding models before validating the failure signal around self-attention.
-- Answer: B
-- Explanation: The scenario is about self-attention. The strongest answer fixes the failing layer directly: let tokens attend to context and long-range dependencies.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether self-attention fixed or caused the failure.
-- Why C is wrong: It keeps recurrence as the transformer core in control instead of adding a measurable self-attention decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making self-attention testable in the scenario.
-
-### Q38: A global retailer is comparing two release designs for a model-capability design. One design centers on bidirectional attention for generation; the other adds a measurable causal masking step. Which design is more appropriate for production?
-- ID: genl-hf-llm-architecture-027
-- Domain: LLM Architecture
-- Topic: causal masking; genai_llms_professional
-- Difficulty: expert
-- A. Add a release gate for causal masking: prevent decoder positions from seeing future tokens.
-- B. Prioritize MoE routing before validating the failure signal around causal masking.
-- C. Bundle causal masking, self-attention, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated causal masking check.
-- Answer: A
-- Explanation: The scenario is about causal masking. The strongest answer fixes the failing layer directly: prevent decoder positions from seeing future tokens.
-- Why B is wrong: It moves attention to a neighboring control instead of making causal masking testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether causal masking fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the causal masking gate until after users are exposed.
-
-### Q39: An insurance claims group sees capability limits tied to MoE routing. The team has been using all experts active for every token; the next change needs to make MoE routing explicit. Which action best addresses the problem?
-- ID: genl-hf-llm-architecture-028
-- Domain: LLM Architecture
-- Topic: MoE routing; genai_llms_professional
-- Difficulty: medium
-- A. Bundle MoE routing, causal masking, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated MoE routing check.
-- C. Use causal masking as the main gate even though reviewers are asking for MoE routing evidence.
-- D. Change the design around MoE routing so the system can activate sparse experts to increase capacity without full dense compute.
+- Scope: nvidia_specific
+- Source: generated
+- A. Use Dynamo (Triton Dynamo) when you need to support disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale.
+- B. Select NIM Operator; it owns serving and deployment work such as managing K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
+- C. NeMo Evaluator is the best fit for this layer: a microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- D. Choose TensorRT-LLM; it provides an optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
 - Answer: D
-- Explanation: The scenario is about MoE routing. The strongest answer fixes the failing layer directly: activate sparse experts to increase capacity without full dense compute.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether MoE routing fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the MoE routing gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making MoE routing testable in the scenario.
+- Explanation: TensorRT-LLM is the best fit because it sits in Inference optimization: Optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- Why A is wrong: Dynamo (Triton Dynamo) belongs to Serving and deployment, while this scenario asks for Inference optimization.
+- Why B is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Inference optimization.
+- Why C is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Inference optimization.
 
-### Q40: A bank fraud team is reviewing a model-capability design before rollout. The main risk is embedding models: the system must produce vector representations for retrieval and similarity. Which option keeps the decision at the right layer?
-- ID: genl-hf-llm-architecture-029
-- Domain: LLM Architecture
-- Topic: embedding models; genai_llms_professional
-- Difficulty: hard
-- A. Use MoE routing as the main gate even though reviewers are asking for embedding models evidence.
-- B. Keep using a chat model endpoint for vector search as the primary release control and record only final outputs.
-- C. Make embedding models explicit in the workflow: produce vector representations for retrieval and similarity.
-- D. Wait for production incidents before adding a dedicated embedding models check.
-- Answer: C
-- Explanation: The scenario is about embedding models. The strongest answer fixes the failing layer directly: produce vector representations for retrieval and similarity.
-- Why A is wrong: It moves attention to a neighboring control instead of making embedding models testable in the scenario.
-- Why B is wrong: It keeps using a chat model endpoint for vector search in control instead of adding a measurable embedding models decision point.
-- Why D is wrong: Waiting for incidents postpones the embedding models gate until after users are exposed.
-
-### Q41: A public-sector casework team is reviewing a model-capability design before rollout. The main risk is rerankers: the system must rescore retrieved candidates for relevance before generation. Which option keeps the decision at the right layer?
-- ID: genl-hf-llm-architecture-030
-- Domain: LLM Architecture
-- Topic: rerankers; genai_llms_professional
-- Difficulty: hard
-- A. Use rerankers as the control boundary and require the system to rescore retrieved candidates for relevance before generation.
-- B. Use embedding models as the main gate even though reviewers are asking for rerankers evidence.
-- C. Keep embedding similarity as the final answer as the primary release control and record only final outputs.
-- D. Prioritize MoE routing before validating the failure signal around rerankers.
-- Answer: A
-- Explanation: The scenario is about rerankers. The strongest answer fixes the failing layer directly: rescore retrieved candidates for relevance before generation.
-- Why B is wrong: It moves attention to a neighboring control instead of making rerankers testable in the scenario.
-- Why C is wrong: It keeps embedding similarity as the final answer in control instead of adding a measurable rerankers decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making rerankers testable in the scenario.
-
-### Q42: A pharmaceutical research team has a production-readiness review for a model-capability design. The review is focused on self-attention, because the system must let tokens attend to context and long-range dependencies. Which choice addresses the root cause?
-- ID: genl-hf-llm-architecture-031
-- Domain: LLM Architecture
-- Topic: self-attention; genai_llms_professional
+### Q20: A global retailer is setting a release gate. The trace points to the need to build optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA service fits this requirement?
+- ID: genl-hf-svc-tensorrt-llm-010
+- Domain: Model Optimization
+- Topic: NVIDIA service: TensorRT-LLM; lifecycle: Inference optimization; What NVIDIA stack optimizes LLM generation with paged KV cache and continuous batching?
 - Difficulty: expert
-- A. Bundle self-attention, MoE routing, and prompt changes into one release with one aggregate score.
-- B. Add a release gate for self-attention: let tokens attend to context and long-range dependencies.
-- C. Keep recurrence as the transformer core as the primary release control and record only final outputs.
-- D. Prioritize causal masking before validating the failure signal around self-attention.
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose NeMo Retriever; it provides the NVIDIA Retriever microservice family for document extraction, embeddings, indexing/search, and reranking in enterprise RAG.
+- B. Use TensorRT-LLM when you need to build optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT.
+- C. Select Nsight Compute; it owns monitoring and profiling work such as diagnosing why a known kernel is memory-bound, compute-bound, or inefficient.
+- D. NIM Operator is the best fit for this layer: a Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
 - Answer: B
-- Explanation: The scenario is about self-attention. The strongest answer fixes the failing layer directly: let tokens attend to context and long-range dependencies.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether self-attention fixed or caused the failure.
-- Why C is wrong: It keeps recurrence as the transformer core in control instead of adding a measurable self-attention decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making self-attention testable in the scenario.
+- Explanation: TensorRT-LLM is the best fit because it sits in Inference optimization: Optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- Why A is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Inference optimization.
+- Why C is wrong: Nsight Compute belongs to Monitoring and profiling, while this scenario asks for Inference optimization.
+- Why D is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Inference optimization.
 
-### Q43: A global retailer is reviewing a model-capability design before rollout. The main risk is causal masking: the system must prevent decoder positions from seeing future tokens. Which option keeps the decision at the right layer?
-- ID: genl-hf-llm-architecture-032
-- Domain: LLM Architecture
-- Topic: causal masking; genai_llms_professional
-- Difficulty: medium
-- A. Bundle causal masking, self-attention, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated causal masking check.
-- C. Change the design around causal masking so the system can prevent decoder positions from seeing future tokens.
-- D. Prioritize MoE routing before validating the failure signal around causal masking.
-- Answer: C
-- Explanation: The scenario is about causal masking. The strongest answer fixes the failing layer directly: prevent decoder positions from seeing future tokens.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether causal masking fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the causal masking gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making causal masking testable in the scenario.
-
-### Q44: A manufacturing quality team sees capability limits tied to MoE routing. The team has been using all experts active for every token; the next change needs to make MoE routing explicit. Which action best addresses the problem?
-- ID: genl-hf-llm-architecture-033
-- Domain: LLM Architecture
-- Topic: MoE routing; genai_llms_professional
-- Difficulty: hard
-- A. Bundle MoE routing, rerankers, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated MoE routing check.
-- C. Use rerankers as the main gate even though reviewers are asking for MoE routing evidence.
-- D. Make MoE routing explicit in the workflow: activate sparse experts to increase capacity without full dense compute.
-- Answer: D
-- Explanation: The scenario is about MoE routing. The strongest answer fixes the failing layer directly: activate sparse experts to increase capacity without full dense compute.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether MoE routing fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the MoE routing gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making MoE routing testable in the scenario.
-
-### Q45: A bank fraud team is comparing two release designs for a model-capability design. One design centers on using a chat model endpoint for vector search; the other adds a measurable embedding models step. Which design is more appropriate for production?
-- ID: genl-hf-llm-architecture-034
-- Domain: LLM Architecture
-- Topic: embedding models; genai_llms_professional
-- Difficulty: hard
-- A. Use embedding models as the control boundary and require the system to produce vector representations for retrieval and similarity.
-- B. Wait for production incidents before adding a dedicated embedding models check.
-- C. Use MoE routing as the main gate even though reviewers are asking for embedding models evidence.
-- D. Keep using a chat model endpoint for vector search as the primary release control and record only final outputs.
-- Answer: A
-- Explanation: The scenario is about embedding models. The strongest answer fixes the failing layer directly: produce vector representations for retrieval and similarity.
-- Why B is wrong: Waiting for incidents postpones the embedding models gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making embedding models testable in the scenario.
-- Why D is wrong: It keeps using a chat model endpoint for vector search in control instead of adding a measurable embedding models decision point.
-
-### Q46: An insurance claims group is comparing two release designs for a model-capability design. One design centers on embedding similarity as the final answer; the other adds a measurable rerankers step. Which design is more appropriate for production?
-- ID: genl-hf-llm-architecture-035
-- Domain: LLM Architecture
-- Topic: rerankers; genai_llms_professional
-- Difficulty: medium
-- A. Prioritize self-attention before validating the failure signal around rerankers.
-- B. Add a release gate for rerankers: rescore retrieved candidates for relevance before generation.
-- C. Use causal masking as the main gate even though reviewers are asking for rerankers evidence.
-- D. Keep embedding similarity as the final answer as the primary release control and record only final outputs.
-- Answer: B
-- Explanation: The scenario is about rerankers. The strongest answer fixes the failing layer directly: rescore retrieved candidates for relevance before generation.
-- Why A is wrong: It moves attention to a neighboring control instead of making rerankers testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making rerankers testable in the scenario.
-- Why D is wrong: It keeps embedding similarity as the final answer in control instead of adding a measurable rerankers decision point.
-
-### Q47: A global retailer has a production-readiness review for a model-capability design. The review is focused on self-attention, because the system must let tokens attend to context and long-range dependencies. Which architecture keeps the boundary cleanest?
-- ID: genl-hf-llm-architecture-036
-- Domain: LLM Architecture
-- Topic: self-attention; genai_llms_professional
-- Difficulty: hard
-- A. Prioritize MoE routing before validating the failure signal around self-attention.
-- B. Bundle self-attention, causal masking, and prompt changes into one release with one aggregate score.
-- C. Change the design around self-attention so the system can let tokens attend to context and long-range dependencies.
-- D. Keep recurrence as the transformer core as the primary release control and record only final outputs.
-- Answer: C
-- Explanation: The scenario is about self-attention. The strongest answer fixes the failing layer directly: let tokens attend to context and long-range dependencies.
-- Why A is wrong: It moves attention to a neighboring control instead of making self-attention testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether self-attention fixed or caused the failure.
-- Why D is wrong: It keeps recurrence as the transformer core in control instead of adding a measurable self-attention decision point.
-
-### Q48: A public-sector casework team has a production-readiness review for a model-capability design. The review is focused on causal masking, because the system must prevent decoder positions from seeing future tokens. Which design is the best first change?
-- ID: genl-hf-llm-architecture-037
-- Domain: LLM Architecture
-- Topic: causal masking; genai_llms_professional
-- Difficulty: hard
-- A. Prioritize embedding models before validating the failure signal around causal masking.
-- B. Bundle causal masking, rerankers, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated causal masking check.
-- D. Make causal masking explicit in the workflow: prevent decoder positions from seeing future tokens.
-- Answer: D
-- Explanation: The scenario is about causal masking. The strongest answer fixes the failing layer directly: prevent decoder positions from seeing future tokens.
-- Why A is wrong: It moves attention to a neighboring control instead of making causal masking testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether causal masking fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the causal masking gate until after users are exposed.
-
-### Q49: A semiconductor design group has a production-readiness review for a model-capability design. The review is focused on MoE routing, because the system must activate sparse experts to increase capacity without full dense compute. Which control should be added before rollout?
-- ID: genl-hf-llm-architecture-038
-- Domain: LLM Architecture
-- Topic: MoE routing; genai_llms_professional
+### Q21: A cybersecurity response team needs to choose the right implementation surface. The blocker is pulling NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets. Which NVIDIA option addresses the named layer?
+- ID: genl-hf-svc-ngc-001
+- Domain: Model Deployment
+- Topic: NVIDIA service: NGC; lifecycle: Serving and deployment; What NVIDIA service is the catalog/registry for containers and model assets?
 - Difficulty: expert
-- A. Use MoE routing as the control boundary and require the system to activate sparse experts to increase capacity without full dense compute.
-- B. Bundle MoE routing, embedding models, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated MoE routing check.
-- D. Use embedding models as the main gate even though reviewers are asking for MoE routing evidence.
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose NGC; it provides a catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- B. Use NeMo Guardrails when you need to enforce policy flows, safe dialog behavior, prompt-injection defenses, tool restrictions, or output checks.
+- C. Select RAPIDS; it owns data preparation work such as accelerating pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- D. NeMo Evaluator is the best fit for this layer: a microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
 - Answer: A
-- Explanation: The scenario is about MoE routing. The strongest answer fixes the failing layer directly: activate sparse experts to increase capacity without full dense compute.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether MoE routing fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the MoE routing gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making MoE routing testable in the scenario.
+- Explanation: NGC is the best fit because it sits in Serving and deployment: Catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- Why B is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Serving and deployment.
+- Why C is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Serving and deployment.
+- Why D is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Serving and deployment.
 
-### Q50: An insurance claims group is preparing a model-capability design for release. The current design relies on using a chat model endpoint for vector search, but the release gate needs to produce vector representations for retrieval and similarity. Which implementation path is most appropriate?
-- ID: genl-hf-llm-architecture-039
-- Domain: LLM Architecture
-- Topic: embedding models; genai_llms_professional
+### Q22: A public-sector casework team has narrowed the next engineering decision. The rollout is blocked until the team can pull NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA service should be selected first?
+- ID: genl-hf-svc-ngc-002
+- Domain: Model Deployment
+- Topic: NVIDIA service: NGC; lifecycle: Serving and deployment; What NVIDIA service is the catalog/registry for containers and model assets?
 - Difficulty: medium
-- A. Keep using a chat model endpoint for vector search as the primary release control and record only final outputs.
-- B. Add a release gate for embedding models: produce vector representations for retrieval and similarity.
-- C. Wait for production incidents before adding a dedicated embedding models check.
-- D. Use causal masking as the main gate even though reviewers are asking for embedding models evidence.
-- Answer: B
-- Explanation: The scenario is about embedding models. The strongest answer fixes the failing layer directly: produce vector representations for retrieval and similarity.
-- Why A is wrong: It keeps using a chat model endpoint for vector search in control instead of adding a measurable embedding models decision point.
-- Why C is wrong: Waiting for incidents postpones the embedding models gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making embedding models testable in the scenario.
-
-### Q51: A global retailer is preparing a model-capability design for release. The current design relies on embedding similarity as the final answer, but the release gate needs to rescore retrieved candidates for relevance before generation. Which control should be added before rollout?
-- ID: genl-hf-llm-architecture-040
-- Domain: LLM Architecture
-- Topic: rerankers; genai_llms_professional
-- Difficulty: hard
-- A. Prioritize causal masking before validating the failure signal around rerankers.
-- B. Change the design around rerankers so the system can rescore retrieved candidates for relevance before generation.
-- C. Use self-attention as the main gate even though reviewers are asking for rerankers evidence.
-- D. Keep embedding similarity as the final answer as the primary release control and record only final outputs.
-- Answer: B
-- Explanation: The scenario is about rerankers. The strongest answer fixes the failing layer directly: rescore retrieved candidates for relevance before generation.
-- Why A is wrong: It moves attention to a neighboring control instead of making rerankers testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making rerankers testable in the scenario.
-- Why D is wrong: It keeps embedding similarity as the final answer in control instead of adding a measurable rerankers decision point.
-
-### Q52: A logistics planning team sees capability limits tied to self-attention. The team has been using recurrence as the transformer core; the next change needs to make self-attention explicit. Which action best addresses the problem?
-- ID: genl-hf-llm-architecture-041
-- Domain: LLM Architecture
-- Topic: self-attention; genai_llms_professional
-- Difficulty: expert
-- A. Make self-attention explicit in the workflow: let tokens attend to context and long-range dependencies.
-- B. Keep recurrence as the transformer core as the primary release control and record only final outputs.
-- C. Prioritize MoE routing before validating the failure signal around self-attention.
-- D. Bundle self-attention, causal masking, and prompt changes into one release with one aggregate score.
-- Answer: A
-- Explanation: The scenario is about self-attention. The strongest answer fixes the failing layer directly: let tokens attend to context and long-range dependencies.
-- Why B is wrong: It keeps recurrence as the transformer core in control instead of adding a measurable self-attention decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making self-attention testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether self-attention fixed or caused the failure.
-
-### Q53: An automotive support team has a production-readiness review for a model-capability design. The review is focused on causal masking, because the system must prevent decoder positions from seeing future tokens. Which implementation path is most appropriate?
-- ID: genl-hf-llm-architecture-042
-- Domain: LLM Architecture
-- Topic: causal masking; genai_llms_professional
-- Difficulty: medium
-- A. Prioritize self-attention before validating the failure signal around causal masking.
-- B. Bundle causal masking, MoE routing, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated causal masking check.
-- D. Use causal masking as the control boundary and require the system to prevent decoder positions from seeing future tokens.
+- Scope: nvidia_specific
+- Source: generated
+- A. Select NeMo Retriever; it owns rAG and retrieval work such as connecting proprietary data to RAG: parse documents, embed chunks/queries, index/search, apply permissions, or rerank candidate passages.
+- B. Nsight Systems is the best fit for this layer: a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- C. Choose NeMo Guardrails; it provides programmable rails for controlling LLM and agent behavior across input, dialog, tool execution, retrieval, and output.
+- D. Use NGC when you need to pull NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
 - Answer: D
-- Explanation: The scenario is about causal masking. The strongest answer fixes the failing layer directly: prevent decoder positions from seeing future tokens.
-- Why A is wrong: It moves attention to a neighboring control instead of making causal masking testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether causal masking fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the causal masking gate until after users are exposed.
+- Explanation: NGC is the best fit because it sits in Serving and deployment: Catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- Why A is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Serving and deployment.
+- Why B is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Serving and deployment.
+- Why C is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Serving and deployment.
 
-### Q54: A cybersecurity response team is preparing a model-capability design for release. The current design relies on all experts active for every token, but the release gate needs to activate sparse experts to increase capacity without full dense compute. Which architecture keeps the boundary cleanest?
-- ID: genl-hf-llm-architecture-043
-- Domain: LLM Architecture
-- Topic: MoE routing; genai_llms_professional
+### Q23: A telecom network operations team needs to choose the right implementation surface. The trace points to the need to pull NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA option addresses the named layer?
+- ID: genl-hf-svc-ngc-003
+- Domain: Model Deployment
+- Topic: NVIDIA service: NGC; lifecycle: Serving and deployment; What NVIDIA service is the catalog/registry for containers and model assets?
 - Difficulty: hard
-- A. Wait for production incidents before adding a dedicated MoE routing check.
-- B. Use embedding models as the main gate even though reviewers are asking for MoE routing evidence.
-- C. Add a release gate for MoE routing: activate sparse experts to increase capacity without full dense compute.
-- D. Bundle MoE routing, embedding models, and prompt changes into one release with one aggregate score.
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose NeMo Agent Toolkit; it provides a config-driven NAT workflow runtime for agent control flow across tools, retrievers, memory, MCP, tracing, eval, and serving.
+- B. Use Dynamo (Triton Dynamo) when you need to support disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale.
+- C. Select NGC; it owns serving and deployment work such as pulling NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- D. NeMo Evaluator is the best fit for this layer: a microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
 - Answer: C
-- Explanation: The scenario is about MoE routing. The strongest answer fixes the failing layer directly: activate sparse experts to increase capacity without full dense compute.
-- Why A is wrong: Waiting for incidents postpones the MoE routing gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making MoE routing testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether MoE routing fixed or caused the failure.
+- Explanation: NGC is the best fit because it sits in Serving and deployment: Catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- Why A is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Serving and deployment.
+- Why B is wrong: Dynamo (Triton Dynamo) is a neighboring serving and deployment component, but this signal asks specifically for NGC: to pull NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- Why D is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Serving and deployment.
 
-### Q55: A manufacturing quality team sees capability limits tied to embedding models. The team has been using using a chat model endpoint for vector search; the next change needs to make embedding models explicit. Which action best addresses the problem?
-- ID: genl-hf-llm-architecture-044
-- Domain: LLM Architecture
-- Topic: embedding models; genai_llms_professional
-- Difficulty: hard
-- A. Keep using a chat model endpoint for vector search as the primary release control and record only final outputs.
-- B. Change the design around embedding models so the system can produce vector representations for retrieval and similarity.
-- C. Wait for production incidents before adding a dedicated embedding models check.
-- D. Use rerankers as the main gate even though reviewers are asking for embedding models evidence.
-- Answer: B
-- Explanation: The scenario is about embedding models. The strongest answer fixes the failing layer directly: produce vector representations for retrieval and similarity.
-- Why A is wrong: It keeps using a chat model endpoint for vector search in control instead of adding a measurable embedding models decision point.
-- Why C is wrong: Waiting for incidents postpones the embedding models gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making embedding models testable in the scenario.
-
-### Q56: A global retailer is comparing two release designs for a governed agent workflow. One design centers on treating open weights as unrestricted use; the other adds a measurable license constraints step. Which design is more appropriate for production?
-- ID: genl-hf-safety-ethics-and-compliance-001
-- Domain: Safety, Ethics, and Compliance
-- Topic: license constraints; genai_llms_professional
-- Difficulty: hard
-- A. Prioritize bias evaluation before validating the failure signal around license constraints.
-- B. Bundle license constraints, privacy controls, and prompt changes into one release with one aggregate score.
-- C. Make license constraints explicit in the workflow: respect model, dataset, and output-use restrictions.
-- D. Keep treating open weights as unrestricted use as the primary release control and record only final outputs.
-- Answer: C
-- Explanation: The scenario is about license constraints. The strongest answer fixes the failing layer directly: respect model, dataset, and output-use restrictions.
-- Why A is wrong: It moves attention to a neighboring control instead of making license constraints testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether license constraints fixed or caused the failure.
-- Why D is wrong: It keeps treating open weights as unrestricted use in control instead of adding a measurable license constraints decision point.
-
-### Q57: An automotive support team is comparing two release designs for a governed agent workflow. One design centers on training on raw confidential logs; the other adds a measurable privacy controls step. Which design is more appropriate for production?
-- ID: genl-hf-safety-ethics-and-compliance-002
-- Domain: Safety, Ethics, and Compliance
-- Topic: privacy controls; genai_llms_professional
+### Q24: A pharmaceutical research team is preparing a production rollout. The work to finish before release is pulling NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA tool should the team start with?
+- ID: genl-hf-svc-ngc-004
+- Domain: Model Deployment
+- Topic: NVIDIA service: NGC; lifecycle: Serving and deployment; What NVIDIA service is the catalog/registry for containers and model assets?
 - Difficulty: expert
-- A. Wait for production incidents before adding a dedicated privacy controls check.
-- B. Use privacy controls as the control boundary and require the system to redact sensitive data and enforce retention limits.
-- C. Prioritize auditability before validating the failure signal around privacy controls.
-- D. Bundle privacy controls, guardrails, and prompt changes into one release with one aggregate score.
+- Scope: nvidia_specific
+- Source: generated
+- A. Select NIM Operator; it owns serving and deployment work such as managing K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
+- B. NGC is the best fit for this layer: a catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- C. Choose Nsight Systems; it provides a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- D. Use NeMo Framework when you need to run SFT, PEFT, LoRA/QLoRA, continued pretraining, model customization, or large-scale model recipes.
 - Answer: B
-- Explanation: The scenario is about privacy controls. The strongest answer fixes the failing layer directly: redact sensitive data and enforce retention limits.
-- Why A is wrong: Waiting for incidents postpones the privacy controls gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making privacy controls testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether privacy controls fixed or caused the failure.
+- Explanation: NGC is the best fit because it sits in Serving and deployment: Catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- Why A is wrong: NIM Operator is a neighboring serving and deployment component, but this signal asks specifically for NGC: to pull NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- Why C is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Serving and deployment.
+- Why D is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for Serving and deployment.
 
-### Q58: A bank fraud team is comparing two release designs for a governed agent workflow. One design centers on overall accuracy only; the other adds a measurable bias evaluation step. Which design is more appropriate for production?
-- ID: genl-hf-safety-ethics-and-compliance-003
-- Domain: Safety, Ethics, and Compliance
-- Topic: bias evaluation; genai_llms_professional
+### Q25: A semiconductor design group is reviewing the implementation plan. The trace points to the need to pull NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA service fits this requirement?
+- ID: genl-hf-svc-ngc-005
+- Domain: Model Deployment
+- Topic: NVIDIA service: NGC; lifecycle: Serving and deployment; What NVIDIA service is the catalog/registry for containers and model assets?
 - Difficulty: medium
-- A. Add a release gate for bias evaluation: measure subgroup performance and harmful outputs.
-- B. Bundle bias evaluation, license constraints, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated bias evaluation check.
-- D. Use license constraints as the main gate even though reviewers are asking for bias evaluation evidence.
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose NGC; it provides a catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- B. Use NCCL when you need to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- C. Select NeMo Curator; it owns data preparation work such as preparing raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation.
+- D. Nsight Systems is the best fit for this layer: a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
 - Answer: A
-- Explanation: The scenario is about bias evaluation. The strongest answer fixes the failing layer directly: measure subgroup performance and harmful outputs.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether bias evaluation fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the bias evaluation gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making bias evaluation testable in the scenario.
+- Explanation: NGC is the best fit because it sits in Serving and deployment: Catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- Why B is wrong: NCCL belongs to Training and customization, while this scenario asks for Serving and deployment.
+- Why C is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Serving and deployment.
+- Why D is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Serving and deployment.
 
-### Q59: A public-sector casework team has a production-readiness review for a governed agent workflow. The review is focused on guardrails, because the system must apply input/output and tool-use policies around the model. Which implementation path is most appropriate?
-- ID: genl-hf-safety-ethics-and-compliance-004
-- Domain: Safety, Ethics, and Compliance
-- Topic: guardrails; genai_llms_professional
+### Q26: A manufacturing quality team has narrowed the next engineering decision. The rollout is blocked until the team can pull NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: genl-hf-svc-ngc-006
+- Domain: Model Deployment
+- Topic: NVIDIA service: NGC; lifecycle: Serving and deployment; What NVIDIA service is the catalog/registry for containers and model assets?
 - Difficulty: hard
-- A. Wait for production incidents before adding a dedicated guardrails check.
-- B. Use license constraints as the main gate even though reviewers are asking for guardrails evidence.
-- C. Keep guardrails as a replacement for IAM as the primary release control and record only final outputs.
-- D. Change the design around guardrails so the system can apply input/output and tool-use policies around the model.
+- Scope: nvidia_specific
+- Source: generated
+- A. Select Nsight Compute; it owns monitoring and profiling work such as diagnosing why a known kernel is memory-bound, compute-bound, or inefficient.
+- B. NeMo Guardrails is the best fit for this layer: programmable rails for controlling LLM and agent behavior across input, dialog, tool execution, retrieval, and output.
+- C. Choose NeMo Customizer; it provides a microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- D. Use NGC when you need to pull NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
 - Answer: D
-- Explanation: The scenario is about guardrails. The strongest answer fixes the failing layer directly: apply input/output and tool-use policies around the model.
-- Why A is wrong: Waiting for incidents postpones the guardrails gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making guardrails testable in the scenario.
-- Why C is wrong: It keeps guardrails as a replacement for IAM in control instead of adding a measurable guardrails decision point.
+- Explanation: NGC is the best fit because it sits in Serving and deployment: Catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- Why A is wrong: Nsight Compute belongs to Monitoring and profiling, while this scenario asks for Serving and deployment.
+- Why B is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Serving and deployment.
+- Why C is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Serving and deployment.
 
-### Q60: A global retailer is preparing a governed agent workflow for release. The current design relies on unversioned release artifacts, but the release gate needs to track data, model, prompt, eval, and approval lineage. Which architecture keeps the boundary cleanest?
-- ID: genl-hf-safety-ethics-and-compliance-005
-- Domain: Safety, Ethics, and Compliance
-- Topic: auditability; genai_llms_professional
+### Q27: A logistics planning team is setting a release gate. The blocker is pulling NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA platform layer is the right match?
+- ID: genl-hf-svc-ngc-007
+- Domain: Model Deployment
+- Topic: NVIDIA service: NGC; lifecycle: Serving and deployment; What NVIDIA service is the catalog/registry for containers and model assets?
 - Difficulty: hard
-- A. Keep unversioned release artifacts as the primary release control and record only final outputs.
-- B. Prioritize privacy controls before validating the failure signal around auditability.
-- C. Make auditability explicit in the workflow: track data, model, prompt, eval, and approval lineage.
-- D. Use license constraints as the main gate even though reviewers are asking for auditability evidence.
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose NeMo Curator; it provides a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- B. Use RAPIDS when you need to accelerate pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- C. Select NGC; it owns serving and deployment work such as pulling NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- D. NeMo Evaluator is the best fit for this layer: a microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
 - Answer: C
-- Explanation: The scenario is about auditability. The strongest answer fixes the failing layer directly: track data, model, prompt, eval, and approval lineage.
-- Why A is wrong: It keeps unversioned release artifacts in control instead of adding a measurable auditability decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making auditability testable in the scenario.
-- Why D is wrong: It moves attention to a neighboring control instead of making auditability testable in the scenario.
+- Explanation: NGC is the best fit because it sits in Serving and deployment: Catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- Why A is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Serving and deployment.
+- Why B is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Serving and deployment.
+- Why D is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Serving and deployment.
 
-### Q61: An insurance claims group is comparing two release designs for a governed agent workflow. One design centers on treating open weights as unrestricted use; the other adds a measurable license constraints step. Which design is more appropriate for production?
-- ID: genl-hf-safety-ethics-and-compliance-006
-- Domain: Safety, Ethics, and Compliance
-- Topic: license constraints; genai_llms_professional
+### Q28: An automotive support team is fixing the layer called out by the trace and design review. The work to finish before release is pulling NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: genl-hf-svc-ngc-008
+- Domain: Model Deployment
+- Topic: NVIDIA service: NGC; lifecycle: Serving and deployment; What NVIDIA service is the catalog/registry for containers and model assets?
 - Difficulty: easy
-- A. Bundle license constraints, bias evaluation, and prompt changes into one release with one aggregate score.
-- B. Use license constraints as the control boundary and require the system to respect model, dataset, and output-use restrictions.
-- C. Keep treating open weights as unrestricted use as the primary release control and record only final outputs.
-- D. Prioritize privacy controls before validating the failure signal around license constraints.
+- Scope: nvidia_specific
+- Source: generated
+- A. Select NeMo Agent Toolkit; it owns agent orchestration work such as a workflow must route requests, call tools/retrievers/memory, run sequential or parallel branches, expose an API/MCP server, or evaluate/profile agent traces.
+- B. NGC is the best fit for this layer: a catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- C. Choose Nemotron models; it provides NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- D. Use NIM Operator when you need to manage K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
 - Answer: B
-- Explanation: The scenario is about license constraints. The strongest answer fixes the failing layer directly: respect model, dataset, and output-use restrictions.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether license constraints fixed or caused the failure.
-- Why C is wrong: It keeps treating open weights as unrestricted use in control instead of adding a measurable license constraints decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making license constraints testable in the scenario.
+- Explanation: NGC is the best fit because it sits in Serving and deployment: Catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- Why A is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Serving and deployment.
+- Why C is wrong: Nemotron models belongs to Model selection, while this scenario asks for Serving and deployment.
+- Why D is wrong: NIM Operator is a neighboring serving and deployment component, but this signal asks specifically for NGC: to pull NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
 
-### Q62: A bank fraud team is reviewing a governed agent workflow before rollout. The main risk is privacy controls: the system must redact sensitive data and enforce retention limits. Which option keeps the decision at the right layer?
-- ID: genl-hf-safety-ethics-and-compliance-007
-- Domain: Safety, Ethics, and Compliance
-- Topic: privacy controls; genai_llms_professional
+### Q29: A cybersecurity response team needs to choose the right implementation surface. The trace points to the need to pull NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets. What is the best first implementation choice?
+- ID: genl-hf-svc-ngc-009
+- Domain: Model Deployment
+- Topic: NVIDIA service: NGC; lifecycle: Serving and deployment; What NVIDIA service is the catalog/registry for containers and model assets?
 - Difficulty: hard
-- A. Add a release gate for privacy controls: redact sensitive data and enforce retention limits.
-- B. Prioritize license constraints before validating the failure signal around privacy controls.
-- C. Bundle privacy controls, bias evaluation, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated privacy controls check.
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose NGC; it provides a catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- B. Use NeMo Framework when you need to run SFT, PEFT, LoRA/QLoRA, continued pretraining, model customization, or large-scale model recipes.
+- C. Select NeMo Guardrails; it owns safety and guardrails work such as enforcing policy flows, safe dialog behavior, prompt-injection defenses, tool restrictions, or output checks.
+- D. Nsight Systems is the best fit for this layer: a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
 - Answer: A
-- Explanation: The scenario is about privacy controls. The strongest answer fixes the failing layer directly: redact sensitive data and enforce retention limits.
-- Why B is wrong: It moves attention to a neighboring control instead of making privacy controls testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether privacy controls fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the privacy controls gate until after users are exposed.
+- Explanation: NGC is the best fit because it sits in Serving and deployment: Catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- Why B is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for Serving and deployment.
+- Why C is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Serving and deployment.
+- Why D is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Serving and deployment.
 
-### Q63: A manufacturing quality team has a production-readiness review for a governed agent workflow. The review is focused on bias evaluation, because the system must measure subgroup performance and harmful outputs. Which design is the best first change?
-- ID: genl-hf-safety-ethics-and-compliance-008
-- Domain: Safety, Ethics, and Compliance
-- Topic: bias evaluation; genai_llms_professional
+### Q30: A manufacturing quality team is preparing a production rollout. The rollout is blocked until the team can pull NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets. Which NVIDIA product owns this requirement?
+- ID: genl-hf-svc-ngc-010
+- Domain: Model Deployment
+- Topic: NVIDIA service: NGC; lifecycle: Serving and deployment; What NVIDIA service is the catalog/registry for containers and model assets?
 - Difficulty: expert
-- A. Bundle bias evaluation, privacy controls, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated bias evaluation check.
-- C. Use privacy controls as the main gate even though reviewers are asking for bias evaluation evidence.
-- D. Change the design around bias evaluation so the system can measure subgroup performance and harmful outputs.
-- Answer: D
-- Explanation: The scenario is about bias evaluation. The strongest answer fixes the failing layer directly: measure subgroup performance and harmful outputs.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether bias evaluation fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the bias evaluation gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making bias evaluation testable in the scenario.
-
-### Q64: A logistics planning team is comparing two release designs for a governed agent workflow. One design centers on guardrails as a replacement for IAM; the other adds a measurable guardrails step. Which design is more appropriate for production?
-- ID: genl-hf-safety-ethics-and-compliance-009
-- Domain: Safety, Ethics, and Compliance
-- Topic: guardrails; genai_llms_professional
-- Difficulty: medium
-- A. Use auditability as the main gate even though reviewers are asking for guardrails evidence.
-- B. Keep guardrails as a replacement for IAM as the primary release control and record only final outputs.
-- C. Make guardrails explicit in the workflow: apply input/output and tool-use policies around the model.
-- D. Wait for production incidents before adding a dedicated guardrails check.
+- Scope: nvidia_specific
+- Source: generated
+- A. NeMo Retriever is the best fit for this layer: the NVIDIA Retriever microservice family for document extraction, embeddings, indexing/search, and reranking in enterprise RAG.
+- B. Choose Nemotron models; it provides NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- C. Use NGC when you need to pull NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- D. Select NeMo Evaluator; it owns evaluation work such as running standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge.
 - Answer: C
-- Explanation: The scenario is about guardrails. The strongest answer fixes the failing layer directly: apply input/output and tool-use policies around the model.
-- Why A is wrong: It moves attention to a neighboring control instead of making guardrails testable in the scenario.
-- Why B is wrong: It keeps guardrails as a replacement for IAM in control instead of adding a measurable guardrails decision point.
-- Why D is wrong: Waiting for incidents postpones the guardrails gate until after users are exposed.
+- Explanation: NGC is the best fit because it sits in Serving and deployment: Catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- Why A is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Serving and deployment.
+- Why B is wrong: Nemotron models belongs to Model selection, while this scenario asks for Serving and deployment.
+- Why D is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Serving and deployment.
 
-### Q65: An automotive support team is preparing a governed agent workflow for release. The current design relies on unversioned release artifacts, but the release gate needs to track data, model, prompt, eval, and approval lineage. Which choice addresses the root cause?
-- ID: genl-hf-safety-ethics-and-compliance-010
-- Domain: Safety, Ethics, and Compliance
-- Topic: auditability; genai_llms_professional
-- Difficulty: hard
-- A. Use auditability as the control boundary and require the system to track data, model, prompt, eval, and approval lineage.
-- B. Use privacy controls as the main gate even though reviewers are asking for auditability evidence.
-- C. Keep unversioned release artifacts as the primary release control and record only final outputs.
-- D. Prioritize license constraints before validating the failure signal around auditability.
-- Answer: A
-- Explanation: The scenario is about auditability. The strongest answer fixes the failing layer directly: track data, model, prompt, eval, and approval lineage.
-- Why B is wrong: It moves attention to a neighboring control instead of making auditability testable in the scenario.
-- Why C is wrong: It keeps unversioned release artifacts in control instead of adding a measurable auditability decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making auditability testable in the scenario.
-
-### Q66: A hospital operations team has a production-readiness review for a governed agent workflow. The review is focused on license constraints, because the system must respect model, dataset, and output-use restrictions. Which implementation path is most appropriate?
-- ID: genl-hf-safety-ethics-and-compliance-011
-- Domain: Safety, Ethics, and Compliance
-- Topic: license constraints; genai_llms_professional
-- Difficulty: hard
-- A. Bundle license constraints, bias evaluation, and prompt changes into one release with one aggregate score.
-- B. Add a release gate for license constraints: respect model, dataset, and output-use restrictions.
-- C. Keep treating open weights as unrestricted use as the primary release control and record only final outputs.
-- D. Prioritize privacy controls before validating the failure signal around license constraints.
-- Answer: B
-- Explanation: The scenario is about license constraints. The strongest answer fixes the failing layer directly: respect model, dataset, and output-use restrictions.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether license constraints fixed or caused the failure.
-- Why C is wrong: It keeps treating open weights as unrestricted use in control instead of adding a measurable license constraints decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making license constraints testable in the scenario.
-
-### Q67: A semiconductor design group is preparing a governed agent workflow for release. The current design relies on training on raw confidential logs, but the release gate needs to redact sensitive data and enforce retention limits. Which action best fits the requirement?
-- ID: genl-hf-safety-ethics-and-compliance-012
-- Domain: Safety, Ethics, and Compliance
-- Topic: privacy controls; genai_llms_professional
+### Q31: An insurance claims group has narrowed the next engineering decision. An inference trace has long gaps between CUDA kernels and low GPU occupancy. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA tool should the team start with?
+- ID: genl-hf-svc-nsight-systems-001
+- Domain: Production Monitoring and Reliability
+- Topic: NVIDIA service: Nsight Systems; lifecycle: Monitoring and profiling; Which profiler shows CPU/GPU timeline gaps and CUDA launch overhead?
 - Difficulty: expert
-- A. Bundle privacy controls, bias evaluation, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated privacy controls check.
-- C. Change the design around privacy controls so the system can redact sensitive data and enforce retention limits.
-- D. Prioritize license constraints before validating the failure signal around privacy controls.
-- Answer: C
-- Explanation: The scenario is about privacy controls. The strongest answer fixes the failing layer directly: redact sensitive data and enforce retention limits.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether privacy controls fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the privacy controls gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making privacy controls testable in the scenario.
-
-### Q68: An automotive support team sees policy failures that need bias evaluation as an explicit control. The team has been using overall accuracy only; the next change needs to make bias evaluation explicit. Which action best addresses the problem?
-- ID: genl-hf-safety-ethics-and-compliance-013
-- Domain: Safety, Ethics, and Compliance
-- Topic: bias evaluation; genai_llms_professional
-- Difficulty: medium
-- A. Bundle bias evaluation, privacy controls, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated bias evaluation check.
-- C. Use privacy controls as the main gate even though reviewers are asking for bias evaluation evidence.
-- D. Make bias evaluation explicit in the workflow: measure subgroup performance and harmful outputs.
-- Answer: D
-- Explanation: The scenario is about bias evaluation. The strongest answer fixes the failing layer directly: measure subgroup performance and harmful outputs.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether bias evaluation fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the bias evaluation gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making bias evaluation testable in the scenario.
-
-### Q69: A logistics planning team has a production-readiness review for a governed agent workflow. The review is focused on guardrails, because the system must apply input/output and tool-use policies around the model. Which control should be added before rollout?
-- ID: genl-hf-safety-ethics-and-compliance-014
-- Domain: Safety, Ethics, and Compliance
-- Topic: guardrails; genai_llms_professional
-- Difficulty: hard
-- A. Use guardrails as the control boundary and require the system to apply input/output and tool-use policies around the model.
-- B. Wait for production incidents before adding a dedicated guardrails check.
-- C. Use auditability as the main gate even though reviewers are asking for guardrails evidence.
-- D. Keep guardrails as a replacement for IAM as the primary release control and record only final outputs.
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose Nsight Systems; it provides a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- B. Use NeMo Customizer when you need to run API-driven LoRA/PEFT customization without standing up a full training stack.
+- C. Select NeMo Framework; it owns training and customization work such as running SFT, PEFT, LoRA/QLoRA, continued pretraining, model customization, or large-scale model recipes.
+- D. Nemotron models is the best fit for this layer: NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
 - Answer: A
-- Explanation: The scenario is about guardrails. The strongest answer fixes the failing layer directly: apply input/output and tool-use policies around the model.
-- Why B is wrong: Waiting for incidents postpones the guardrails gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making guardrails testable in the scenario.
-- Why D is wrong: It keeps guardrails as a replacement for IAM in control instead of adding a measurable guardrails decision point.
+- Explanation: Nsight Systems is the best fit because it sits in Monitoring and profiling: System-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- Why B is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Monitoring and profiling.
+- Why C is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for Monitoring and profiling.
+- Why D is wrong: Nemotron models belongs to Model selection, while this scenario asks for Monitoring and profiling.
 
-### Q70: A manufacturing quality team is reviewing a governed agent workflow before rollout. The main risk is auditability: the system must track data, model, prompt, eval, and approval lineage. Which option keeps the decision at the right layer?
-- ID: genl-hf-safety-ethics-and-compliance-015
-- Domain: Safety, Ethics, and Compliance
-- Topic: auditability; genai_llms_professional
-- Difficulty: hard
-- A. Prioritize license constraints before validating the failure signal around auditability.
-- B. Add a release gate for auditability: track data, model, prompt, eval, and approval lineage.
-- C. Use privacy controls as the main gate even though reviewers are asking for auditability evidence.
-- D. Keep unversioned release artifacts as the primary release control and record only final outputs.
-- Answer: B
-- Explanation: The scenario is about auditability. The strongest answer fixes the failing layer directly: track data, model, prompt, eval, and approval lineage.
-- Why A is wrong: It moves attention to a neighboring control instead of making auditability testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making auditability testable in the scenario.
-- Why D is wrong: It keeps unversioned release artifacts in control instead of adding a measurable auditability decision point.
-
-### Q71: A bank fraud team is comparing two release designs for a governed agent workflow. One design centers on treating open weights as unrestricted use; the other adds a measurable license constraints step. Which design is more appropriate for production?
-- ID: genl-hf-safety-ethics-and-compliance-016
-- Domain: Safety, Ethics, and Compliance
-- Topic: license constraints; genai_llms_professional
+### Q32: A telecom network operations team needs to choose the right implementation surface. The blocker is identifying where time is going across CPU, GPU, launches, waits, and communication. What is the best first implementation choice?
+- ID: genl-hf-svc-nsight-systems-002
+- Domain: Production Monitoring and Reliability
+- Topic: NVIDIA service: Nsight Systems; lifecycle: Monitoring and profiling; Which profiler shows CPU/GPU timeline gaps and CUDA launch overhead?
 - Difficulty: medium
-- A. Prioritize bias evaluation before validating the failure signal around license constraints.
-- B. Bundle license constraints, privacy controls, and prompt changes into one release with one aggregate score.
-- C. Change the design around license constraints so the system can respect model, dataset, and output-use restrictions.
-- D. Keep treating open weights as unrestricted use as the primary release control and record only final outputs.
-- Answer: C
-- Explanation: The scenario is about license constraints. The strongest answer fixes the failing layer directly: respect model, dataset, and output-use restrictions.
-- Why A is wrong: It moves attention to a neighboring control instead of making license constraints testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether license constraints fixed or caused the failure.
-- Why D is wrong: It keeps treating open weights as unrestricted use in control instead of adding a measurable license constraints decision point.
-
-### Q72: An automotive support team sees policy failures that need privacy controls as an explicit control. The team has been using training on raw confidential logs; the next change needs to make privacy controls explicit. Which action best addresses the problem?
-- ID: genl-hf-safety-ethics-and-compliance-017
-- Domain: Safety, Ethics, and Compliance
-- Topic: privacy controls; genai_llms_professional
-- Difficulty: hard
-- A. Prioritize auditability before validating the failure signal around privacy controls.
-- B. Bundle privacy controls, guardrails, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated privacy controls check.
-- D. Make privacy controls explicit in the workflow: redact sensitive data and enforce retention limits.
+- Scope: nvidia_specific
+- Source: generated
+- A. Select Dynamo (Triton Dynamo); it owns serving and deployment work such as supporting disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale.
+- B. NeMo Curator is the best fit for this layer: a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- C. Choose NIM Operator; it provides a Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
+- D. Use Nsight Systems when you need to identify where time is going across CPU, GPU, launches, waits, and communication.
 - Answer: D
-- Explanation: The scenario is about privacy controls. The strongest answer fixes the failing layer directly: redact sensitive data and enforce retention limits.
-- Why A is wrong: It moves attention to a neighboring control instead of making privacy controls testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether privacy controls fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the privacy controls gate until after users are exposed.
+- Explanation: Nsight Systems is the best fit because it sits in Monitoring and profiling: System-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- Why A is wrong: Dynamo (Triton Dynamo) belongs to Serving and deployment, while this scenario asks for Monitoring and profiling.
+- Why B is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Monitoring and profiling.
+- Why C is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Monitoring and profiling.
 
-### Q73: A global retailer is reviewing a governed agent workflow before rollout. The main risk is bias evaluation: the system must measure subgroup performance and harmful outputs. Which option keeps the decision at the right layer?
-- ID: genl-hf-safety-ethics-and-compliance-018
-- Domain: Safety, Ethics, and Compliance
-- Topic: bias evaluation; genai_llms_professional
+### Q33: A public-sector casework team has narrowed the next engineering decision. The next release blocker is turning traces and profiler evidence into targeted optimization work. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: genl-hf-svc-nsight-systems-003
+- Domain: Production Monitoring and Reliability
+- Topic: NVIDIA service: Nsight Systems; lifecycle: Monitoring and profiling; Which profiler shows CPU/GPU timeline gaps and CUDA launch overhead?
 - Difficulty: hard
-- A. Use bias evaluation as the control boundary and require the system to measure subgroup performance and harmful outputs.
-- B. Bundle bias evaluation, license constraints, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated bias evaluation check.
-- D. Use license constraints as the main gate even though reviewers are asking for bias evaluation evidence.
-- Answer: A
-- Explanation: The scenario is about bias evaluation. The strongest answer fixes the failing layer directly: measure subgroup performance and harmful outputs.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether bias evaluation fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the bias evaluation gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making bias evaluation testable in the scenario.
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose NIM; it provides inference microservices for deploying optimized models with production APIs and model profiles.
+- B. Use NeMo Framework when you need to run SFT, PEFT, LoRA/QLoRA, continued pretraining, model customization, or large-scale model recipes.
+- C. Select Nsight Systems; it owns monitoring and profiling work such as identifying where time is going across CPU, GPU, launches, waits, and communication.
+- D. NeMo Guardrails is the best fit for this layer: programmable rails for controlling LLM and agent behavior across input, dialog, tool execution, retrieval, and output.
+- Answer: C
+- Explanation: Nsight Systems is the best fit because it sits in Monitoring and profiling: System-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- Why A is wrong: NIM belongs to Serving and deployment, while this scenario asks for Monitoring and profiling.
+- Why B is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for Monitoring and profiling.
+- Why D is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Monitoring and profiling.
 
-### Q74: A public-sector casework team is preparing a governed agent workflow for release. The current design relies on guardrails as a replacement for IAM, but the release gate needs to apply input/output and tool-use policies around the model. Which implementation path is most appropriate?
-- ID: genl-hf-safety-ethics-and-compliance-019
-- Domain: Safety, Ethics, and Compliance
-- Topic: guardrails; genai_llms_professional
+### Q34: A semiconductor design group is reviewing the implementation plan. The blocker is identifying where time is going across CPU, GPU, launches, waits, and communication. What is the best first implementation choice?
+- ID: genl-hf-svc-nsight-systems-004
+- Domain: Production Monitoring and Reliability
+- Topic: NVIDIA service: Nsight Systems; lifecycle: Monitoring and profiling; Which profiler shows CPU/GPU timeline gaps and CUDA launch overhead?
 - Difficulty: expert
-- A. Keep guardrails as a replacement for IAM as the primary release control and record only final outputs.
-- B. Add a release gate for guardrails: apply input/output and tool-use policies around the model.
-- C. Wait for production incidents before adding a dedicated guardrails check.
-- D. Use license constraints as the main gate even though reviewers are asking for guardrails evidence.
+- Scope: nvidia_specific
+- Source: generated
+- A. Select NeMo Agent Toolkit; it owns agent orchestration work such as a workflow must route requests, call tools/retrievers/memory, run sequential or parallel branches, expose an API/MCP server, or evaluate/profile agent traces.
+- B. Nsight Systems is the best fit for this layer: a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- C. Choose TensorRT-LLM; it provides an optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- D. Use NeMo Customizer when you need to run API-driven LoRA/PEFT customization without standing up a full training stack.
 - Answer: B
-- Explanation: The scenario is about guardrails. The strongest answer fixes the failing layer directly: apply input/output and tool-use policies around the model.
-- Why A is wrong: It keeps guardrails as a replacement for IAM in control instead of adding a measurable guardrails decision point.
-- Why C is wrong: Waiting for incidents postpones the guardrails gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making guardrails testable in the scenario.
+- Explanation: Nsight Systems is the best fit because it sits in Monitoring and profiling: System-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- Why A is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Monitoring and profiling.
+- Why C is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Monitoring and profiling.
+- Why D is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Monitoring and profiling.
 
-### Q75: A bank fraud team has a production-readiness review for a governed agent workflow. The review is focused on auditability, because the system must track data, model, prompt, eval, and approval lineage. Which action best fits the requirement?
-- ID: genl-hf-safety-ethics-and-compliance-020
-- Domain: Safety, Ethics, and Compliance
-- Topic: auditability; genai_llms_professional
+### Q35: An insurance claims group has narrowed the next engineering decision. An inference trace has long gaps between CUDA kernels and low GPU occupancy. Which NVIDIA service should be selected first?
+- ID: genl-hf-svc-nsight-systems-005
+- Domain: Production Monitoring and Reliability
+- Topic: NVIDIA service: Nsight Systems; lifecycle: Monitoring and profiling; Which profiler shows CPU/GPU timeline gaps and CUDA launch overhead?
 - Difficulty: medium
-- A. Prioritize privacy controls before validating the failure signal around auditability.
-- B. Change the design around auditability so the system can track data, model, prompt, eval, and approval lineage.
-- C. Use license constraints as the main gate even though reviewers are asking for auditability evidence.
-- D. Keep unversioned release artifacts as the primary release control and record only final outputs.
-- Answer: B
-- Explanation: The scenario is about auditability. The strongest answer fixes the failing layer directly: track data, model, prompt, eval, and approval lineage.
-- Why A is wrong: It moves attention to a neighboring control instead of making auditability testable in the scenario.
-- Why C is wrong: It moves attention to a neighboring control instead of making auditability testable in the scenario.
-- Why D is wrong: It keeps unversioned release artifacts in control instead of adding a measurable auditability decision point.
-
-### Q76: A bank fraud team is preparing a governed agent workflow for release. The current design relies on treating open weights as unrestricted use, but the release gate needs to respect model, dataset, and output-use restrictions. Which action best fits the requirement?
-- ID: genl-hf-safety-ethics-and-compliance-021
-- Domain: Safety, Ethics, and Compliance
-- Topic: license constraints; genai_llms_professional
-- Difficulty: hard
-- A. Make license constraints explicit in the workflow: respect model, dataset, and output-use restrictions.
-- B. Keep treating open weights as unrestricted use as the primary release control and record only final outputs.
-- C. Prioritize bias evaluation before validating the failure signal around license constraints.
-- D. Bundle license constraints, privacy controls, and prompt changes into one release with one aggregate score.
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose Nsight Systems; it provides a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- B. Use NeMo Retriever when you need to connect proprietary data to RAG: parse documents, embed chunks/queries, index/search, apply permissions, or rerank candidate passages.
+- C. Select NeMo Guardrails; it owns safety and guardrails work such as enforcing policy flows, safe dialog behavior, prompt-injection defenses, tool restrictions, or output checks.
+- D. NeMo Framework is the best fit for this layer: a framework for training, customizing, aligning, and evaluating generative AI models.
 - Answer: A
-- Explanation: The scenario is about license constraints. The strongest answer fixes the failing layer directly: respect model, dataset, and output-use restrictions.
-- Why B is wrong: It keeps treating open weights as unrestricted use in control instead of adding a measurable license constraints decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making license constraints testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether license constraints fixed or caused the failure.
+- Explanation: Nsight Systems is the best fit because it sits in Monitoring and profiling: System-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- Why B is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Monitoring and profiling.
+- Why C is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Monitoring and profiling.
+- Why D is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for Monitoring and profiling.
 
-### Q77: A manufacturing quality team has a production-readiness review for a governed agent workflow. The review is focused on privacy controls, because the system must redact sensitive data and enforce retention limits. Which choice addresses the root cause?
-- ID: genl-hf-safety-ethics-and-compliance-022
-- Domain: Safety, Ethics, and Compliance
-- Topic: privacy controls; genai_llms_professional
-- Difficulty: expert
-- A. Prioritize bias evaluation before validating the failure signal around privacy controls.
-- B. Bundle privacy controls, license constraints, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated privacy controls check.
-- D. Use privacy controls as the control boundary and require the system to redact sensitive data and enforce retention limits.
+### Q36: A global retailer needs to choose the right implementation surface. The blocker is identifying where time is going across CPU, GPU, launches, waits, and communication. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA service fits this requirement?
+- ID: genl-hf-svc-nsight-systems-006
+- Domain: Production Monitoring and Reliability
+- Topic: NVIDIA service: Nsight Systems; lifecycle: Monitoring and profiling; Which profiler shows CPU/GPU timeline gaps and CUDA launch overhead?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Select TensorRT-LLM; it owns inference optimization work such as building optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT.
+- B. NeMo Curator is the best fit for this layer: a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- C. Choose NeMo Customizer; it provides a microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- D. Use Nsight Systems when you need to identify where time is going across CPU, GPU, launches, waits, and communication.
 - Answer: D
-- Explanation: The scenario is about privacy controls. The strongest answer fixes the failing layer directly: redact sensitive data and enforce retention limits.
-- Why A is wrong: It moves attention to a neighboring control instead of making privacy controls testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether privacy controls fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the privacy controls gate until after users are exposed.
+- Explanation: Nsight Systems is the best fit because it sits in Monitoring and profiling: System-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- Why A is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Monitoring and profiling.
+- Why B is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Monitoring and profiling.
+- Why C is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Monitoring and profiling.
 
-### Q78: A telecom network operations team is preparing a governed agent workflow for release. The current design relies on overall accuracy only, but the release gate needs to measure subgroup performance and harmful outputs. Which control should be added before rollout?
-- ID: genl-hf-safety-ethics-and-compliance-023
-- Domain: Safety, Ethics, and Compliance
-- Topic: bias evaluation; genai_llms_professional
-- Difficulty: medium
-- A. Wait for production incidents before adding a dedicated bias evaluation check.
-- B. Use license constraints as the main gate even though reviewers are asking for bias evaluation evidence.
-- C. Add a release gate for bias evaluation: measure subgroup performance and harmful outputs.
-- D. Bundle bias evaluation, license constraints, and prompt changes into one release with one aggregate score.
+### Q37: A public-sector casework team is preparing a production rollout. The next release blocker is turning traces and profiler evidence into targeted optimization work. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA service should be selected first?
+- ID: genl-hf-svc-nsight-systems-007
+- Domain: Production Monitoring and Reliability
+- Topic: NVIDIA service: Nsight Systems; lifecycle: Monitoring and profiling; Which profiler shows CPU/GPU timeline gaps and CUDA launch overhead?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose TensorRT-LLM; it provides an optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- B. Use NGC when you need to pull NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- C. Select Nsight Systems; it owns monitoring and profiling work such as identifying where time is going across CPU, GPU, launches, waits, and communication.
+- D. NeMo Agent Toolkit is the best fit for this layer: a config-driven NAT workflow runtime for agent control flow across tools, retrievers, memory, MCP, tracing, eval, and serving.
 - Answer: C
-- Explanation: The scenario is about bias evaluation. The strongest answer fixes the failing layer directly: measure subgroup performance and harmful outputs.
-- Why A is wrong: Waiting for incidents postpones the bias evaluation gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making bias evaluation testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether bias evaluation fixed or caused the failure.
+- Explanation: Nsight Systems is the best fit because it sits in Monitoring and profiling: System-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- Why A is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Monitoring and profiling.
+- Why B is wrong: NGC belongs to Serving and deployment, while this scenario asks for Monitoring and profiling.
+- Why D is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Monitoring and profiling.
 
-### Q79: An insurance claims group sees policy failures that need guardrails as an explicit control. The team has been using guardrails as a replacement for IAM; the next change needs to make guardrails explicit. Which action best addresses the problem?
-- ID: genl-hf-safety-ethics-and-compliance-024
-- Domain: Safety, Ethics, and Compliance
-- Topic: guardrails; genai_llms_professional
-- Difficulty: hard
-- A. Keep guardrails as a replacement for IAM as the primary release control and record only final outputs.
-- B. Change the design around guardrails so the system can apply input/output and tool-use policies around the model.
-- C. Wait for production incidents before adding a dedicated guardrails check.
-- D. Use bias evaluation as the main gate even though reviewers are asking for guardrails evidence.
-- Answer: B
-- Explanation: The scenario is about guardrails. The strongest answer fixes the failing layer directly: apply input/output and tool-use policies around the model.
-- Why A is wrong: It keeps guardrails as a replacement for IAM in control instead of adding a measurable guardrails decision point.
-- Why C is wrong: Waiting for incidents postpones the guardrails gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making guardrails testable in the scenario.
-
-### Q80: A semiconductor design group has a production-readiness review for a governed agent workflow. The review is focused on auditability, because the system must track data, model, prompt, eval, and approval lineage. Which control should be added before rollout?
-- ID: genl-hf-safety-ethics-and-compliance-025
-- Domain: Safety, Ethics, and Compliance
-- Topic: auditability; genai_llms_professional
-- Difficulty: hard
-- A. Make auditability explicit in the workflow: track data, model, prompt, eval, and approval lineage.
-- B. Use license constraints as the main gate even though reviewers are asking for auditability evidence.
-- C. Keep unversioned release artifacts as the primary release control and record only final outputs.
-- D. Prioritize privacy controls before validating the failure signal around auditability.
-- Answer: A
-- Explanation: The scenario is about auditability. The strongest answer fixes the failing layer directly: track data, model, prompt, eval, and approval lineage.
-- Why B is wrong: It moves attention to a neighboring control instead of making auditability testable in the scenario.
-- Why C is wrong: It keeps unversioned release artifacts in control instead of adding a measurable auditability decision point.
-- Why D is wrong: It moves attention to a neighboring control instead of making auditability testable in the scenario.
-
-### Q81: A hospital operations team has a production-readiness review for a governed agent workflow. The review is focused on license constraints, because the system must respect model, dataset, and output-use restrictions. Which implementation path is most appropriate?
-- ID: genl-hf-safety-ethics-and-compliance-026
-- Domain: Safety, Ethics, and Compliance
-- Topic: license constraints; genai_llms_professional
+### Q38: A semiconductor design group is reviewing the implementation plan. The implementation requirement is to identify where time is going across CPU, GPU, launches, waits, and communication. Which NVIDIA service fits this requirement?
+- ID: genl-hf-svc-nsight-systems-008
+- Domain: Production Monitoring and Reliability
+- Topic: NVIDIA service: Nsight Systems; lifecycle: Monitoring and profiling; Which profiler shows CPU/GPU timeline gaps and CUDA launch overhead?
 - Difficulty: easy
-- A. Keep treating open weights as unrestricted use as the primary release control and record only final outputs.
-- B. Prioritize privacy controls before validating the failure signal around license constraints.
-- C. Bundle license constraints, bias evaluation, and prompt changes into one release with one aggregate score.
-- D. Use license constraints as the control boundary and require the system to respect model, dataset, and output-use restrictions.
-- Answer: D
-- Explanation: The scenario is about license constraints. The strongest answer fixes the failing layer directly: respect model, dataset, and output-use restrictions.
-- Why A is wrong: It keeps treating open weights as unrestricted use in control instead of adding a measurable license constraints decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making license constraints testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether license constraints fixed or caused the failure.
-
-### Q82: A telecom network operations team is preparing a governed agent workflow for release. The current design relies on training on raw confidential logs, but the release gate needs to redact sensitive data and enforce retention limits. Which action best fits the requirement?
-- ID: genl-hf-safety-ethics-and-compliance-027
-- Domain: Safety, Ethics, and Compliance
-- Topic: privacy controls; genai_llms_professional
-- Difficulty: hard
-- A. Bundle privacy controls, auditability, and prompt changes into one release with one aggregate score.
-- B. Wait for production incidents before adding a dedicated privacy controls check.
-- C. Add a release gate for privacy controls: redact sensitive data and enforce retention limits.
-- D. Prioritize guardrails before validating the failure signal around privacy controls.
-- Answer: C
-- Explanation: The scenario is about privacy controls. The strongest answer fixes the failing layer directly: redact sensitive data and enforce retention limits.
-- Why A is wrong: Bundling multiple changes makes it harder to tell whether privacy controls fixed or caused the failure.
-- Why B is wrong: Waiting for incidents postpones the privacy controls gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making privacy controls testable in the scenario.
-
-### Q83: A pharmaceutical research team is preparing a governed agent workflow for release. The current design relies on overall accuracy only, but the release gate needs to measure subgroup performance and harmful outputs. Which implementation path is most appropriate?
-- ID: genl-hf-safety-ethics-and-compliance-028
-- Domain: Safety, Ethics, and Compliance
-- Topic: bias evaluation; genai_llms_professional
-- Difficulty: expert
-- A. Use privacy controls as the main gate even though reviewers are asking for bias evaluation evidence.
-- B. Change the design around bias evaluation so the system can measure subgroup performance and harmful outputs.
-- C. Bundle bias evaluation, privacy controls, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated bias evaluation check.
+- Scope: nvidia_specific
+- Source: generated
+- A. Select NGC; it owns serving and deployment work such as pulling NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- B. Nsight Systems is the best fit for this layer: a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- C. Choose NeMo Customizer; it provides a microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- D. Use NeMo Guardrails when you need to enforce policy flows, safe dialog behavior, prompt-injection defenses, tool restrictions, or output checks.
 - Answer: B
-- Explanation: The scenario is about bias evaluation. The strongest answer fixes the failing layer directly: measure subgroup performance and harmful outputs.
-- Why A is wrong: It moves attention to a neighboring control instead of making bias evaluation testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether bias evaluation fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the bias evaluation gate until after users are exposed.
+- Explanation: Nsight Systems is the best fit because it sits in Monitoring and profiling: System-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- Why A is wrong: NGC belongs to Serving and deployment, while this scenario asks for Monitoring and profiling.
+- Why C is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Monitoring and profiling.
+- Why D is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Monitoring and profiling.
 
-### Q84: A cybersecurity response team is reviewing a governed agent workflow before rollout. The main risk is guardrails: the system must apply input/output and tool-use policies around the model. Which option keeps the decision at the right layer?
-- ID: genl-hf-safety-ethics-and-compliance-029
-- Domain: Safety, Ethics, and Compliance
-- Topic: guardrails; genai_llms_professional
-- Difficulty: medium
-- A. Make guardrails explicit in the workflow: apply input/output and tool-use policies around the model.
-- B. Wait for production incidents before adding a dedicated guardrails check.
-- C. Use privacy controls as the main gate even though reviewers are asking for guardrails evidence.
-- D. Keep guardrails as a replacement for IAM as the primary release control and record only final outputs.
+### Q39: An insurance claims group is preparing a production rollout. An inference trace has long gaps between CUDA kernels and low GPU occupancy. Which NVIDIA product owns this requirement?
+- ID: genl-hf-svc-nsight-systems-009
+- Domain: Production Monitoring and Reliability
+- Topic: NVIDIA service: Nsight Systems; lifecycle: Monitoring and profiling; Which profiler shows CPU/GPU timeline gaps and CUDA launch overhead?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose Nsight Systems; it provides a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- B. Use NIM Operator when you need to manage K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
+- C. Select NCCL; it owns training and customization work such as handling distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- D. NeMo Curator is the best fit for this layer: a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
 - Answer: A
-- Explanation: The scenario is about guardrails. The strongest answer fixes the failing layer directly: apply input/output and tool-use policies around the model.
-- Why B is wrong: Waiting for incidents postpones the guardrails gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making guardrails testable in the scenario.
-- Why D is wrong: It keeps guardrails as a replacement for IAM in control instead of adding a measurable guardrails decision point.
+- Explanation: Nsight Systems is the best fit because it sits in Monitoring and profiling: System-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- Why B is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Monitoring and profiling.
+- Why C is wrong: NCCL belongs to Training and customization, while this scenario asks for Monitoring and profiling.
+- Why D is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Monitoring and profiling.
 
-### Q85: A public-sector casework team is preparing a governed agent workflow for release. The current design relies on unversioned release artifacts, but the release gate needs to track data, model, prompt, eval, and approval lineage. Which design is the best first change?
-- ID: genl-hf-safety-ethics-and-compliance-030
-- Domain: Safety, Ethics, and Compliance
-- Topic: auditability; genai_llms_professional
-- Difficulty: hard
-- A. Keep unversioned release artifacts as the primary release control and record only final outputs.
-- B. Prioritize license constraints before validating the failure signal around auditability.
-- C. Use auditability as the control boundary and require the system to track data, model, prompt, eval, and approval lineage.
-- D. Use privacy controls as the main gate even though reviewers are asking for auditability evidence.
-- Answer: C
-- Explanation: The scenario is about auditability. The strongest answer fixes the failing layer directly: track data, model, prompt, eval, and approval lineage.
-- Why A is wrong: It keeps unversioned release artifacts in control instead of adding a measurable auditability decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making auditability testable in the scenario.
-- Why D is wrong: It moves attention to a neighboring control instead of making auditability testable in the scenario.
-
-### Q86: A pharmaceutical research team sees policy failures that need license constraints as an explicit control. The team has been using treating open weights as unrestricted use; the next change needs to make license constraints explicit. Which action best addresses the problem?
-- ID: genl-hf-safety-ethics-and-compliance-031
-- Domain: Safety, Ethics, and Compliance
-- Topic: license constraints; genai_llms_professional
-- Difficulty: hard
-- A. Keep treating open weights as unrestricted use as the primary release control and record only final outputs.
-- B. Prioritize guardrails before validating the failure signal around license constraints.
-- C. Bundle license constraints, auditability, and prompt changes into one release with one aggregate score.
-- D. Add a release gate for license constraints: respect model, dataset, and output-use restrictions.
-- Answer: D
-- Explanation: The scenario is about license constraints. The strongest answer fixes the failing layer directly: respect model, dataset, and output-use restrictions.
-- Why A is wrong: It keeps treating open weights as unrestricted use in control instead of adding a measurable license constraints decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making license constraints testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether license constraints fixed or caused the failure.
-
-### Q87: A telecom network operations team is preparing a governed agent workflow for release. The current design relies on training on raw confidential logs, but the release gate needs to redact sensitive data and enforce retention limits. Which control should be added before rollout?
-- ID: genl-hf-safety-ethics-and-compliance-032
-- Domain: Safety, Ethics, and Compliance
-- Topic: privacy controls; genai_llms_professional
+### Q40: A global retailer is setting a release gate. The trace points to the need to identify where time is going across CPU, GPU, launches, waits, and communication. What is the best first implementation choice?
+- ID: genl-hf-svc-nsight-systems-010
+- Domain: Production Monitoring and Reliability
+- Topic: NVIDIA service: Nsight Systems; lifecycle: Monitoring and profiling; Which profiler shows CPU/GPU timeline gaps and CUDA launch overhead?
 - Difficulty: expert
-- A. Change the design around privacy controls so the system can redact sensitive data and enforce retention limits.
-- B. Prioritize guardrails before validating the failure signal around privacy controls.
-- C. Bundle privacy controls, auditability, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated privacy controls check.
-- Answer: A
-- Explanation: The scenario is about privacy controls. The strongest answer fixes the failing layer directly: redact sensitive data and enforce retention limits.
-- Why B is wrong: It moves attention to a neighboring control instead of making privacy controls testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether privacy controls fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the privacy controls gate until after users are exposed.
-
-### Q88: A hospital operations team sees policy failures that need bias evaluation as an explicit control. The team has been using overall accuracy only; the next change needs to make bias evaluation explicit. Which action best addresses the problem?
-- ID: genl-hf-safety-ethics-and-compliance-033
-- Domain: Safety, Ethics, and Compliance
-- Topic: bias evaluation; genai_llms_professional
-- Difficulty: medium
-- A. Use auditability as the main gate even though reviewers are asking for bias evaluation evidence.
-- B. Make bias evaluation explicit in the workflow: measure subgroup performance and harmful outputs.
-- C. Bundle bias evaluation, auditability, and prompt changes into one release with one aggregate score.
-- D. Wait for production incidents before adding a dedicated bias evaluation check.
-- Answer: B
-- Explanation: The scenario is about bias evaluation. The strongest answer fixes the failing layer directly: measure subgroup performance and harmful outputs.
-- Why A is wrong: It moves attention to a neighboring control instead of making bias evaluation testable in the scenario.
-- Why C is wrong: Bundling multiple changes makes it harder to tell whether bias evaluation fixed or caused the failure.
-- Why D is wrong: Waiting for incidents postpones the bias evaluation gate until after users are exposed.
-
-### Q89: A cybersecurity response team is reviewing a governed agent workflow before rollout. The main risk is guardrails: the system must apply input/output and tool-use policies around the model. Which option keeps the decision at the right layer?
-- ID: genl-hf-safety-ethics-and-compliance-034
-- Domain: Safety, Ethics, and Compliance
-- Topic: guardrails; genai_llms_professional
-- Difficulty: hard
-- A. Use privacy controls as the main gate even though reviewers are asking for guardrails evidence.
-- B. Keep guardrails as a replacement for IAM as the primary release control and record only final outputs.
-- C. Use guardrails as the control boundary and require the system to apply input/output and tool-use policies around the model.
-- D. Wait for production incidents before adding a dedicated guardrails check.
+- Scope: nvidia_specific
+- Source: generated
+- A. NeMo Framework is the best fit for this layer: a framework for training, customizing, aligning, and evaluating generative AI models.
+- B. Choose Dynamo (Triton Dynamo); it provides a distributed inference serving stack for LLMs: disaggregated prefill/decode, KV-cache routing, multi-node scaling.
+- C. Use Nsight Systems when you need to identify where time is going across CPU, GPU, launches, waits, and communication.
+- D. Select TensorRT-LLM; it owns inference optimization work such as building optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT.
 - Answer: C
-- Explanation: The scenario is about guardrails. The strongest answer fixes the failing layer directly: apply input/output and tool-use policies around the model.
-- Why A is wrong: It moves attention to a neighboring control instead of making guardrails testable in the scenario.
-- Why B is wrong: It keeps guardrails as a replacement for IAM in control instead of adding a measurable guardrails decision point.
-- Why D is wrong: Waiting for incidents postpones the guardrails gate until after users are exposed.
+- Explanation: Nsight Systems is the best fit because it sits in Monitoring and profiling: System-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- Why A is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for Monitoring and profiling.
+- Why B is wrong: Dynamo (Triton Dynamo) belongs to Serving and deployment, while this scenario asks for Monitoring and profiling.
+- Why D is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Monitoring and profiling.
 
-### Q90: A pharmaceutical research team sees policy failures that need auditability as an explicit control. The team has been using unversioned release artifacts; the next change needs to make auditability explicit. Which action best addresses the problem?
-- ID: genl-hf-safety-ethics-and-compliance-035
-- Domain: Safety, Ethics, and Compliance
-- Topic: auditability; genai_llms_professional
-- Difficulty: hard
-- A. Use guardrails as the main gate even though reviewers are asking for auditability evidence.
-- B. Keep unversioned release artifacts as the primary release control and record only final outputs.
-- C. Prioritize bias evaluation before validating the failure signal around auditability.
-- D. Add a release gate for auditability: track data, model, prompt, eval, and approval lineage.
-- Answer: D
-- Explanation: The scenario is about auditability. The strongest answer fixes the failing layer directly: track data, model, prompt, eval, and approval lineage.
-- Why A is wrong: It moves attention to a neighboring control instead of making auditability testable in the scenario.
-- Why B is wrong: It keeps unversioned release artifacts in control instead of adding a measurable auditability decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making auditability testable in the scenario.
-
-### Q91: A telecom network operations team is reviewing a governed agent workflow before rollout. The main risk is license constraints: the system must respect model, dataset, and output-use restrictions. Which option keeps the decision at the right layer?
-- ID: genl-hf-safety-ethics-and-compliance-036
-- Domain: Safety, Ethics, and Compliance
-- Topic: license constraints; genai_llms_professional
-- Difficulty: medium
-- A. Change the design around license constraints so the system can respect model, dataset, and output-use restrictions.
-- B. Keep treating open weights as unrestricted use as the primary release control and record only final outputs.
-- C. Prioritize auditability before validating the failure signal around license constraints.
-- D. Bundle license constraints, guardrails, and prompt changes into one release with one aggregate score.
-- Answer: A
-- Explanation: The scenario is about license constraints. The strongest answer fixes the failing layer directly: respect model, dataset, and output-use restrictions.
-- Why B is wrong: It keeps treating open weights as unrestricted use in control instead of adding a measurable license constraints decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making license constraints testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether license constraints fixed or caused the failure.
-
-### Q92: A hospital operations team is reviewing a governed agent workflow before rollout. The main risk is privacy controls: the system must redact sensitive data and enforce retention limits. Which option keeps the decision at the right layer?
-- ID: genl-hf-safety-ethics-and-compliance-037
-- Domain: Safety, Ethics, and Compliance
-- Topic: privacy controls; genai_llms_professional
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated privacy controls check.
-- B. Make privacy controls explicit in the workflow: redact sensitive data and enforce retention limits.
-- C. Prioritize bias evaluation before validating the failure signal around privacy controls.
-- D. Bundle privacy controls, license constraints, and prompt changes into one release with one aggregate score.
-- Answer: B
-- Explanation: The scenario is about privacy controls. The strongest answer fixes the failing layer directly: redact sensitive data and enforce retention limits.
-- Why A is wrong: Waiting for incidents postpones the privacy controls gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making privacy controls testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether privacy controls fixed or caused the failure.
-
-### Q93: A bank fraud team has a production-readiness review for a governed agent workflow. The review is focused on bias evaluation, because the system must measure subgroup performance and harmful outputs. Which architecture keeps the boundary cleanest?
-- ID: genl-hf-safety-ethics-and-compliance-038
-- Domain: Safety, Ethics, and Compliance
-- Topic: bias evaluation; genai_llms_professional
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated bias evaluation check.
-- B. Use guardrails as the main gate even though reviewers are asking for bias evaluation evidence.
-- C. Use bias evaluation as the control boundary and require the system to measure subgroup performance and harmful outputs.
-- D. Bundle bias evaluation, guardrails, and prompt changes into one release with one aggregate score.
-- Answer: C
-- Explanation: The scenario is about bias evaluation. The strongest answer fixes the failing layer directly: measure subgroup performance and harmful outputs.
-- Why A is wrong: Waiting for incidents postpones the bias evaluation gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making bias evaluation testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether bias evaluation fixed or caused the failure.
-
-### Q94: An insurance claims group is reviewing a governed agent workflow before rollout. The main risk is guardrails: the system must apply input/output and tool-use policies around the model. Which option keeps the decision at the right layer?
-- ID: genl-hf-safety-ethics-and-compliance-039
-- Domain: Safety, Ethics, and Compliance
-- Topic: guardrails; genai_llms_professional
+### Q41: A logistics planning team needs to choose the right implementation surface. The implementation requirement is to diagnose why a known kernel is memory-bound, compute-bound, or inefficient. What is the best first implementation choice?
+- ID: genl-hf-svc-nsight-compute-001
+- Domain: Production Monitoring and Reliability
+- Topic: NVIDIA service: Nsight Compute; lifecycle: Monitoring and profiling; Which profiler diagnoses detailed CUDA kernel bottlenecks?
 - Difficulty: expert
-- A. Wait for production incidents before adding a dedicated guardrails check.
-- B. Use bias evaluation as the main gate even though reviewers are asking for guardrails evidence.
-- C. Keep guardrails as a replacement for IAM as the primary release control and record only final outputs.
-- D. Add a release gate for guardrails: apply input/output and tool-use policies around the model.
-- Answer: D
-- Explanation: The scenario is about guardrails. The strongest answer fixes the failing layer directly: apply input/output and tool-use policies around the model.
-- Why A is wrong: Waiting for incidents postpones the guardrails gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making guardrails testable in the scenario.
-- Why C is wrong: It keeps guardrails as a replacement for IAM in control instead of adding a measurable guardrails decision point.
-
-### Q95: A global retailer is preparing a governed agent workflow for release. The current design relies on unversioned release artifacts, but the release gate needs to track data, model, prompt, eval, and approval lineage. Which action best fits the requirement?
-- ID: genl-hf-safety-ethics-and-compliance-040
-- Domain: Safety, Ethics, and Compliance
-- Topic: auditability; genai_llms_professional
-- Difficulty: medium
-- A. Use bias evaluation as the main gate even though reviewers are asking for auditability evidence.
-- B. Keep unversioned release artifacts as the primary release control and record only final outputs.
-- C. Prioritize guardrails before validating the failure signal around auditability.
-- D. Change the design around auditability so the system can track data, model, prompt, eval, and approval lineage.
-- Answer: D
-- Explanation: The scenario is about auditability. The strongest answer fixes the failing layer directly: track data, model, prompt, eval, and approval lineage.
-- Why A is wrong: It moves attention to a neighboring control instead of making auditability testable in the scenario.
-- Why B is wrong: It keeps unversioned release artifacts in control instead of adding a measurable auditability decision point.
-- Why C is wrong: It moves attention to a neighboring control instead of making auditability testable in the scenario.
-
-### Q96: A logistics planning team has a production-readiness review for a governed agent workflow. The review is focused on license constraints, because the system must respect model, dataset, and output-use restrictions. Which control should be added before rollout?
-- ID: genl-hf-safety-ethics-and-compliance-041
-- Domain: Safety, Ethics, and Compliance
-- Topic: license constraints; genai_llms_professional
-- Difficulty: hard
-- A. Prioritize auditability before validating the failure signal around license constraints.
-- B. Bundle license constraints, guardrails, and prompt changes into one release with one aggregate score.
-- C. Make license constraints explicit in the workflow: respect model, dataset, and output-use restrictions.
-- D. Keep treating open weights as unrestricted use as the primary release control and record only final outputs.
-- Answer: C
-- Explanation: The scenario is about license constraints. The strongest answer fixes the failing layer directly: respect model, dataset, and output-use restrictions.
-- Why A is wrong: It moves attention to a neighboring control instead of making license constraints testable in the scenario.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether license constraints fixed or caused the failure.
-- Why D is wrong: It keeps treating open weights as unrestricted use in control instead of adding a measurable license constraints decision point.
-
-### Q97: An automotive support team is reviewing a governed agent workflow before rollout. The main risk is privacy controls: the system must redact sensitive data and enforce retention limits. Which option keeps the decision at the right layer?
-- ID: genl-hf-safety-ethics-and-compliance-042
-- Domain: Safety, Ethics, and Compliance
-- Topic: privacy controls; genai_llms_professional
-- Difficulty: expert
-- A. Wait for production incidents before adding a dedicated privacy controls check.
-- B. Use privacy controls as the control boundary and require the system to redact sensitive data and enforce retention limits.
-- C. Prioritize auditability before validating the failure signal around privacy controls.
-- D. Bundle privacy controls, guardrails, and prompt changes into one release with one aggregate score.
+- Scope: nvidia_specific
+- Source: generated
+- A. Triton Inference Server is the best fit for this layer: a production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- B. Choose Nsight Compute; it provides a CUDA kernel profiler for detailed metrics, occupancy, memory throughput, warp behavior, and kernel bottlenecks.
+- C. Use NeMo Framework when you need to run SFT, PEFT, LoRA/QLoRA, continued pretraining, model customization, or large-scale model recipes.
+- D. Select NeMo Evaluator; it owns evaluation work such as running standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge.
 - Answer: B
-- Explanation: The scenario is about privacy controls. The strongest answer fixes the failing layer directly: redact sensitive data and enforce retention limits.
-- Why A is wrong: Waiting for incidents postpones the privacy controls gate until after users are exposed.
-- Why C is wrong: It moves attention to a neighboring control instead of making privacy controls testable in the scenario.
-- Why D is wrong: Bundling multiple changes makes it harder to tell whether privacy controls fixed or caused the failure.
+- Explanation: Nsight Compute is the best fit because it sits in Monitoring and profiling: CUDA kernel profiler for detailed metrics, occupancy, memory throughput, warp behavior, and kernel bottlenecks.
+- Why A is wrong: Triton Inference Server belongs to Serving and deployment, while this scenario asks for Monitoring and profiling.
+- Why C is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for Monitoring and profiling.
+- Why D is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Monitoring and profiling.
 
-### Q98: A semiconductor design group sees policy failures that need bias evaluation as an explicit control. The team has been using overall accuracy only; the next change needs to make bias evaluation explicit. Which action best addresses the problem?
-- ID: genl-hf-safety-ethics-and-compliance-043
-- Domain: Safety, Ethics, and Compliance
-- Topic: bias evaluation; genai_llms_professional
+### Q42: An insurance claims group is preparing a production rollout. The rollout is blocked until the team can diagnose why a known kernel is memory-bound, compute-bound, or inefficient. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: genl-hf-svc-nsight-compute-002
+- Domain: Production Monitoring and Reliability
+- Topic: NVIDIA service: Nsight Compute; lifecycle: Monitoring and profiling; Which profiler diagnoses detailed CUDA kernel bottlenecks?
 - Difficulty: medium
-- A. Add a release gate for bias evaluation: measure subgroup performance and harmful outputs.
-- B. Bundle bias evaluation, guardrails, and prompt changes into one release with one aggregate score.
-- C. Wait for production incidents before adding a dedicated bias evaluation check.
-- D. Use guardrails as the main gate even though reviewers are asking for bias evaluation evidence.
-- Answer: A
-- Explanation: The scenario is about bias evaluation. The strongest answer fixes the failing layer directly: measure subgroup performance and harmful outputs.
-- Why B is wrong: Bundling multiple changes makes it harder to tell whether bias evaluation fixed or caused the failure.
-- Why C is wrong: Waiting for incidents postpones the bias evaluation gate until after users are exposed.
-- Why D is wrong: It moves attention to a neighboring control instead of making bias evaluation testable in the scenario.
-
-### Q99: A public-sector casework team has a production-readiness review for a governed agent workflow. The review is focused on guardrails, because the system must apply input/output and tool-use policies around the model. Which implementation path is most appropriate?
-- ID: genl-hf-safety-ethics-and-compliance-044
-- Domain: Safety, Ethics, and Compliance
-- Topic: guardrails; genai_llms_professional
-- Difficulty: hard
-- A. Wait for production incidents before adding a dedicated guardrails check.
-- B. Use license constraints as the main gate even though reviewers are asking for guardrails evidence.
-- C. Keep guardrails as a replacement for IAM as the primary release control and record only final outputs.
-- D. Change the design around guardrails so the system can apply input/output and tool-use policies around the model.
-- Answer: D
-- Explanation: The scenario is about guardrails. The strongest answer fixes the failing layer directly: apply input/output and tool-use policies around the model.
-- Why A is wrong: Waiting for incidents postpones the guardrails gate until after users are exposed.
-- Why B is wrong: It moves attention to a neighboring control instead of making guardrails testable in the scenario.
-- Why C is wrong: It keeps guardrails as a replacement for IAM in control instead of adding a measurable guardrails decision point.
-
-### Q100: A global retailer sees policy failures that need auditability as an explicit control. The team has been using unversioned release artifacts; the next change needs to make auditability explicit. Which action best addresses the problem?
-- ID: genl-hf-safety-ethics-and-compliance-045
-- Domain: Safety, Ethics, and Compliance
-- Topic: auditability; genai_llms_professional
-- Difficulty: hard
-- A. Keep unversioned release artifacts as the primary release control and record only final outputs.
-- B. Prioritize guardrails before validating the failure signal around auditability.
-- C. Make auditability explicit in the workflow: track data, model, prompt, eval, and approval lineage.
-- D. Use bias evaluation as the main gate even though reviewers are asking for auditability evidence.
+- Scope: nvidia_specific
+- Source: generated
+- A. NeMo Evaluator is the best fit for this layer: a microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- B. Choose NGC; it provides a catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- C. Use Nsight Compute when you need to diagnose why a known kernel is memory-bound, compute-bound, or inefficient.
+- D. Select Nemotron models; it owns model selection work such as choosing a model family for NVIDIA-aligned reasoning, reward, instruction, or agentic workflows.
 - Answer: C
-- Explanation: The scenario is about auditability. The strongest answer fixes the failing layer directly: track data, model, prompt, eval, and approval lineage.
-- Why A is wrong: It keeps unversioned release artifacts in control instead of adding a measurable auditability decision point.
-- Why B is wrong: It moves attention to a neighboring control instead of making auditability testable in the scenario.
-- Why D is wrong: It moves attention to a neighboring control instead of making auditability testable in the scenario.
+- Explanation: Nsight Compute is the best fit because it sits in Monitoring and profiling: CUDA kernel profiler for detailed metrics, occupancy, memory throughput, warp behavior, and kernel bottlenecks.
+- Why A is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Monitoring and profiling.
+- Why B is wrong: NGC belongs to Serving and deployment, while this scenario asks for Monitoring and profiling.
+- Why D is wrong: Nemotron models belongs to Model selection, while this scenario asks for Monitoring and profiling.
+
+### Q43: A semiconductor design group needs to choose the right implementation surface. The trace points to the need to diagnose why a known kernel is memory-bound, compute-bound, or inefficient. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA platform layer is the right match?
+- ID: genl-hf-svc-nsight-compute-003
+- Domain: Production Monitoring and Reliability
+- Topic: NVIDIA service: Nsight Compute; lifecycle: Monitoring and profiling; Which profiler diagnoses detailed CUDA kernel bottlenecks?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Nemotron models is the best fit for this layer: NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- B. Choose RAPIDS; it provides GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- C. Use NeMo Customizer when you need to run API-driven LoRA/PEFT customization without standing up a full training stack.
+- D. Select Nsight Compute; it owns monitoring and profiling work such as diagnosing why a known kernel is memory-bound, compute-bound, or inefficient.
+- Answer: D
+- Explanation: Nsight Compute is the best fit because it sits in Monitoring and profiling: CUDA kernel profiler for detailed metrics, occupancy, memory throughput, warp behavior, and kernel bottlenecks.
+- Why A is wrong: Nemotron models belongs to Model selection, while this scenario asks for Monitoring and profiling.
+- Why B is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Monitoring and profiling.
+- Why C is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Monitoring and profiling.
+
+### Q44: A hospital operations team is fixing the layer called out by the trace and design review. The work to finish before release is diagnosing why a known kernel is memory-bound, compute-bound, or inefficient. Which NVIDIA service should be selected first?
+- ID: genl-hf-svc-nsight-compute-004
+- Domain: Production Monitoring and Reliability
+- Topic: NVIDIA service: Nsight Compute; lifecycle: Monitoring and profiling; Which profiler diagnoses detailed CUDA kernel bottlenecks?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. Nsight Compute is the best fit for this layer: a CUDA kernel profiler for detailed metrics, occupancy, memory throughput, warp behavior, and kernel bottlenecks.
+- B. Choose Dynamo (Triton Dynamo); it provides a distributed inference serving stack for LLMs: disaggregated prefill/decode, KV-cache routing, multi-node scaling.
+- C. Use RAPIDS when you need to accelerate pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- D. Select TensorRT-LLM; it owns inference optimization work such as building optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT.
+- Answer: A
+- Explanation: Nsight Compute is the best fit because it sits in Monitoring and profiling: CUDA kernel profiler for detailed metrics, occupancy, memory throughput, warp behavior, and kernel bottlenecks.
+- Why B is wrong: Dynamo (Triton Dynamo) belongs to Serving and deployment, while this scenario asks for Monitoring and profiling.
+- Why C is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Monitoring and profiling.
+- Why D is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Monitoring and profiling.
+
+### Q45: A telecom network operations team needs to choose the right implementation surface. The trace points to the need to diagnose why a known kernel is memory-bound, compute-bound, or inefficient. Which NVIDIA option addresses the named layer?
+- ID: genl-hf-svc-nsight-compute-005
+- Domain: Production Monitoring and Reliability
+- Topic: NVIDIA service: Nsight Compute; lifecycle: Monitoring and profiling; Which profiler diagnoses detailed CUDA kernel bottlenecks?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Dynamo (Triton Dynamo) is the best fit for this layer: a distributed inference serving stack for LLMs: disaggregated prefill/decode, KV-cache routing, multi-node scaling.
+- B. Choose Nsight Compute; it provides a CUDA kernel profiler for detailed metrics, occupancy, memory throughput, warp behavior, and kernel bottlenecks.
+- C. Use RAPIDS when you need to accelerate pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- D. Select NIM Operator; it owns serving and deployment work such as managing K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
+- Answer: B
+- Explanation: Nsight Compute is the best fit because it sits in Monitoring and profiling: CUDA kernel profiler for detailed metrics, occupancy, memory throughput, warp behavior, and kernel bottlenecks.
+- Why A is wrong: Dynamo (Triton Dynamo) belongs to Serving and deployment, while this scenario asks for Monitoring and profiling.
+- Why C is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Monitoring and profiling.
+- Why D is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Monitoring and profiling.
+
+### Q46: An insurance claims group is preparing a production rollout. The rollout is blocked until the team can diagnose why a known kernel is memory-bound, compute-bound, or inefficient. Which NVIDIA product owns this requirement?
+- ID: genl-hf-svc-nsight-compute-006
+- Domain: Production Monitoring and Reliability
+- Topic: NVIDIA service: Nsight Compute; lifecycle: Monitoring and profiling; Which profiler diagnoses detailed CUDA kernel bottlenecks?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. TensorRT-LLM is the best fit for this layer: an optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- B. Choose Nsight Systems; it provides a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- C. Use Nsight Compute when you need to diagnose why a known kernel is memory-bound, compute-bound, or inefficient.
+- D. Select NGC; it owns serving and deployment work such as pulling NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- Answer: C
+- Explanation: Nsight Compute is the best fit because it sits in Monitoring and profiling: CUDA kernel profiler for detailed metrics, occupancy, memory throughput, warp behavior, and kernel bottlenecks.
+- Why A is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Monitoring and profiling.
+- Why B is wrong: Nsight Systems is a neighboring monitoring and profiling component, but this signal asks specifically for Nsight Compute: to diagnose why a known kernel is memory-bound, compute-bound, or inefficient.
+- Why D is wrong: NGC belongs to Serving and deployment, while this scenario asks for Monitoring and profiling.
+
+### Q47: A cybersecurity response team is reviewing the implementation plan. The implementation requirement is to diagnose why a known kernel is memory-bound, compute-bound, or inefficient. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA service fits this requirement?
+- ID: genl-hf-svc-nsight-compute-007
+- Domain: Production Monitoring and Reliability
+- Topic: NVIDIA service: Nsight Compute; lifecycle: Monitoring and profiling; Which profiler diagnoses detailed CUDA kernel bottlenecks?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Nsight Systems is the best fit for this layer: a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- B. Choose NCCL; it provides a collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- C. Use NeMo Guardrails when you need to enforce policy flows, safe dialog behavior, prompt-injection defenses, tool restrictions, or output checks.
+- D. Select Nsight Compute; it owns monitoring and profiling work such as diagnosing why a known kernel is memory-bound, compute-bound, or inefficient.
+- Answer: D
+- Explanation: Nsight Compute is the best fit because it sits in Monitoring and profiling: CUDA kernel profiler for detailed metrics, occupancy, memory throughput, warp behavior, and kernel bottlenecks.
+- Why A is wrong: Nsight Systems is a neighboring monitoring and profiling component, but this signal asks specifically for Nsight Compute: to diagnose why a known kernel is memory-bound, compute-bound, or inefficient.
+- Why B is wrong: NCCL belongs to Training and customization, while this scenario asks for Monitoring and profiling.
+- Why C is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Monitoring and profiling.
+
+### Q48: A public-sector casework team is fixing the layer called out by the trace and design review. The work to finish before release is diagnosing why a known kernel is memory-bound, compute-bound, or inefficient. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: genl-hf-svc-nsight-compute-008
+- Domain: Production Monitoring and Reliability
+- Topic: NVIDIA service: Nsight Compute; lifecycle: Monitoring and profiling; Which profiler diagnoses detailed CUDA kernel bottlenecks?
+- Difficulty: easy
+- Scope: nvidia_specific
+- Source: generated
+- A. Nsight Compute is the best fit for this layer: a CUDA kernel profiler for detailed metrics, occupancy, memory throughput, warp behavior, and kernel bottlenecks.
+- B. Choose NeMo Curator; it provides a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- C. Use NeMo Customizer when you need to run API-driven LoRA/PEFT customization without standing up a full training stack.
+- D. Select NeMo Evaluator; it owns evaluation work such as running standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge.
+- Answer: A
+- Explanation: Nsight Compute is the best fit because it sits in Monitoring and profiling: CUDA kernel profiler for detailed metrics, occupancy, memory throughput, warp behavior, and kernel bottlenecks.
+- Why B is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Monitoring and profiling.
+- Why C is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Monitoring and profiling.
+- Why D is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Monitoring and profiling.
+
+### Q49: A telecom network operations team is reviewing the implementation plan. The implementation requirement is to diagnose why a known kernel is memory-bound, compute-bound, or inefficient. Which NVIDIA option addresses the named layer?
+- ID: genl-hf-svc-nsight-compute-009
+- Domain: Production Monitoring and Reliability
+- Topic: NVIDIA service: Nsight Compute; lifecycle: Monitoring and profiling; Which profiler diagnoses detailed CUDA kernel bottlenecks?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Nsight Systems is the best fit for this layer: a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- B. Choose Nsight Compute; it provides a CUDA kernel profiler for detailed metrics, occupancy, memory throughput, warp behavior, and kernel bottlenecks.
+- C. Use TensorRT-LLM when you need to build optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT.
+- D. Select RAPIDS; it owns data preparation work such as accelerating pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- Answer: B
+- Explanation: Nsight Compute is the best fit because it sits in Monitoring and profiling: CUDA kernel profiler for detailed metrics, occupancy, memory throughput, warp behavior, and kernel bottlenecks.
+- Why A is wrong: Nsight Systems is a neighboring monitoring and profiling component, but this signal asks specifically for Nsight Compute: to diagnose why a known kernel is memory-bound, compute-bound, or inefficient.
+- Why C is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Monitoring and profiling.
+- Why D is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Monitoring and profiling.
+
+### Q50: An insurance claims group is preparing a production rollout. The rollout is blocked until the team can diagnose why a known kernel is memory-bound, compute-bound, or inefficient. Which NVIDIA service should be selected first?
+- ID: genl-hf-svc-nsight-compute-010
+- Domain: Production Monitoring and Reliability
+- Topic: NVIDIA service: Nsight Compute; lifecycle: Monitoring and profiling; Which profiler diagnoses detailed CUDA kernel bottlenecks?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. Select Nemotron models; it owns model selection work such as choosing a model family for NVIDIA-aligned reasoning, reward, instruction, or agentic workflows.
+- B. NeMo Framework is the best fit for this layer: a framework for training, customizing, aligning, and evaluating generative AI models.
+- C. Choose NeMo Guardrails; it provides programmable rails for controlling LLM and agent behavior across input, dialog, tool execution, retrieval, and output.
+- D. Use Nsight Compute when you need to diagnose why a known kernel is memory-bound, compute-bound, or inefficient.
+- Answer: D
+- Explanation: Nsight Compute is the best fit because it sits in Monitoring and profiling: CUDA kernel profiler for detailed metrics, occupancy, memory throughput, warp behavior, and kernel bottlenecks.
+- Why A is wrong: Nemotron models belongs to Model selection, while this scenario asks for Monitoring and profiling.
+- Why B is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for Monitoring and profiling.
+- Why C is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Monitoring and profiling.
+
+### Q51: A bank fraud team is reviewing the implementation plan. The trace points to the need to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA service fits this requirement?
+- ID: genl-hf-svc-nccl-001
+- Domain: Fine-Tuning
+- Topic: NVIDIA service: NCCL; lifecycle: Training and customization; Which library is central to multi-GPU collective communication?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose NCCL; it provides a collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- B. Use NeMo Evaluator when you need to run standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge.
+- C. Select Nemotron models; it owns model selection work such as choosing a model family for NVIDIA-aligned reasoning, reward, instruction, or agentic workflows.
+- D. Nsight Systems is the best fit for this layer: a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- Answer: A
+- Explanation: NCCL is the best fit because it sits in Training and customization: Collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- Why B is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Training and customization.
+- Why C is wrong: Nemotron models belongs to Model selection, while this scenario asks for Training and customization.
+- Why D is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Training and customization.
+
+### Q52: A manufacturing quality team has narrowed the next engineering decision. The rollout is blocked until the team can handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA service should be selected first?
+- ID: genl-hf-svc-nccl-002
+- Domain: Fine-Tuning
+- Topic: NVIDIA service: NCCL; lifecycle: Training and customization; Which library is central to multi-GPU collective communication?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Select Nsight Systems; it owns monitoring and profiling work such as identifying where time is going across CPU, GPU, launches, waits, and communication.
+- B. NeMo Framework is the best fit for this layer: a framework for training, customizing, aligning, and evaluating generative AI models.
+- C. Choose NIM Operator; it provides a Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
+- D. Use NCCL when you need to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- Answer: D
+- Explanation: NCCL is the best fit because it sits in Training and customization: Collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- Why A is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Training and customization.
+- Why B is wrong: NeMo Framework is a neighboring training and customization component, but this signal asks specifically for NCCL: to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- Why C is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Training and customization.
+
+### Q53: A global retailer needs to choose the right implementation surface. The implementation requirement is to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs. Which NVIDIA service fits this requirement?
+- ID: genl-hf-svc-nccl-003
+- Domain: Fine-Tuning
+- Topic: NVIDIA service: NCCL; lifecycle: Training and customization; Which library is central to multi-GPU collective communication?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose Triton Inference Server; it provides a production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- B. Use NeMo Retriever when you need to connect proprietary data to RAG: parse documents, embed chunks/queries, index/search, apply permissions, or rerank candidate passages.
+- C. Select NCCL; it owns training and customization work such as handling distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- D. NIM Operator is the best fit for this layer: a Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
+- Answer: C
+- Explanation: NCCL is the best fit because it sits in Training and customization: Collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- Why A is wrong: Triton Inference Server belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why B is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Training and customization.
+- Why D is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Training and customization.
+
+### Q54: A pharmaceutical research team is fixing the layer called out by the trace and design review. The work to finish before release is handling distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA service should be selected first?
+- ID: genl-hf-svc-nccl-004
+- Domain: Fine-Tuning
+- Topic: NVIDIA service: NCCL; lifecycle: Training and customization; Which library is central to multi-GPU collective communication?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. Select RAPIDS; it owns data preparation work such as accelerating pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- B. NCCL is the best fit for this layer: a collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- C. Choose Nemotron models; it provides NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- D. Use NeMo Retriever when you need to connect proprietary data to RAG: parse documents, embed chunks/queries, index/search, apply permissions, or rerank candidate passages.
+- Answer: B
+- Explanation: NCCL is the best fit because it sits in Training and customization: Collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- Why A is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Training and customization.
+- Why C is wrong: Nemotron models belongs to Model selection, while this scenario asks for Training and customization.
+- Why D is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Training and customization.
+
+### Q55: A semiconductor design group needs to choose the right implementation surface. The trace points to the need to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs. What is the best first implementation choice?
+- ID: genl-hf-svc-nccl-005
+- Domain: Fine-Tuning
+- Topic: NVIDIA service: NCCL; lifecycle: Training and customization; Which library is central to multi-GPU collective communication?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose NCCL; it provides a collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- B. Use NeMo Agent Toolkit when you need to a workflow must route requests, call tools/retrievers/memory, run sequential or parallel branches, expose an API/MCP server, or evaluate/profile agent traces.
+- C. Select NeMo Evaluator; it owns evaluation work such as running standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge.
+- D. NeMo Curator is the best fit for this layer: a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- Answer: A
+- Explanation: NCCL is the best fit because it sits in Training and customization: Collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- Why B is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Training and customization.
+- Why C is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Training and customization.
+- Why D is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Training and customization.
+
+### Q56: A public-sector casework team has narrowed the next engineering decision. The rollout is blocked until the team can handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA tool should the team start with?
+- ID: genl-hf-svc-nccl-006
+- Domain: Fine-Tuning
+- Topic: NVIDIA service: NCCL; lifecycle: Training and customization; Which library is central to multi-GPU collective communication?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Select Triton Inference Server; it owns serving and deployment work such as running multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
+- B. RAPIDS is the best fit for this layer: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- C. Choose NIM; it provides inference microservices for deploying optimized models with production APIs and model profiles.
+- D. Use NCCL when you need to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- Answer: D
+- Explanation: NCCL is the best fit because it sits in Training and customization: Collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- Why A is wrong: Triton Inference Server belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why B is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Training and customization.
+- Why C is wrong: NIM belongs to Serving and deployment, while this scenario asks for Training and customization.
+
+### Q57: A global retailer is setting a release gate. The trace points to the need to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs. Which NVIDIA platform layer is the right match?
+- ID: genl-hf-svc-nccl-007
+- Domain: Fine-Tuning
+- Topic: NVIDIA service: NCCL; lifecycle: Training and customization; Which library is central to multi-GPU collective communication?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose Dynamo (Triton Dynamo); it provides a distributed inference serving stack for LLMs: disaggregated prefill/decode, KV-cache routing, multi-node scaling.
+- B. Use NIM when you need to for packaged, supported, optimized model serving with APIs, profiles, observability, and Kubernetes/container deployment.
+- C. Select NCCL; it owns training and customization work such as handling distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- D. NeMo Agent Toolkit is the best fit for this layer: a config-driven NAT workflow runtime for agent control flow across tools, retrievers, memory, MCP, tracing, eval, and serving.
+- Answer: C
+- Explanation: NCCL is the best fit because it sits in Training and customization: Collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- Why A is wrong: Dynamo (Triton Dynamo) belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why B is wrong: NIM belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why D is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Training and customization.
+
+### Q58: An insurance claims group is preparing a production rollout. The work to finish before release is handling distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: genl-hf-svc-nccl-008
+- Domain: Fine-Tuning
+- Topic: NVIDIA service: NCCL; lifecycle: Training and customization; Which library is central to multi-GPU collective communication?
+- Difficulty: easy
+- Scope: nvidia_specific
+- Source: generated
+- A. Select TensorRT-LLM; it owns inference optimization work such as building optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT.
+- B. NCCL is the best fit for this layer: a collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- C. Choose Dynamo (Triton Dynamo); it provides a distributed inference serving stack for LLMs: disaggregated prefill/decode, KV-cache routing, multi-node scaling.
+- D. Use Nsight Compute when you need to diagnose why a known kernel is memory-bound, compute-bound, or inefficient.
+- Answer: B
+- Explanation: NCCL is the best fit because it sits in Training and customization: Collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- Why A is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Training and customization.
+- Why C is wrong: Dynamo (Triton Dynamo) belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why D is wrong: Nsight Compute belongs to Monitoring and profiling, while this scenario asks for Training and customization.
+
+### Q59: A bank fraud team is reviewing the implementation plan. The trace points to the need to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA platform layer is the right match?
+- ID: genl-hf-svc-nccl-009
+- Domain: Fine-Tuning
+- Topic: NVIDIA service: NCCL; lifecycle: Training and customization; Which library is central to multi-GPU collective communication?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose NCCL; it provides a collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- B. Use NGC when you need to pull NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- C. Select RAPIDS; it owns data preparation work such as accelerating pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- D. NeMo Customizer is the best fit for this layer: a microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- Answer: A
+- Explanation: NCCL is the best fit because it sits in Training and customization: Collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- Why B is wrong: NGC belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why C is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Training and customization.
+- Why D is wrong: NeMo Customizer is a neighboring training and customization component, but this signal asks specifically for NCCL: to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+
+### Q60: A public-sector casework team has narrowed the next engineering decision. The rollout is blocked until the team can handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs. Which NVIDIA tool should the team start with?
+- ID: genl-hf-svc-nccl-010
+- Domain: Fine-Tuning
+- Topic: NVIDIA service: NCCL; lifecycle: Training and customization; Which library is central to multi-GPU collective communication?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. NeMo Retriever is the best fit for this layer: the NVIDIA Retriever microservice family for document extraction, embeddings, indexing/search, and reranking in enterprise RAG.
+- B. Choose NGC; it provides a catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- C. Use NCCL when you need to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- D. Select NeMo Guardrails; it owns safety and guardrails work such as enforcing policy flows, safe dialog behavior, prompt-injection defenses, tool restrictions, or output checks.
+- Answer: C
+- Explanation: NCCL is the best fit because it sits in Training and customization: Collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- Why A is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Training and customization.
+- Why B is wrong: NGC belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why D is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Training and customization.
+
+### Q61: A manufacturing quality team is fixing the layer called out by the trace and design review. A data science team needs to clean and join large tabular datasets before training or indexing. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA tool should the team start with?
+- ID: genl-hf-svc-rapids-001
+- Domain: Data Preparation
+- Topic: NVIDIA service: RAPIDS; lifecycle: Data preparation; Which NVIDIA stack accelerates dataframe-style preprocessing on GPUs?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. NGC is the best fit for this layer: a catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- B. Choose RAPIDS; it provides GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- C. Use Triton Inference Server when you need to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
+- D. Select Nemotron models; it owns model selection work such as choosing a model family for NVIDIA-aligned reasoning, reward, instruction, or agentic workflows.
+- Answer: B
+- Explanation: RAPIDS is the best fit because it sits in Data preparation: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- Why A is wrong: NGC belongs to Serving and deployment, while this scenario asks for Data preparation.
+- Why C is wrong: Triton Inference Server belongs to Serving and deployment, while this scenario asks for Data preparation.
+- Why D is wrong: Nemotron models belongs to Model selection, while this scenario asks for Data preparation.
+
+### Q62: A cybersecurity response team needs to choose the right implementation surface. The blocker is accelerating pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs. Which NVIDIA service fits this requirement?
+- ID: genl-hf-svc-rapids-002
+- Domain: Data Preparation
+- Topic: NVIDIA service: RAPIDS; lifecycle: Data preparation; Which NVIDIA stack accelerates dataframe-style preprocessing on GPUs?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. NeMo Agent Toolkit is the best fit for this layer: a config-driven NAT workflow runtime for agent control flow across tools, retrievers, memory, MCP, tracing, eval, and serving.
+- B. Choose Nsight Compute; it provides a CUDA kernel profiler for detailed metrics, occupancy, memory throughput, warp behavior, and kernel bottlenecks.
+- C. Use RAPIDS when you need to accelerate pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- D. Select NeMo Guardrails; it owns safety and guardrails work such as enforcing policy flows, safe dialog behavior, prompt-injection defenses, tool restrictions, or output checks.
+- Answer: C
+- Explanation: RAPIDS is the best fit because it sits in Data preparation: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- Why A is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Data preparation.
+- Why B is wrong: Nsight Compute belongs to Monitoring and profiling, while this scenario asks for Data preparation.
+- Why D is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Data preparation.
+
+### Q63: A pharmaceutical research team is fixing the layer called out by the trace and design review. The next release blocker is running scalable quality filtering and PII cleanup before data becomes a learning artifact. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: genl-hf-svc-rapids-003
+- Domain: Data Preparation
+- Topic: NVIDIA service: RAPIDS; lifecycle: Data preparation; Which NVIDIA stack accelerates dataframe-style preprocessing on GPUs?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. NeMo Evaluator is the best fit for this layer: a microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- B. Choose Dynamo (Triton Dynamo); it provides a distributed inference serving stack for LLMs: disaggregated prefill/decode, KV-cache routing, multi-node scaling.
+- C. Use NeMo Guardrails when you need to enforce policy flows, safe dialog behavior, prompt-injection defenses, tool restrictions, or output checks.
+- D. Select RAPIDS; it owns data preparation work such as accelerating pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- Answer: D
+- Explanation: RAPIDS is the best fit because it sits in Data preparation: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- Why A is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Data preparation.
+- Why B is wrong: Dynamo (Triton Dynamo) belongs to Serving and deployment, while this scenario asks for Data preparation.
+- Why C is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Data preparation.
+
+### Q64: A global retailer is reviewing the implementation plan. The blocker is accelerating pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs. Which NVIDIA option addresses the named layer?
+- ID: genl-hf-svc-rapids-004
+- Domain: Data Preparation
+- Topic: NVIDIA service: RAPIDS; lifecycle: Data preparation; Which NVIDIA stack accelerates dataframe-style preprocessing on GPUs?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. RAPIDS is the best fit for this layer: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- B. Choose NeMo Guardrails; it provides programmable rails for controlling LLM and agent behavior across input, dialog, tool execution, retrieval, and output.
+- C. Use NGC when you need to pull NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- D. Select NIM; it owns serving and deployment work such as for packaged, supported, optimized model serving with APIs, profiles, observability, and Kubernetes/container deployment.
+- Answer: A
+- Explanation: RAPIDS is the best fit because it sits in Data preparation: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- Why B is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Data preparation.
+- Why C is wrong: NGC belongs to Serving and deployment, while this scenario asks for Data preparation.
+- Why D is wrong: NIM belongs to Serving and deployment, while this scenario asks for Data preparation.
+
+### Q65: A hospital operations team is fixing the layer called out by the trace and design review. A data science team needs to clean and join large tabular datasets before training or indexing. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: genl-hf-svc-rapids-005
+- Domain: Data Preparation
+- Topic: NVIDIA service: RAPIDS; lifecycle: Data preparation; Which NVIDIA stack accelerates dataframe-style preprocessing on GPUs?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Nemotron models is the best fit for this layer: NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- B. Choose RAPIDS; it provides GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- C. Use NeMo Framework when you need to run SFT, PEFT, LoRA/QLoRA, continued pretraining, model customization, or large-scale model recipes.
+- D. Select Nsight Compute; it owns monitoring and profiling work such as diagnosing why a known kernel is memory-bound, compute-bound, or inefficient.
+- Answer: B
+- Explanation: RAPIDS is the best fit because it sits in Data preparation: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- Why A is wrong: Nemotron models belongs to Model selection, while this scenario asks for Data preparation.
+- Why C is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for Data preparation.
+- Why D is wrong: Nsight Compute belongs to Monitoring and profiling, while this scenario asks for Data preparation.
+
+### Q66: A cybersecurity response team is reviewing the implementation plan. The implementation requirement is to accelerate pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs. Which NVIDIA service fits this requirement?
+- ID: genl-hf-svc-rapids-006
+- Domain: Data Preparation
+- Topic: NVIDIA service: RAPIDS; lifecycle: Data preparation; Which NVIDIA stack accelerates dataframe-style preprocessing on GPUs?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. NeMo Agent Toolkit is the best fit for this layer: a config-driven NAT workflow runtime for agent control flow across tools, retrievers, memory, MCP, tracing, eval, and serving.
+- B. Choose NeMo Curator; it provides a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- C. Use RAPIDS when you need to accelerate pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- D. Select Nsight Systems; it owns monitoring and profiling work such as identifying where time is going across CPU, GPU, launches, waits, and communication.
+- Answer: C
+- Explanation: RAPIDS is the best fit because it sits in Data preparation: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- Why A is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Data preparation.
+- Why B is wrong: NeMo Curator is a neighboring data preparation component, but this signal asks specifically for RAPIDS: to accelerate pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- Why D is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Data preparation.
+
+### Q67: An insurance claims group has narrowed the next engineering decision. The next release blocker is accelerating dataframe-style preprocessing and corpus cleanup on GPUs. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA tool should the team start with?
+- ID: genl-hf-svc-rapids-007
+- Domain: Data Preparation
+- Topic: NVIDIA service: RAPIDS; lifecycle: Data preparation; Which NVIDIA stack accelerates dataframe-style preprocessing on GPUs?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. NeMo Curator is the best fit for this layer: a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- B. Choose NeMo Evaluator; it provides a microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- C. Use NIM when you need to for packaged, supported, optimized model serving with APIs, profiles, observability, and Kubernetes/container deployment.
+- D. Select RAPIDS; it owns data preparation work such as accelerating pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- Answer: D
+- Explanation: RAPIDS is the best fit because it sits in Data preparation: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- Why A is wrong: NeMo Curator is a neighboring data preparation component, but this signal asks specifically for RAPIDS: to accelerate pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- Why B is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Data preparation.
+- Why C is wrong: NIM belongs to Serving and deployment, while this scenario asks for Data preparation.
+
+### Q68: A global retailer is reviewing the implementation plan. The trace points to the need to accelerate pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs. Which NVIDIA option addresses the named layer?
+- ID: genl-hf-svc-rapids-008
+- Domain: Data Preparation
+- Topic: NVIDIA service: RAPIDS; lifecycle: Data preparation; Which NVIDIA stack accelerates dataframe-style preprocessing on GPUs?
+- Difficulty: easy
+- Scope: nvidia_specific
+- Source: generated
+- A. RAPIDS is the best fit for this layer: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- B. Choose Triton Inference Server; it provides a production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- C. Use NIM Operator when you need to manage K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
+- D. Select Nemotron models; it owns model selection work such as choosing a model family for NVIDIA-aligned reasoning, reward, instruction, or agentic workflows.
+- Answer: A
+- Explanation: RAPIDS is the best fit because it sits in Data preparation: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- Why B is wrong: Triton Inference Server belongs to Serving and deployment, while this scenario asks for Data preparation.
+- Why C is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Data preparation.
+- Why D is wrong: Nemotron models belongs to Model selection, while this scenario asks for Data preparation.
+
+### Q69: A manufacturing quality team is preparing a production rollout. A data science team needs to clean and join large tabular datasets before training or indexing. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: genl-hf-svc-rapids-009
+- Domain: Data Preparation
+- Topic: NVIDIA service: RAPIDS; lifecycle: Data preparation; Which NVIDIA stack accelerates dataframe-style preprocessing on GPUs?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Dynamo (Triton Dynamo) is the best fit for this layer: a distributed inference serving stack for LLMs: disaggregated prefill/decode, KV-cache routing, multi-node scaling.
+- B. Choose RAPIDS; it provides GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- C. Use NeMo Customizer when you need to run API-driven LoRA/PEFT customization without standing up a full training stack.
+- D. Select NeMo Curator; it owns data preparation work such as preparing raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation.
+- Answer: B
+- Explanation: RAPIDS is the best fit because it sits in Data preparation: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- Why A is wrong: Dynamo (Triton Dynamo) belongs to Serving and deployment, while this scenario asks for Data preparation.
+- Why C is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Data preparation.
+- Why D is wrong: NeMo Curator is a neighboring data preparation component, but this signal asks specifically for RAPIDS: to accelerate pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+
+### Q70: A bank fraud team needs to choose the right implementation surface. The trace points to the need to accelerate pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA platform layer is the right match?
+- ID: genl-hf-svc-rapids-010
+- Domain: Data Preparation
+- Topic: NVIDIA service: RAPIDS; lifecycle: Data preparation; Which NVIDIA stack accelerates dataframe-style preprocessing on GPUs?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. Select NCCL; it owns training and customization work such as handling distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- B. NGC is the best fit for this layer: a catalog and registry for containers, models, Helm charts, resources, and deployment artifacts.
+- C. Choose Nsight Systems; it provides a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- D. Use RAPIDS when you need to accelerate pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- Answer: D
+- Explanation: RAPIDS is the best fit because it sits in Data preparation: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- Why A is wrong: NCCL belongs to Training and customization, while this scenario asks for Data preparation.
+- Why B is wrong: NGC belongs to Serving and deployment, while this scenario asks for Data preparation.
+- Why C is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Data preparation.
+
+### Q71: A public-sector casework team has narrowed the next engineering decision. Raw JSONL/Parquet/image/video/audio corpus -> Pipeline -> ScoreFilter/classifiers -> exact or fuzzy duplicate IDs -> curated output. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA service should be selected first?
+- ID: genl-hf-svc-nemo-curator-001
+- Domain: Data Preparation
+- Topic: NVIDIA service: NeMo Curator; lifecycle: Data preparation; Which NVIDIA toolkit provides Pipeline stages, classifiers, and dedup workflows for training-data curation?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. Select NIM Operator; it owns serving and deployment work such as managing K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
+- B. Nemotron models is the best fit for this layer: NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- C. Choose NeMo Curator; it provides a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- D. Use NCCL when you need to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- Answer: C
+- Explanation: NeMo Curator is the best fit because it sits in Data preparation: Pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- Why A is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Data preparation.
+- Why B is wrong: Nemotron models belongs to Model selection, while this scenario asks for Data preparation.
+- Why D is wrong: NCCL belongs to Training and customization, while this scenario asks for Data preparation.
+
+### Q72: A semiconductor design group is setting a release gate. The implementation requirement is to prepare raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation. Which NVIDIA option addresses the named layer?
+- ID: genl-hf-svc-nemo-curator-002
+- Domain: Data Preparation
+- Topic: NVIDIA service: NeMo Curator; lifecycle: Data preparation; Which NVIDIA toolkit provides Pipeline stages, classifiers, and dedup workflows for training-data curation?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose RAPIDS; it provides GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- B. Use NeMo Curator when you need to prepare raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation.
+- C. Select NeMo Customizer; it owns training and customization work such as running API-driven LoRA/PEFT customization without standing up a full training stack.
+- D. NeMo Agent Toolkit is the best fit for this layer: a config-driven NAT workflow runtime for agent control flow across tools, retrievers, memory, MCP, tracing, eval, and serving.
+- Answer: B
+- Explanation: NeMo Curator is the best fit because it sits in Data preparation: Pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- Why A is wrong: RAPIDS is a neighboring data preparation component, but this signal asks specifically for NeMo Curator: to prepare raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation.
+- Why C is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Data preparation.
+- Why D is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Data preparation.
+
+### Q73: A pharmaceutical research team has narrowed the next engineering decision. The next release blocker is deduplicating, filter, and prepare large data sets before training or indexing. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: genl-hf-svc-nemo-curator-003
+- Domain: Data Preparation
+- Topic: NVIDIA service: NeMo Curator; lifecycle: Data preparation; Which NVIDIA toolkit provides Pipeline stages, classifiers, and dedup workflows for training-data curation?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Select NeMo Curator; it owns data preparation work such as preparing raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation.
+- B. NeMo Agent Toolkit is the best fit for this layer: a config-driven NAT workflow runtime for agent control flow across tools, retrievers, memory, MCP, tracing, eval, and serving.
+- C. Choose NeMo Guardrails; it provides programmable rails for controlling LLM and agent behavior across input, dialog, tool execution, retrieval, and output.
+- D. Use RAPIDS when you need to accelerate pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- Answer: A
+- Explanation: NeMo Curator is the best fit because it sits in Data preparation: Pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- Why B is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Data preparation.
+- Why C is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Data preparation.
+- Why D is wrong: RAPIDS is a neighboring data preparation component, but this signal asks specifically for NeMo Curator: to prepare raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation.
+
+### Q74: A logistics planning team is setting a release gate. The implementation requirement is to prepare raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation. Which NVIDIA platform layer is the right match?
+- ID: genl-hf-svc-nemo-curator-004
+- Domain: Data Preparation
+- Topic: NVIDIA service: NeMo Curator; lifecycle: Data preparation; Which NVIDIA toolkit provides Pipeline stages, classifiers, and dedup workflows for training-data curation?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose Nsight Systems; it provides a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- B. Use NCCL when you need to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- C. Select Nemotron models; it owns model selection work such as choosing a model family for NVIDIA-aligned reasoning, reward, instruction, or agentic workflows.
+- D. NeMo Curator is the best fit for this layer: a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- Answer: D
+- Explanation: NeMo Curator is the best fit because it sits in Data preparation: Pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- Why A is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Data preparation.
+- Why B is wrong: NCCL belongs to Training and customization, while this scenario asks for Data preparation.
+- Why C is wrong: Nemotron models belongs to Model selection, while this scenario asks for Data preparation.
+
+### Q75: A manufacturing quality team has narrowed the next engineering decision. Raw JSONL/Parquet/image/video/audio corpus -> Pipeline -> ScoreFilter/classifiers -> exact or fuzzy duplicate IDs -> curated output. Which NVIDIA service should be selected first?
+- ID: genl-hf-svc-nemo-curator-005
+- Domain: Data Preparation
+- Topic: NVIDIA service: NeMo Curator; lifecycle: Data preparation; Which NVIDIA toolkit provides Pipeline stages, classifiers, and dedup workflows for training-data curation?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Select NIM; it owns serving and deployment work such as for packaged, supported, optimized model serving with APIs, profiles, observability, and Kubernetes/container deployment.
+- B. Nemotron models is the best fit for this layer: NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- C. Choose NeMo Curator; it provides a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- D. Use NIM Operator when you need to manage K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
+- Answer: C
+- Explanation: NeMo Curator is the best fit because it sits in Data preparation: Pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- Why A is wrong: NIM belongs to Serving and deployment, while this scenario asks for Data preparation.
+- Why B is wrong: Nemotron models belongs to Model selection, while this scenario asks for Data preparation.
+- Why D is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Data preparation.
+
+### Q76: A semiconductor design group needs to choose the right implementation surface. The trace points to the need to prepare raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation. Which NVIDIA platform layer is the right match?
+- ID: genl-hf-svc-nemo-curator-006
+- Domain: Data Preparation
+- Topic: NVIDIA service: NeMo Curator; lifecycle: Data preparation; Which NVIDIA toolkit provides Pipeline stages, classifiers, and dedup workflows for training-data curation?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose NeMo Framework; it provides a framework for training, customizing, aligning, and evaluating generative AI models.
+- B. Use NeMo Curator when you need to prepare raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation.
+- C. Select Nsight Compute; it owns monitoring and profiling work such as diagnosing why a known kernel is memory-bound, compute-bound, or inefficient.
+- D. RAPIDS is the best fit for this layer: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- Answer: B
+- Explanation: NeMo Curator is the best fit because it sits in Data preparation: Pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- Why A is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for Data preparation.
+- Why C is wrong: Nsight Compute belongs to Monitoring and profiling, while this scenario asks for Data preparation.
+- Why D is wrong: RAPIDS is a neighboring data preparation component, but this signal asks specifically for NeMo Curator: to prepare raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation.
+
+### Q77: An automotive support team is preparing a production rollout. The next release blocker is accelerating dataframe-style preprocessing and corpus cleanup on GPUs. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA service should be selected first?
+- ID: genl-hf-svc-nemo-curator-007
+- Domain: Data Preparation
+- Topic: NVIDIA service: NeMo Curator; lifecycle: Data preparation; Which NVIDIA toolkit provides Pipeline stages, classifiers, and dedup workflows for training-data curation?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Select NeMo Curator; it owns data preparation work such as preparing raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation.
+- B. NeMo Customizer is the best fit for this layer: a microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- C. Choose Nsight Compute; it provides a CUDA kernel profiler for detailed metrics, occupancy, memory throughput, warp behavior, and kernel bottlenecks.
+- D. Use NCCL when you need to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- Answer: A
+- Explanation: NeMo Curator is the best fit because it sits in Data preparation: Pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- Why B is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Data preparation.
+- Why C is wrong: Nsight Compute belongs to Monitoring and profiling, while this scenario asks for Data preparation.
+- Why D is wrong: NCCL belongs to Training and customization, while this scenario asks for Data preparation.
+
+### Q78: A logistics planning team needs to choose the right implementation surface. The blocker is preparing raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation. Which NVIDIA platform layer is the right match?
+- ID: genl-hf-svc-nemo-curator-008
+- Domain: Data Preparation
+- Topic: NVIDIA service: NeMo Curator; lifecycle: Data preparation; Which NVIDIA toolkit provides Pipeline stages, classifiers, and dedup workflows for training-data curation?
+- Difficulty: easy
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose NeMo Customizer; it provides a microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- B. Use NCCL when you need to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- C. Select NeMo Guardrails; it owns safety and guardrails work such as enforcing policy flows, safe dialog behavior, prompt-injection defenses, tool restrictions, or output checks.
+- D. NeMo Curator is the best fit for this layer: a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- Answer: D
+- Explanation: NeMo Curator is the best fit because it sits in Data preparation: Pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- Why A is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Data preparation.
+- Why B is wrong: NCCL belongs to Training and customization, while this scenario asks for Data preparation.
+- Why C is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Data preparation.
+
+### Q79: A public-sector casework team is fixing the layer called out by the trace and design review. Raw JSONL/Parquet/image/video/audio corpus -> Pipeline -> ScoreFilter/classifiers -> exact or fuzzy duplicate IDs -> curated output. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: genl-hf-svc-nemo-curator-009
+- Domain: Data Preparation
+- Topic: NVIDIA service: NeMo Curator; lifecycle: Data preparation; Which NVIDIA toolkit provides Pipeline stages, classifiers, and dedup workflows for training-data curation?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Select Nsight Compute; it owns monitoring and profiling work such as diagnosing why a known kernel is memory-bound, compute-bound, or inefficient.
+- B. NeMo Customizer is the best fit for this layer: a microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- C. Choose NeMo Curator; it provides a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- D. Use Triton Inference Server when you need to run multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
+- Answer: C
+- Explanation: NeMo Curator is the best fit because it sits in Data preparation: Pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- Why A is wrong: Nsight Compute belongs to Monitoring and profiling, while this scenario asks for Data preparation.
+- Why B is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Data preparation.
+- Why D is wrong: Triton Inference Server belongs to Serving and deployment, while this scenario asks for Data preparation.
+
+### Q80: A cybersecurity response team is setting a release gate. The blocker is preparing raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA service fits this requirement?
+- ID: genl-hf-svc-nemo-curator-010
+- Domain: Data Preparation
+- Topic: NVIDIA service: NeMo Curator; lifecycle: Data preparation; Which NVIDIA toolkit provides Pipeline stages, classifiers, and dedup workflows for training-data curation?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NeMo Curator when you need to prepare raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation.
+- B. Select NCCL; it owns training and customization work such as handling distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- C. Nsight Systems is the best fit for this layer: a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- D. Choose NeMo Framework; it provides a framework for training, customizing, aligning, and evaluating generative AI models.
+- Answer: A
+- Explanation: NeMo Curator is the best fit because it sits in Data preparation: Pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- Why B is wrong: NCCL belongs to Training and customization, while this scenario asks for Data preparation.
+- Why C is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Data preparation.
+- Why D is wrong: NeMo Framework belongs to Training and customization, while this scenario asks for Data preparation.
+
+### Q81: A cybersecurity response team needs to choose the right implementation surface. The trace points to the need to run API-driven LoRA/PEFT customization without standing up a full training stack. Which NVIDIA platform layer is the right match?
+- ID: genl-hf-svc-nemo-customizer-001
+- Domain: Fine-Tuning
+- Topic: NVIDIA service: NeMo Customizer; lifecycle: Training and customization; Which NVIDIA microservice provides API-driven PEFT customization?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. NIM Operator is the best fit for this layer: a Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
+- B. Choose NeMo Customizer; it provides a microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- C. Use NeMo Guardrails when you need to enforce policy flows, safe dialog behavior, prompt-injection defenses, tool restrictions, or output checks.
+- D. Select TensorRT-LLM; it owns inference optimization work such as building optimized LLM engines, in-flight batching, paged KV cache, fused attention, quantization, or low TTFT.
+- Answer: B
+- Explanation: NeMo Customizer is the best fit because it sits in Training and customization: Microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- Why A is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why C is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Training and customization.
+- Why D is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Training and customization.
+
+### Q82: A manufacturing quality team is preparing a production rollout. The rollout is blocked until the team can run API-driven LoRA/PEFT customization without standing up a full training stack. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: genl-hf-svc-nemo-customizer-002
+- Domain: Fine-Tuning
+- Topic: NVIDIA service: NeMo Customizer; lifecycle: Training and customization; Which NVIDIA microservice provides API-driven PEFT customization?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. NIM Operator is the best fit for this layer: a Kubernetes operator for managing NIM deployments: lifecycle, autoscaling, model profiles, rolling updates.
+- B. Choose NeMo Curator; it provides a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- C. Use NeMo Customizer when you need to run API-driven LoRA/PEFT customization without standing up a full training stack.
+- D. Select Dynamo (Triton Dynamo); it owns serving and deployment work such as supporting disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale.
+- Answer: C
+- Explanation: NeMo Customizer is the best fit because it sits in Training and customization: Microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- Why A is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why B is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Training and customization.
+- Why D is wrong: Dynamo (Triton Dynamo) belongs to Serving and deployment, while this scenario asks for Training and customization.
+
+### Q83: A logistics planning team is setting a release gate. The implementation requirement is to run API-driven LoRA/PEFT customization without standing up a full training stack. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA service fits this requirement?
+- ID: genl-hf-svc-nemo-customizer-003
+- Domain: Fine-Tuning
+- Topic: NVIDIA service: NeMo Customizer; lifecycle: Training and customization; Which NVIDIA microservice provides API-driven PEFT customization?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. NIM is the best fit for this layer: inference microservices for deploying optimized models with production APIs and model profiles.
+- B. Choose NeMo Curator; it provides a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- C. Use NeMo Evaluator when you need to run standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge.
+- D. Select NeMo Customizer; it owns training and customization work such as running API-driven LoRA/PEFT customization without standing up a full training stack.
+- Answer: D
+- Explanation: NeMo Customizer is the best fit because it sits in Training and customization: Microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- Why A is wrong: NIM belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why B is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Training and customization.
+- Why C is wrong: NeMo Evaluator belongs to Evaluation, while this scenario asks for Training and customization.
+
+### Q84: An insurance claims group is preparing a production rollout. The work to finish before release is running API-driven LoRA/PEFT customization without standing up a full training stack. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: genl-hf-svc-nemo-customizer-004
+- Domain: Fine-Tuning
+- Topic: NVIDIA service: NeMo Customizer; lifecycle: Training and customization; Which NVIDIA microservice provides API-driven PEFT customization?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. NeMo Customizer is the best fit for this layer: a microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- B. Choose NeMo Agent Toolkit; it provides a config-driven NAT workflow runtime for agent control flow across tools, retrievers, memory, MCP, tracing, eval, and serving.
+- C. Use Nsight Systems when you need to identify where time is going across CPU, GPU, launches, waits, and communication.
+- D. Select RAPIDS; it owns data preparation work such as accelerating pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- Answer: A
+- Explanation: NeMo Customizer is the best fit because it sits in Training and customization: Microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- Why B is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Training and customization.
+- Why C is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Training and customization.
+- Why D is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Training and customization.
+
+### Q85: A semiconductor design group is setting a release gate. The trace points to the need to run API-driven LoRA/PEFT customization without standing up a full training stack. What is the best first implementation choice?
+- ID: genl-hf-svc-nemo-customizer-005
+- Domain: Fine-Tuning
+- Topic: NVIDIA service: NeMo Customizer; lifecycle: Training and customization; Which NVIDIA microservice provides API-driven PEFT customization?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. NCCL is the best fit for this layer: a collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- B. Choose NeMo Customizer; it provides a microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- C. Use NeMo Curator when you need to prepare raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation.
+- D. Select NGC; it owns serving and deployment work such as pulling NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- Answer: B
+- Explanation: NeMo Customizer is the best fit because it sits in Training and customization: Microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- Why A is wrong: NCCL is a neighboring training and customization component, but this signal asks specifically for NeMo Customizer: to run API-driven LoRA/PEFT customization without standing up a full training stack.
+- Why C is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Training and customization.
+- Why D is wrong: NGC belongs to Serving and deployment, while this scenario asks for Training and customization.
+
+### Q86: A hospital operations team is preparing a production rollout. The rollout is blocked until the team can run API-driven LoRA/PEFT customization without standing up a full training stack. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: genl-hf-svc-nemo-customizer-006
+- Domain: Fine-Tuning
+- Topic: NVIDIA service: NeMo Customizer; lifecycle: Training and customization; Which NVIDIA microservice provides API-driven PEFT customization?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. NIM is the best fit for this layer: inference microservices for deploying optimized models with production APIs and model profiles.
+- B. Choose NeMo Retriever; it provides the NVIDIA Retriever microservice family for document extraction, embeddings, indexing/search, and reranking in enterprise RAG.
+- C. Use NeMo Customizer when you need to run API-driven LoRA/PEFT customization without standing up a full training stack.
+- D. Select NGC; it owns serving and deployment work such as pulling NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- Answer: C
+- Explanation: NeMo Customizer is the best fit because it sits in Training and customization: Microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- Why A is wrong: NIM belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why B is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Training and customization.
+- Why D is wrong: NGC belongs to Serving and deployment, while this scenario asks for Training and customization.
+
+### Q87: A global retailer needs to choose the right implementation surface. The blocker is running API-driven LoRA/PEFT customization without standing up a full training stack. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA platform layer is the right match?
+- ID: genl-hf-svc-nemo-customizer-007
+- Domain: Fine-Tuning
+- Topic: NVIDIA service: NeMo Customizer; lifecycle: Training and customization; Which NVIDIA microservice provides API-driven PEFT customization?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. NeMo Framework is the best fit for this layer: a framework for training, customizing, aligning, and evaluating generative AI models.
+- B. Choose NIM; it provides inference microservices for deploying optimized models with production APIs and model profiles.
+- C. Use Nemotron models when you need to choose a model family for NVIDIA-aligned reasoning, reward, instruction, or agentic workflows.
+- D. Select NeMo Customizer; it owns training and customization work such as running API-driven LoRA/PEFT customization without standing up a full training stack.
+- Answer: D
+- Explanation: NeMo Customizer is the best fit because it sits in Training and customization: Microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- Why A is wrong: NeMo Framework is a neighboring training and customization component, but this signal asks specifically for NeMo Customizer: to run API-driven LoRA/PEFT customization without standing up a full training stack.
+- Why B is wrong: NIM belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why C is wrong: Nemotron models belongs to Model selection, while this scenario asks for Training and customization.
+
+### Q88: An insurance claims group is fixing the layer called out by the trace and design review. The work to finish before release is running API-driven LoRA/PEFT customization without standing up a full training stack. What should they choose before changing prompts, models, or infrastructure elsewhere?
+- ID: genl-hf-svc-nemo-customizer-008
+- Domain: Fine-Tuning
+- Topic: NVIDIA service: NeMo Customizer; lifecycle: Training and customization; Which NVIDIA microservice provides API-driven PEFT customization?
+- Difficulty: easy
+- Scope: nvidia_specific
+- Source: generated
+- A. NeMo Customizer is the best fit for this layer: a microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- B. Choose RAPIDS; it provides GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- C. Use NIM Operator when you need to manage K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
+- D. Select Triton Inference Server; it owns serving and deployment work such as running multi-framework serving, dynamic batching, model ensembles, instance groups, and production inference APIs.
+- Answer: A
+- Explanation: NeMo Customizer is the best fit because it sits in Training and customization: Microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- Why B is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Training and customization.
+- Why C is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why D is wrong: Triton Inference Server belongs to Serving and deployment, while this scenario asks for Training and customization.
+
+### Q89: A cybersecurity response team is reviewing the implementation plan. The blocker is running API-driven LoRA/PEFT customization without standing up a full training stack. What is the best first implementation choice?
+- ID: genl-hf-svc-nemo-customizer-009
+- Domain: Fine-Tuning
+- Topic: NVIDIA service: NeMo Customizer; lifecycle: Training and customization; Which NVIDIA microservice provides API-driven PEFT customization?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Triton Inference Server is the best fit for this layer: a production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- B. Choose NeMo Customizer; it provides a microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- C. Use NGC when you need to pull NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- D. Select NIM Operator; it owns serving and deployment work such as managing K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
+- Answer: B
+- Explanation: NeMo Customizer is the best fit because it sits in Training and customization: Microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- Why A is wrong: Triton Inference Server belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why C is wrong: NGC belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why D is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Training and customization.
+
+### Q90: A hospital operations team is fixing the layer called out by the trace and design review. The rollout is blocked until the team can run API-driven LoRA/PEFT customization without standing up a full training stack. Which NVIDIA service should be selected first?
+- ID: genl-hf-svc-nemo-customizer-010
+- Domain: Fine-Tuning
+- Topic: NVIDIA service: NeMo Customizer; lifecycle: Training and customization; Which NVIDIA microservice provides API-driven PEFT customization?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. Select NIM Operator; it owns serving and deployment work such as managing K8s-native NIM lifecycle, autoscaling, or rolling model upgrades.
+- B. Nsight Systems is the best fit for this layer: a system-wide profiler for CPU/GPU timelines, CUDA API calls, kernel gaps, data movement, and synchronization.
+- C. Choose TensorRT-LLM; it provides an optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- D. Use NeMo Customizer when you need to run API-driven LoRA/PEFT customization without standing up a full training stack.
+- Answer: D
+- Explanation: NeMo Customizer is the best fit because it sits in Training and customization: Microservice for parameter-efficient model customization (LoRA, PEFT) with managed lifecycle and APIs.
+- Why A is wrong: NIM Operator belongs to Serving and deployment, while this scenario asks for Training and customization.
+- Why B is wrong: Nsight Systems belongs to Monitoring and profiling, while this scenario asks for Training and customization.
+- Why C is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Training and customization.
+
+### Q91: A cybersecurity response team needs to choose the right implementation surface. The implementation requirement is to run standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge. Which NVIDIA option addresses the named layer?
+- ID: genl-hf-svc-nemo-evaluator-001
+- Domain: Evaluation
+- Topic: NVIDIA service: NeMo Evaluator; lifecycle: Evaluation; Which NVIDIA microservice runs LLM evaluation pipelines and judge models?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NeMo Retriever when you need to connect proprietary data to RAG: parse documents, embed chunks/queries, index/search, apply permissions, or rerank candidate passages.
+- B. Select NGC; it owns serving and deployment work such as pulling NVIDIA containers, model artifacts, Helm charts, registry access, or reproducible deployment assets.
+- C. NCCL is the best fit for this layer: a collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- D. Choose NeMo Evaluator; it provides a microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- Answer: D
+- Explanation: NeMo Evaluator is the best fit because it sits in Evaluation: Microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- Why A is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Evaluation.
+- Why B is wrong: NGC belongs to Serving and deployment, while this scenario asks for Evaluation.
+- Why C is wrong: NCCL belongs to Training and customization, while this scenario asks for Evaluation.
+
+### Q92: A hospital operations team has narrowed the next engineering decision. The rollout is blocked until the team can run standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge. Which NVIDIA product owns this requirement?
+- ID: genl-hf-svc-nemo-evaluator-002
+- Domain: Evaluation
+- Topic: NVIDIA service: NeMo Evaluator; lifecycle: Evaluation; Which NVIDIA microservice runs LLM evaluation pipelines and judge models?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NeMo Evaluator when you need to run standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge.
+- B. Select Dynamo (Triton Dynamo); it owns serving and deployment work such as supporting disaggregated prefill/decode, KV-cache-aware routing, or multi-node LLM serving at scale.
+- C. NCCL is the best fit for this layer: a collective communication library for multi-GPU and multi-node all-reduce, all-gather, reduce-scatter, and all-to-all.
+- D. Choose TensorRT-LLM; it provides an optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- Answer: A
+- Explanation: NeMo Evaluator is the best fit because it sits in Evaluation: Microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- Why B is wrong: Dynamo (Triton Dynamo) belongs to Serving and deployment, while this scenario asks for Evaluation.
+- Why C is wrong: NCCL belongs to Training and customization, while this scenario asks for Evaluation.
+- Why D is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Evaluation.
+
+### Q93: A logistics planning team is reviewing the implementation plan. The implementation requirement is to run standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA platform layer is the right match?
+- ID: genl-hf-svc-nemo-evaluator-003
+- Domain: Evaluation
+- Topic: NVIDIA service: NeMo Evaluator; lifecycle: Evaluation; Which NVIDIA microservice runs LLM evaluation pipelines and judge models?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NIM when you need to for packaged, supported, optimized model serving with APIs, profiles, observability, and Kubernetes/container deployment.
+- B. Select NeMo Evaluator; it owns evaluation work such as running standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge.
+- C. TensorRT-LLM is the best fit for this layer: an optimized inference stack for LLM engines, attention kernels, quantization, paged KV cache, and high-throughput generation.
+- D. Choose NeMo Agent Toolkit; it provides a config-driven NAT workflow runtime for agent control flow across tools, retrievers, memory, MCP, tracing, eval, and serving.
+- Answer: B
+- Explanation: NeMo Evaluator is the best fit because it sits in Evaluation: Microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- Why A is wrong: NIM belongs to Serving and deployment, while this scenario asks for Evaluation.
+- Why C is wrong: TensorRT-LLM belongs to Inference optimization, while this scenario asks for Evaluation.
+- Why D is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Evaluation.
+
+### Q94: A pharmaceutical research team is preparing a production rollout. The work to finish before release is running standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA product owns this requirement?
+- ID: genl-hf-svc-nemo-evaluator-004
+- Domain: Evaluation
+- Topic: NVIDIA service: NeMo Evaluator; lifecycle: Evaluation; Which NVIDIA microservice runs LLM evaluation pipelines and judge models?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NIM when you need to for packaged, supported, optimized model serving with APIs, profiles, observability, and Kubernetes/container deployment.
+- B. Select NeMo Curator; it owns data preparation work such as preparing raw data as training/tuning/eval data: Pipeline stages, quality filters, classifier scores, PII/safety/poisoning checks, exact/fuzzy dedup, or multimodal curation.
+- C. NeMo Evaluator is the best fit for this layer: a microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- D. Choose NeMo Guardrails; it provides programmable rails for controlling LLM and agent behavior across input, dialog, tool execution, retrieval, and output.
+- Answer: C
+- Explanation: NeMo Evaluator is the best fit because it sits in Evaluation: Microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- Why A is wrong: NIM belongs to Serving and deployment, while this scenario asks for Evaluation.
+- Why B is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Evaluation.
+- Why D is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Evaluation.
+
+### Q95: A cybersecurity response team needs to choose the right implementation surface. The implementation requirement is to run standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge. Which NVIDIA option addresses the named layer?
+- ID: genl-hf-svc-nemo-evaluator-005
+- Domain: Evaluation
+- Topic: NVIDIA service: NeMo Evaluator; lifecycle: Evaluation; Which NVIDIA microservice runs LLM evaluation pipelines and judge models?
+- Difficulty: medium
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NeMo Customizer when you need to run API-driven LoRA/PEFT customization without standing up a full training stack.
+- B. Select NeMo Guardrails; it owns safety and guardrails work such as enforcing policy flows, safe dialog behavior, prompt-injection defenses, tool restrictions, or output checks.
+- C. NeMo Curator is the best fit for this layer: a pipeline/stage toolkit for curating text, image, video, and audio datasets before training: filters, classifiers, exact/fuzzy dedup, and multimodal processors.
+- D. Choose NeMo Evaluator; it provides a microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- Answer: D
+- Explanation: NeMo Evaluator is the best fit because it sits in Evaluation: Microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- Why A is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Evaluation.
+- Why B is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Evaluation.
+- Why C is wrong: NeMo Curator belongs to Data preparation, while this scenario asks for Evaluation.
+
+### Q96: A public-sector casework team has narrowed the next engineering decision. The rollout is blocked until the team can run standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA tool should the team start with?
+- ID: genl-hf-svc-nemo-evaluator-006
+- Domain: Evaluation
+- Topic: NVIDIA service: NeMo Evaluator; lifecycle: Evaluation; Which NVIDIA microservice runs LLM evaluation pipelines and judge models?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NeMo Evaluator when you need to run standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge.
+- B. Select NeMo Guardrails; it owns safety and guardrails work such as enforcing policy flows, safe dialog behavior, prompt-injection defenses, tool restrictions, or output checks.
+- C. Triton Inference Server is the best fit for this layer: a production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- D. Choose NeMo Agent Toolkit; it provides a config-driven NAT workflow runtime for agent control flow across tools, retrievers, memory, MCP, tracing, eval, and serving.
+- Answer: A
+- Explanation: NeMo Evaluator is the best fit because it sits in Evaluation: Microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- Why B is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Evaluation.
+- Why C is wrong: Triton Inference Server belongs to Serving and deployment, while this scenario asks for Evaluation.
+- Why D is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Evaluation.
+
+### Q97: A logistics planning team is reviewing the implementation plan. The implementation requirement is to run standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge. The team must avoid solving this with the wrong lifecycle layer. Which NVIDIA platform layer is the right match?
+- ID: genl-hf-svc-nemo-evaluator-007
+- Domain: Evaluation
+- Topic: NVIDIA service: NeMo Evaluator; lifecycle: Evaluation; Which NVIDIA microservice runs LLM evaluation pipelines and judge models?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NeMo Customizer when you need to run API-driven LoRA/PEFT customization without standing up a full training stack.
+- B. Select NeMo Evaluator; it owns evaluation work such as running standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge.
+- C. RAPIDS is the best fit for this layer: GPU-accelerated data science libraries for dataframe, graph, ML, and vector-search-adjacent preprocessing workflows.
+- D. Choose NeMo Retriever; it provides the NVIDIA Retriever microservice family for document extraction, embeddings, indexing/search, and reranking in enterprise RAG.
+- Answer: B
+- Explanation: NeMo Evaluator is the best fit because it sits in Evaluation: Microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- Why A is wrong: NeMo Customizer belongs to Training and customization, while this scenario asks for Evaluation.
+- Why C is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Evaluation.
+- Why D is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Evaluation.
+
+### Q98: An automotive support team has narrowed the next engineering decision. The work to finish before release is running standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA tool should the team start with?
+- ID: genl-hf-svc-nemo-evaluator-008
+- Domain: Evaluation
+- Topic: NVIDIA service: NeMo Evaluator; lifecycle: Evaluation; Which NVIDIA microservice runs LLM evaluation pipelines and judge models?
+- Difficulty: easy
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NeMo Guardrails when you need to enforce policy flows, safe dialog behavior, prompt-injection defenses, tool restrictions, or output checks.
+- B. Select RAPIDS; it owns data preparation work such as accelerating pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- C. NeMo Evaluator is the best fit for this layer: a microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- D. Choose Nsight Compute; it provides a CUDA kernel profiler for detailed metrics, occupancy, memory throughput, warp behavior, and kernel bottlenecks.
+- Answer: C
+- Explanation: NeMo Evaluator is the best fit because it sits in Evaluation: Microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- Why A is wrong: NeMo Guardrails belongs to Safety and guardrails, while this scenario asks for Evaluation.
+- Why B is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Evaluation.
+- Why D is wrong: Nsight Compute belongs to Monitoring and profiling, while this scenario asks for Evaluation.
+
+### Q99: A bank fraud team is reviewing the implementation plan. The trace points to the need to run standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge. What is the best first implementation choice?
+- ID: genl-hf-svc-nemo-evaluator-009
+- Domain: Evaluation
+- Topic: NVIDIA service: NeMo Evaluator; lifecycle: Evaluation; Which NVIDIA microservice runs LLM evaluation pipelines and judge models?
+- Difficulty: hard
+- Scope: nvidia_specific
+- Source: generated
+- A. Use NCCL when you need to handle distributed training communication, tensor/data/expert parallel collectives, scaling failures, or all-reduce hangs.
+- B. Select RAPIDS; it owns data preparation work such as accelerating pandas-like preprocessing, feature engineering, graph analytics, or large data prep on GPUs.
+- C. Triton Inference Server is the best fit for this layer: a production inference server for multiple frameworks, model repositories, dynamic batching, ensembles, and HTTP/gRPC APIs.
+- D. Choose NeMo Evaluator; it provides a microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- Answer: D
+- Explanation: NeMo Evaluator is the best fit because it sits in Evaluation: Microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- Why A is wrong: NCCL belongs to Training and customization, while this scenario asks for Evaluation.
+- Why B is wrong: RAPIDS belongs to Data preparation, while this scenario asks for Evaluation.
+- Why C is wrong: Triton Inference Server belongs to Serving and deployment, while this scenario asks for Evaluation.
+
+### Q100: A manufacturing quality team has narrowed the next engineering decision. The rollout is blocked until the team can run standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge. The team wants the choice that acts at this layer, not a neighboring one. Which NVIDIA service should be selected first?
+- ID: genl-hf-svc-nemo-evaluator-010
+- Domain: Evaluation
+- Topic: NVIDIA service: NeMo Evaluator; lifecycle: Evaluation; Which NVIDIA microservice runs LLM evaluation pipelines and judge models?
+- Difficulty: expert
+- Scope: nvidia_specific
+- Source: generated
+- A. Choose Nemotron models; it provides NVIDIA model families used for reasoning, instruction following, reward modeling, and enterprise AI workflows.
+- B. Use NeMo Evaluator when you need to run standardized LLM/agent eval pipelines, regression suites, or LLM-as-judge.
+- C. Select NeMo Agent Toolkit; it owns agent orchestration work such as a workflow must route requests, call tools/retrievers/memory, run sequential or parallel branches, expose an API/MCP server, or evaluate/profile agent traces.
+- D. NeMo Retriever is the best fit for this layer: the NVIDIA Retriever microservice family for document extraction, embeddings, indexing/search, and reranking in enterprise RAG.
+- Answer: B
+- Explanation: NeMo Evaluator is the best fit because it sits in Evaluation: Microservice for LLM and agent evaluation: benchmarks, LLM-as-judge, human review, regression scoring.
+- Why A is wrong: Nemotron models belongs to Model selection, while this scenario asks for Evaluation.
+- Why C is wrong: NeMo Agent Toolkit belongs to Agent orchestration, while this scenario asks for Evaluation.
+- Why D is wrong: NeMo Retriever belongs to RAG and retrieval, while this scenario asks for Evaluation.

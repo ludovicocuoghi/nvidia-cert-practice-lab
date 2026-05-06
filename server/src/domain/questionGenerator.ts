@@ -155,6 +155,7 @@ const QUESTION_FORMAT_INSTRUCTIONS = `You generate scenario-based, Professional-
 - Topic: <specific subtopic>
 - Exam: <NCP-GENL or NCP-AAI>
 - Difficulty: <medium | hard | advanced | expert>
+- Scope: <general_concept | nvidia_specific>
 - A. <plausible distractor>
 - B. <plausible distractor>
 - C. <plausible distractor>
@@ -193,6 +194,7 @@ Review each question block on these criteria:
 7. CALIBRATION: Difficulty matches Professional level (engineer with 2–3 years LLM/agent experience). Reject if it's associate-level recall.
 8. WHY-WRONG: Has a "Why <letter> is wrong" line for every wrong option. Four-option question = exactly three "Why X is wrong" lines.
 9. ANSWER VARIANCE: Within the batch, correct letters should vary across A/B/C/D. Flag if all answers in the batch are the same letter.
+10. SCOPE: Includes "- Scope: general_concept" for broad cert knowledge or "- Scope: nvidia_specific" when NVIDIA tools/platforms are central.
 
 For each block return:
 - verdict: "accept" | "fix" | "reject"

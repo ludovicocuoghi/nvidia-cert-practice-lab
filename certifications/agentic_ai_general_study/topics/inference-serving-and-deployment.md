@@ -6,9 +6,51 @@ status: populated
 
 # Inference Serving and Deployment
 
+## Actual implementation / Pattern you use
+
+```bash
+curl -s https://model-gateway.example/v1/chat/completions \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "X-Model-Route: approved-agent-model-v3" \
+  -d '{
+    "model": "approved-agent-model-v3",
+    "messages": [{"role": "user", "content": "Summarize the case"}],
+    "stream": true
+  }'
+```
+
+```yaml
+deployment:
+  artifact: base_model_or_adapter
+  endpoint: model_api
+  gateway: route_canary_fallback_rate_limit
+  scale_on: [queue_depth, concurrency, ttft_ms, p95_latency_ms, error_rate]
+  quality_gates: [task_success, groundedness, safety, regression]
+```
+
+| Layer | Owns | NVIDIA example when product-specific |
+|---|---|---|
+| Model artifact | Checkpoint, adapter, tokenizer, profile, approval | Nemotron model, NGC artifact |
+| Runtime/engine | How tokens are executed efficiently | TensorRT-LLM |
+| Endpoint | Callable API, health, auth, version | NIM |
+| Serving gateway | Routing, batching, fallback, canary, metrics | Triton, NIM Operator, Dynamo |
+| Application agent | Tools, memory, retrieval, policy, state | NeMo Agent Toolkit |
+
+## Exam coverage map
+
+Use this page first for these NCP-AAI sections:
+
+| NCP-AAI section | Why this page matters |
+|---|---|
+| Deployment and Scaling | Covers endpoints, canary, rollback, autoscaling, queueing, batching, and separate scale lanes. |
+| Run, Monitor, and Maintain | Covers health checks, p95/p99, errors, traces, incident response, and rollback evidence. |
+| NVIDIA Platform Implementation | Maps generic endpoint/runtime/gateway ideas to NIM, NIM Operator, Triton, TensorRT-LLM, and Dynamo. |
+| Agent Development | Clarifies that agents call model APIs; the model endpoint is not the orchestrator. |
+
 ## What to study first
 
 - **Core idea:** How models become production APIs, how traffic is routed, and how rollouts, batching, fallback, and scaling work.
+- **Read first for traffic clues:** `Latency, Throughput, and Traffic Control` defines p50, p95, p99, TTFT, queue delay, throughput, concurrency, batching, backpressure, circuit breakers, bulkheads, canary, blue-green, and rollback.
 - **Use it when:** The scenario mentions endpoints, APIs, containers, model servers, canaries, fallback, batching, autoscaling, or production traffic.
 - **Study first:** A **model artifact** is the approved checkpoint/adapter/profile
 - an **endpoint** runs it behind an API
@@ -85,6 +127,26 @@ Deployment gates combine operational metrics with quality gates: a faster endpoi
 | 1,000 users but slow first token | Endpoint/profile trace: cold start, queue, prefill, retrieval | Assume user count alone means horizontal scaling |
 | 1 million users with rising queue depth | Gateway, autoscaling, rate limits, serving lanes | Put every request through one shared queue |
 | Chat UX feels slow | TTFT, inter-token latency, streaming behavior | Measure only total response time |
+
+### Deep dive: scaling signals
+
+| Symptom | Likely layer | Useful fix |
+|---|---|---|
+| High time to first token | Queueing, cold start, prefill, long context, retrieval/tool wait | Warm pools, context trimming, route split, prefill optimization, retrieval trace |
+| Low tokens per second | Decode/runtime efficiency | Batching, quantization, TensorRT-LLM-style runtime tuning, smaller model |
+| p50 fine but p99 bad | Tail latency from queues, retries, slow tools, long contexts | Stage-level trace, timeouts, backpressure, separate lanes |
+| GPU idle gaps | CPU preprocessing, launch overhead, synchronization, tool waits | Timeline profiling before kernel tuning |
+| Vector DB overloaded | Retrieval layer, not model endpoint | Cache, filter earlier, scale index, rerank smaller candidate set |
+| New version fails only for some users | Rollout/quality gate | Canary, shadow eval, rollback with versioned traces |
+
+### Deployment traps
+
+| Trap answer | Better answer |
+|---|---|
+| "Add GPUs" for every latency issue | Identify whether the bottleneck is retrieval, tools, prefill, decode, guardrails, queues, or GPU |
+| "Use TensorRT-LLM" when the issue is tool retries | Fix orchestration and retry policy |
+| "Use NIM" to design the agent workflow | Use NIM for the model endpoint; orchestration is a separate layer |
+| "Autoscale by registered users" | Scale by request rate, concurrency, queue depth, token shape, and tail latency |
 
 ### Hands-on checks
 

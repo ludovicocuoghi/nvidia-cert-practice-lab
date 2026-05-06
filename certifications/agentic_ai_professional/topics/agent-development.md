@@ -21,6 +21,10 @@ status: populated
 
 This page is the NCP-AAI exam lens for building agents. Keep tool-wrapper, workflow, reliability, and integration knowledge when it is needed for the NVIDIA Agentic AI blueprint. Put the reusable vendor-neutral version in `Agentic AI General Study -> Tooling, Orchestration, and Memory`; keep NVIDIA service cues here.
 
+## General Study first
+
+Read `Agentic AI General Study -> Tooling, Orchestration, and Memory`, then skim `Agentic AI General Study -> Agent Lifecycle and Architecture`. Use this overlay to recognize official-domain wording about prompts, APIs, tools, structured outputs, orchestration frameworks, retries, graceful failure, and NVIDIA Agent Toolkit/Guardrails choices.
+
 ## Core ideas you must hold in your head
 
 - **Tool safety** happens in wrappers, not prompts. Query validation layers, **idempotency keys**, sandboxed execution, **tool preconditions** gated on workflow state — these are deterministic controls. Prompt instructions are not.

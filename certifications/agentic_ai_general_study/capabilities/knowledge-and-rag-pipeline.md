@@ -6,6 +6,17 @@ source_lens: general-study
 
 # Knowledge and RAG Pipeline
 
+## Actual implementation / How you use it
+
+```text
+ingest: docs -> parse/OCR -> chunk -> metadata/ACL -> embed -> index
+query: user+identity -> filters -> dense+sparse search -> rerank -> context -> answer+citation
+```
+
+| Input | Pipeline decision | Output |
+|---|---|---|
+| Query, identity, tenant, corpus, metadata | Retrieve only permitted current evidence, then rerank and pack context | Grounded answer, citations, retrieval trace, and empty-evidence behavior |
+
 ## What to study first
 
 - **Core idea:** Build the **query-time retrieval path** that finds permitted evidence, ranks it, packs it into context, and makes the model answer with support from sources.

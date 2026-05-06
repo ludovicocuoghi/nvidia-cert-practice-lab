@@ -24,6 +24,10 @@ status: populated
 
 This page is the NCP-AAI exam lens for human oversight. Keep risk-based oversight and UX patterns needed for the blueprint, but the reusable governance model belongs in `Agentic AI General Study -> Human Oversight and Governance`. NVIDIA-specific implementation cues and decision traps stay here.
 
+## General Study first
+
+Read `Agentic AI General Study -> Human Oversight and Governance` and `Agentic AI General Study -> Human Review and Governance Console`. Use this overlay for official-domain wording about intuitive human-agent interaction, feedback loops, HITL approval, human-on-the-loop monitoring, escalation, trust, accountability, and audit evidence.
+
 ## Core ideas you must hold in your head
 
 - **Risk-based human-in-the-loop**, not all-or-nothing. Auto-approve low-risk reversible actions; require human approval for high-impact or low-confidence actions; sample for audit. "Approve everything" and "approve nothing" are both wrong.

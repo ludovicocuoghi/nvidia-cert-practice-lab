@@ -21,6 +21,10 @@ status: populated
 
 This page is the NCP-AAI exam lens for safety, ethics, and compliance. Keep the layered safety model at the depth needed for the certification, especially where NVIDIA Guardrails, Retriever, tool execution, or human approval are answer choices. The reusable concept home is `Agentic AI General Study -> Evaluation and Safety` plus `Human Oversight and Governance`.
 
+## General Study first
+
+Read `Agentic AI General Study -> Evaluation and Safety`, `Agentic AI General Study -> Policy and Guardrails Layer`, and `Agentic AI General Study -> Human Oversight and Governance`. Use this overlay for official-domain wording about responsible AI, prompt injection, PII, access boundaries, guardrails, auditability, bias/fairness, compliance, and escalation.
+
 ## Core ideas you must hold in your head
 
 - **Retrieved text** is **untrusted data**. Webpages, documents, user uploads can contain **prompt injection** payloads ("Ignore all previous instructions..."). Retrieved content must be treated as untrusted, isolated from instructions, and validated by **guardrails**.

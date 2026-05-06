@@ -21,6 +21,10 @@ status: populated
 
 This page is the NCP-AAI exam lens for knowledge integration. Keep RAG, chunking, permissions, and data-handling concepts only to the depth needed for the certification. The reusable concept home is `Agentic AI General Study -> Data Curation and Knowledge Grounding`; NVIDIA Retriever/Curator/service-selection cues stay here.
 
+## General Study first
+
+Read `Agentic AI General Study -> Data Curation and Knowledge Grounding`, `Agentic AI General Study -> Knowledge Ingestion and Permission Pipeline`, and `Agentic AI General Study -> Knowledge and RAG Pipeline`. Use this overlay for official-domain wording about RAG, embedded search, hybrid retrieval, vector databases, structured/unstructured data, APIs, ETL, knowledge graphs, permissions, and NVIDIA Retriever/Curator mapping.
+
 ## Core ideas you must hold in your head
 
 - **Access control** happens before **retrieval**, not after generation. Tenant/user **authorization filters** must be applied at the index or metadata level before content enters the prompt. Output filtering is too late.

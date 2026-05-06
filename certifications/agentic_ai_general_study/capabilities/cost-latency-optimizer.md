@@ -6,9 +6,23 @@ source_lens: general-study
 
 # Cost/Latency Optimizer
 
+## Actual implementation / How you use it
+
+```yaml
+optimize:
+  inspect: [route, queue, retrieval, rerank, prefill, decode, tools, guardrails]
+  levers: [cache, route_smaller_model, trim_context, batch, quantize, parallelize_reads]
+  gates: [task_success, groundedness, safety, p95_latency, cost_per_task]
+```
+
+| Input | Optimizer decision | Output |
+|---|---|---|
+| Stage-level trace and quality metrics | Pick the cheapest latency fix that preserves quality | Lower p95/p99 or cost per task with regression evidence |
+
 ## What to study first
 
 - **Core idea:** You are building the measurement-driven loop that reduces latency and cost without breaking quality or safety.
+- **Read first:** `Latency, Throughput, and Traffic Control` defines p50, p95, p99, TTFT, queue delay, backpressure, circuit breakers, and rollout traffic controls.
 - **Study first:** Measure per-stage latency and cost.
 - Separate retrieval, tools, prefill, decode, queueing, network, and guardrail time.
 - Choose optimization: routing, smaller model, quantization, caching, batching, context reduction, KV-cache tuning.
@@ -110,6 +124,8 @@ Do not optimize the model first if traces show retrieval, tool APIs, queueing, o
 ### User count, concurrency, and latency SLOs
 
 Raw user count is a capacity clue, not a diagnosis. Convert "1,000 users" or "1 million users" into request rate, concurrent requests, token lengths, traffic bursts, and the user-facing SLO before choosing a fix.
+
+Percentile latency is the exam's favorite way to expose hidden production pain. **p50** is the median request. **p95** means 95% of requests finish at or below that time. **p99** means 99% finish at or below that time, so the remaining 1% are worse. If average or p50 is fine but p99 is bad, look for queueing, retries, slow tools, long context, long outputs, or overloaded shared lanes.
 
 | Scenario cue | Watch first | Likely first move | Trap |
 |---|---|---|---|

@@ -11,10 +11,12 @@ Use this skill when creating or repairing practice questions for this project. T
 
 1. Original mock banks and full mock review files.
 2. `knowledge extracted from mock exams/Knowledge from Mock Tests.md` for repeated Agentic AI mock patterns and priority signals.
-3. Topic summaries under `certifications/*/topics/`.
-4. Shared NVIDIA service pages under `certifications/_shared/services/`.
-5. General Study capability pages under `certifications/agentic_ai_general_study/capabilities/`.
-6. Existing active generated shards under `certifications/*/generated/high_fidelity_###.md` for format and parser compatibility.
+3. `certifications/mock-question-generation-blueprint.md` for domain targets, scope caps, and next generation priorities.
+4. Saved OCR study-guide markdown under `certifications/*/reference/study-guide-ocr.md`.
+5. Topic summaries under `certifications/*/topics/`.
+6. Shared NVIDIA service pages under `certifications/_shared/services/`.
+7. General Study capability pages under `certifications/agentic_ai_general_study/capabilities/`.
+8. Existing active generated shards under `certifications/*/generated/high_fidelity_###.md` for format and parser compatibility.
 
 ## Quality Rules
 
@@ -30,7 +32,9 @@ Use this skill when creating or repairing practice questions for this project. T
 - Distractors should all answer the same question. For service-selection stems, all four options should be service/tool choices. For evaluation stems, all four options should be eval/release-gate choices. Avoid mixing one product choice with unrelated prompt/context/logging mistakes unless the stem is explicitly about that operational trade-off.
 - Example repair: instead of "A retailer initially selected NeMo Customizer...which component should replace it?", write "A retailer's inference service shows low GPU occupancy and long idle gaps between CUDA launches...which NVIDIA tool should they use first?" with Nsight Systems, Nsight Compute, NIM, and NeMo Customizer as same-axis tool choices.
 - Difficulty should skew medium/hard, with easy for fundamentals and a small expert tail.
-- Every generated question must have a stable ID, domain, topic, difficulty, four choices, answer, explanation, and wrong-answer reasons.
+- Every generated question must have a stable ID, domain, topic, difficulty, scope, four choices, answer, explanation, and wrong-answer reasons.
+- Use `- Scope: general_concept` when the question tests broad certification knowledge. Use `- Scope: nvidia_specific` only when a named NVIDIA product, hardware family, library, or deployment surface is central to the correct answer.
+- Do not treat source as scope. Downloaded mocks can contain NVIDIA-specific questions, and generated banks can contain general-concept questions.
 
 ## Workflow
 
@@ -40,6 +44,8 @@ Use this skill when creating or repairing practice questions for this project. T
    node scripts/build_high_fidelity_question_bank.mjs
    ```
 
+   Before generating new certification-bank questions, check `certifications/mock-question-generation-blueprint.md` and choose from its underrepresented PDF objectives instead of adding more generic service-selection items.
+
 2. Audit the complete bank and generated mocks:
 
    ```bash
@@ -48,7 +54,15 @@ Use this skill when creating or repairing practice questions for this project. T
 
    This audit is the deterministic gate for generated-bank quality. It catches thin service stems, leaked trap notes, domain/service coverage gaps, duplicate IDs, missing mock IDs, and grammar artifacts.
 
-3. Run the local evaluator on draft generated-question files when working outside the high-fidelity generated shards:
+3. Audit the content scope mix:
+
+   ```bash
+   node scripts/audit_question_scope_mix.mjs
+   ```
+
+   Use this before generating more questions. If NVIDIA-specific is already above target, generate general-concept OCR gap questions instead of more product/service questions.
+
+4. Run the local evaluator on draft generated-question files when working outside the high-fidelity generated shards:
 
    ```bash
    node scripts/evaluate_questions.js certifications/genai_llms_professional/generated/drafts.md --local-only
@@ -57,7 +71,7 @@ Use this skill when creating or repairing practice questions for this project. T
 
    Use the LLM-backed mode only when an API key is available and a smaller draft batch needs subjective review.
 
-4. Spot-check generated questions in all three banks:
+5. Spot-check generated questions in all three banks:
    - `certifications/agentic_ai_professional/generated/high_fidelity_###.md`
    - `certifications/genai_llms_professional/generated/high_fidelity_###.md`
    - `certifications/agentic_ai_general_study/generated/high_fidelity_###.md`
@@ -69,7 +83,7 @@ Use this skill when creating or repairing practice questions for this project. T
    - one Nsight Systems vs Nsight Compute item,
    - one General Study vendor-neutral capability item.
 
-5. Run app verification:
+6. Run app verification:
 
    ```bash
    npm test
@@ -81,7 +95,8 @@ Use this skill when creating or repairing practice questions for this project. T
 - At least 50 active questions per blueprint/general-study section.
 - At least 30 active matching questions per NVIDIA service or General Study capability used by the practice filters.
 - Generated mock JSON files must reference only existing question IDs.
+- Scope mix should be close to the study-guide shape: NCP-AAI about 72% general concept / 28% NVIDIA-specific; NCP-GENL about 55% general concept / 45% NVIDIA-specific.
 
 ## Failure Policy
 
-If the audit catches banned phrases, duplicate IDs, unresolved mock IDs, weak service coverage, or invalid difficulty labels, fix the generator or source data first. Do not hand-edit hundreds of generated questions unless the generator cannot represent the needed pattern.
+If the audit catches banned phrases, duplicate IDs, unresolved mock IDs, weak service coverage, invalid difficulty labels, or badly skewed scope mix, fix the generator or source data first. Do not hand-edit hundreds of generated questions unless the generator cannot represent the needed pattern.

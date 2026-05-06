@@ -22,6 +22,10 @@ status: populated
 
 This page is the NCP-AAI exam lens for architecture. Keep enough portable theory to answer NVIDIA Agentic AI blueprint questions, but treat the deeper vendor-neutral home as `Agentic AI General Study -> Agent Lifecycle and Architecture`. Keep NVIDIA-specific cues here when they affect service selection, decision traps, or implementation choices.
 
+## General Study first
+
+Read `Agentic AI General Study -> Agent Lifecycle and Architecture` before this page. Use this overlay to map that general architecture knowledge to the official NCP-AAI domain: agent roles, reasoning loops, communication patterns, tool boundaries, multi-agent design, and where NVIDIA services appear as implementation choices.
+
 ## Core ideas you must hold in your head
 
 - **Autonomy**: Not every task needs autonomy. Known workflows → explicit graph/state-machine. Uncertain steps → LLM reasoning. The exam tests knowing which pattern fits which scenario.

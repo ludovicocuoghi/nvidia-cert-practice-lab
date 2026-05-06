@@ -62,6 +62,7 @@ const studyFocus = {
   "Model Selection and Customization": "Model routing, registries, prompt/RAG/tuning choices, adapter governance.",
   "Tooling, Orchestration, and Memory": "Tool schemas, function runtime, retries, idempotency, memory scope, workflow state.",
   "Inference Serving and Deployment": "Inference microservices, serving gateways, batching, canaries, fallback, rollout.",
+  "Latency, Throughput, and Traffic Control": "p50/p95/p99, TTFT, queue delay, concurrency, batching, backpressure, rollout safety.",
   "Evaluation and Safety": "Trajectory evaluation, groundedness, LLM-as-judge calibration, guardrails, red-team suites.",
   "Observability, Operations, and Cost": "Traces, task success, p95/p99 latency, route drift, token cost, incident replay.",
   "Human Oversight and Governance": "Risk-tiered approvals, escalation, audit artifacts, review feedback loops."
@@ -72,6 +73,12 @@ const QUICK_PRACTICE_TARGET = 20;
 const SECTION_QUIZ_TARGET = 10;
 const DRILL_COUNTS = [1, 5, 10, 20];
 const DRILL_DIFFICULTIES = ["any", "easy", "medium", "hard", "expert"];
+const ADAPTIVE_PRACTICE_FLOWS = ["practice-adaptive", "practice-coach-bank", "practice-coach-generated", "practice-coach-mixed"];
+const PRACTICE_SOURCE_FILTERS = [
+  { value: "all", label: "All sources" },
+  { value: "original", label: "Downloaded/original" },
+  { value: "generated", label: "Generated" }
+];
 const PRACTICE_RESET_EPOCH = "source-split-2026-05-05";
 
 function loadJson(key, fallback) {
@@ -109,6 +116,10 @@ function scrollToTop() {
   window.requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: "instant" }));
 }
 
+function uniqueQuestionList(questions) {
+  return [...new Map((questions || []).map((question) => [question.id, question])).values()];
+}
+
 function shuffledQuestions(questions, limit = questions.length) {
   const copy = [...questions];
   for (let i = copy.length - 1; i > 0; i -= 1) {
@@ -137,7 +148,7 @@ function shuffleQuestionChoices(question) {
 }
 
 function shuffleSet(questions, limit = questions.length) {
-  return shuffledQuestions(questions, limit).map(shuffleQuestionChoices);
+  return shuffledQuestions(uniqueQuestionList(questions), limit).map(shuffleQuestionChoices);
 }
 
 // Translate user-selected (shuffled) indices back to original indices so the server grader
@@ -193,6 +204,71 @@ function questionMatchesDifficulty(question, difficulty) {
 
 function questionsForDifficulty(questions, difficulty) {
   return questions.filter((question) => questionMatchesDifficulty(question, difficulty));
+}
+
+function uniqueQuestions(questions) {
+  return uniqueQuestionList(questions);
+}
+
+function practiceQuestionSource(question) {
+  return question?.source === "original" ? "original" : "generated";
+}
+
+function questionsForSource(questions, sourceFilter = "all") {
+  if (sourceFilter === "all") return questions;
+  return questions.filter((question) => practiceQuestionSource(question) === sourceFilter);
+}
+
+function mixedSourceProfile(examLabelValue) {
+  if (examLabelValue === "Agentic AI") {
+    return {
+      conceptShare: 0.72,
+      conceptPercent: 72,
+      nvidiaPercent: 28,
+      label: "AAI PDF-shaped mix",
+      description: "Mostly agentic-AI concepts with enough NVIDIA platform practice to cover NeMo, NIM, Guardrails, deployment, and operations."
+    };
+  }
+  if (examLabelValue === "GenAI LLMs") {
+    return {
+      conceptShare: 0.55,
+      conceptPercent: 55,
+      nvidiaPercent: 45,
+      label: "GENL PDF-shaped mix",
+      description: "General LLM architecture, optimization, tuning, and evaluation balanced with NVIDIA GPU and deployment practice."
+    };
+  }
+  return {
+    conceptShare: 0.5,
+    conceptPercent: 50,
+    nvidiaPercent: 50,
+    label: "Balanced mix",
+    description: "A balanced split between broad concepts and implementation-specific questions."
+  };
+}
+
+function buildBalancedMixedQuestions(conceptQuestions, nvidiaQuestions, count, conceptShare = 0.5) {
+  const target = Math.max(1, count || QUICK_PRACTICE_TARGET);
+  const concepts = uniqueQuestions(conceptQuestions);
+  const nvidia = uniqueQuestions(nvidiaQuestions);
+  const selected = [];
+  const selectedIds = new Set();
+  const conceptTarget = Math.max(0, Math.min(target, Math.round(target * conceptShare)));
+
+  function takeFrom(pool, limit) {
+    const picks = shuffledQuestions(pool.filter((question) => !selectedIds.has(question.id)), limit);
+    for (const question of picks) {
+      selected.push(question);
+      selectedIds.add(question.id);
+    }
+  }
+
+  takeFrom(concepts, conceptTarget);
+  takeFrom(nvidia, target - selected.length);
+  if (selected.length < target) {
+    takeFrom([...concepts, ...nvidia], target - selected.length);
+  }
+  return shuffledQuestions(selected, target);
 }
 
 function domainPercent(score) {
@@ -342,6 +418,7 @@ function themeForCertification(exam) {
 
 function brandingForExam(exam) {
   const theme = themeForCertification(exam);
+  const label = examLabel(exam);
   if (theme === "blue") {
     return {
       brand: "GENERAL",
@@ -372,6 +449,23 @@ function brandingForExam(exam) {
         lifecycle: "AWS lifecycle stages",
         services: "AWS service map",
         suite: "AWS suite basics",
+        quiz: "Banked quick quizzes from section questions"
+      }
+    };
+  }
+  if (label === "Agentic AI") {
+    return {
+      brand: "NVIDIA",
+      chooserLabel: "Certification",
+      resourceLabel: "Official NVIDIA page",
+      suiteLabel: "NVIDIA suite",
+      serviceLabel: "NVIDIA service",
+      studyDescription: "Study the official Agentic AI exam concept map, NVIDIA service boundaries, or blueprint sections. Quick quiz pulls from the local bank.",
+      studyCardCopy: {
+        study: "Study the official-section concept map first, then open NVIDIA services only when product wording matters.",
+        lifecycle: "Exam Concept Map",
+        services: "NVIDIA service boundaries",
+        suite: "Agentic AI concepts in official exam order",
         quiz: "Banked quick quizzes from section questions"
       }
     };
@@ -631,9 +725,9 @@ function App() {
       if (aborted()) return;
       setExam(refreshed);
       const ids = new Set(result.autoApprovedIds || []);
-      const questions = refreshed.questions.filter((q) => ids.has(q.id)).map(shuffleQuestionChoices);
+      const questions = uniqueQuestionList(refreshed.questions.filter((q) => ids.has(q.id))).map(shuffleQuestionChoices);
       if (!questions.length) {
-        setGenerationStatus({ state: 'warn', message: 'Questions generated but not found in bank. Try Practice → Generated Practice.' });
+        setGenerationStatus({ state: 'warn', message: 'Questions generated but not found in bank. Try Practice → NVIDIA-specific questions.' });
         return;
       }
       resetSessionState({ keepGeneration: true });
@@ -675,9 +769,9 @@ function App() {
       if (aborted()) return;
       setExam(refreshed);
       const drillIds = new Set(result.autoApprovedIds || []);
-      const drillSet = refreshed.questions.filter((q) => drillIds.has(q.id)).map(shuffleQuestionChoices);
+      const drillSet = uniqueQuestionList(refreshed.questions.filter((q) => drillIds.has(q.id))).map(shuffleQuestionChoices);
       if (!drillSet.length) {
-        setGenerationStatus({ state: 'warn', message: "Generated questions weren't found in the bank. Refresh and try Practice Generated." });
+        setGenerationStatus({ state: 'warn', message: "Generated questions weren't found in the bank. Refresh and try Practice → NVIDIA-specific questions." });
         return;
       }
       resetSessionState({ keepGeneration: true });
@@ -721,9 +815,9 @@ function App() {
       if (aborted()) return;
       setExam(refreshed);
       const ids = new Set(result.autoApprovedIds || []);
-      const questions = refreshed.questions.filter((q) => ids.has(q.id)).map(shuffleQuestionChoices);
+      const questions = uniqueQuestionList(refreshed.questions.filter((q) => ids.has(q.id))).map(shuffleQuestionChoices);
       if (!questions.length) {
-        setGenerationStatus({ state: 'warn', message: 'Questions generated but not found in bank. Try Practice → Generated Practice.' });
+        setGenerationStatus({ state: 'warn', message: 'Questions generated but not found in bank. Try Practice → NVIDIA-specific questions.' });
         return;
       }
       resetSessionState({ keepGeneration: true });
@@ -804,7 +898,7 @@ function App() {
     setFlow(nextFlow);
     setExamStartedAt(Date.now());
 
-    if (["practice-adaptive", "practice-coach-bank", "practice-coach-generated"].includes(nextFlow)) {
+    if (ADAPTIVE_PRACTICE_FLOWS.includes(nextFlow)) {
       setSessionKind("practice");
       const recentMockSeen = loadRecentMockSeen(selectedCertSlug);
       let pool = practiceQuestions;
@@ -870,16 +964,16 @@ function App() {
     }
   }
 
-  function startTargetedGuidedPractice({ questions, label = "selected focus" } = {}) {
+  function startTargetedGuidedPractice({ questions, label = "selected focus", flowName = "practice-coach-bank" } = {}) {
     if (!exam) return;
-    const pool = Array.isArray(questions) ? questions : [];
+    const pool = uniqueQuestionList(Array.isArray(questions) ? questions : []);
     if (!pool.length) {
       setError(`No banked questions found for ${label}. Generate new questions for this focus first.`);
       return;
     }
     resetSessionState();
     guidedCandidateIdsRef.current = pool.map((q) => q.id);
-    setFlow("practice-coach-bank");
+    setFlow(flowName);
     setSessionKind("practice");
     setExamStartedAt(Date.now());
     const adaptiveExam = { ...exam, questions: pool };
@@ -958,7 +1052,7 @@ function App() {
   }
 
   async function fetchCoachingAndAdvance() {
-    const isCoachPractice = ["practice-adaptive", "practice-coach-bank", "practice-coach-generated"].includes(flow);
+    const isCoachPractice = ADAPTIVE_PRACTICE_FLOWS.includes(flow);
     if (!isCoachPractice || !question) return;
     if (sessionQuestions.length >= ADAPTIVE_PRACTICE_TARGET) {
       setCoachStatus({ state: "idle", message: "" });
@@ -1066,7 +1160,7 @@ function App() {
   async function submitExam() {
     // Abort any in-progress coaching before finalizing.
     if (coachAbortRef.current) { coachAbortRef.current.abort(); coachAbortRef.current = null; }
-    if (["practice-adaptive", "practice-coach-bank", "practice-coach-generated"].includes(flow)) {
+    if (ADAPTIVE_PRACTICE_FLOWS.includes(flow)) {
       await finalizeAdaptivePractice();
       return;
     }
@@ -1159,7 +1253,7 @@ function App() {
     return h("main", { className: "loading" }, h("div", { className: "loader" }), h("p", null, "Loading certification practice exam..."));
   }
 
-  const isAdaptivePractice = ["practice-adaptive", "practice-coach-bank", "practice-coach-generated"].includes(flow);
+  const isAdaptivePractice = ADAPTIVE_PRACTICE_FLOWS.includes(flow);
   const adaptivePosition = isAdaptivePractice ? `${sessionQuestions.length}/${ADAPTIVE_PRACTICE_TARGET}` : null;
   const showHeaderStatus = !(mode === "exam" && sessionKind === "practice");
   const branding = brandingForExam(exam);
@@ -1297,12 +1391,14 @@ function App() {
 
 function flowLabel(flow, mockDef) {
   switch (flow) {
-    case "practice-section": return "Section Practice";
+    case "practice-section": return "Certificate Concept Practice";
     case "practice-adaptive": return "Guided Practice";
-    case "practice-coach-bank": return "Guided Practice (Mock Bank)";
-    case "practice-coach-generated": return "Guided Practice (Generated)";
-    case "practice-generated": return "Generated Practice";
-    case "practice-mock": return mockDef ? `Practice — ${mockDef.name}` : "Practice Mock";
+    case "practice-coach-bank": return "Guided Certificate Concepts";
+    case "practice-coach-generated": return "Guided NVIDIA-Specific";
+    case "practice-coach-mixed": return "Guided Recommended Mix";
+    case "practice-generated": return "NVIDIA-Specific Practice";
+    case "practice-mixed": return "Mixed Practice";
+    case "practice-mock": return mockDef ? `Mock Review — ${mockDef.name}` : "Mock Review";
     case "test-mock-1": return mockDef?.name || "Mock Test";
     default: return "—";
   }
@@ -1459,11 +1555,11 @@ function TrackChooser({ track, setTrack, mockSummary, exam, branding }) {
       isGenericStudy ? null : h(
         "button",
         { className: `track-card ${track === "test" ? "active" : ""}`, onClick: () => setTrack("test") },
-        h("strong", null, "Actual Exam"),
-        h("p", null, "Timed, deferred grading like the real Certiverse-proctored exam."),
+        h("strong", null, "Mock Tests"),
+        h("p", null, "Fixed downloaded or generated mock sets with timed, deferred grading."),
         h("ul", null,
           h("li", null, `${exam.certification.durationMinutes} min real exam`),
-          h("li", null, hasQuestionBank ? `Mock Test 1 (${exam.questions.length}Q) for repeatable progress` : "Practice tests unlock after questions exist"),
+          h("li", null, hasQuestionBank ? "Downloaded and generated mock choices" : "Practice tests unlock after questions exist"),
           h("li", null, "Mock selection for repeatable scoring")
         ),
         mockSummary?.latest
@@ -1509,32 +1605,66 @@ const LIFECYCLE_FLOWS = {
     ]
   },
   "Agentic AI": {
-    title: "NVIDIA Agentic AI lifecycle paths",
+    title: "Agentic AI exam concept map",
     lanes: {
-      "Core: Build agent application": "Main NCP-AAI path: process runtime knowledge, choose a model, build the agent, evaluate trajectories, then deploy and operate.",
-      "Core: Use existing model for inference": "Common support path: choose an approved model and expose it as an inference endpoint. No training data or weight update.",
-      "Secondary: Fine-tune existing model": "Use when durable behavior must change. Process examples, tune, evaluate, then deploy the tuned artifact.",
-      "Reference: Train model from zero": "Background lifecycle only for this cert. Useful anchor, but full pretraining is not the main Agentic AI path."
+      "1. Agent Architecture and Design": "Design roles, autonomy boundaries, reasoning loops, communication, state ownership, and multi-agent structure before choosing a product.",
+      "2. Agent Development": "Build prompts, tool contracts, structured outputs, API/function calls, orchestration, retries, and graceful failure behavior.",
+      "3. Evaluation and Tuning": "Evaluate final answers and full trajectories, then choose the smallest fix: prompt, schema, RAG, policy, routing, or tuning.",
+      "4. Deployment and Scaling": "Operate the full agent chain under load: endpoints, tools, retrieval, memory, guardrails, queues, p95/p99, and rollouts.",
+      "5. Cognition, Planning, and Memory": "Understand ReAct, plan-and-execute, reflection, task decomposition, memory types, and memory governance.",
+      "6. Knowledge Integration and Data Handling": "Ground agents with RAG, structured data, knowledge graphs, ETL, metadata, ACLs, citations, and freshness controls.",
+      "7. NVIDIA Platform Implementation": "Know the NVIDIA service boundaries: Agent Toolkit, Retriever, Guardrails, Evaluator, NIM, Triton, TensorRT-LLM, Dynamo, Nsight, Curator.",
+      "8. Run, Monitor, and Maintain": "Trace live runs, monitor quality/safety/cost/latency, replay incidents, and feed failures back into evals and fixes.",
+      "9. Safety, Ethics, and Compliance": "Layer policy controls around inputs, retrieval, tools, outputs, memory, PII, tenant isolation, and auditability.",
+      "10. Human-AI Interaction and Oversight": "Place humans where risk requires them: approval, override, escalation, review evidence, and feedback loops."
     },
     stages: [
-      { id: "aai-agent-data", lane: "Core: Build agent application", context: "Process data", name: "Process agent knowledge", tools: ["NeMo Retriever"], optionalTools: ["NeMo Curator", "RAPIDS"], note: "RAG/private docs, extraction, indexing, rerank, citations, permissions; data cleanup is optional support" },
-      { id: "aai-agent-model", lane: "Core: Build agent application", context: "Choose model", name: "Choose agent model", tools: ["Nemotron models"], optionalTools: ["NGC"], note: "Select the reasoning/tool-use model before wiring the application around it" },
-      { id: "aai-agent-build", lane: "Core: Build agent application", context: "Build agent", name: "Build agent workflow", tools: ["NeMo Agent Toolkit", "NeMo Retriever", "NeMo Guardrails"], note: "Compose workflow, tools, memory, retrieval, tool policy, and runtime guardrails" },
-      { id: "aai-agent-eval", lane: "Core: Build agent application", context: "Evaluation", name: "Evaluate agent", tools: ["NeMo Evaluator", "NeMo Agent Toolkit"], note: "Score trajectories, tool correctness, groundedness, safety, latency, and regressions" },
-      { id: "aai-agent-deploy", lane: "Core: Build agent application", context: "Deploy", name: "Deploy and operate agent", tools: ["NIM"], optionalTools: ["NIM Operator", "Dynamo (Triton Dynamo)", "Nsight Systems"], note: "Run model endpoints and agent services; add K8s, distributed serving, or profiling when scale demands it" },
+      { id: "aai-arch-boundary", lane: "1. Agent Architecture and Design", context: "Boundary", name: "Agent vs workflow vs chat", tools: ["NeMo Agent Toolkit"], optionalTools: [], note: "Choose a simple response, RAG workflow, deterministic state graph, or autonomous agent based on task uncertainty, tool need, and risk." },
+      { id: "aai-arch-reasoning", lane: "1. Agent Architecture and Design", context: "Reasoning loop", name: "Pick the reasoning pattern", tools: ["NeMo Agent Toolkit"], optionalTools: ["Nemotron models"], note: "Match ReAct, router, plan-and-execute, supervisor, or blackboard patterns to dynamic observations and role boundaries." },
+      { id: "aai-arch-multi-agent", lane: "1. Agent Architecture and Design", context: "Coordination", name: "Design multi-agent coordination", tools: ["NeMo Agent Toolkit"], optionalTools: [], note: "Use multiple agents only when roles, permissions, expertise, state, and communication contracts are separable and testable." },
+      { id: "aai-arch-state", lane: "1. Agent Architecture and Design", context: "State", name: "Own state and handoffs", tools: ["NeMo Agent Toolkit"], optionalTools: [], note: "Define who owns task state, evidence, confidence, memory writes, approval gates, and audit trails across handoffs." },
 
-      { id: "aai-infer-choose", lane: "Core: Use existing model for inference", context: "Choose model", name: "Choose existing model", tools: ["Nemotron models"], optionalTools: ["NGC"], note: "Pick an approved model family, checkpoint, or catalog artifact for the task" },
-      { id: "aai-infer-deploy", lane: "Core: Use existing model for inference", context: "Deploy", name: "Deploy inference endpoint", tools: ["NIM"], optionalTools: ["NIM Operator", "Dynamo (Triton Dynamo)"], note: "Expose the selected model as an API; no model training or tuning happens here" },
+      { id: "aai-dev-tool-contracts", lane: "2. Agent Development", context: "Tools", name: "Wire tool/API contracts", tools: ["NeMo Agent Toolkit"], optionalTools: ["NIM"], note: "Define function schemas, typed inputs, preconditions, permissions, idempotency, and output validation before execution." },
+      { id: "aai-dev-structured-output", lane: "2. Agent Development", context: "Outputs", name: "Control prompts and structured outputs", tools: ["NeMo Agent Toolkit"], optionalTools: ["NeMo Guardrails"], note: "Use prompt templates, JSON schemas, validators, routing outputs, and refusal/escalation formats instead of trusting free-form text." },
+      { id: "aai-dev-parallel-recovery", lane: "2. Agent Development", context: "Reliability", name: "Parallelize safely and recover", tools: ["NeMo Agent Toolkit"], optionalTools: [], note: "Parallelize independent read-only calls, sequence dependent writes, bound retries, checkpoint state, and fail gracefully." },
+      { id: "aai-dev-orchestration", lane: "2. Agent Development", context: "Runtime", name: "Implement orchestration runtime", tools: ["NeMo Agent Toolkit"], optionalTools: ["NeMo Retriever", "NeMo Guardrails"], note: "Wire workflows, tools, retrievers, memory, routes, and policy gates as explicit runtime components." },
 
-      { id: "aai-tune-data", lane: "Secondary: Fine-tune existing model", context: "Data processing", name: "Process tuning data", tools: ["NeMo Curator"], optionalTools: ["RAPIDS"], note: "Prepare examples, labels, preference data, PII cleanup, and validation holdouts" },
-      { id: "aai-tune-model", lane: "Secondary: Fine-tune existing model", context: "Fine-tune", name: "Fine-tune behavior", tools: ["NeMo Customizer"], optionalTools: ["NeMo Framework", "NGC"], note: "Use PEFT/LoRA first; heavier SFT/alignment is more scenario-specific" },
-      { id: "aai-tune-eval", lane: "Secondary: Fine-tune existing model", context: "Evaluation", name: "Evaluate tuned model", tools: ["NeMo Evaluator"], note: "Compare against baseline for task quality, safety, and regressions" },
-      { id: "aai-tune-deploy", lane: "Secondary: Fine-tune existing model", context: "Deploy", name: "Deploy tuned model API", tools: ["NIM"], optionalTools: ["NIM Operator"], note: "Serve the tuned artifact or adapter-backed endpoint in production" },
+      { id: "aai-eval-trajectory", lane: "3. Evaluation and Tuning", context: "Trajectory", name: "Score the whole trajectory", tools: ["NeMo Evaluator"], optionalTools: ["NeMo Agent Toolkit"], note: "Evaluate route, retrieval, tool choice, tool arguments, memory use, final answer, safety, cost, and latency." },
+      { id: "aai-eval-rag-tools", lane: "3. Evaluation and Tuning", context: "Layered eval", name: "Evaluate retrieval and tools", tools: ["NeMo Evaluator"], optionalTools: ["NeMo Retriever"], note: "Separate RAG recall/relevance/citation failures from tool selection, argument, authorization, and side-effect failures." },
+      { id: "aai-eval-smallest-fix", lane: "3. Evaluation and Tuning", context: "Improve", name: "Choose the smallest fix", tools: ["NeMo Evaluator"], optionalTools: ["NeMo Customizer", "NeMo Curator"], note: "Fix prompts, schemas, retrieval, memory, routing, or policy before fine-tuning; tune only for durable behavior gaps." },
+      { id: "aai-eval-feedback", lane: "3. Evaluation and Tuning", context: "Feedback", name: "Turn feedback into regression cases", tools: ["NeMo Evaluator"], optionalTools: [], note: "Convert incidents, user ratings, reviewer labels, and failed traces into replayable eval cases and release gates." },
 
-      { id: "aai-train-data", lane: "Reference: Train model from zero", context: "Data processing", name: "Process training data", tools: [], optionalTools: ["NeMo Curator", "RAPIDS"], note: "Reference-only for NCP-AAI: clean, dedupe, filter, redact PII, check licenses, split data" },
-      { id: "aai-train-model", lane: "Reference: Train model from zero", context: "Training", name: "Train model", tools: [], optionalTools: ["NeMo Framework", "NCCL", "NGC"], note: "Reference-only: full training recipes, distributed jobs, checkpoints, and artifact tracking" },
-      { id: "aai-train-eval", lane: "Reference: Train model from zero", context: "Evaluation", name: "Evaluate model", tools: [], optionalTools: ["NeMo Evaluator"], note: "Reference-only: check quality, safety, regressions, and readiness before serving" },
-      { id: "aai-train-deploy", lane: "Reference: Train model from zero", context: "Deploy", name: "Deploy model API", tools: [], optionalTools: ["NIM", "NIM Operator"], note: "Reference-only: package the approved model as an inference service and roll it out" }
+      { id: "aai-deploy-decompose", lane: "4. Deployment and Scaling", context: "Topology", name: "Decompose the agent service", tools: ["NIM"], optionalTools: ["NeMo Retriever", "NeMo Guardrails"], note: "Scale model endpoints, orchestrator, tools, memory, vector DB, guardrails, and gateway as separate bottleneck owners." },
+      { id: "aai-deploy-tail-latency", lane: "4. Deployment and Scaling", context: "Traffic", name: "Manage user traffic and tail latency", tools: ["NIM"], optionalTools: ["Triton Inference Server", "TensorRT-LLM"], note: "Translate user count into concurrency, request rate, token length, workflow steps, p95/p99, queue depth, and SLOs." },
+      { id: "aai-deploy-resilience", lane: "4. Deployment and Scaling", context: "Resilience", name: "Add backpressure and isolation", tools: ["NIM Operator"], optionalTools: ["Dynamo (Triton Dynamo)"], note: "Use queues, timeouts, circuit breakers, bulkheads, async jobs, workload lanes, and autoscaling before failures cascade." },
+      { id: "aai-deploy-rollout", lane: "4. Deployment and Scaling", context: "Release", name: "Roll out and profile safely", tools: ["Nsight Systems"], optionalTools: ["Nsight Compute", "NIM Operator"], note: "Use canary, blue-green, rollback, versioned prompts/indexes/tools, health checks, and trace-first bottleneck diagnosis." },
+
+      { id: "aai-cog-react", lane: "5. Cognition, Planning, and Memory", context: "ReAct", name: "Use ReAct with stopping criteria", tools: ["NeMo Agent Toolkit"], optionalTools: [], note: "Reason, act, observe, and stop with budgets; avoid loops, redundant tools, and ungrounded private reasoning." },
+      { id: "aai-cog-plan-reflect", lane: "5. Cognition, Planning, and Memory", context: "Planning", name: "Plan, decompose, and reflect carefully", tools: ["NeMo Agent Toolkit"], optionalTools: [], note: "Use planning for dependent subtasks and reflection for recoverable errors, while accounting for latency and weak self-critique." },
+      { id: "aai-cog-memory-types", lane: "5. Cognition, Planning, and Memory", context: "Memory types", name: "Separate memory types", tools: ["NeMo Agent Toolkit"], optionalTools: ["NeMo Retriever"], note: "Distinguish working, session, long-term, episodic, semantic, entity, vector, and audit memory." },
+      { id: "aai-cog-memory-governance", lane: "5. Cognition, Planning, and Memory", context: "Memory policy", name: "Govern memory writes and recall", tools: ["NeMo Agent Toolkit"], optionalTools: ["NeMo Guardrails"], note: "Use consent, TTL, deletion, sensitivity checks, relevance gates, and audit records for persistent memory." },
+
+      { id: "aai-knowledge-rag", lane: "6. Knowledge Integration and Data Handling", context: "RAG", name: "Build the retrieval path", tools: ["NeMo Retriever"], optionalTools: [], note: "Parse, chunk, embed, index, hybrid search, rerank, pack context, cite sources, and evaluate groundedness." },
+      { id: "aai-knowledge-structured", lane: "6. Knowledge Integration and Data Handling", context: "Structured data", name: "Use structured data and graphs", tools: [], optionalTools: ["NeMo Retriever"], note: "Choose SQL/API/knowledge graph access when exact relationships, permissions, or current system state matter more than semantic similarity." },
+      { id: "aai-knowledge-access", lane: "6. Knowledge Integration and Data Handling", context: "Access", name: "Preserve ACLs, freshness, and provenance", tools: ["NeMo Retriever"], optionalTools: ["NeMo Guardrails"], note: "Enforce tenant filters before context assembly; keep source lineage, freshness, citations, and unauthorized-context checks." },
+      { id: "aai-knowledge-curation", lane: "6. Knowledge Integration and Data Handling", context: "Data prep", name: "Separate curation from runtime retrieval", tools: ["NeMo Curator"], optionalTools: ["RAPIDS", "NeMo Retriever"], note: "Use curation for offline corpus cleanup, tuning examples, or eval sets; use retrieval for query-time knowledge." },
+
+      { id: "aai-platform-core", lane: "7. NVIDIA Platform Implementation", context: "Core stack", name: "Map the core agentic stack", tools: ["NeMo Agent Toolkit", "NeMo Retriever", "NeMo Guardrails", "NeMo Evaluator", "NIM"], optionalTools: [], note: "Know which NVIDIA component owns orchestration, retrieval, policy, evaluation, and inference APIs." },
+      { id: "aai-platform-serving", lane: "7. NVIDIA Platform Implementation", context: "Serving stack", name: "Map serving and optimization tools", tools: ["NIM", "Triton Inference Server", "TensorRT-LLM"], optionalTools: ["Dynamo (Triton Dynamo)", "NIM Operator"], note: "Separate packaged inference APIs, model serving, LLM engine optimization, distributed serving, and Kubernetes lifecycle." },
+      { id: "aai-platform-diagnostics", lane: "7. NVIDIA Platform Implementation", context: "Diagnostics", name: "Choose the right diagnostic layer", tools: ["Nsight Systems"], optionalTools: ["Nsight Compute"], note: "Use system timelines before kernel deep dives; do not diagnose an agent workflow with a CUDA-kernel tool first." },
+      { id: "aai-platform-boundaries", lane: "7. NVIDIA Platform Implementation", context: "Traps", name: "Avoid product-boundary traps", tools: ["NeMo Curator", "NeMo Customizer", "NeMo Framework"], optionalTools: ["NGC", "NCCL"], note: "Curator prepares data, Customizer/Framework change models, NGC stores artifacts, NCCL is distributed training support, not agent orchestration." },
+
+      { id: "aai-run-trace", lane: "8. Run, Monitor, and Maintain", context: "Trace", name: "Trace live agent runs", tools: ["NeMo Agent Toolkit"], optionalTools: ["Nsight Systems"], note: "Log route, prompt, model, retrieval, tools, memory, guardrails, reviews, versions, latency, cost, and replay identifiers." },
+      { id: "aai-run-dashboard", lane: "8. Run, Monitor, and Maintain", context: "Monitor", name: "Monitor behavior and reliability", tools: ["NeMo Evaluator"], optionalTools: [], note: "Track task success, groundedness, hallucination, refusal correctness, tool errors, retries, escalation rate, cost, and p95/p99." },
+      { id: "aai-run-maintain", lane: "8. Run, Monitor, and Maintain", context: "Maintain", name: "Maintain prompts, tools, memory, and indexes", tools: [], optionalTools: ["NeMo Retriever", "NeMo Evaluator"], note: "Update schemas, prompts, indexes, memory quality, API keys, eval suites, and regression gates from production incidents." },
+
+      { id: "aai-safety-layered", lane: "9. Safety, Ethics, and Compliance", context: "Controls", name: "Layer safety controls", tools: ["NeMo Guardrails"], optionalTools: [], note: "Check inputs, retrieved content, tool/action proposals, tool results, memory writes, and final outputs at the right boundary." },
+      { id: "aai-safety-injection", lane: "9. Safety, Ethics, and Compliance", context: "Threats", name: "Defend against injection and leakage", tools: ["NeMo Guardrails"], optionalTools: ["NeMo Retriever"], note: "Treat user and retrieved content as untrusted; enforce ACLs, tenant filters, least privilege, and PII retention policy." },
+      { id: "aai-safety-audit", lane: "9. Safety, Ethics, and Compliance", context: "Audit", name: "Keep compliance evidence", tools: ["NeMo Guardrails"], optionalTools: ["NeMo Evaluator"], note: "Record policy decisions, evidence, reviewer actions, model/tool versions, fairness checks, and incident response evidence." },
+
+      { id: "aai-human-routing", lane: "10. Human-AI Interaction and Oversight", context: "Routing", name: "Choose HITL vs HOTL", tools: [], optionalTools: ["NeMo Guardrails"], note: "Use human-in-the-loop for high-impact approval, human-on-the-loop for sampled monitoring, and automation for low-risk reversible work." },
+      { id: "aai-human-review-card", lane: "10. Human-AI Interaction and Oversight", context: "Review UX", name: "Design review evidence cards", tools: [], optionalTools: ["NeMo Agent Toolkit"], note: "Show proposed action, confidence, sources, tool plan, policy result, versions, and safe default so reviewers can decide quickly." },
+      { id: "aai-human-feedback", lane: "10. Human-AI Interaction and Oversight", context: "Feedback", name: "Close the oversight feedback loop", tools: ["NeMo Evaluator"], optionalTools: ["NeMo Guardrails"], note: "Use reviewer labels, overrides, escalations, and complaints to update evals, prompts, policies, tools, data, or memory rules." }
     ]
   },
   "Agentic AI General": {
@@ -1576,6 +1706,348 @@ const LIFECYCLE_FLOWS = {
     ]
   }
 };
+
+const AAI_LIFECYCLE_STAGE_DETAILS = {
+  "aai-arch-boundary": {
+    focus: "This card defines the first exam decision: do you need a chat answer, a deterministic workflow, a RAG workflow, or an autonomous agent with tools and state?",
+    sections: ["Agent Architecture and Design"],
+    studyPages: ["Agent Lifecycle and Architecture", "Tooling, Orchestration, and Memory"],
+    checks: ["Use a workflow when the process is fixed and auditable", "Use an agent when steps depend on observations or tool results", "Use human review when autonomy or action risk exceeds the allowed boundary"],
+    signals: ["agent vs workflow", "too much autonomy", "deterministic path", "approval gate", "tool-needed task"],
+    code: ["if fixed_process: use_state_graph()", "elif needs_tools_and_replanning: use_bounded_agent()", "elif high_risk_action: require_human_approval()"].join("\n"),
+    nvidiaExamples: [["NeMo Agent Toolkit", "Recognize it when the scenario asks to implement the workflow or agent runtime."]]
+  },
+  "aai-arch-reasoning": {
+    focus: "The exam expects you to map the reasoning pattern to task shape instead of choosing the most advanced-sounding agent.",
+    sections: ["Agent Architecture and Design", "Cognition, Planning, and Memory"],
+    studyPages: ["Agent Lifecycle and Architecture", "Tooling, Orchestration, and Memory"],
+    checks: ["ReAct fits dynamic tool observation loops", "Plan-and-execute fits decomposable dependent tasks", "Router/supervisor patterns fit explicit role or policy boundaries"],
+    signals: ["ReAct", "plan-and-execute", "router", "supervisor", "blackboard", "reflection"],
+    code: ["if observations_change_next_step: pattern = \"react\"", "elif task_has_dependent_subtasks: pattern = \"plan_execute\"", "elif roles_are_separate: pattern = \"supervisor\""].join("\n"),
+    nvidiaExamples: [["NeMo Agent Toolkit", "Use for ReAct, router, sequential, parallel, or multi-agent workflow wiring."], ["Nemotron models", "Use as a model-family example when reasoning-model choice is explicit."]]
+  },
+  "aai-arch-multi-agent": {
+    focus: "Multi-agent design is useful only when role separation reduces complexity more than it adds latency, handoff, and evaluation burden.",
+    sections: ["Agent Architecture and Design"],
+    studyPages: ["Agent Lifecycle and Architecture", "Evaluation and Safety"],
+    checks: ["Define each role, allowed tools, shared state, and handoff contract", "Propagate evidence and confidence between agents", "Avoid multi-agent designs for simple single-agent workflows"],
+    signals: ["single vs multi-agent", "handoff", "specialist roles", "shared memory", "agent-to-agent communication"],
+    code: ["for agent in specialists:", "    agent.tools = allowed_tools(agent.role)", "supervisor.merge(outputs, evidence, confidence)"].join("\n"),
+    nvidiaExamples: [["NeMo Agent Toolkit", "Use when the product question is about coordinating multiple agents or publishing A2A/MCP style interfaces."]]
+  },
+  "aai-arch-state": {
+    focus: "State ownership is what makes the agent auditable and recoverable: the system must know who owns task state, evidence, approvals, memory writes, and transitions.",
+    sections: ["Agent Architecture and Design", "Run, Monitor, and Maintain"],
+    studyPages: ["Tooling, Orchestration, and Memory", "Human Oversight and Governance"],
+    checks: ["Centralize state when approvals or auditability matter", "Record source evidence and confidence across handoffs", "Version prompts, tools, model, retriever, and policy decisions"],
+    signals: ["stateful orchestration", "handoff", "audit trail", "decision traceability", "lost context"],
+    code: ["state = load_task_state(task_id)", "state = transition(state, observation, approval)", "audit.log(state.prev, state.next, state.reason)"].join("\n"),
+    nvidiaExamples: [["NeMo Agent Toolkit", "Use for traceable workflow state and handoff implementation."]]
+  },
+  "aai-dev-tool-contracts": {
+    focus: "The model can propose a tool call, but deterministic runtime code owns schema validation, permissions, preconditions, idempotency, and output checks.",
+    sections: ["Agent Development"],
+    studyPages: ["Tooling, Orchestration, and Memory"],
+    checks: ["Tool arguments must be typed and validated", "Authorization happens before the side effect", "Writes need idempotency keys and audit logs"],
+    signals: ["tool schema", "API wrapper", "function calling", "permissions", "idempotency", "side effect"],
+    code: ["call = model.propose_tool(schema)", "validate(call.args); authorize(user, call)", "execute(call, idempotency_key=task_id)"].join("\n"),
+    nvidiaExamples: [["NeMo Agent Toolkit", "Use for workflow and tool wiring."], ["NIM", "Use as the model endpoint behind the agent, not as the tool contract owner."]]
+  },
+  "aai-dev-structured-output": {
+    focus: "Structured outputs turn a probabilistic model response into a runtime decision object that can be validated, routed, retried, or escalated.",
+    sections: ["Agent Development", "Safety, Ethics, and Compliance"],
+    studyPages: ["Prompt and Context Design", "Policy and Guardrails Layer"],
+    checks: ["Use JSON/schema output for routes, actions, and tool arguments", "Validate model output before downstream execution", "Prefer schema or prompt fixes before model tuning for formatting failures"],
+    signals: ["JSON schema", "structured output", "route label", "validator", "formatting failure"],
+    code: ["raw = model.generate(messages)", "action = parse_json(raw, schema)", "if not valid(action): repair_or_escalate()"].join("\n"),
+    nvidiaExamples: [["NeMo Guardrails", "Use when output or dialog policy must be enforced around the structured response."]]
+  },
+  "aai-dev-parallel-recovery": {
+    focus: "Agent speed and reliability depend on knowing when calls can run in parallel and how failures stop without retry storms.",
+    sections: ["Agent Development", "Deployment and Scaling"],
+    studyPages: ["Tooling, Orchestration, and Memory", "Latency, Throughput, and Traffic Control"],
+    checks: ["Parallelize independent read-only tools", "Sequence dependent writes and irreversible actions", "Use bounded retries, checkpoint state, fallback, and escalation"],
+    signals: ["parallel tool calls", "sequential tools are slow", "retry loop", "timeout", "graceful failure"],
+    code: ["if tools_are_independent_and_read_only: run_parallel(tools)", "else: run_in_dependency_order(tools)", "retry_with_backoff(max_attempts=3)"].join("\n"),
+    nvidiaExamples: [["NeMo Agent Toolkit", "Use when the implementation is an agent workflow with retry and trace hooks."]]
+  },
+  "aai-dev-orchestration": {
+    focus: "Development questions often test the runtime wiring: prompts, tools, retrievers, memory, guardrails, route state, and error states.",
+    sections: ["Agent Development"],
+    studyPages: ["Agent Lifecycle and Architecture", "Tooling, Orchestration, and Memory", "Data Curation and Knowledge Grounding"],
+    checks: ["Keep model endpoint, retrieval, tools, memory, and policy as separate components", "Make state transitions and error paths explicit", "Instrument the workflow so evaluation and operations can reuse traces"],
+    signals: ["orchestration framework", "workflow config", "tool group", "retriever", "memory", "runtime wiring"],
+    code: ["workflow = {llms, tools, retrievers, memory, rails}", "trace = workflow.run(input, state)", "evaluate(trace)"].join("\n"),
+    nvidiaExamples: [["NeMo Agent Toolkit", "Use for the workflow runtime."], ["NeMo Retriever", "Use for retrieval wiring."], ["NeMo Guardrails", "Use for runtime policy wiring."]]
+  },
+  "aai-eval-trajectory": {
+    focus: "Agent evaluation scores the path, not just final text. Two answers can be identical while one path leaked data, called bad tools, or cost too much.",
+    sections: ["Evaluation and Tuning"],
+    studyPages: ["Evaluation and Safety", "Observability, Operations, and Cost"],
+    checks: ["Score route, retrieval, tool choice, arguments, observations, memory, safety, cost, and latency", "Use trace replay for failures", "Keep final answer metrics separate from trajectory metrics"],
+    signals: ["trajectory evaluation", "tool correctness", "path optimality", "task success", "latency/cost"],
+    code: ["score.answer = task_success(output)", "score.tools = tool_correctness(trace)", "score.safety = policy_pass(trace)"].join("\n"),
+    nvidiaExamples: [["NeMo Evaluator", "Use for agent/RAG/model evaluation and regression checks."], ["NeMo Agent Toolkit", "Use when trace replay or workflow inspection is named."]]
+  },
+  "aai-eval-rag-tools": {
+    focus: "Evaluation must localize failures. Wrong document, right document wrong segment, bad tool args, and unauthorized action are different fixes.",
+    sections: ["Evaluation and Tuning", "Knowledge Integration and Data Handling"],
+    studyPages: ["Evaluation and Safety", "Data Curation and Knowledge Grounding"],
+    checks: ["RAG eval measures recall, relevance, groundedness, and citation support", "Tool eval measures selection, arguments, authorization, and side effects", "Do not fine-tune before locating the failing layer"],
+    signals: ["right doc wrong segment", "unsupported citation", "bad tool argument", "tool-call success"],
+    code: ["if retrieval_recall_low: tune_retrieval()", "elif tool_args_invalid: fix_schema_examples()", "elif answer_unsupported: add_groundedness_gate()"].join("\n"),
+    nvidiaExamples: [["NeMo Evaluator", "Use for evaluation harnesses."], ["NeMo Retriever", "Use when retrieval quality is the failing layer."]]
+  },
+  "aai-eval-smallest-fix": {
+    focus: "The best fix is usually the smallest layer that owns the failure. Tuning is not the default answer for tool, RAG, schema, or policy failures.",
+    sections: ["Evaluation and Tuning"],
+    studyPages: ["Model Selection and Customization", "Evaluation and Safety"],
+    checks: ["Prompt/schema fixes for instruction and formatting failures", "RAG fixes for missing or changing facts", "Fine-tuning only for durable behavior gaps with curated examples"],
+    signals: ["prompt vs fine-tune", "durable behavior", "LoRA/SFT", "feedback loop", "regression holdout"],
+    code: ["fix = classify_failure(trace)", "apply_smallest_owner_fix(fix)", "run_regression_suite(before_promote=True)"].join("\n"),
+    nvidiaExamples: [["NeMo Evaluator", "Use to prove the failure and verify the fix."], ["NeMo Customizer", "Use only when supported model customization is the right layer."], ["NeMo Curator", "Use for curated examples or holdouts."]]
+  },
+  "aai-eval-feedback": {
+    focus: "Production feedback is useful only when it becomes eval cases, labels, policies, prompts, data fixes, or tool/schema changes.",
+    sections: ["Evaluation and Tuning", "Run, Monitor, and Maintain"],
+    studyPages: ["Evaluation and Safety", "Human Oversight and Governance"],
+    checks: ["Convert incidents and reviews into replayable tests", "Track metric movement after each fix", "Avoid bundling unrelated changes into one aggregate score"],
+    signals: ["user feedback", "review labels", "regression", "A/B", "canary evaluation"],
+    code: ["case = make_eval_case(trace, reviewer_label)", "candidate = apply_fix(case.failure_layer)", "promote_if(candidate.score > baseline.score)"].join("\n"),
+    nvidiaExamples: [["NeMo Evaluator", "Use for scheduled regression and candidate comparison."]]
+  },
+  "aai-deploy-decompose": {
+    focus: "Deployment questions are about the whole agent chain, not just the model endpoint.",
+    sections: ["Deployment and Scaling"],
+    studyPages: ["Inference Serving and Deployment", "Latency, Throughput, and Traffic Control"],
+    checks: ["Scale model, retriever, vector DB, tools, memory, guardrails, and orchestrator separately", "Use endpoint separation for generator, embeddings, reranker, batch, and real-time traffic", "Trace before adding capacity"],
+    signals: ["agent service", "microservices", "endpoint separation", "model endpoint", "retriever endpoint"],
+    code: ["deploy(agent_api)", "deploy(generator_nim); deploy(embedding_nim)", "deploy(retriever, vector_db, policy_layer)"].join("\n"),
+    nvidiaExamples: [["NIM", "Use for optimized model APIs."], ["NeMo Retriever", "Use for RAG services."], ["NeMo Guardrails", "Use for policy services."]]
+  },
+  "aai-deploy-tail-latency": {
+    focus: "User count is not capacity by itself. Convert it to concurrent requests, request rate, token lengths, workflow steps, queue depth, and p95/p99 SLOs.",
+    sections: ["Deployment and Scaling", "Run, Monitor, and Maintain"],
+    studyPages: ["Latency, Throughput, and Traffic Control", "Observability, Operations, and Cost"],
+    checks: ["p95 means 95% of requests finish at or below that time", "p99 exposes tail latency hidden by averages", "TTFT matters for chat responsiveness even when total latency is acceptable"],
+    signals: ["p95", "p99", "TTFT", "many users", "queue delay", "tail latency"],
+    code: ["slo = {p95_ms, p99_ms, ttft_ms}", "trace_by_span(requests)", "fix_span_with_worst_tail_latency()"].join("\n"),
+    nvidiaExamples: [["NIM", "Use for served model endpoints."], ["Triton Inference Server", "Use when serving/batching behavior is central."], ["TensorRT-LLM", "Use when LLM decode, KV cache, batching, or TTFT is central."]]
+  },
+  "aai-deploy-resilience": {
+    focus: "Backpressure and isolation protect the system when tools, vector DBs, or model endpoints are slow or overloaded.",
+    sections: ["Deployment and Scaling"],
+    studyPages: ["Latency, Throughput, and Traffic Control", "Inference Serving and Deployment"],
+    checks: ["Use queues, timeouts, circuit breakers, and bulkheads", "Separate real-time and batch lanes", "Autoscale on the component that is saturated, not the loudest product name"],
+    signals: ["backpressure", "circuit breaker", "bulkhead", "autoscaling lag", "shared queue", "head-of-line blocking"],
+    code: ["if queue_depth > threshold: shed_or_degrade()", "if tool_timeout_rate_high: open_circuit(tool)", "route(batch, lane=\"offline\")"].join("\n"),
+    nvidiaExamples: [["NIM Operator", "Use for Kubernetes lifecycle and scale of NIM deployments."], ["Dynamo (Triton Dynamo)", "Use for distributed LLM serving patterns."]]
+  },
+  "aai-deploy-rollout": {
+    focus: "Safe rollout requires versioned artifacts, canaries, rollback, health checks, and profiling before broad traffic.",
+    sections: ["Deployment and Scaling", "Run, Monitor, and Maintain"],
+    studyPages: ["Inference Serving and Deployment", "Observability, Operations, and Cost"],
+    checks: ["Canary new prompts, tools, models, retrievers, and policies", "Rollback uses versioned model/prompt/tool/index/policy metadata", "Use system timeline first for performance diagnosis"],
+    signals: ["canary", "blue-green", "rollback", "health check", "Nsight", "profile bottleneck"],
+    code: ["gateway.canary(version=\"agent-v2\", traffic=0.05)", "if quality_bad or p99_bad: rollback(version=\"agent-v1\")", "profile(trace_id)"].join("\n"),
+    nvidiaExamples: [["Nsight Systems", "Use for end-to-end timeline diagnosis."], ["Nsight Compute", "Use after a kernel is isolated."], ["NIM Operator", "Use for K8s rollout and lifecycle."]]
+  },
+  "aai-cog-react": {
+    focus: "ReAct combines reasoning, tool action, observation, and next-step selection. It must have budgets and stopping criteria.",
+    sections: ["Cognition, Planning, and Memory"],
+    studyPages: ["Agent Lifecycle and Architecture", "Tooling, Orchestration, and Memory"],
+    checks: ["Use ReAct for dynamic tool feedback", "Bound tool calls and loop depth", "Stop when evidence is sufficient or confidence is too low"],
+    signals: ["ReAct", "plan-act-observe", "tool observation", "loop", "stopping criteria"],
+    code: ["while budget_left:", "    action = choose_next_action(state)", "    state = observe(execute(action))"].join("\n"),
+    nvidiaExamples: [["NeMo Agent Toolkit", "Use for implementing ReAct-style workflows."]]
+  },
+  "aai-cog-plan-reflect": {
+    focus: "Planning and reflection improve complex tasks but add cost, latency, and failure modes if the evaluator is weak.",
+    sections: ["Cognition, Planning, and Memory"],
+    studyPages: ["Agent Lifecycle and Architecture", "Evaluation and Safety"],
+    checks: ["Plan for dependent subtasks", "Replan when observations invalidate the plan", "Use reflection only when critique has a useful signal"],
+    signals: ["plan-and-execute", "task decomposition", "reflection", "critic", "replanning"],
+    code: ["plan = make_plan(task)", "for step in plan: execute_or_replan(step)", "if critic_finds_issue: revise()"].join("\n"),
+    nvidiaExamples: [["NeMo Agent Toolkit", "Use for plan/execution workflow patterns."]]
+  },
+  "aai-cog-memory-types": {
+    focus: "Memory is not one thing. The exam distinguishes current context, task state, long-term preferences, prior events, facts, entities, vectors, and audit logs.",
+    sections: ["Cognition, Planning, and Memory"],
+    studyPages: ["Tooling, Orchestration, and Memory", "Data Curation and Knowledge Grounding"],
+    checks: ["Working/session memory is not persistent memory", "Entity memory stores facts tied to users/accounts/projects", "Vector memory is retrieval, not unlimited context"],
+    signals: ["short-term memory", "long-term memory", "episodic", "semantic", "entity", "vector store"],
+    code: ["working = current_task_state()", "long_term = memory.search(user, query)", "audit = append_only_decision_log()"].join("\n"),
+    nvidiaExamples: [["NeMo Agent Toolkit", "Use for workflow memory integration."], ["NeMo Retriever", "Use when memory is implemented as retrieval over stored facts."]]
+  },
+  "aai-cog-memory-governance": {
+    focus: "Persistent memory is a data-governance feature. It needs consent, TTL, deletion, sensitivity checks, relevance gates, and auditability.",
+    sections: ["Cognition, Planning, and Memory", "Safety, Ethics, and Compliance"],
+    studyPages: ["Tooling, Orchestration, and Memory", "Human Oversight and Governance"],
+    checks: ["Do not use context window for cross-session preference memory", "Never write sensitive memory without policy and consent", "Filter recall by relevance, recency, user, and permission"],
+    signals: ["remember preference", "forget/delete", "TTL", "consent", "privacy", "memory retrieval correctness"],
+    code: ["if should_remember(fact) and consent_ok:", "    memory.write(fact, ttl, sensitivity)", "recall = memory.search(query, filters={user, ttl, permission})"].join("\n"),
+    nvidiaExamples: [["NeMo Guardrails", "Use for policy checks around memory write/recall decisions."]]
+  },
+  "aai-knowledge-rag": {
+    focus: "RAG is query-time knowledge. It should not be confused with fine-tuning or memorizing private/fresh facts in model weights.",
+    sections: ["Knowledge Integration and Data Handling"],
+    studyPages: ["Data Curation and Knowledge Grounding", "Evaluation and Safety"],
+    checks: ["Parse, chunk, embed, index, retrieve, rerank, pack, cite", "Choose hybrid retrieval when dense-only misses lexical constraints", "Evaluate groundedness and citation support"],
+    signals: ["RAG", "chunking", "embeddings", "hybrid search", "rerank", "citations"],
+    code: ["chunks = chunk(parse(docs))", "hits = hybrid_search(query, filters=acl)", "context = rerank_pack_cite(hits)"].join("\n"),
+    nvidiaExamples: [["NeMo Retriever", "Use for extraction, embedding, indexing, retrieval, reranking, and citations."]]
+  },
+  "aai-knowledge-structured": {
+    focus: "Some knowledge questions require exact relationships or live system state, where SQL, APIs, or knowledge graphs beat pure vector similarity.",
+    sections: ["Knowledge Integration and Data Handling", "Agent Development"],
+    studyPages: ["Data Curation and Knowledge Grounding", "Tooling, Orchestration, and Memory"],
+    checks: ["Use SQL/API tools for exact current records", "Use knowledge graphs when relationships and provenance matter", "Validate queries and keep writes gated"],
+    signals: ["SQL", "API", "knowledge graph", "structured data", "exact relationship", "current record"],
+    code: ["if exact_relationship_needed: use_knowledge_graph()", "elif live_record_needed: call_read_only_api()", "else: retrieve_semantic_context()"].join("\n"),
+    nvidiaExamples: []
+  },
+  "aai-knowledge-access": {
+    focus: "Enterprise knowledge must preserve access controls before context reaches the model. Guardrails do not replace ACLs.",
+    sections: ["Knowledge Integration and Data Handling", "Safety, Ethics, and Compliance"],
+    studyPages: ["Data Curation and Knowledge Grounding", "Policy and Guardrails Layer"],
+    checks: ["Apply tenant/document/row filters before retrieval results enter context", "Keep provenance, timestamps, citations, and freshness metadata", "Block unauthorized context rather than asking the model to ignore it"],
+    signals: ["ACL", "tenant isolation", "document permissions", "freshness", "provenance", "unauthorized context"],
+    code: ["hits = search(query, filters=user_acl)", "context = pack(authorized_only(hits))", "assert no_cross_tenant_sources(context)"].join("\n"),
+    nvidiaExamples: [["NeMo Retriever", "Use for permission-aware retrieval pipelines."], ["NeMo Guardrails", "Use for policy checks, not as pre-retrieval access control."]]
+  },
+  "aai-knowledge-curation": {
+    focus: "Curation prepares corpora, examples, and holdouts offline. Retrieval serves query-time knowledge. The exam may test this boundary directly.",
+    sections: ["Knowledge Integration and Data Handling", "NVIDIA Platform Implementation"],
+    studyPages: ["Data Curation and Knowledge Grounding", "Model Selection and Customization"],
+    checks: ["Use curation for dedupe, PII cleanup, filtering, labels, and eval/tuning examples", "Use retrieval for fresh/private facts at answer time", "Do not use fine-tuning to add changing internal knowledge"],
+    signals: ["NeMo Curator", "dedupe", "PII cleanup", "eval holdout", "training examples", "query-time retrieval"],
+    code: ["curated = curate(raw_docs)", "index = build_retrieval_index(curated.public_or_allowed)", "holdouts = split_eval_cases(curated.labels)"].join("\n"),
+    nvidiaExamples: [["NeMo Curator", "Use for offline data/corpus/example preparation."], ["RAPIDS", "Use when GPU dataframe processing is the bottleneck."], ["NeMo Retriever", "Use after data becomes runtime retrieval content."]]
+  },
+  "aai-platform-core": {
+    focus: "This is the product-boundary domain. Know what each core NVIDIA service owns in an agentic system.",
+    sections: ["NVIDIA Platform Implementation"],
+    studyPages: ["NVIDIA Platform Implementation", "NVIDIA Suite"],
+    checks: ["Agent Toolkit orchestrates", "Retriever retrieves and reranks", "Guardrails governs policy", "Evaluator evaluates", "NIM serves model APIs"],
+    signals: ["which NVIDIA service", "agent orchestration", "enterprise RAG", "guardrails", "evaluation", "NIM endpoint"],
+    code: ["agent = AgentToolkit(workflow)", "docs = Retriever.search(query)", "model = NIM.openai_client(base_url)"].join("\n"),
+    nvidiaExamples: [["NeMo Agent Toolkit", "Agent workflow runtime."], ["NeMo Retriever", "RAG/retrieval."], ["NeMo Guardrails", "Policy/safety."], ["NeMo Evaluator", "Evaluation."], ["NIM", "Inference API."]]
+  },
+  "aai-platform-serving": {
+    focus: "Serving tools live at different layers. The exam often tests NIM vs Triton vs TensorRT-LLM vs Dynamo vs NIM Operator.",
+    sections: ["NVIDIA Platform Implementation", "Deployment and Scaling"],
+    studyPages: ["Inference Serving and Deployment", "Latency, Throughput, and Traffic Control"],
+    checks: ["NIM packages optimized inference APIs", "Triton serves/schedules models and ensembles", "TensorRT-LLM optimizes LLM engines, KV cache, batching, and decode"],
+    signals: ["NIM", "Triton", "TensorRT-LLM", "Dynamo", "NIM Operator", "KV cache"],
+    code: ["client = OpenAI(base_url=NIM_URL)", "triton_model_config = dynamic_batching()", "engine = tensorrt_llm_build(checkpoint)"].join("\n"),
+    nvidiaExamples: [["NIM", "Packaged inference microservice."], ["Triton Inference Server", "Serving and batching layer."], ["TensorRT-LLM", "LLM optimization engine."], ["Dynamo (Triton Dynamo)", "Distributed serving."], ["NIM Operator", "Kubernetes lifecycle."]]
+  },
+  "aai-platform-diagnostics": {
+    focus: "Use the profiling tool that matches the question layer: full-system timeline first, CUDA kernel deep dive second.",
+    sections: ["NVIDIA Platform Implementation", "Deployment and Scaling"],
+    studyPages: ["Observability, Operations, and Cost", "Latency, Throughput, and Traffic Control"],
+    checks: ["Nsight Systems for end-to-end CPU/GPU timeline", "Nsight Compute after one kernel is isolated", "Do not use kernel tools to solve tool/API or vector DB latency"],
+    signals: ["timeline", "kernel", "CUDA", "GPU utilization", "end-to-end latency", "bottleneck"],
+    code: ["if bottleneck_unknown: open_nsight_systems_trace()", "elif slow_kernel_known: inspect_with_nsight_compute()"].join("\n"),
+    nvidiaExamples: [["Nsight Systems", "System timeline."], ["Nsight Compute", "CUDA kernel analysis."]]
+  },
+  "aai-platform-boundaries": {
+    focus: "Boundary traps stop product-name memorization from becoming wrong answers.",
+    sections: ["NVIDIA Platform Implementation"],
+    studyPages: ["NVIDIA Platform Implementation", "Data Curation and Knowledge Grounding"],
+    checks: ["Curator prepares data, not runtime retrieval", "Customizer/Framework change model behavior, not orchestration", "NGC stores artifacts; NCCL is distributed communication"],
+    signals: ["Curator vs Retriever", "NIM vs Nemotron", "Triton vs TensorRT-LLM", "Guardrails vs access control", "NGC"],
+    code: ["if need_runtime_facts: choose_retriever()", "elif need_dataset_cleanup: choose_curator()", "elif need_model_behavior_change: choose_customizer_or_framework()"].join("\n"),
+    nvidiaExamples: [["NeMo Curator", "Offline data prep."], ["NeMo Customizer", "Managed customization."], ["NeMo Framework", "Training/customization framework."], ["NGC", "Catalog/registry."], ["NCCL", "Multi-GPU communication."]]
+  },
+  "aai-run-trace": {
+    focus: "Live agents need traces that explain route, retrieval, tool calls, policy decisions, latency, cost, and versions.",
+    sections: ["Run, Monitor, and Maintain"],
+    studyPages: ["Observability, Operations, and Cost", "Evaluation and Safety"],
+    checks: ["Trace every model, retrieval, tool, memory, guardrail, and review span", "Record model/prompt/tool/index/policy versions", "Make incidents replayable"],
+    signals: ["distributed tracing", "trace replay", "versioned prompt", "route drift", "incident"],
+    code: ["trace.log({route, model, index, tools, rails})", "trace.add_latency_spans()", "evals.add_case(trace.replay())"].join("\n"),
+    nvidiaExamples: [["NeMo Agent Toolkit", "Use for workflow traces."], ["Nsight Systems", "Use when latency needs timeline diagnosis."]]
+  },
+  "aai-run-dashboard": {
+    focus: "Production monitoring must include behavior and quality, not just uptime or GPU utilization.",
+    sections: ["Run, Monitor, and Maintain"],
+    studyPages: ["Observability, Operations, and Cost", "Latency, Throughput, and Traffic Control"],
+    checks: ["Monitor task success, groundedness, hallucination, refusal correctness, and escalation", "Monitor p95/p99, TTFT, queue delay, tool latency, and cost", "Alert on drift and regressions"],
+    signals: ["dashboard", "p95/p99", "tool retry rate", "groundedness", "safety refusal correctness"],
+    code: ["metrics.emit({task_success, groundedness, p99, cost})", "if metric_drift: open_incident(trace_id)"].join("\n"),
+    nvidiaExamples: [["NeMo Evaluator", "Use for scheduled quality and regression checks."]]
+  },
+  "aai-run-maintain": {
+    focus: "Maintenance turns production failures into controlled updates to prompts, tools, memory, indexes, policies, and evals.",
+    sections: ["Run, Monitor, and Maintain", "Evaluation and Tuning"],
+    studyPages: ["Observability, Operations, and Cost", "Data Curation and Knowledge Grounding"],
+    checks: ["Update tool schemas and prompts from trace evidence", "Refresh retrieval indexes and validate memory stores", "Run regression tests before rollout"],
+    signals: ["re-index", "schema update", "memory quality", "rotating keys", "continuous improvement"],
+    code: ["incident = triage(trace)", "patch_owner_layer(incident)", "run_regression_then_canary()"].join("\n"),
+    nvidiaExamples: [["NeMo Retriever", "Use when maintenance is retrieval/index refresh."], ["NeMo Evaluator", "Use when maintenance adds regression cases."]]
+  },
+  "aai-safety-layered": {
+    focus: "Safety is layered across the agent path, not a single final output filter.",
+    sections: ["Safety, Ethics, and Compliance"],
+    studyPages: ["Evaluation and Safety", "Policy and Guardrails Layer"],
+    checks: ["Check input, retrieved content, tool proposal, tool result, memory write, and final output", "Use least privilege and safe defaults", "Escalate high-risk or low-confidence actions"],
+    signals: ["input rail", "retrieval rail", "execution rail", "output rail", "policy check"],
+    code: ["rails.check_input(user_msg)", "rails.check_tool_call(action)", "rails.check_output(answer)"].join("\n"),
+    nvidiaExamples: [["NeMo Guardrails", "Use for runtime policy, dialog, retrieval, tool, and output controls."]]
+  },
+  "aai-safety-injection": {
+    focus: "Prompt injection and data leakage questions test trust boundaries: user and retrieved content are untrusted.",
+    sections: ["Safety, Ethics, and Compliance", "Knowledge Integration and Data Handling"],
+    studyPages: ["Policy and Guardrails Layer", "Data Curation and Knowledge Grounding"],
+    checks: ["Preserve document ACLs before retrieval context", "Block cross-tenant leakage and unauthorized tool access", "Keep PII retention and memory writes governed"],
+    signals: ["prompt injection", "indirect prompt injection", "tenant leakage", "PII persistence", "least privilege"],
+    code: ["context = authorized_context_only(query, user)", "if retrieved_text_contains_instruction: isolate_as_data()", "deny_tool_if_not_allowed(user, action)"].join("\n"),
+    nvidiaExamples: [["NeMo Guardrails", "Use for policy checks."], ["NeMo Retriever", "Use for permission-aware retrieval."]]
+  },
+  "aai-safety-audit": {
+    focus: "Compliance questions ask whether decisions can be explained and audited after the fact.",
+    sections: ["Safety, Ethics, and Compliance", "Human-AI Interaction and Oversight"],
+    studyPages: ["Human Oversight and Governance", "Observability, Operations, and Cost"],
+    checks: ["Record evidence, policy result, tool plan, reviewer action, and versions", "Keep immutable audit trails for high-risk decisions", "Monitor fairness and safety regressions"],
+    signals: ["audit trail", "decision traceability", "compliance review", "bias/fairness", "immutable logs"],
+    code: ["audit.store({evidence, policy, tool_plan, reviewer, versions})", "compliance_report = replay_decision(trace_id)"].join("\n"),
+    nvidiaExamples: [["NeMo Guardrails", "Use for policy decision evidence."], ["NeMo Evaluator", "Use for safety/fairness regression checks."]]
+  },
+  "aai-human-routing": {
+    focus: "Oversight must be risk-based. Sending every task to a human does not scale, and sending high-impact actions directly to tools is unsafe.",
+    sections: ["Human-AI Interaction and Oversight"],
+    studyPages: ["Human Oversight and Governance", "Evaluation and Safety"],
+    checks: ["HITL means approval before high-impact action", "HOTL means sampled monitoring or supervision", "Use confidence, reversibility, and impact to route review"],
+    signals: ["human-in-the-loop", "human-on-the-loop", "approval gate", "review queue", "confidence threshold"],
+    code: ["if high_impact or low_confidence: require_hitl()", "elif medium_risk: sample_for_hotl()", "else: auto_execute_with_audit()"].join("\n"),
+    nvidiaExamples: [["NeMo Guardrails", "Use for escalation/refusal policy when product-specific."]]
+  },
+  "aai-human-review-card": {
+    focus: "Review UX is part of system design. Humans need evidence and proposed action context, not just a raw transcript.",
+    sections: ["Human-AI Interaction and Oversight"],
+    studyPages: ["Human Oversight and Governance", "Observability, Operations, and Cost"],
+    checks: ["Show proposed action, confidence, sources, policy result, tool plan, and versions", "Offer approve, edit, reject, escalate, and override paths", "Record reviewer decision and reason"],
+    signals: ["review card", "explainability", "confidence", "override", "safe default"],
+    code: ["review = {action, evidence, confidence, policy, versions}", "decision = reviewer.decide(review)", "audit.store(decision)"].join("\n"),
+    nvidiaExamples: [["NeMo Agent Toolkit", "Use when workflow trace evidence feeds the review card."]]
+  },
+  "aai-human-feedback": {
+    focus: "Human feedback should improve the system through evals, prompts, policies, tools, data, memory rules, or model tuning.",
+    sections: ["Human-AI Interaction and Oversight", "Evaluation and Tuning"],
+    studyPages: ["Human Oversight and Governance", "Evaluation and Safety"],
+    checks: ["Convert review labels into eval cases", "Update the owning layer, not a random downstream component", "Measure whether review load decreases without safety loss"],
+    signals: ["feedback loop", "review labels", "escalation quality", "override", "continuous improvement"],
+    code: ["evals.add_case(trace, reviewer_label)", "fix = choose_owner_layer(failure)", "monitor(review_load, safety_score)"].join("\n"),
+    nvidiaExamples: [["NeMo Evaluator", "Use to turn review labels into regression checks."], ["NeMo Guardrails", "Use when feedback changes policy behavior."]]
+  }
+};
+
+function lifecycleStageDetailFor(examLabel, stageKey) {
+  if (examLabel === "Agentic AI") return AAI_LIFECYCLE_STAGE_DETAILS[stageKey] || null;
+  if (examLabel === "Agentic AI General") return GENERAL_LIFECYCLE_STAGE_DETAILS[stageKey] || null;
+  return null;
+}
 
 const SECTION_NVIDIA_SERVICE_GUIDES = {
   "Agentic AI": {
@@ -2028,10 +2500,16 @@ const LIFECYCLE_CONTEXT_FILTERS = {
   ],
   "Agentic AI": [
     { label: "All", lane: "All", short: "All" },
-    { label: "Build agent application", lane: "Core: Build agent application", short: "Agent build" },
-    { label: "Use existing model for inference", lane: "Core: Use existing model for inference", short: "Inference" },
-    { label: "Fine-tune existing model", lane: "Secondary: Fine-tune existing model", short: "Fine-tune" },
-    { label: "Train model from zero reference", lane: "Reference: Train model from zero", short: "Train zero" }
+    { label: "Agent Architecture and Design", lane: "1. Agent Architecture and Design", short: "Architecture" },
+    { label: "Agent Development", lane: "2. Agent Development", short: "Development" },
+    { label: "Evaluation and Tuning", lane: "3. Evaluation and Tuning", short: "Evaluation" },
+    { label: "Deployment and Scaling", lane: "4. Deployment and Scaling", short: "Deploy" },
+    { label: "Cognition, Planning, and Memory", lane: "5. Cognition, Planning, and Memory", short: "Memory" },
+    { label: "Knowledge Integration and Data Handling", lane: "6. Knowledge Integration and Data Handling", short: "Knowledge" },
+    { label: "NVIDIA Platform Implementation", lane: "7. NVIDIA Platform Implementation", short: "NVIDIA" },
+    { label: "Run, Monitor, and Maintain", lane: "8. Run, Monitor, and Maintain", short: "Operate" },
+    { label: "Safety, Ethics, and Compliance", lane: "9. Safety, Ethics, and Compliance", short: "Safety" },
+    { label: "Human-AI Interaction and Oversight", lane: "10. Human-AI Interaction and Oversight", short: "Human" }
   ],
   "Agentic AI General": [
     { label: "All", lane: "All", short: "All" },
@@ -2546,11 +3024,13 @@ function LifecyclePlaybookCard({ service, stage, selected, onClick }) {
   );
 }
 
-function LifecycleStagePlaybook({ stage, examLabel, onSelectService }) {
+function LifecycleStagePlaybook({ stage, examLabel, onSelectService, onSelectSection }) {
   const stageKey = lifecycleStageKey(stage);
-  const detail = examLabel === "Agentic AI General" ? GENERAL_LIFECYCLE_STAGE_DETAILS[stageKey] : null;
+  const detail = lifecycleStageDetailFor(examLabel, stageKey);
   if (!stage || !detail) return null;
-  const playbooks = [...(stage.tools || []), ...(stage.optionalTools || [])];
+  const isAgenticExam = examLabel === "Agentic AI";
+  const playbooks = detail.nvidiaExamples || [...(stage.tools || []), ...(stage.optionalTools || [])].map((tool) => [tool, "Open the related study page."]);
+  const signalItems = detail.signals || detail.metrics || [];
   return h("section", { className: `lifecycle-stage-playbook ${serviceGroupClass(stage.tools?.[0] || "")}` },
     h("div", { className: "lifecycle-stage-playbook-title" },
       h("span", null, `${stage.lane} / ${stage.context}`),
@@ -2559,27 +3039,45 @@ function LifecycleStagePlaybook({ stage, examLabel, onSelectService }) {
     ),
     h("div", { className: "lifecycle-stage-playbook-grid" },
       h("article", null,
-        h("strong", null, "Checks in this lane"),
-        h("ul", null, detail.checks.map((item) => h("li", { key: item }, item)))
+        h("strong", null, isAgenticExam ? "Official sections" : "Checks in this lane"),
+        isAgenticExam
+          ? h("div", { className: "lifecycle-section-chips" }, (detail.sections || []).map((item) => h("button", {
+              key: item,
+              type: "button",
+              onClick: () => onSelectSection?.(item),
+              title: `Open ${item} exam section`
+            }, item)))
+          : h("ul", null, detail.checks.map((item) => h("li", { key: item }, item)))
       ),
+      isAgenticExam && detail.studyPages?.length
+        ? h("article", null,
+            h("strong", null, "General Study first"),
+            h("div", { className: "lifecycle-section-chips lifecycle-study-chips" },
+              detail.studyPages.map((item) => h("span", { key: item }, item))
+            )
+          )
+        : null,
       h("article", null,
-        h("strong", null, "Scores, losses, or signals"),
-        h("ul", null, detail.metrics.map((item) => h("li", { key: item }, item)))
+        h("strong", null, isAgenticExam ? "What to know" : "Scores, losses, or signals"),
+        h("ul", null, (isAgenticExam ? detail.checks : signalItems).map((item) => h("li", { key: item }, item)))
       ),
       h("article", { className: "lifecycle-stage-code" },
-        h("strong", null, "Typical code shape"),
+        h("strong", null, isAgenticExam ? "Pattern to recognize" : "Typical code shape"),
         h("pre", null, h("code", null, detail.code))
       ),
       h("article", null,
-        h("strong", null, "Open playbooks"),
+        h("strong", null, isAgenticExam ? "NVIDIA examples if named" : "Open playbooks"),
+        isAgenticExam && signalItems.length
+          ? h("p", { className: "lifecycle-signal-line" }, signalItems.slice(0, 5).join(" · "))
+          : null,
         playbooks.length
           ? h("div", { className: "selected-service-chips" },
-              playbooks.map((tool) => h("button", {
+              playbooks.map(([tool, purpose]) => h("button", {
                 key: tool,
                 type: "button",
                 className: `selected-service-chip ${serviceGroupClass(tool)}`,
                 onClick: () => onSelectService?.(tool, stage)
-              }, tool))
+              }, h("strong", null, tool), isAgenticExam ? h("small", null, purpose) : null))
             )
           : h("p", null, "This reference step is explained by the lane-specific checks above.")
       )
@@ -2587,12 +3085,13 @@ function LifecycleStagePlaybook({ stage, examLabel, onSelectService }) {
   );
 }
 
-function LifecycleFlow({ examLabel: label, selectedStageId, onSelectStage, onSelectService, branding }) {
+function LifecycleFlow({ examLabel: label, selectedStageId, onSelectStage, onSelectService, onSelectSection, branding }) {
   const flow = LIFECYCLE_FLOWS[label];
   if (!flow) return null;
   const services = nvidiaServices.filter((service) => service.exams.includes(label));
   const visibleGroups = SERVICE_GROUPS.filter((group) => services.some((service) => serviceGroupName(service) === group.name));
   const cardLabel = branding.serviceLabel === "Study Playbooks" ? "study playbook" : (branding.serviceLabel || "service").toLowerCase();
+  const conceptFirstAgentic = label === "Agentic AI";
   const hasLanes = flow.stages.some((stage) => stage.lane);
   const laneGroups = hasLanes
     ? [...new Set(flow.stages.map((stage) => stage.lane || "Shared"))].map((lane) => ({
@@ -2602,9 +3101,22 @@ function LifecycleFlow({ examLabel: label, selectedStageId, onSelectStage, onSel
     : [];
   const selectedStage = flow.stages.find((stage) => lifecycleStageKey(stage) === selectedStageId) || flow.stages[0];
 
+  function openSectionChip(event, section) {
+    event.preventDefault();
+    event.stopPropagation();
+    onSelectSection?.(section);
+  }
+
+  function handleSectionChipKey(event, section) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    openSectionChip(event, section);
+  }
+
   function renderStage(stage) {
     const stageNumber = flow.stages.indexOf(stage) + 1;
     const stageKey = lifecycleStageKey(stage);
+    const detail = lifecycleStageDetailFor(label, stageKey);
+    const showAgenticInlineTools = conceptFirstAgentic && stage.lane === "7. NVIDIA Platform Implementation";
     function renderTool(tool, role = "core") {
       const expandedTool = expandNvidiaAcronyms(tool);
       return h("button", {
@@ -2633,53 +3145,90 @@ function LifecycleFlow({ examLabel: label, selectedStageId, onSelectStage, onSel
         hasLanes ? null : h("div", { className: "lifecycle-num" }, stageNumber),
         hasLanes && stage.context ? h("span", { className: "lifecycle-stage-context" }, stage.context) : null,
         h("strong", null, stage.name),
-        h("p", { className: "lifecycle-note" }, stage.note)
+        h("p", { className: "lifecycle-note" }, stage.note),
+        conceptFirstAgentic && detail?.sections?.length
+          ? h("div", { className: "lifecycle-exam-sections" },
+              detail.sections.slice(0, 3).map((section) => h("span", {
+                key: section,
+                role: "button",
+                tabIndex: 0,
+                onClick: (event) => openSectionChip(event, section),
+                onKeyDown: (event) => handleSectionChipKey(event, section),
+                title: `Open ${section} exam section`
+              }, section))
+            )
+          : null,
+        conceptFirstAgentic && detail?.checks?.length
+          ? h("ul", { className: "lifecycle-stage-concepts" },
+              detail.checks.slice(0, 2).map((item) => h("li", { key: item }, item))
+            )
+          : null
       ),
-      stage.tools.length
+      showAgenticInlineTools && (stage.tools.length || stage.optionalTools?.length)
+        ? h("div", { className: "lifecycle-tools lifecycle-tools-agentic" },
+            h("span", { className: "lifecycle-tool-hint-label" }, "NVIDIA to recognize"),
+            [...stage.tools.map((tool) => renderTool(tool, "core")), ...(stage.optionalTools || []).map((tool) => renderTool(tool, "optional"))])
+        : null,
+      !conceptFirstAgentic && stage.tools.length
         ? h("div", { className: "lifecycle-tools" },
             stage.tools.map((tool) => renderTool(tool, "core")))
         : null
       ,
-      stage.optionalTools?.length
+      !conceptFirstAgentic && stage.optionalTools?.length
         ? h("div", { className: "lifecycle-tools lifecycle-tools-optional" },
             stage.optionalTools.map((tool) => renderTool(tool, "optional")))
         : null
     );
   }
 
+  const mapNode = hasLanes
+    ? h("div", { className: "lifecycle-lanes" },
+        laneGroups.map((group) => h("section", { key: group.lane, className: `lifecycle-lane lifecycle-lane-${topicSlug(group.lane)}` },
+          h("div", { className: "lifecycle-lane-title" },
+            h("span", null, group.lane),
+            h("p", null, flow.lanes?.[group.lane] || "Apply quality, safety, governance, and operations across every path.")
+          ),
+          h("div", { className: "lifecycle-grid lifecycle-grid-lane" }, group.stages.map(renderStage))
+        ))
+      )
+    : h("div", { className: "lifecycle-grid" }, flow.stages.map(renderStage));
+  const detailNode = h(LifecycleStagePlaybook, {
+    stage: selectedStage,
+    examLabel: label,
+    onSelectService,
+    onSelectSection
+  });
+
   return h(
     "div",
     { className: "lifecycle-flow" },
     h("div", { className: "lifecycle-head" },
-      h("span", null, "Lifecycle map"),
+      h("span", null, conceptFirstAgentic ? "Exam concept map" : "Lifecycle map"),
       h("h3", null, flow.title),
-      h("p", { className: "muted" }, `Click a stage for context, or click a ${cardLabel} pill to open it directly.`)
+      h("p", { className: "muted" }, conceptFirstAgentic
+        ? "Click a concept to study the official exam section, wording signals, General Study route, and NVIDIA examples only when they matter."
+        : `Click a stage for context, or click a ${cardLabel} pill to open it directly.`)
     ),
-    lifecycleContextFiltersForExam(label)
+    conceptFirstAgentic
+      ? h("div", { className: "lifecycle-pill-note lifecycle-pill-note-concepts" },
+          h("strong", null, "Concept first"),
+          h("span", null, "Lanes follow the official exam order. Product pills stay inline for NVIDIA Platform Implementation; other lanes show examples in the detail panel only when named.")
+        )
+      : lifecycleContextFiltersForExam(label)
       ? h("div", { className: "lifecycle-pill-note" },
           h("span", { className: "lifecycle-tool note-example data" }, "Solid = core"),
           h("span", { className: "lifecycle-tool note-example optional data" }, "Dotted = support/reference")
         )
       : null,
-    h("div", { className: "lifecycle-legend" },
+    conceptFirstAgentic ? null : h("div", { className: "lifecycle-legend" },
       visibleGroups.map((group) => h("span", { key: group.name, className: `legend-chip ${group.className}` }, group.name))
     ),
-    hasLanes
-      ? h("div", { className: "lifecycle-lanes" },
-          laneGroups.map((group) => h("section", { key: group.lane, className: `lifecycle-lane lifecycle-lane-${topicSlug(group.lane)}` },
-            h("div", { className: "lifecycle-lane-title" },
-              h("span", null, group.lane),
-              h("p", null, flow.lanes?.[group.lane] || "Apply quality, safety, governance, and operations across every path.")
-            ),
-            h("div", { className: "lifecycle-grid lifecycle-grid-lane" }, group.stages.map(renderStage))
-          ))
+    conceptFirstAgentic
+      ? h("div", { className: "lifecycle-concept-layout" },
+          h("div", { className: "lifecycle-concept-map" }, mapNode),
+          h("aside", { className: "lifecycle-concept-detail" }, detailNode)
         )
-      : h("div", { className: "lifecycle-grid" }, flow.stages.map(renderStage)),
-    h(LifecycleStagePlaybook, {
-      stage: selectedStage,
-      examLabel: label,
-      onSelectService
-    })
+      : h(React.Fragment, null, mapNode, detailNode)
   );
 }
 
@@ -2732,6 +3281,7 @@ function StudyModePanel({
   const selectedSection = studySections.find((section) => section.name === selectedSectionName) || filteredSections[0] || studySections[0];
   const lifecycleFlow = LIFECYCLE_FLOWS[currentExamLabel];
   const activeLifecycleStage = lifecycleFlow?.stages.find((stage) => lifecycleStageKey(stage) === selectedLifecycleStage) || lifecycleFlow?.stages[0] || null;
+  const lifecycleTabLabel = currentExamLabel === "Agentic AI" ? "Exam Concept Map" : "By Lifecycle";
   const studyChatTopic = effectiveStudyView === "sections"
     ? selectedSection.name
     : effectiveStudyView === "services"
@@ -2811,6 +3361,12 @@ function StudyModePanel({
     setStudyView("services");
   }
 
+  function openSectionFromLifecycle(sectionName) {
+    setActiveSectionExam(currentExamLabel);
+    setSelectedSectionName(sectionName);
+    setStudyView("sections");
+  }
+
   const familyFilterGroup = h("div", { key: "family", className: "filter-group filter-group-family" },
     h("span", null, "Filter by service family"),
     h(
@@ -2824,18 +3380,45 @@ function StudyModePanel({
     )
   );
 
-  const lifecycleContextFilterGroup = h("div", { key: "context", className: "filter-group filter-group-context" },
-    h("span", null, isLifecycleAwareNvidia ? `Filter by ${currentExamLabel} lifecycle context` : "Filter by lifecycle topic"),
-    h(
-      "div",
-      { className: "filter-pills" },
-      serviceFilterLabels.map((filter) => h("button", {
-        key: filter,
-        className: activeServiceFilter === filter ? "active" : "",
-        onClick: () => selectServiceFilter(filter)
-      }, filter))
-    )
-  );
+  const lifecycleContextFilterGroup = currentExamLabel === "Agentic AI"
+    ? h("div", { key: "context", className: "filter-group filter-group-context filter-group-exam-sections" },
+        h("span", null, "Filter by Agentic AI exam section"),
+        h("div", { className: "exam-section-filter-list" },
+          (lifecycleContextFiltersForExam(currentExamLabel) || []).map((filter, index) => {
+            const section = filteredSections.find((item) => item.name === filter.label);
+            const serviceCount = examServices.filter((service) =>
+              serviceMatchesStudyFilter(service, filter.label, currentExamLabel) &&
+              (activeServiceGroup === "All" || serviceGroupName(service) === activeServiceGroup)
+            ).length;
+            const sectionNumber = filter.label === "All" ? "All" : filter.lane.match(/^\d+/)?.[0] || String(index);
+            return h("button", {
+              key: filter.label,
+              type: "button",
+              className: `exam-section-filter-row ${activeServiceFilter === filter.label ? "active" : ""}`,
+              onClick: () => selectServiceFilter(filter.label)
+            },
+              h("span", { className: "exam-section-filter-number" }, sectionNumber),
+              h("span", { className: "exam-section-filter-main" },
+                h("strong", null, filter.label === "All" ? "All exam sections" : filter.label),
+                h("small", null, section?.description || (filter.label === "All" ? "Show all service references for this certificate." : filter.short))
+              ),
+              h("span", { className: "exam-section-filter-count" }, `${serviceCount} ${serviceCount === 1 ? "service" : "services"}`)
+            );
+          })
+        )
+      )
+    : h("div", { key: "context", className: "filter-group filter-group-context" },
+        h("span", null, isLifecycleAwareNvidia ? `Filter by ${currentExamLabel} lifecycle context` : "Filter by lifecycle topic"),
+        h(
+          "div",
+          { className: "filter-pills" },
+          serviceFilterLabels.map((filter) => h("button", {
+            key: filter,
+            className: activeServiceFilter === filter ? "active" : "",
+            onClick: () => selectServiceFilter(filter)
+          }, filter))
+        )
+      );
   const serviceSelectValue = filteredServices.some((service) => service.name === selectedService.name) ? selectedService.name : "";
   const serviceSelectorGroup = h("div", { key: "selector", className: "filter-group service-selector-group" },
     h("label", { htmlFor: "service-jump-select" }, isGenericStudy ? "Select study playbook" : "Select service"),
@@ -2884,7 +3467,7 @@ function StudyModePanel({
           ]
         : [
             h("button", { key: "suite", className: effectiveStudyView === "suite" ? "active" : "", onClick: () => setStudyView("suite") }, branding.suiteLabel),
-            h("button", { key: "lifecycle", className: effectiveStudyView === "lifecycle" ? "active" : "", onClick: () => setStudyView("lifecycle") }, "By Lifecycle"),
+            h("button", { key: "lifecycle", className: effectiveStudyView === "lifecycle" ? "active" : "", onClick: () => setStudyView("lifecycle") }, lifecycleTabLabel),
             h("button", { key: "services", className: effectiveStudyView === "services" ? "active" : "", onClick: () => setStudyView("services") }, branding.serviceLabel),
             h("button", { key: "sections", className: effectiveStudyView === "sections" ? "active" : "", onClick: () => setStudyView("sections") }, "Exam Sections")
           ]
@@ -2901,6 +3484,7 @@ function StudyModePanel({
             selectedStageId: activeLifecycleStage ? lifecycleStageKey(activeLifecycleStage) : "",
             onSelectStage: setSelectedLifecycleStage,
             onSelectService: openServiceFromLifecycle,
+            onSelectSection: openSectionFromLifecycle,
             branding
           })
         )
@@ -3416,14 +4000,16 @@ function buildStudyFlow({ markdown, title, kind = "Service", impl = null, fallba
     || "Correct service choice, architecture boundary, or study decision.";
   if (!summary && !input && !output && !codeChips.length) return null;
   return {
-    inputTitle: kind === "Topic" ? "What enters the question" : "What you provide",
+    inputLabel: kind === "Topic" ? "Question signal" : "Input",
+    inputTitle: kind === "Topic" ? "What the stem is asking" : "What you provide",
     input,
-    middleLabel: kind,
+    middleLabel: kind === "Topic" ? "Pattern to recognize" : kind,
     title,
     serviceText: impl?.whatItIs || summary,
     codeChips,
     note: impl?.handoff || "",
-    outputTitle: kind === "Topic" ? "What you should choose" : "What you get back",
+    outputLabel: kind === "Topic" ? "Answer pattern" : "Output",
+    outputTitle: kind === "Topic" ? "What the correct answer does" : "What you get back",
     output,
     nextStep: impl?.nextStep || ""
   };
@@ -3473,7 +4059,7 @@ function StudyFlowDiagram({ markdown, title, kind = "Service", impl = null, fall
   if (!flow) return null;
   return h("div", { className: "service-flow-diagram", "aria-label": `${title} input output flow` },
     h("section", { className: "flow-node flow-input" },
-      h("span", null, "Input"),
+      h("span", null, flow.inputLabel || "Input"),
       h("strong", null, flow.inputTitle),
       h("p", { className: "flow-kicker" }, renderInline(flow.input, { autoHighlight: true, maxHighlights: 3 }))
     ),
@@ -3489,7 +4075,7 @@ function StudyFlowDiagram({ markdown, title, kind = "Service", impl = null, fall
     ),
     h("div", { className: "flow-arrow", "aria-hidden": "true" }, "->"),
     h("section", { className: "flow-node flow-output" },
-      h("span", null, "Output"),
+      h("span", null, flow.outputLabel || "Output"),
       h("strong", null, flow.outputTitle),
       h("p", { className: "flow-kicker" }, renderInline(flow.output, { autoHighlight: true, maxHighlights: 3 })),
       flow.nextStep ? h("p", { className: "flow-note" }, renderInline(flow.nextStep, { autoHighlight: true, maxHighlights: 2 })) : null
@@ -3551,6 +4137,7 @@ function ServiceDecisionSnapshot({ markdown, mode = "all", serviceSlug = "", fal
 function LifecycleUsagePanel({ service, activeServiceFilter = "All", currentExamLabel = "Agentic AI" }) {
   const allUsages = lifecycleUsageSummary(service, "All", currentExamLabel);
   if (!allUsages.length) return null;
+  const isAgenticExam = currentExamLabel === "Agentic AI";
   const activeUsages = activeServiceFilter === "All" ? [] : lifecycleUsageSummary(service, activeServiceFilter, currentExamLabel);
   const activeKeys = new Set(activeUsages.map((usage) => `${usage.lane}-${usage.stageId}-${usage.roleId}`));
   const orderedUsages = [
@@ -3560,8 +4147,8 @@ function LifecycleUsagePanel({ service, activeServiceFilter = "All", currentExam
 
   return h("div", { className: "agentic-usage-panel service-section" },
     h("div", { className: "service-section-heading" },
-      h("span", null, "Lifecycle usage"),
-      h("h4", null, "Where this service appears in the lifecycle")
+      h("span", null, isAgenticExam ? "Exam concept usage" : "Lifecycle usage"),
+      h("h4", null, isAgenticExam ? "Where this service matters in exam concepts" : "Where this service appears in the lifecycle")
     ),
     h("div", { className: "agentic-usage-grid" },
       orderedUsages.map((usage) => {
@@ -3683,37 +4270,53 @@ function sectionNvidiaServiceGuide(section, certSlug) {
 function SectionNvidiaServiceGuide({ section, certSlug }) {
   const items = sectionNvidiaServiceGuide(section, certSlug);
   if (!items.length) return null;
-  return h(
-    "section",
-    { className: "section-block section-service-guide" },
+  const isAgentic = examLabelForSection(section, certSlug) === "Agentic AI";
+  const isPlatformSection = section?.name === "NVIDIA Platform Implementation";
+  const compact = isAgentic && !isPlatformSection;
+  const body = h(React.Fragment, null,
     h("div", { className: "section-service-guide-head" },
-      h("span", null, "NVIDIA service map"),
-      h("h4", null, "Services to use in this section"),
-      h("p", null, "Use this as the quick answer map before reading the longer section notes.")
+      h("span", null, compact ? "NVIDIA examples" : "NVIDIA platform map"),
+      h("h4", null, compact ? "Only use these when the question names NVIDIA products" : "Services to know in this section"),
+      h("p", null, compact
+        ? "Most of this exam section is concept-first. Open this only when product wording appears in the stem or answer choices."
+        : "This is the one section where NVIDIA product mapping is the main study target.")
     ),
     h("div", {
-      className: `section-service-guide-flow${items.length > 5 ? " is-multirow" : ""}`,
-      "aria-label": "NVIDIA service flow, read left to right"
+      className: `section-service-guide-flow${items.length > 5 ? " is-multirow" : ""}${compact ? " is-compact" : ""}`,
+      "aria-label": compact ? "Conditional NVIDIA service examples" : "NVIDIA service flow, read left to right"
     },
       items.flatMap(({ service, purpose }, index) => {
         const card = h("article", {
           key: service.name,
           className: `section-service-guide-card ${serviceGroupClass(service)}`
         },
-          h("span", { className: "section-service-guide-step" }, `Step ${index + 1}`),
+          h("span", { className: "section-service-guide-step" }, compact ? "Example" : `Step ${index + 1}`),
           h("div", { className: "section-service-guide-card-title" },
             h("strong", null, service.name),
             h("span", null, service.lifecycle || serviceGroupName(service))
           ),
           h("p", null, renderInline(purpose))
         );
-        if (index === items.length - 1) return [card];
+        if (compact || index === items.length - 1) return [card];
         return [
           card,
-          h("div", { key: `${service.name}-arrow`, className: "section-service-guide-arrow", "aria-hidden": "true" }, "→")
+          h("div", { key: `${service.name}-arrow`, className: "section-service-guide-arrow", "aria-hidden": "true" }, "->")
         ];
       })
     )
+  );
+  if (compact) {
+    return h(
+      "details",
+      { className: "section-block section-service-guide section-service-guide-conditional", open: true },
+      h("summary", null, "Conditional NVIDIA product examples"),
+      body
+    );
+  }
+  return h(
+    "section",
+    { className: "section-block section-service-guide" },
+    body
   );
 }
 
@@ -3730,11 +4333,9 @@ function SectionDetail({ section, certSlug, quickQuiz, generateStudyQuiz, quizDi
       h("h3", null, study.name || section.name),
       h("p", null, renderInline(study.description))
     ),
-    h(ServiceDecisionSnapshot, { markdown: markdownState.markdown, mode: "summary", serviceSlug: topicSlug(section.name), fallback: { ...study, name: study.name || section.name, kind: "Topic" } }),
-    h(SectionNvidiaServiceGuide, { section, certSlug }),
-    h(MarkdownCodePreview, { markdown: markdownState.markdown }),
-    h(ServiceDecisionSnapshot, { markdown: markdownState.markdown, mode: "details", serviceSlug: topicSlug(section.name), fallback: { ...study, name: study.name || section.name, kind: "Topic" } }),
     h(StudyFirstPanel, { markdown: markdownState.markdown }),
+    h(ServiceDecisionSnapshot, { markdown: markdownState.markdown, mode: "summary", serviceSlug: topicSlug(section.name), fallback: { ...study, name: study.name || section.name, kind: "Topic" } }),
+    h(MarkdownCodePreview, { markdown: markdownState.markdown }),
     h("div", { className: "study-map section-map" },
       h("section", { className: "identity" },
         h("span", null, "Key ideas"),
@@ -3753,7 +4354,8 @@ function SectionDetail({ section, certSlug, quickQuiz, generateStudyQuiz, quizDi
         h("p", null, renderInline(study.scenario))
       )
     ),
-    study.studyNotes.length ? h("details", { className: "section-block section-study-notes" },
+    h(SectionNvidiaServiceGuide, { section, certSlug }),
+    study.studyNotes.length ? h("details", { className: "section-block section-study-notes", open: true },
       h("summary", null, "Study notes"),
       h("ul", null, study.studyNotes.map((item) =>
         h("li", { key: item }, renderInline(item))
@@ -3820,7 +4422,8 @@ function SectionDetail({ section, certSlug, quickQuiz, generateStudyQuiz, quizDi
       title: section.name,
       missingPath: `certifications/${certSlug}/topics/${topicSlug(section.name)}.md`,
       templatePath: "certifications/_TOPIC_TEMPLATE.md",
-      summary: "Deep-dive notes"
+      summary: "Deep-dive notes",
+      defaultOpen: true
     })
   );
 }
@@ -4169,7 +4772,7 @@ function parseStudyContent(markdown, fallback, kind) {
   };
 }
 
-function StudyMarkdown({ state, title, missingPath, templatePath, summary, removeStructured = true }) {
+function StudyMarkdown({ state, title, missingPath, templatePath, summary, removeStructured = true, defaultOpen = null }) {
   if (state.status === "loading" || state.status === "idle") return null;
   if (state.status === "missing") {
     return h("div", { className: "topic-md missing" },
@@ -4192,8 +4795,8 @@ function StudyMarkdown({ state, title, missingPath, templatePath, summary, remov
     );
   }
   const body = markdownBodyForStudy(state.markdown, { removeStructured });
-  const defaultOpen = body.length < 1800;
-  return h("details", { className: "topic-md", open: defaultOpen },
+  const shouldOpen = defaultOpen ?? body.length < 1800;
+  return h("details", { className: "topic-md", open: shouldOpen },
     h("summary", null, summary),
     h(MarkdownOutline, { markdown: body }),
     h("div", { className: "topic-md-body" }, renderMarkdown(body))
@@ -4394,7 +4997,7 @@ function renderMarkdown(text, options = {}) {
       case "p": return h("p", { key, className: "md-p" }, renderInline(b.text, renderOptions));
       case "quote": return h("blockquote", { key, className: "md-quote" }, renderInline(b.text, renderOptions));
       case "code": return h("pre", { key, className: "md-code" }, b.text);
-      case "details": return h("details", { key, className: "md-details" }, h("summary", null, renderInline(b.summary, renderOptions)), h("div", { className: "md-details-body" }, renderMarkdown(b.text, renderOptions)));
+      case "details": return h("details", { key, className: "md-details", open: true }, h("summary", null, renderInline(b.summary, renderOptions)), h("div", { className: "md-details-body" }, renderMarkdown(b.text, renderOptions)));
       case "ul": return h("ul", { key, className: "md-ul" }, b.items.map((it, j) => h("li", { key: j }, renderListItemInline(it, renderOptions))));
       case "ol": return h("ol", { key, className: "md-ol" }, b.items.map((it, j) => h("li", { key: j }, renderListItemInline(it, renderOptions))));
       case "table":
@@ -4656,10 +5259,12 @@ function StudyDeepDive({ item, generic = false }) {
 const GENERATE_COUNTS = [1, 5, 10];
 const GENERATE_DIFFICULTIES = ["easier", "medium", "hard", "advanced", "expert"];
 function practiceStudyByOptions(isGenericStudy, currentExamLabel = "Agentic AI") {
+  const isAgenticExam = currentExamLabel === "Agentic AI";
   return [
     { value: "recommended", label: "Recommended" },
-    { value: "service", label: isGenericStudy ? "Study playbook" : "NVIDIA service" },
-    { value: "lifecycle", label: currentExamLabel === "GenAI LLMs" ? "GenAI LLM lifecycle" : "Agentic AI lifecycle" },
+    { value: "section", label: "Exam section" },
+    { value: "service", label: isGenericStudy ? "Playbook" : "NVIDIA service" },
+    { value: "lifecycle", label: isAgenticExam ? "Concept map lane" : "Lifecycle path" },
     { value: "keyword", label: "Keyword" }
   ];
 }
@@ -4671,8 +5276,9 @@ function cleanLifecycleLabel(label) {
 function agenticLifecycleOptions(label = "Agentic AI") {
   const flow = LIFECYCLE_FLOWS[label] || LIFECYCLE_FLOWS["Agentic AI"];
   const stages = flow?.stages || [];
+  const isAgenticExam = label === "Agentic AI";
   return [
-    { lane: "__all__", label: "All lifecycles", stages },
+    { lane: "__all__", label: isAgenticExam ? "All concept-map lanes" : "All lifecycle paths", stages },
     ...Object.keys(flow?.lanes || {}).map((lane) => ({
     lane,
     label: cleanLifecycleLabel(lane),
@@ -4681,7 +5287,25 @@ function agenticLifecycleOptions(label = "Agentic AI") {
   ];
 }
 
-function buildPracticeTarget({ studyBy, serviceName, lifecycleLane, keyword, lifecycleLabel = "Agentic AI" }) {
+function buildPracticeTarget({ studyBy, domainName, serviceName, lifecycleLane, keyword, lifecycleLabel = "Agentic AI" }) {
+  if (studyBy === "section") {
+    if (!domainName || domainName === "__all__") {
+      return {
+        label: "All exam sections",
+        keywords: [],
+        all: true,
+        topic: `All ${lifecycleLabel} blueprint sections.`,
+        service: null
+      };
+    }
+    return {
+      label: domainName,
+      domain: domainName,
+      keywords: [],
+      topic: `${lifecycleLabel} blueprint section: ${domainName}.`,
+      service: null
+    };
+  }
   if (studyBy === "service") {
     if (serviceName === "__all__") {
       return {
@@ -4690,7 +5314,9 @@ function buildPracticeTarget({ studyBy, serviceName, lifecycleLane, keyword, lif
         all: true,
         topic: lifecycleLabel === "Agentic AI General"
           ? "All general study playbooks and capability questions."
-          : `All ${lifecycleLabel} NVIDIA services and lifecycle questions.`,
+          : lifecycleLabel === "Agentic AI"
+            ? "All NVIDIA services that are useful for Agentic AI exam concepts."
+            : `All ${lifecycleLabel} NVIDIA services and lifecycle questions.`,
         service: null
       };
     }
@@ -4707,12 +5333,13 @@ function buildPracticeTarget({ studyBy, serviceName, lifecycleLane, keyword, lif
     const options = agenticLifecycleOptions(lifecycleLabel);
     const option = options.find((item) => item.lane === lifecycleLane) || options[0];
     const stages = option?.stages || [];
+    const isAgenticExam = lifecycleLabel === "Agentic AI";
     if (option?.lane === "__all__") {
       return {
-        label: "All lifecycles",
+        label: isAgenticExam ? "All exam concept lanes" : "All lifecycle paths",
         keywords: [],
         all: true,
-        topic: `All ${lifecycleLabel} lifecycle paths.`,
+        topic: isAgenticExam ? "All Agentic AI exam concept-map lanes." : `All ${lifecycleLabel} lifecycle paths.`,
         service: null
       };
     }
@@ -4722,7 +5349,9 @@ function buildPracticeTarget({ studyBy, serviceName, lifecycleLane, keyword, lif
     return {
       label,
       keywords: [label, lifecycleLane, ...stageNames, ...tools],
-      topic: `${lifecycleLabel} lifecycle: ${label}. Stages: ${stages.map((stage) => `${stage.name} (${stage.context})`).join("; ")}. Tools: ${[...new Set(tools)].join(", ")}.`,
+      topic: isAgenticExam
+        ? `Agentic AI exam concept lane: ${label}. Concepts: ${stages.map((stage) => `${stage.name} (${stage.context})`).join("; ")}. NVIDIA examples if named: ${[...new Set(tools)].join(", ")}.`
+        : `${lifecycleLabel} lifecycle: ${label}. Stages: ${stages.map((stage) => `${stage.name} (${stage.context})`).join("; ")}. Tools: ${[...new Set(tools)].join(", ")}.`,
       service: null
     };
   }
@@ -4747,6 +5376,7 @@ function buildPracticeTarget({ studyBy, serviceName, lifecycleLane, keyword, lif
 function filteredPracticeQuestions(questions, target, studyBy) {
   if (studyBy === "recommended") return questions;
   if (target?.all) return questions;
+  if (target?.domain) return questions.filter((question) => question.domain === target.domain);
   if (!target?.keywords?.length) return [];
   return questions.filter((question) => questionMatchesAnyKeyword(question, target.keywords));
 }
@@ -4820,15 +5450,32 @@ function PracticeDrillSetup({
   target,
   running = false,
   generationStatus = null,
+  bankLabel = "Certificate concepts",
+  generatedLabel = "NVIDIA-specific",
+  mixedLabel = "Recommended mix",
+  bankMatchLabel = "certificate-concept",
+  generatedMatchLabel = "NVIDIA-specific",
+  sourceFilter = "all",
+  setSourceFilter = () => {},
+  sourceOptions = [],
+  mockSlotCount = 0,
   onGenerateNew,
   onCancelGenerate,
   onStartBank,
-  onStartGenerated
+  onStartGenerated,
+  onStartMixed
 }) {
   const bankStartCount = Math.min(count, bankCount);
   const generatedStartCount = Math.min(count, generatedCount);
+  const mixedCount = bankCount + generatedCount;
+  const mixedStartCount = Math.min(count, mixedCount);
   const generateCount = Math.min(count, 10);
   const targetLabel = target?.label || "selected focus";
+  const startCountLabel = (start, total) => {
+    if (!total) return "No match";
+    if (start >= total) return `${total} match${total === 1 ? "" : "es"}`;
+    return `Start ${start} of ${total}`;
+  };
   return h("div", { className: "practice-drill-setup" },
     h("div", { className: "drill-selectors" },
       h("div", { className: "drill-group" },
@@ -4848,19 +5495,49 @@ function PracticeDrillSetup({
         )
       )
     ),
+    sourceOptions.length ? h("div", { className: "practice-source-filter" },
+      h("div", { className: "practice-source-filter-head" },
+        h("span", { className: "drill-label" }, "Question source"),
+        h("em", null, "Unique drill bank plus fixed mock slots")
+      ),
+      h("div", { className: "practice-source-filter-actions" },
+        sourceOptions.map((option) => h("button", {
+          key: option.value,
+          type: "button",
+          className: `practice-source-filter-btn ${sourceFilter === option.value ? "active" : ""}`,
+          disabled: option.count === 0,
+          onClick: () => setSourceFilter(option.value)
+        },
+          h("strong", null, option.label),
+          h("span", null, `${option.count} unique match${option.count === 1 ? "" : "es"}`),
+          typeof option.slotCount === "number"
+            ? h("em", null, `${option.slotCount} fixed mock slot${option.slotCount === 1 ? "" : "s"}`)
+            : null
+        ))
+      )
+    ) : null,
     h("div", { className: "practice-drill-summary" },
       h("strong", null, targetLabel),
-      h("span", null, `${bankCount} original mock match${bankCount === 1 ? "" : "es"} · ${generatedCount} generated-bank match${generatedCount === 1 ? "" : "es"} for this focus and difficulty`)
+      h("span", null, `${bankCount} ${bankMatchLabel} scope match${bankCount === 1 ? "" : "es"} · ${generatedCount} ${generatedMatchLabel} scope match${generatedCount === 1 ? "" : "es"} after source and difficulty filters`),
+      h("em", null, `${mockSlotCount} fixed mock slot${mockSlotCount === 1 ? "" : "s"} after source and difficulty filters`)
     ),
     h("div", { className: "practice-drill-actions" },
+      h("div", { className: "practice-source-head" },
+        h("span", null, "Question scope"),
+        h("em", null, "General concepts vs NVIDIA-specific")
+      ),
       h("div", { className: "practice-source-actions" },
         h("button", { type: "button", className: "pp-btn pp-btn-source pp-btn-original", disabled: !bankCount, onClick: onStartBank },
-          h("strong", null, "Original mocks"),
-          h("span", null, bankStartCount ? `${bankStartCount} question${bankStartCount === 1 ? "" : "s"}` : "No match")
+          h("strong", null, bankLabel),
+          h("span", null, startCountLabel(bankStartCount, bankCount))
         ),
         h("button", { type: "button", className: "pp-btn pp-btn-source pp-btn-generated-bank", disabled: !generatedCount, onClick: onStartGenerated },
-          h("strong", null, "Generated bank"),
-          h("span", null, generatedStartCount ? `${generatedStartCount} question${generatedStartCount === 1 ? "" : "s"}` : "No match")
+          h("strong", null, generatedLabel),
+          h("span", null, startCountLabel(generatedStartCount, generatedCount))
+        ),
+        h("button", { type: "button", className: "pp-btn pp-btn-source pp-btn-mixed", disabled: !mixedCount || !onStartMixed, onClick: onStartMixed },
+          h("strong", null, mixedLabel),
+          h("span", null, startCountLabel(mixedStartCount, mixedCount))
         )
       ),
       onGenerateNew
@@ -4951,11 +5628,11 @@ function DrillInlineForm({
     generationStatus?.message ? h("p", { className: `generation-status ${generationStatus.state}` }, generationStatus.message) : null,
     h("div", { className: "drill-shortcuts" },
       h("button", { type: "button", className: "drill-shortcut-btn", disabled: running || !allowBank || !bankCount, onClick: startBankDrill },
-        studyBy === "recommended" ? "Start bank guided" : `Start bank (${bankCount}Q)`
+        studyBy === "recommended" ? "Start concept guided" : `Start concepts (${bankCount}Q)`
       ),
       h("button", { type: "button", className: "drill-shortcut-btn", disabled: running, onClick: () => drillRecentMistakes(5) }, "Drill 5 recent mistakes"),
       generatedPracticeCount
-        ? h("button", { type: "button", className: "drill-shortcut-btn", onClick: () => startFlow("practice-generated") }, `Drill generated (${generatedPracticeCount}Q)`)
+        ? h("button", { type: "button", className: "drill-shortcut-btn", onClick: () => startFlow("practice-generated") }, `Drill NVIDIA-specific (${generatedPracticeCount}Q)`)
         : null
     )
   );
@@ -5128,9 +5805,24 @@ function groupMocksBySource(availableMocks = []) {
   return { original, generated };
 }
 
+function questionsById(questions = []) {
+  return new Map((questions || []).map((question) => [question.id, question]));
+}
+
+function mockSlotQuestions(availableMocks = [], questionMap = new Map(), sourceFilter = "all") {
+  return availableMocks
+    .filter((mock) => sourceFilter === "all" || (mock.source || "original") === sourceFilter)
+    .flatMap((mock) => (mock.questionIds || []).map((id) => questionMap.get(id)).filter(Boolean));
+}
+
+function countMockSlots({ availableMocks = [], questionMap = new Map(), sourceFilter = "all", target, studyBy, difficulty = "any" }) {
+  const slotQuestions = mockSlotQuestions(availableMocks, questionMap, sourceFilter);
+  return questionsForDifficulty(filteredPracticeQuestions(slotQuestions, target, studyBy), difficulty).length;
+}
+
 function sourceLabel(source, variant = "mock") {
   if (variant === "drill") return source === "generated" ? "Generated drills" : "Saved drills";
-  return source === "generated" ? "Generated mocks" : "Original mocks";
+  return source === "generated" ? "Generated mocks" : "Downloaded mocks";
 }
 
 function mockSetSummary(mocks, variant = "mock") {
@@ -5150,7 +5842,7 @@ function MockSourceControl({ availableMocks = [], selectedMockSource = "original
   const sources = ["original", "generated"].filter((source) => groups[source].length);
   if (!sources.length) return null;
   return h("div", { className: "mock-source-control" },
-    h("span", { className: "mock-control-label" }, variant === "drill" ? "Drill source" : "Mock source"),
+    h("span", { className: "mock-control-label" }, variant === "drill" ? "Drill source" : "Mock type"),
     h("div", { className: "mock-source-tabs" },
       sources.map((source) => h("button", {
         key: source,
@@ -5236,15 +5928,22 @@ function PracticePanel(props) {
   const lifecycleOptions = agenticLifecycleOptions(currentExamLabel);
   const studyByOptions = practiceStudyByOptions(isGenericStudy, currentExamLabel).filter((option) => option.value !== "recommended");
   const defaultStudyBy = studyByOptions[0]?.value || "keyword";
+  const sectionOptions = [{ name: "__all__", label: "All exam sections" }, ...(exam.domains || []).map((domain) => ({ name: domain.name, label: domain.name }))];
+  const sectionOptionsKey = sectionOptions.map((option) => option.name).join("|");
   const [studyBy, setStudyBy] = useState(defaultStudyBy);
+  const [domainName, setDomainName] = useState("__all__");
   const [serviceName, setServiceName] = useState("__all__");
   const [lifecycleLane, setLifecycleLane] = useState(lifecycleOptions[0]?.lane || "");
   const [keyword, setKeyword] = useState("");
   const [drillCount, setDrillCount] = useState(10);
-  const [drillDifficulty, setDrillDifficulty] = useState("hard");
+  const [drillDifficulty, setDrillDifficulty] = useState("any");
+  const [drillSource, setDrillSource] = useState("all");
   useEffect(() => {
     if (!studyByOptions.some((option) => option.value === studyBy)) {
       setStudyBy(defaultStudyBy);
+    }
+    if (domainName !== "__all__" && !sectionOptions.some((option) => option.name === domainName)) {
+      setDomainName("__all__");
     }
     if (serviceName !== "__all__" && practiceServices.length && !practiceServices.some((service) => service.name === serviceName)) {
       setServiceName("__all__");
@@ -5252,61 +5951,150 @@ function PracticePanel(props) {
     if (lifecycleOptions.length && !lifecycleOptions.some((option) => option.lane === lifecycleLane)) {
       setLifecycleLane(lifecycleOptions[0].lane);
     }
-  }, [studyByOptions, studyBy, defaultStudyBy, practiceServices, serviceName, lifecycleOptions, lifecycleLane]);
+  }, [studyByOptions, studyBy, defaultStudyBy, sectionOptionsKey, domainName, practiceServices, serviceName, lifecycleOptions, lifecycleLane]);
   const practiceIdSet = idSet(Array.isArray(exam.practicePoolIds) && exam.practicePoolIds.length ? exam.practicePoolIds : exam.questions.map((q) => q.id));
   const practicePool = exam.questions.filter((q) => practiceIdSet.has(q.id));
-  const approvedDraftSet = idSet(exam.approvedGeneratedIds);
-  const originalBankIdSet = idSet(exam.originalBankIds);
-  const generatedPracticeIdSet = idSet(Array.isArray(exam.generatedPracticeIds) ? exam.generatedPracticeIds : exam.approvedGeneratedIds);
-  const bankOnlyPool = originalBankIdSet.size
-    ? exam.questions.filter((q) => originalBankIdSet.has(q.id))
-    : practicePool.filter((q) => !approvedDraftSet.has(q.id));
-  const generatedPool = generatedPracticeIdSet.size
-    ? exam.questions.filter((q) => generatedPracticeIdSet.has(q.id))
-    : exam.questions.filter((q) => approvedDraftSet.has(q.id));
-  const originalBankCount = bankOnlyPool.length;
-  const generatedPracticeCount = generatedPool.length;
-  const highFidelityCount = exam.highFidelityGeneratedIds?.length || 0;
+  const allConceptPool = practicePool.filter((q) => (q.questionScope || "general_concept") !== "nvidia_specific");
+  const allNvidiaSpecificPool = practicePool.filter((q) => q.questionScope === "nvidia_specific");
+  const sourceFilteredPracticePool = questionsForSource(practicePool, drillSource);
+  const conceptPool = sourceFilteredPracticePool.filter((q) => (q.questionScope || "general_concept") !== "nvidia_specific");
+  const nvidiaSpecificPool = sourceFilteredPracticePool.filter((q) => q.questionScope === "nvidia_specific");
+  const originalBankCount = allConceptPool.length;
+  const generatedPracticeCount = allNvidiaSpecificPool.length;
+  const bankDrillLabel = isGenericStudy ? "Saved concepts" : "Certificate concepts";
+  const generatedDrillLabel = isGenericStudy ? "Generated scenarios" : "NVIDIA-specific";
+  const mixedDrillLabel = isGenericStudy ? "Mixed scenarios" : "Recommended mix";
+  const bankMatchLabel = isGenericStudy ? "saved-concept" : "certificate-concept";
+  const generatedMatchLabel = isGenericStudy ? "generated-scenario" : "NVIDIA-specific";
+  const mixProfile = mixedSourceProfile(currentExamLabel);
   const generatedSourceLabel = approvedDraftCount
-    ? `${highFidelityCount} generated bank · ${approvedDraftCount} approved draft${approvedDraftCount === 1 ? "" : "s"}`
-    : `${highFidelityCount} generated bank`;
-  const target = buildPracticeTarget({ studyBy, serviceName, lifecycleLane, keyword, lifecycleLabel: currentExamLabel });
-  const bankMatches = filteredPracticeQuestions(bankOnlyPool, target, studyBy);
-  const generatedMatches = filteredPracticeQuestions(generatedPool, target, studyBy);
+    ? `${generatedPracticeCount} NVIDIA-specific scope · ${approvedDraftCount} approved draft${approvedDraftCount === 1 ? "" : "s"}`
+    : `${generatedPracticeCount} NVIDIA-specific scope`;
+  const target = buildPracticeTarget({ studyBy, domainName, serviceName, lifecycleLane, keyword, lifecycleLabel: currentExamLabel });
+  const bankMatches = filteredPracticeQuestions(conceptPool, target, studyBy);
+  const generatedMatches = filteredPracticeQuestions(nvidiaSpecificPool, target, studyBy);
+  const allTargetMatches = filteredPracticeQuestions(practicePool, target, studyBy);
   const canUseStudyFilters = ["Agentic AI", "Agentic AI General", "GenAI LLMs"].includes(currentExamLabel);
   const difficultyOptions = DRILL_DIFFICULTIES.filter((difficulty) => {
     if (difficulty === "any") return true;
-    return questionsForDifficulty(bankMatches, difficulty).length + questionsForDifficulty(generatedMatches, difficulty).length > 0;
+    return questionsForDifficulty(allTargetMatches, difficulty).length > 0;
   });
   const difficultyOptionsKey = difficultyOptions.join("|");
   useEffect(() => {
     if (!difficultyOptions.includes(drillDifficulty)) {
-      setDrillDifficulty(difficultyOptions.includes("hard") ? "hard" : difficultyOptions[0] || "any");
+      setDrillDifficulty(difficultyOptions.includes("any") ? "any" : difficultyOptions[0] || "any");
     }
   }, [difficultyOptionsKey, drillDifficulty]);
   const bankDifficultyMatches = questionsForDifficulty(bankMatches, drillDifficulty);
   const generatedDifficultyMatches = questionsForDifficulty(generatedMatches, drillDifficulty);
+  const questionMap = useMemo(() => questionsById(exam.questions), [exam.questions]);
+  const currentMockSlotCount = countMockSlots({
+    availableMocks,
+    questionMap,
+    sourceFilter: drillSource,
+    target,
+    studyBy,
+    difficulty: "any"
+  });
+  const currentDifficultyMockSlotCount = countMockSlots({
+    availableMocks,
+    questionMap,
+    sourceFilter: drillSource,
+    target,
+    studyBy,
+    difficulty: drillDifficulty
+  });
+  const sourceFilterOptions = PRACTICE_SOURCE_FILTERS.map((option) => ({
+    ...option,
+    count: questionsForDifficulty(questionsForSource(allTargetMatches, option.value), drillDifficulty).length,
+    slotCount: countMockSlots({
+      availableMocks,
+      questionMap,
+      sourceFilter: option.value,
+      target,
+      studyBy,
+      difficulty: drillDifficulty
+    })
+  }));
+  const sourceFilterOptionsKey = sourceFilterOptions.map((option) => `${option.value}:${option.count}`).join("|");
+  useEffect(() => {
+    const selectedSource = sourceFilterOptions.find((option) => option.value === drillSource);
+    if (selectedSource && selectedSource.value !== "all" && selectedSource.count === 0) {
+      setDrillSource("all");
+    }
+  }, [sourceFilterOptionsKey, drillSource]);
+  const weakDomainNames = new Set((dashboard.weak || []).map((domain) => domain.name));
+  const weakBankPool = allConceptPool.filter((question) => weakDomainNames.has(question.domain));
+  const weakGeneratedPool = allNvidiaSpecificPool.filter((question) => weakDomainNames.has(question.domain));
+  const recommendedMixedGuidedPool = buildBalancedMixedQuestions(
+    weakBankPool.length ? weakBankPool : allConceptPool,
+    weakGeneratedPool.length ? weakGeneratedPool : allNvidiaSpecificPool,
+    ADAPTIVE_PRACTICE_TARGET * 3,
+    mixProfile.conceptShare
+  );
+  function startRecommendedMixedGuided() {
+    startTargetedGuidedPractice({
+      questions: recommendedMixedGuidedPool,
+      label: "recommended mixed weak-area practice",
+      flowName: "practice-coach-mixed"
+    });
+  }
+  function startConceptGuided() {
+    startTargetedGuidedPractice({
+      questions: weakBankPool.length ? weakBankPool : allConceptPool,
+      label: "certificate concepts",
+      flowName: "practice-coach-bank"
+    });
+  }
+  function startNvidiaGuided() {
+    startTargetedGuidedPractice({
+      questions: weakGeneratedPool.length ? weakGeneratedPool : allNvidiaSpecificPool,
+      label: "NVIDIA-specific questions",
+      flowName: "practice-coach-generated"
+    });
+  }
+  function startMixedDrill() {
+    const questions = buildBalancedMixedQuestions(bankDifficultyMatches, generatedDifficultyMatches, drillCount, mixProfile.conceptShare);
+    startQuestionDrill({
+      questions,
+      label: `${target.label} recommended mix`,
+      count: questions.length,
+      difficulty: "any",
+      flowName: "practice-mixed"
+    });
+  }
   const profileRecommendations = h(ProfileRecommendations, { dashboard, learnerProfile, isGenericStudy });
 
   const recommendedReviewGrid = h("div", { className: `practice-overview-grid ${canUseStudyFilters ? "practice-overview-secondary" : ""}` },
-      h("div", { className: "pp-card pp-card-guided pp-card-feature" },
+    h("div", { className: "pp-card pp-card-guided pp-card-feature guided-plan-card" },
       h("div", { className: "pp-card-body" },
         h("span", { className: "pp-badge pp-badge-guided" }, "Recommended"),
-        h("h3", null, "Weak-domain guided practice"),
-        h("p", null, `Original uses mock-bank questions; generated uses the high-fidelity generated bank plus approved drafts. Each guided run uses up to ${ADAPTIVE_PRACTICE_TARGET} available questions.`)
+        h("h3", null, "Recommended mixed practice"),
+        h("p", null, `${mixProfile.description} It starts from your weak domains first, then keeps the scope mix close to the study-guide shape.`),
+        h("div", { className: "guided-mix-summary" },
+          h("span", null, h("strong", null, `${mixProfile.conceptPercent}%`), " certificate concepts"),
+          h("span", null, h("strong", null, `${mixProfile.nvidiaPercent}%`), " NVIDIA-specific")
+        )
       ),
-      h("div", { className: "pp-card-foot pp-card-actions" },
+      h("div", { className: "pp-card-foot guided-plan-actions" },
         h("button", {
           className: "pp-btn pp-btn-primary pp-btn-full",
-          disabled: !hasBank || !bankOnlyPool.length,
-          onClick: () => startFlow("practice-coach-bank")
-        }, "Start weak-domain bank"),
-        generatedPracticeCount
-          ? h("button", {
-              className: "pp-btn pp-btn-full",
-              onClick: () => startFlow("practice-coach-generated")
-            }, "Start weak-domain generated")
-          : h("span", { className: "pp-card-hint" }, "No generated bank questions yet")
+          disabled: !recommendedMixedGuidedPool.length,
+          onClick: startRecommendedMixedGuided
+        }, `Start recommended mix (${ADAPTIVE_PRACTICE_TARGET}Q)`),
+        h("div", { className: "guided-secondary-actions" },
+          h("button", {
+            className: "pp-btn",
+            disabled: !hasBank || !allConceptPool.length,
+            onClick: startConceptGuided
+          }, "Concepts only"),
+          generatedPracticeCount
+            ? h("button", {
+                className: "pp-btn",
+                onClick: startNvidiaGuided
+              }, "NVIDIA platform scope")
+            : h("span", { className: "pp-card-hint" }, "No NVIDIA-specific questions yet")
+        )
       )
     ),
     h("div", { className: "pp-side-panel practice-review-panel" },
@@ -5316,7 +6104,7 @@ function PracticePanel(props) {
       ),
       h("p", { className: "muted" }, isGenericStudy
         ? "Review fixed generated study sets. Separate from the Study By filter below."
-        : "Review fixed mock tests. Separate from the Study By filter below."),
+        : "Review fixed mock tests separately from the focused drills below."),
       h(MockPicker, {
         availableMocks,
         selectedMockId,
@@ -5334,13 +6122,18 @@ function PracticePanel(props) {
   const focusedPracticeControls = canUseStudyFilters ? h("section", { className: "practice-focus-section" },
     h("div", { className: "pp-card pp-card-drill pp-card-feature practice-focus-card practice-focus-unified" },
       h("div", { className: "pp-card-body" },
-        h("span", { className: "pp-badge pp-badge-drill" }, "Study by"),
+        h("span", { className: "pp-badge pp-badge-drill" }, "Filter"),
         h("h3", null, `Practice ${target.label}`),
-        h("p", null, "Choose a focus, then start from original mocks, the generated bank, or create new draft questions for this topic."),
+        h("p", null, currentExamLabel === "Agentic AI"
+          ? "Choose an exam section, concept-map lane, NVIDIA service, or keyword, then pick source and scope for the drill."
+          : "Choose an exam section, lifecycle path, NVIDIA service, or keyword, then pick source and scope for the drill."),
         h(PracticeScopePanel, {
           studyBy,
           setStudyBy,
           studyByOptions,
+          sectionOptions,
+          domainName,
+          setDomainName,
           serviceLabel: isGenericStudy ? "Study playbook" : "NVIDIA service",
           keywordPlaceholder: isGenericStudy
             ? "RAG, policy controls, model routing..."
@@ -5356,6 +6149,8 @@ function PracticePanel(props) {
           keyword,
           setKeyword,
           bankMatches,
+          generatedMatches,
+          mockSlotCount: currentMockSlotCount,
           target,
           embedded: true
         })
@@ -5369,6 +6164,15 @@ function PracticePanel(props) {
           difficultyOptions,
           bankCount: bankDifficultyMatches.length,
           generatedCount: generatedDifficultyMatches.length,
+          bankLabel: bankDrillLabel,
+          generatedLabel: generatedDrillLabel,
+          mixedLabel: mixedDrillLabel,
+          bankMatchLabel,
+          generatedMatchLabel,
+          sourceFilter: drillSource,
+          setSourceFilter: setDrillSource,
+          sourceOptions: sourceFilterOptions,
+          mockSlotCount: currentDifficultyMockSlotCount,
           target,
           running: generationStatus?.state === "running",
           generationStatus,
@@ -5389,11 +6193,12 @@ function PracticePanel(props) {
           }),
           onStartGenerated: () => startQuestionDrill({
             questions: generatedMatches,
-            label: `${target.label} generated pool`,
+            label: `${target.label} NVIDIA-specific questions`,
             count: drillCount,
             difficulty: drillDifficulty,
             flowName: "practice-generated"
-          })
+          }),
+          onStartMixed: startMixedDrill
         })
       )
     )
@@ -5421,9 +6226,9 @@ function PracticePanel(props) {
                 disabled: !generatedMatches.length,
                 onClick: () => studyBy === "recommended"
                   ? startFlow("practice-coach-generated")
-                  : startTargetedGuidedPractice({ questions: generatedMatches, label: `${target.label} generated pool` })
-              }, generatedMatches.length ? `Guided generated (${Math.min(ADAPTIVE_PRACTICE_TARGET, generatedMatches.length)}Q)` : "No generated match")
-            : h("span", { className: "pp-card-hint" }, "No generated bank questions yet")
+                  : startTargetedGuidedPractice({ questions: generatedMatches, label: `${target.label} NVIDIA-specific questions` })
+              }, generatedMatches.length ? `Guided NVIDIA-specific (${Math.min(ADAPTIVE_PRACTICE_TARGET, generatedMatches.length)}Q)` : "No NVIDIA-specific match")
+            : h("span", { className: "pp-card-hint" }, "No NVIDIA-specific questions yet")
         )
       ),
 
@@ -5431,7 +6236,7 @@ function PracticePanel(props) {
         h("div", { className: "pp-card-body" },
           h("span", { className: "pp-badge pp-badge-drill" }, "Drill"),
           h("h3", null, "Question drill setup"),
-          h("p", null, "Choose count and difficulty, then start from original mocks or the generated bank.")
+          h("p", null, "Choose count and difficulty, then start certificate concepts, NVIDIA-specific questions, or the recommended mix.")
         ),
         h("div", { className: "pp-card-foot" },
           h(PracticeDrillSetup, {
@@ -5442,6 +6247,15 @@ function PracticePanel(props) {
             difficultyOptions,
             bankCount: bankDifficultyMatches.length,
             generatedCount: generatedDifficultyMatches.length,
+            bankLabel: bankDrillLabel,
+            generatedLabel: generatedDrillLabel,
+            mixedLabel: mixedDrillLabel,
+            bankMatchLabel,
+            generatedMatchLabel,
+            sourceFilter: drillSource,
+            setSourceFilter: setDrillSource,
+            sourceOptions: sourceFilterOptions,
+            mockSlotCount: currentDifficultyMockSlotCount,
             target,
             onStartBank: () => startQuestionDrill({
               questions: bankMatches,
@@ -5452,11 +6266,12 @@ function PracticePanel(props) {
             }),
             onStartGenerated: () => startQuestionDrill({
               questions: generatedMatches,
-              label: `${target.label} generated pool`,
+              label: `${target.label} NVIDIA-specific questions`,
               count: drillCount,
               difficulty: drillDifficulty,
               flowName: "practice-generated"
-            })
+            }),
+            onStartMixed: startMixedDrill
           })
         )
       )
@@ -5467,11 +6282,11 @@ function PracticePanel(props) {
     h("div", { className: "pp-head" },
       h("div", null,
         h("h2", null, "Practice"),
-      h("p", { className: "muted" }, isGenericStudy
+        h("p", { className: "muted" }, isGenericStudy
           ? "Pick the next best drill or generate new scenario questions."
-          : "Pick the next best drill, review fixed mocks, or generate new scenario questions.")
+          : "Pick from fixed mock tests, NVIDIA-specific questions, or broader certificate concept questions.")
       ),
-      h("span", { className: "pp-bank-count" }, `${originalBankCount} original · ${generatedPracticeCount} generated`)
+      h("span", { className: "pp-bank-count" }, `${originalBankCount} concept · ${generatedPracticeCount} NVIDIA-specific`)
     ),
 
     !hasBank
@@ -5480,9 +6295,9 @@ function PracticePanel(props) {
 
     h("div", { className: "practice-dashboard" },
       h("div", { className: "practice-stat" },
-        h("span", null, "Practice pool"),
+        h("span", null, "Question pool"),
         h("strong", null, `${practiceBankCount}/${exam.questions.length}`),
-        h("em", null, `${originalBankCount} original · ${generatedSourceLabel}`)
+        h("em", null, `${originalBankCount} concept · ${generatedSourceLabel}`)
       ),
       isGenericStudy ? null : h("div", { className: "practice-stat" },
         h("span", null, "Review queue"),
@@ -5490,12 +6305,12 @@ function PracticePanel(props) {
         h("em", null, pendingCount ? `${pendingCount} pending review` : "no draft queue")
       ),
       isGenericStudy ? null : h("div", { className: "practice-stat" },
-        h("span", null, "Original mocks"),
+        h("span", null, "Downloaded mocks"),
         h("strong", null, `${mockGroups.original.length}`),
         h("em", null, mockGroups.original.map((m) => `${m.questionCount}Q`).join(" · ") || "none")
       ),
       isGenericStudy ? null : h("div", { className: "practice-stat" },
-        h("span", null, "Generated mocks"),
+        h("span", null, "Generated mock tests"),
         h("strong", null, `${mockGroups.generated.length}`),
         h("em", null, mockGroups.generated.map((m) => `${m.questionCount}Q`).join(" · ") || "none")
       ),
@@ -5527,6 +6342,9 @@ function PracticeScopePanel({
   studyBy,
   setStudyBy,
   studyByOptions,
+  sectionOptions = [],
+  domainName,
+  setDomainName,
   serviceLabel,
   keywordPlaceholder,
   agenticServices,
@@ -5538,22 +6356,31 @@ function PracticeScopePanel({
   keyword,
   setKeyword,
   bankMatches,
+  generatedMatches = [],
+  mockSlotCount = 0,
   target,
   embedded = false
 }) {
+  const conceptCount = bankMatches.length;
+  const nvidiaCount = generatedMatches.length;
+  const totalCount = conceptCount + nvidiaCount;
+  const lifecycleOption = studyByOptions.find((option) => option.value === "lifecycle");
+  const lifecycleFieldLabel = lifecycleOption?.label || "Lifecycle path";
   return h("div", { className: `practice-scope-panel ${embedded ? "practice-scope-embedded" : ""}` },
     h("div", { className: "practice-scope-head" },
       h("div", null,
-        h("span", { className: "pp-profile-label" }, "Study by"),
+        h("span", { className: "pp-profile-label" }, "Current filter"),
         h("strong", null, target?.label || "recommended weak domains")
       ),
-      h("span", { className: `scope-bank-count ${bankMatches.length ? "" : "empty"}` },
-        studyBy === "recommended" ? "Adaptive weak-domain bank" : `${bankMatches.length} original mock match${bankMatches.length === 1 ? "" : "es"}`
+      h("span", { className: `scope-bank-count ${totalCount ? "" : "empty"}` },
+        studyBy === "recommended"
+          ? "Adaptive weak-domain concepts"
+          : `${totalCount} unique before difficulty · ${mockSlotCount} fixed mock slot${mockSlotCount === 1 ? "" : "s"}`
       )
     ),
     h("div", { className: "practice-scope-grid" },
       h("div", { className: "practice-scope-field practice-filter-buttons" },
-        h("span", null, "Focus"),
+        h("span", null, "Filter by"),
         h("div", { className: "scope-button-row" },
           studyByOptions.map((option) => h("button", {
             key: option.value,
@@ -5563,6 +6390,17 @@ function PracticeScopePanel({
           }, option.label))
         )
       ),
+      studyBy === "section"
+        ? h("label", { className: "practice-scope-field" },
+            h("span", null, "Exam section"),
+            h("select", {
+              value: domainName,
+              onChange: (e) => setDomainName(e.target.value)
+            },
+              sectionOptions.map((option) => h("option", { key: option.name, value: option.name }, option.label))
+            )
+          )
+        : null,
       studyBy === "service"
         ? h("label", { className: "practice-scope-field" },
             h("span", null, serviceLabel),
@@ -5577,7 +6415,7 @@ function PracticeScopePanel({
         : null,
       studyBy === "lifecycle"
         ? h("label", { className: "practice-scope-field" },
-            h("span", null, "Lifecycle"),
+            h("span", null, lifecycleFieldLabel),
             h("select", {
               value: lifecycleLane,
               onChange: (e) => setLifecycleLane(e.target.value)
@@ -5857,11 +6695,11 @@ function TestPanel({ exam, mockSummary, mockResultsMd, busy, startFlow, availabl
   return h(
     "div",
     { className: "launch-panel" },
-    h("h2", null, "Test"),
+    h("h2", null, "Mock Tests"),
     !hasQuestionBank
       ? h("p", { className: "empty-bank-note" }, `No ${exam.certification.code} test bank yet. Study Mode works now; timed tests unlock after questions are added.`)
       : null,
-    h("p", null, "Timed, deferred grading. No feedback until you submit. Mirrors the real Certiverse-proctored exam."),
+    h("p", null, "Fixed exam-style sets with timed, deferred grading. No feedback until you submit."),
     h(
       "div",
       { className: "exam-facts" },
@@ -5872,8 +6710,8 @@ function TestPanel({ exam, mockSummary, mockResultsMd, busy, startFlow, availabl
     availableMocks.length > 1
       ? h("div", { className: "mock-exam-picker" },
           h("div", { className: "mock-exam-head" },
-            h("h3", null, "Select actual exam mock"),
-            h("p", { className: "muted" }, "Choose original downloaded mocks or improved generated mocks before starting the timed exam.")
+            h("h3", null, "Select mock test"),
+            h("p", { className: "muted" }, "Choose downloaded originals for baseline checks or generated mocks for harder local simulations.")
           ),
           h(MockPicker, {
             availableMocks,
@@ -5944,13 +6782,24 @@ function ExamScreen(props) {
   } = props;
 
   const isPractice = sessionKind === "practice";
-  const isAdaptive = ["practice-adaptive", "practice-coach-bank", "practice-coach-generated"].includes(flow);
+  const isAdaptive = ADAPTIVE_PRACTICE_FLOWS.includes(flow);
   const selected = answers[question.id];
   const isRevealed = isPractice && revealed[question.id];
   const correct = isRevealed && selected === question.answer;
   const submitLabel = isAdaptive ? "Finish Guided Practice" : isPractice ? "Finish Practice" : "End Exam";
   const coachEntry = coachNotes[question.id];
   const progressLabel = isAdaptive ? adaptivePosition : `${answeredCount}/${questions.length}`;
+  const nextUnansweredIndex = (() => {
+    if (!isPractice || isAdaptive) return null;
+    for (let index = current + 1; index < questions.length; index += 1) {
+      if (answers[questions[index].id] === undefined) return index;
+    }
+    for (let index = 0; index < current; index += 1) {
+      if (answers[questions[index].id] === undefined) return index;
+    }
+    return null;
+  })();
+  const canAdvance = isPractice && !isAdaptive ? nextUnansweredIndex !== null : current < questions.length - 1;
 
   return h(
     "section",
@@ -6083,7 +6932,11 @@ function ExamScreen(props) {
             }, coachStatus.state === "running" ? "Choosing…" : "Continue practice →")
           : null,
         (!isAdaptive || current < questions.length - 1)
-          ? h("button", { className: "next-btn", onClick: () => setCurrent(Math.min(questions.length - 1, current + 1)), disabled: current === questions.length - 1 }, "Next →")
+          ? h("button", {
+              className: "next-btn",
+              onClick: () => setCurrent(isPractice && !isAdaptive ? nextUnansweredIndex : Math.min(questions.length - 1, current + 1)),
+              disabled: !canAdvance
+            }, isPractice && !isAdaptive ? "Next unanswered →" : "Next →")
           : null
       )
     )
@@ -6250,7 +7103,7 @@ function ReviewScreen(props) {
   const selected = answers[question.id];
   const correct = selected === question.answer;
   const isMock = flow === "test-mock-1";
-  const isAdaptive = ["practice-adaptive", "practice-coach-bank", "practice-coach-generated"].includes(flow);
+  const isAdaptive = ADAPTIVE_PRACTICE_FLOWS.includes(flow);
   const weakAreas = Object.entries(grade.byDomain || {})
     .map(([name, score]) => ({ name, pct: Math.round((score.correct / score.total) * 100) }))
     .filter((d) => d.pct < 70)

@@ -19,7 +19,11 @@ status: populated
 
 ## Certification boundary
 
-This page is the NCP-AAI exam lens for deployment. Keep general deployment patterns only when they are needed to choose the correct NVIDIA-oriented architecture. The reusable concept home is `Agentic AI General Study -> Inference Serving and Deployment` and `Observability, Operations, and Cost`; NVIDIA product cues stay here.
+This page is the NCP-AAI exam lens for deployment. Keep general deployment patterns only when they are needed to choose the correct NVIDIA-oriented architecture. The reusable concept home is `Agentic AI General Study -> Inference Serving and Deployment`, `Latency, Throughput, and Traffic Control`, and `Observability, Operations, and Cost`; NVIDIA product cues stay here.
+
+## General Study first
+
+Read `Agentic AI General Study -> Inference Serving and Deployment`, `Agentic AI General Study -> Latency, Throughput, and Traffic Control`, `Agentic AI General Study -> Model Serving Gateway`, and `Agentic AI General Study -> Observability, Operations, and Cost`. Use this overlay for official-domain wording about deploying full agent systems, not just model endpoints: queues, tools, retrieval, memory, guardrails, autoscaling, p95/p99, rollout, and NVIDIA serving/profiling choices.
 
 ## Core ideas you must hold in your head
 

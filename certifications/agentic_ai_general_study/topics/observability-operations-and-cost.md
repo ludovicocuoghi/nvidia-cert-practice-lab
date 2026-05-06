@@ -6,9 +6,48 @@ status: populated
 
 # Observability, Operations, and Cost
 
+## Actual implementation / Pattern you use
+
+```json
+{
+  "trace_id": "task-2026-05-06-001",
+  "route": "rag_agent_high_confidence",
+  "spans": [
+    {"name": "route", "ms": 12, "result": "rag_agent"},
+    {"name": "retrieve", "ms": 180, "docs": 8, "empty": false},
+    {"name": "rerank", "ms": 42, "top_k": 4},
+    {"name": "prefill", "ms": 510, "input_tokens": 6200},
+    {"name": "decode", "ms": 860, "output_tokens": 410},
+    {"name": "tool_call", "ms": 240, "tool": "lookup_case"},
+    {"name": "guardrail_output", "ms": 35, "result": "pass"}
+  ],
+  "versions": {"model": "v3", "prompt": "p12", "policy": "g7", "index": "r14"},
+  "outcome": {"task_success": true, "grounded": true, "cost_usd": 0.042}
+}
+```
+
+| Trace question | Look for | Common fix |
+|---|---|---|
+| Where is time spent? | Stage durations, queue depth, p95/p99 | Optimize the actual span |
+| Why did task fail with HTTP 200? | Outcome labels and tool/retrieval evidence | Add task success events and regression cases |
+| Why did cost spike? | Route drift, token shape, retries, tool calls | Route cheaper, trim context, cache, reduce loops |
+| Can we replay it? | Versioned model, prompt, tools, policy, index | Store enough metadata for incident-to-eval conversion |
+
+## Exam coverage map
+
+Use this page first for these NCP-AAI sections:
+
+| NCP-AAI section | Why this page matters |
+|---|---|
+| Run, Monitor, and Maintain | Covers traces, drift, incidents, cost dashboards, and versioned replay. |
+| Deployment and Scaling | Shows how to locate p95/p99 bottlenecks before scaling or optimizing. |
+| Evaluation and Tuning | Converts live failures into regression cases and quality/safety checks. |
+| NVIDIA Platform Implementation | Maps generic trace/profiling concepts to Nsight, NIM metrics, and NeMo Evaluator when product wording appears. |
+
 ## What to study first
 
 - **Core idea:** How live agents are traced, monitored, debugged, optimized, and turned into regression tests.
+- **Read first for production delay words:** `Latency, Throughput, and Traffic Control` owns p50/p95/p99, TTFT, queue delay, throughput, concurrency, backpressure, circuit breakers, bulkheads, and rollout traffic controls.
 - **Use it when:** The scenario mentions p99 latency, cost per task, HTTP 200 but failed work, trace replay, route drift, or incidents.
 - **Study first:** A **trace** is the end-to-end request path
 - a **span** is one timed step such as retrieval, rerank, prefill, decode, tool call, guardrail, or review.
@@ -86,6 +125,27 @@ Operations metrics are functions over traces, not only logs: p50/p95/p99, empty 
 | Failed task with 200 | Task success events | HTTP only |
 | Retrieval failure | Retrieval spans | Final answer only |
 | Safety drift | Guardrail rates | Uptime only |
+
+### Deep dive: trace-first diagnosis
+
+| Signal | First diagnostic tool or view | Why |
+|---|---|---|
+| End-to-end latency, queueing, CPU/GPU gaps, tool waits | System timeline | It shows where the request waits before choosing a low-level fix |
+| Specific slow GPU kernel | Kernel-level profile | Use after a timeline identifies the kernel |
+| Agent loops or repeated failed calls | Trajectory trace | The bottleneck is orchestration, not serving |
+| Retrieval empty or irrelevant | Retrieval spans and query/doc metrics | RAG quality must be measured before changing the model |
+| Safety false positives or misses | Guardrail span outcomes and reviewer labels | Policy tuning needs precision/recall, not anecdotes |
+
+### Operating metrics by layer
+
+| Layer | Metrics |
+|---|---|
+| Routing | Route mix, route drift, escalation rate, fallback rate |
+| Retrieval | Empty retrieval, recall@k, rerank win rate, stale index hits, ACL denials |
+| Tooling | Schema failures, auth denials, timeout rate, duplicate prevention, retry count |
+| Model endpoint | TTFT, tokens/sec, queue depth, p95/p99, error rate, cost per 1K tokens |
+| Agent task | Task success, trajectory quality, cost per completed task, human escalation quality |
+| Safety/governance | Refusal correctness, PII incidents, audit completeness, review SLA |
 
 ### Hands-on checks
 

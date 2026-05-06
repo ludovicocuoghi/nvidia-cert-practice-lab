@@ -6,6 +6,23 @@ source_lens: general-study
 
 # Evaluation and Regression Harness
 
+## Actual implementation / How you use it
+
+```yaml
+eval_run:
+  baseline: last_approved_release
+  candidate: prompt_or_model_or_agent_change
+  cases: [task_success, rag_grounding, tool_correctness, safety, latency_cost]
+  gates:
+    groundedness: ">= 0.90"
+    tool_validity: ">= 0.98"
+    safety_regression: "no_new_high_severity_failures"
+```
+
+| Input | Harness owns | Output |
+|---|---|---|
+| Cases, rubrics, traces, baseline, candidate | Metrics, judge calibration, deterministic checks, release gates | Pass/fail decision and regression evidence |
+
 ## What to study first
 
 - **Core idea:** You are building the test system that measures prompts, models, retrieval, tools, policies, trajectories, safety, cost, and regressions before and after release.

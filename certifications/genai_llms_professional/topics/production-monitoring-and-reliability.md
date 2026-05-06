@@ -10,20 +10,20 @@ status: populated
 
 - **Core idea:** Monitor quality, **latency**, **drift**, cost, errors, and reliability after release.
 - **Use it when:** Study this when scenarios involve live systems, **alerts**, anomaly diagnosis, or model lifecycle operations.
-- **Study first:** p50/p95/p99: — **latency** percentiles
-- p99 means 99% of requests are faster than this value
-- P95 **TTFT** is the key interactive metric
+- **Study first:** p50/p95/p99 are **latency** percentiles. p99 means 99% of requests finish at or below that value, so the slowest 1% are the tail users you still need to care about.
+- P95 **TTFT** is the key interactive metric.
 - drift: — input distribution shift (**embeddings** diverge from baseline) and output **quality regression** (scores trend down over time)
 - cost per request: — (input tokens * input price + output tokens * output price) per request
 - monitor trend and per-tenant breakdown
 - quality regression: — **canary** query scores drop below threshold after a **deployment**
 - block/**rollback**
 - versioning: — every artifact (prompt, model, retriever index, guardrail config) must be versioned for reproducible incident analysis
+- **General Study first:** Read `Agentic AI General Study -> Latency, Throughput, and Traffic Control` for p50/p95/p99, TTFT, tail latency, queue delay, backpressure, circuit breakers, bulkheads, canary, blue-green, and rollback. Use this GENL page for NVIDIA LLM-serving monitoring and reliability choices.
 - **Real trap:** Infrastructure uptime does not prove answer quality or grounding.
 
 ## Certification boundary
 
-This page is the NCP-GENL exam lens for production LLM operations. Keep LLM-specific metrics, NIM/Triton/DCGM/Prometheus monitoring, reliability patterns, drift, logs, traces, and health checks here when they are tied to model serving. Agent-level task-success operations belong in Agentic AI General Study; NVIDIA operational cues stay here.
+This page is the NCP-GENL exam lens for production LLM operations. Keep LLM-specific metrics, NIM/Triton/DCGM/Prometheus monitoring, reliability patterns, drift, logs, traces, and health checks here when they are tied to model serving. Agent-level task-success operations and reusable traffic-control definitions belong in Agentic AI General Study; NVIDIA operational cues stay here.
 
 ## Core ideas you must hold in your head
 
@@ -302,7 +302,7 @@ Evidence source: `mock_2` through `mock_5`, especially production **moderation**
 
 ### Must know
 
-- **p50/p95/p99** — **latency** percentiles; p99 means 99% of requests are faster than this value; P95 **TTFT** is the key interactive metric
+- **p50/p95/p99** — **latency** percentiles; p99 means 99% of requests finish at or below that value; P95 **TTFT** is the key interactive metric
 - **drift** — input distribution shift (**embeddings** diverge from baseline) and output **quality regression** (scores trend down over time)
 - **cost per request** — (input tokens * input price + output tokens * output price) per request; monitor trend and per-tenant breakdown
 - **quality regression** — **canary** query scores drop below threshold after a **deployment**; block/**rollback**

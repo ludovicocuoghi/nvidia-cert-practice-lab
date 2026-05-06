@@ -1,7 +1,7 @@
 {
   "id": "mock_1",
   "name": "Mock Test 1",
-  "description": "Fixed 50-question mock balanced by official domain weights for NCP-AAI. Question order and answer choices are shuffled at session start.",
+  "description": "Downloaded/original 50-question mock. Use it as imported practice and repeatable progress tracking; generated mocks are the officially balanced readiness sets.",
   "durationMinutes": 90,
   "passingScorePercent": 70,
   "questionIds": [

@@ -9,6 +9,8 @@ Use this document as the standard for generating, parsing, filtering, and practi
 
 The goal is to avoid weak practice banks where the correct option is obvious, where answer A is usually correct, or where wrong options are silly. Questions should train exam-style reasoning: identify the lifecycle phase, the bottleneck, the NVIDIA tool or concept, and the safest production decision.
 
+For mock-question planning, topic priorities, and per-60-question domain/scope targets, use `certifications/mock-question-generation-blueprint.md` before generating more bank content.
+
 ## Required question metadata
 
 Every question must contain these fields:
@@ -21,6 +23,7 @@ Every question must contain these fields:
 - Topic: <specific subtopic for filtering>
 - Exam: <NCP-GENL or NCP-AAI>
 - Difficulty: <medium | hard | advanced | expert>
+- Scope: <general_concept | nvidia_specific>
 - A. <option>
 - B. <option>
 - C. <option>
@@ -123,6 +126,15 @@ Use difficulty to adapt the question selection.
 - advanced: requires choosing the right lifecycle layer or trade-off under constraints
 - expert: combines multiple systems, safety, scaling, or evaluation concerns
 
+### Scope
+
+Use `Scope` to separate what the question is really testing from where the question came from.
+
+- `general_concept`: broad exam knowledge that does not require a named NVIDIA tool or platform decision. Examples: encoder-decoder models, sampling, BPE/WordPiece, ReAct, memory scope, multi-agent coordination, evaluation design, guardrails as a general control concept, and distributed training patterns.
+- `nvidia_specific`: a named NVIDIA product, library, hardware family, or deployment surface is central to the correct decision. Examples: NeMo, NIM, NIM Operator, TensorRT-LLM, Triton, Nsight, NGC, RAPIDS, CUDA, NCCL, A100/H100 Tensor Cores, Dynamo-Triton, and NeMo Guardrails when product behavior is being tested.
+
+Do not equate `Scope` with source. Downloaded/original mocks can contain NVIDIA-specific questions, and generated banks can contain general-concept questions. Existing legacy questions may be inferred by keyword, but all newly generated or repaired questions should include the explicit `- Scope:` line.
+
 ## Adaptive practice rules
 
 The app should combine `Domain`, `Topic`, and `Difficulty` with the learner profile.
@@ -157,6 +169,7 @@ Also account for exam weight. A weak high-weight domain should appear more often
 6. Avoid giveaway options like "hide logs", "retry forever", "disable evaluation", "prompt only", "use the biggest model for everything", "treat the requirement as generic model selection", or "do nothing" unless the question is intentionally basic.
 7. Explanations should teach the decision rule, not just restate the answer.
 8. Include the reason each wrong option is wrong whenever possible.
+9. Use `Scope` consistently. Mark a question NVIDIA-specific only when the named NVIDIA surface is necessary to answer it, not merely mentioned in background.
 
 ## Generated service-question rules
 
@@ -225,10 +238,11 @@ For each session:
 1. Pick target exam: NCP-GENL or NCP-AAI.
 2. Pick weak domains using learner score and confidence.
 3. Adjust probability by official exam weight.
-4. Within each domain, pick topics with fewer answered questions or lower accuracy.
-5. Select difficulty based on learner level in that domain.
-6. Avoid repeating questions answered correctly with high confidence recently.
-7. Reintroduce missed questions after a delay.
+4. Keep the scope mix close to the study-guide shape: NCP-AAI about 72% general concept and 28% NVIDIA-specific; NCP-GENL about 55% general concept and 45% NVIDIA-specific.
+5. Within each domain, pick topics with fewer answered questions or lower accuracy.
+6. Select difficulty based on learner level in that domain.
+7. Avoid repeating questions answered correctly with high confidence recently.
+8. Reintroduce missed questions after a delay.
 
 ## Flashcard generation logic
 
@@ -257,4 +271,4 @@ Keep separate question banks:
 - `ncp-genl-questions-enriched.md`
 - `ncp-aai-agentic-ai-questions-enriched.md`
 
-Do not mix exams in the same bank. The UI may show common NVIDIA services in Study Mode, but Practice Mode should load from the selected certification bank.
+Do not mix exams in the same bank. Do not create separate physical banks only for NVIDIA-specific versus general-concept questions; keep one cert bank and classify each question with `Scope`. The UI may show common NVIDIA services in Study Mode, but Practice Mode should load from the selected certification bank.

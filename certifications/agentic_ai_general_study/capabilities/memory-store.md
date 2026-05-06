@@ -6,6 +6,22 @@ source_lens: general-study
 
 # Memory Store
 
+## Actual implementation / How you use it
+
+```yaml
+memory_record:
+  scope: working_or_session_or_long_term_or_entity
+  subject: user_or_task_or_account
+  value: normalized_fact
+  source: interaction_or_tool_observation
+  policy: { consented: true, sensitive: false, ttl_days: 90 }
+  recall: { min_relevance: 0.78, require_permission: true }
+```
+
+| Input | Memory decision | Output |
+|---|---|---|
+| Candidate fact from conversation/tool/retrieval | Store, ignore, expire, delete, or retrieve | Scoped memory with source, consent, freshness, and permission gates |
+
 ## What to study first
 
 - **Core idea:** You are building scoped memory for agent/user state: current task state, session facts, reusable preferences, episodic history, semantic facts, expirations, and deletion controls.

@@ -6,6 +6,20 @@ source_lens: general-study
 
 # Human Review and Governance Console
 
+## Actual implementation / How you use it
+
+```yaml
+review_item:
+  risk_tier: approval_required
+  evidence: [user_intent, retrieved_sources, tool_plan, proposed_answer]
+  versions: [model, prompt, policy, retrieval_index, tool_schema]
+  reviewer_actions: [approve, edit, reject, escalate, create_eval_case]
+```
+
+| Input | Console owns | Output |
+|---|---|---|
+| Risky action or sampled production case | Review context, decision, reason, SLA, audit trail | Approval/rejection and feedback for evals, policy, prompts, or data |
+
 ## What to study first
 
 - **Core idea:** You are building the oversight workspace where humans approve, review, sample, escalate, label, audit, and feed back into improvement loops.

@@ -19,7 +19,11 @@ status: populated
 
 ## Certification boundary
 
-This page is the NCP-AAI exam lens for operations. Keep monitoring, drift, incident, and maintenance knowledge as it applies to deployed NVIDIA-oriented agentic systems. The reusable concept home is `Agentic AI General Study -> Observability, Operations, and Cost`; NVIDIA profiling and platform-operation cues stay here.
+This page is the NCP-AAI exam lens for operations. Keep monitoring, drift, incident, and maintenance knowledge as it applies to deployed NVIDIA-oriented agentic systems. The reusable concept home is `Agentic AI General Study -> Observability, Operations, and Cost` plus `Latency, Throughput, and Traffic Control`; NVIDIA profiling and platform-operation cues stay here.
+
+## General Study first
+
+Read `Agentic AI General Study -> Observability, Operations, and Cost`, `Agentic AI General Study -> Latency, Throughput, and Traffic Control`, `Agentic AI General Study -> Observability and Trace Monitor`, and `Agentic AI General Study -> Cost/Latency Optimizer`. Use this overlay for official-domain wording about live monitoring, maintenance, incidents, trace replay, continuous improvement, NVIDIA profiling, and agent-specific quality signals.
 
 ## Core ideas you must hold in your head
 

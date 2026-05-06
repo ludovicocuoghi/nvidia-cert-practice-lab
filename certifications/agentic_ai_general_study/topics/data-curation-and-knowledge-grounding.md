@@ -6,6 +6,40 @@ status: populated
 
 # Data Curation and Knowledge Grounding
 
+## Actual implementation / Pattern you use
+
+```text
+RAG ingestion:
+  source docs -> parse -> clean -> chunk -> attach metadata/ACLs
+              -> embed -> index dense/sparse -> version the corpus
+
+RAG query:
+  user query -> authorize -> rewrite if needed -> dense + sparse search
+             -> metadata filter -> rerank -> pack evidence -> answer with citations
+
+Training or tuning curation:
+  raw examples -> license/PII checks -> exact/fuzzy dedupe
+               -> label/rubric review -> split holdouts -> contamination checks
+```
+
+| Destination | Artifact | First question |
+|---|---|---|
+| Runtime knowledge | Chunks, metadata, embeddings, rerank scores, citations | Can the agent retrieve current permitted evidence? |
+| Fine-tuning | Prompt/response examples, tool traces, preference pairs | Is the durable behavior worth changing model weights? |
+| Evaluation | Private holdouts, rubrics, canaries | Can this detect regressions without leakage? |
+| Pretraining | Large licensed corpus and tokenizer-ready shards | Is full model learning actually in scope? |
+
+## Exam coverage map
+
+Use this page first for these NCP-AAI sections:
+
+| NCP-AAI section | Why this page matters |
+|---|---|
+| Knowledge Integration and Data Handling | Covers RAG, vector search, metadata filters, reranking, citations, ACLs, and freshness. |
+| Evaluation and Tuning | Explains eval holdouts, retrieval quality, groundedness, and regression data. |
+| Safety, Ethics, and Compliance | Covers PII cleanup, permission-aware retrieval, tenant filtering, and contamination boundaries. |
+| Agent Development | Shows what the runtime receives from retrieval and what must stay outside model weights. |
+
 ## What to study first
 
 - **Core idea:** The difference between curating data for model learning, curating examples for fine-tuning, curating documents for RAG, and protecting evaluation holdouts.
@@ -118,6 +152,29 @@ Trap: Asking the model not to reveal unauthorized information.
 - Durable behavior -> customization.
 - Tenant leakage -> pre-retrieval access filtering.
 - Suspicious eval score -> contamination check.
+
+### Deep dive: retrieval quality levers
+
+| Lever | Helps when | Failure signal |
+|---|---|---|
+| Chunking | Documents are long or mix topics | Retrieved chunk has the right document but wrong section |
+| Metadata filters | Tenant, role, region, date, product, or policy version matters | User sees another tenant's evidence or stale policy |
+| Dense search | Semantic match matters more than exact words | Query uses paraphrases that keyword search misses |
+| Sparse search | IDs, codes, error strings, and exact terms matter | Vector search finds similar concepts but misses exact product IDs |
+| Hybrid retrieval + RRF | Both semantic and lexical signals matter | Either dense-only or keyword-only misses known good evidence |
+| Reranking | Top-k contains relevant evidence but ordering is poor | Correct answer is buried below weaker chunks |
+| Citation entailment | Answer must prove where claims came from | Citation exists but does not support the sentence |
+| Index refresh | Knowledge changes often | Agent repeats old policy after source update |
+
+### Adjacent decision boundaries
+
+| If the need is... | Use | Not |
+|---|---|---|
+| Private or changing facts | RAG/retrieval | Fine-tune facts into weights |
+| Durable answer style or rubric | Prompt, SFT, PEFT, or preference tuning | More retrieval chunks |
+| Training corpus cleanup | Data curation pipeline | Runtime retriever |
+| Eval leakage detection | Holdout curation and contamination checks | Higher benchmark score |
+| Cross-tenant safety | Pre-retrieval authorization and metadata filters | Final-answer instruction not to reveal |
 
 ### Hands-on checks
 

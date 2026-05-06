@@ -554,7 +554,32 @@ const vendorNeutralCapabilities = [
     mustKnow: ["routing", "canary", "fallback", "rate limits", "dynamic batching"],
     examSignals: ["traffic split", "multi-model", "fallback", "p99 latency", "canary"],
     handsOn: ["Design a route table for simple, complex, and high-risk agent requests."],
-    relatedServices: ["Model Inference Endpoint", "Evaluation and Regression Harness", "Observability and Trace Monitor"]
+    relatedServices: ["Model Inference Endpoint", "Latency, Throughput, and Traffic Control", "Evaluation and Regression Harness", "Observability and Trace Monitor"]
+  },
+  {
+    name: "Latency, Throughput, and Traffic Control",
+    description: "Production traffic-control concepts for model and agent systems: percentiles, TTFT, concurrency, queueing, batching, autoscaling, backpressure, circuit breakers, and rollout safety.",
+    exams: ["Agentic AI General"],
+    lifecycle: "Serving and deployment",
+    group: "Serving and operations",
+    filters: ["Agentic AI General", "Serving and deployment", "Inference optimization", "Monitoring and profiling"],
+    use: "Use when a scenario mentions user count, p95/p99, TTFT, tail latency, request rate, concurrency, queue delay, batching, streaming, autoscaling lag, overload, canary, rollback, or traffic isolation.",
+    avoid: "Do not treat traffic control as model quality, retrieval quality, or agent orchestration. Measure the slow lane, then pick the control that protects the SLO.",
+    traps: "Averages can look healthy while p99 fails. Bigger batches can improve throughput while making interactive TTFT worse.",
+    scenario: "A chat agent has acceptable average latency, but p99 TTFT spikes when batch jobs share the same endpoint.",
+    quizPrompt: "Which traffic-control concept explains why average latency hides bad user experience?",
+    keywords: ["p50", "p95", "p99", "TTFT", "tail latency", "throughput", "concurrency", "queue delay", "backpressure", "circuit breaker", "bulkhead", "canary"],
+    studyNotes: [
+      "p95/p99 are percentile latencies: p99 means 99% of requests finish at or below that time. Tail percentiles expose the slow outliers hidden by averages.",
+      "Translate user count into request rate, live concurrency, token shape, tool count, retrieval cost, queue depth, and workload mix before scaling.",
+      "Interactive chat usually optimizes TTFT and inter-token latency; offline batch jobs usually optimize throughput and cost.",
+      "Backpressure, bulkheads, circuit breakers, rate limits, and separate lanes stop one overloaded dependency from hurting every user.",
+      "Canary, blue-green, shadow, and rollback are traffic controls only if they include quality, safety, latency, and cost gates."
+    ],
+    mustKnow: ["p50/p95/p99", "TTFT", "tail latency", "throughput", "concurrency", "request rate", "queue delay", "dynamic batching", "streaming", "autoscaling lag", "backpressure", "circuit breaker", "bulkhead", "canary", "blue-green", "rollback"],
+    examSignals: ["average OK p99 bad", "many users", "slow first token", "queue depth", "batching window", "real-time chat vs batch jobs", "autoscaling lag", "backpressure", "canary rollback"],
+    handsOn: ["Given a latency complaint, classify whether the first suspect is queueing, prefill, decode, retrieval, tool calls, or rollout regression."],
+    relatedServices: ["Model Inference Endpoint", "Model Serving Gateway", "Cost/Latency Optimizer", "Observability and Trace Monitor"]
   },
   {
     name: "Evaluation and Regression Harness",
@@ -600,7 +625,7 @@ const vendorNeutralCapabilities = [
     mustKnow: ["traces", "tool success", "p95/p99", "TTFT", "route drift", "replay"],
     examSignals: ["HTTP 200 but failed task", "incident", "cost spike", "latency gap", "empty tool result", "p50 normal p99 bad"],
     handsOn: ["Sketch a dashboard with workflow, quality, safety, cost, and latency rows."],
-    relatedServices: ["Evaluation and Regression Harness", "Model Serving Gateway", "Cost/Latency Optimizer"]
+    relatedServices: ["Evaluation and Regression Harness", "Model Serving Gateway", "Latency, Throughput, and Traffic Control", "Cost/Latency Optimizer"]
   },
   {
     name: "Cost/Latency Optimizer",
@@ -624,7 +649,7 @@ const vendorNeutralCapabilities = [
     mustKnow: ["prefill vs decode", "TTFT", "context size", "KV cache", "batching", "queue depth"],
     examSignals: ["p99", "TTFT", "tokens/sec", "cost spike", "long context", "queueing", "many users"],
     handsOn: ["Classify one bottleneck as retrieval, tool, prefill, decode, queueing, or network."],
-    relatedServices: ["Model Inference Endpoint", "Model Serving Gateway", "Observability and Trace Monitor"]
+    relatedServices: ["Latency, Throughput, and Traffic Control", "Model Inference Endpoint", "Model Serving Gateway", "Observability and Trace Monitor"]
   },
   {
     name: "Human Review and Governance Console",
@@ -716,6 +741,11 @@ const vendorNeutralRelatedServices = {
     { vendor: "NVIDIA", service: "Triton Inference Server / NIM Operator / Dynamo", role: "Model serving, Kubernetes lifecycle, routing, batching, and distributed LLM serving patterns." },
     { vendor: "AWS", service: "SageMaker endpoints + Application Load Balancer/API Gateway", role: "Traffic management, endpoint deployment, autoscaling, and production API front doors." },
     { vendor: "Open source", service: "KServe, Ray Serve, BentoML, Envoy", role: "Routing, canary, fallback, model mesh, and multi-model operations." }
+  ],
+  "Latency, Throughput, and Traffic Control": [
+    { vendor: "NVIDIA", service: "NIM, Triton, TensorRT-LLM, Dynamo, NIM Operator", role: "Endpoint profiles, dynamic batching, KV-cache-aware serving, distributed inference, and Kubernetes lifecycle controls." },
+    { vendor: "AWS", service: "SageMaker autoscaling / API Gateway / Application Load Balancer", role: "Request admission, endpoint scaling, traffic split, canary, rollback, and production front doors." },
+    { vendor: "Open source", service: "vLLM, TGI, Envoy, KServe, OpenTelemetry", role: "Batching, streaming, backpressure, routing, traffic isolation, and trace-derived latency analysis." }
   ],
   "Evaluation and Regression Harness": [
     { vendor: "NVIDIA", service: "NeMo Evaluator + NeMo Agent Toolkit evals", role: "Model, RAG, and agent workflow evaluation with benchmarks and trajectory checks." },
