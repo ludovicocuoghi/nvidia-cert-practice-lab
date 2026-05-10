@@ -18,15 +18,23 @@ The practice bank and generated mock questions load without an LLM key. Coach ch
 
 ## Screenshots
 
-Captured from the local app in Google Chrome.
+User-captured local app views.
 
-![Agentic AI exam concept map with General Study jump chips](docs/screenshots/agentic-concept-map.png)
+![General Study dark-mode overview](<screenshots/スクリーンショット 2026-05-10 18.21.51.png>)
 
-The Agentic AI exam concept map links official sections, General Study prerequisites, and NVIDIA examples only where product wording matters.
+General Study gives the shared vendor-neutral layer for lifecycle concepts, practice, and quick tutoring.
 
-![General Study lifecycle page opened from the Agentic AI concept map](docs/screenshots/general-study-jump.png)
+![General Study lifecycle concept map](<screenshots/スクリーンショット 2026-05-10 18.22.00.png>)
 
-Clicking a General Study chip switches into the matching vendor-neutral lifecycle section and selects the relevant study card.
+The lifecycle map organizes architecture, retrieval, ReAct loops, safety, evaluation, and operations by build path.
+
+![General Study playbook detail](<screenshots/スクリーンショット 2026-05-10 18.22.20.png>)
+
+Study playbooks explain the implementation surface, inputs, outputs, platform mapping, and checks for each capability.
+
+![General Study implementation examples](<screenshots/スクリーンショット 2026-05-10 18.22.25.png>)
+
+Deeper playbook sections show pipelines, platform examples, and the core concepts learners should recognize.
 
 ## Modes
 
