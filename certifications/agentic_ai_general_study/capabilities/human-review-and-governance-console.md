@@ -24,7 +24,7 @@ review_item:
 
 - **Core idea:** You are building the oversight workspace where humans approve, review, sample, escalate, label, audit, and feed back into improvement loops.
 - **Study first:** Classify actions by risk: auto-allow, sample review, approval required, block.
-- Define reviewer queue, SLA, rubric, evidence, and escalation path.
+- Define reviewer queue, SLA, criteria, evidence, and escalation path.
 - Capture model output, retrieval evidence, tool proposal, policy version, and trace.
 - Record human decision and reason.
 - Feed labels and incidents into evaluation, tuning, prompt changes, or policy updates.
@@ -46,7 +46,7 @@ You are building the oversight workspace where humans approve, review, sample, e
 ## Pipeline
 
 1. Classify actions by risk: auto-allow, sample review, approval required, block.
-2. Define reviewer queue, SLA, rubric, evidence, and escalation path.
+2. Define reviewer queue, SLA, criteria, evidence, and escalation path.
 3. Capture model output, retrieval evidence, tool proposal, policy version, and trace.
 4. Record human decision and reason.
 5. Feed labels and incidents into evaluation, tuning, prompt changes, or policy updates.
@@ -91,7 +91,7 @@ You are building the oversight workspace where humans approve, review, sample, e
 | Platform | Example | What it illustrates |
 |---|---|---|
 | Labeling tools | Label Studio, Argilla | Human labels and review workflows. |
-| Eval platforms | human evaluation queues | Rubric-based scoring. |
+| Eval platforms | human evaluation queues | Criteria-based scoring. |
 | Internal console | approval and escalation UI | Governance, audit, and risk routing. |
 | NVIDIA-adjacent | NeMo Evaluator / Guardrails outputs | Evidence and policy signals surfaced for review and regression. |
 
@@ -122,7 +122,7 @@ A useful console should show:
 - User request, model output, retrieved sources, citations, and tool proposal.
 - Tool risk tier, policy/guardrail decision, and approval reason.
 - Model, prompt, retrieval index, route, and guardrail versions.
-- Prior trace, similar incidents, reviewer rubric, and audit metadata.
+- Prior trace, similar incidents, reviewer criteria, and audit metadata.
 
 Without that context, review becomes subjective and hard to reproduce.
 

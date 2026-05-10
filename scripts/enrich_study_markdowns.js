@@ -2,7 +2,7 @@ import { readdir, readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { parseExamMarkdown } from "../src/simulator.js";
-import { nvidiaServices, studySections } from "../public/study-services.js";
+import { nvidiaServices, studySections } from "../client/src/data/study-services.js";
 
 const root = new URL("..", import.meta.url).pathname;
 const certsDir = join(root, "certifications");

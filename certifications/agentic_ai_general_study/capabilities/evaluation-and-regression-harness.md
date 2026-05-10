@@ -21,12 +21,12 @@ eval_run:
 
 | Input | Harness owns | Output |
 |---|---|---|
-| Cases, rubrics, traces, baseline, candidate | Metrics, judge calibration, deterministic checks, release gates | Pass/fail decision and regression evidence |
+| Cases, criteria, traces, baseline, candidate | Metrics, judge calibration, deterministic checks, release gates | Pass/fail decision and regression evidence |
 
 ## What to study first
 
 - **Core idea:** You are building the test system that measures prompts, models, retrieval, tools, policies, trajectories, safety, cost, and regressions before and after release.
-- **Study first:** Define tasks, risk tiers, rubrics, and datasets.
+- **Study first:** Define tasks, risk tiers, criteria, and datasets.
 - Capture baseline behavior before changes.
 - Evaluate model quality, retrieval quality, tool correctness, safety, latency, and cost.
 - Use human labels, rule checks, LLM-as-judge, and deterministic assertions where appropriate.
@@ -53,7 +53,7 @@ Every eval case should make the scoring target explicit. Without this record, th
 |---|---|---|
 | `case_id` | Stable ID for the eval item | Lets incidents become regression tests without losing history |
 | Input | Prompt, user request, document query, tool task, or conversation state | Defines what the candidate system receives |
-| Gold label | Answer, class, expected docs, expected tool call, policy label, rubric score, or human preference | Defines what "correct" means |
+| Gold label | Answer, class, expected docs, expected tool call, policy label, criteria-based score, or human preference | Defines what "correct" means |
 | Candidate output | Final text plus structured output | Lets deterministic and judge metrics score the response |
 | Trace | Retrieval hits, reranker scores, model route, tool calls, guardrails, latency, token counts, cost | Lets you diagnose which layer failed |
 | Baseline score | Score from the previous approved model, prompt, route, index, tool schema, or policy | Prevents "new is different" from being mistaken for "new is better" |
@@ -95,7 +95,7 @@ Here the candidate is usually a prompt version, hosted API choice, model route, 
 
 | Evaluation card | Score or function | Labels/data needed | Pass/fail meaning |
 |---|---|---|---|
-| Task correctness | Exact match, token F1, semantic similarity, rubric judge score | Expected answers or rubric | The selected API/prompt solves the workload well enough |
+| Task correctness | Exact match, token F1, semantic similarity, criteria judge score | Expected answers or criteria | The selected API/prompt solves the workload well enough |
 | Schema validity | `valid_json_outputs / total_outputs`; field-level validation | Output schema and parser | System returns machine-usable output, not just fluent text |
 | Refusal correctness | Correct allow/refuse rate; false allow/block rate | Policy labels | Prompt and model respect the intended boundary |
 | Route and fallback behavior | Correct route rate, fallback success, timeout recovery | Route labels or scenario rules | Gateway chooses the right model/API and degrades gracefully |
@@ -139,7 +139,7 @@ Typical gate: the incident replay passes, protected regression suites hold, poli
 
 ## Pipeline
 
-1. Define tasks, risk tiers, rubrics, and datasets.
+1. Define tasks, risk tiers, criteria, and datasets.
 2. Capture baseline behavior before changes.
 3. Evaluate model quality, retrieval quality, tool correctness, safety, latency, and cost.
 4. Use human labels, rule checks, LLM-as-judge, and deterministic assertions where appropriate.
@@ -151,7 +151,7 @@ Typical gate: the incident replay passes, protected regression suites hold, poli
 
 - Final answer correctness is not enough for agents.
 - Trajectory eval checks intermediate retrieval, tool use, policy, and state.
-- LLM-as-judge needs rubrics and calibration.
+- LLM-as-judge needs criteria and calibration.
 - RAG eval includes recall, groundedness, faithfulness, and citation support.
 - Regression suites protect prior behavior.
 - Eval sets need protected splits and contamination checks so training/tuning examples do not leak into test evidence.
@@ -176,7 +176,7 @@ Typical gate: the incident replay passes, protected regression suites hold, poli
 | Trap | Correct mental model |
 |---|---|
 | High user rating means safe | Need task, safety, tool, and groundedness metrics. |
-| LLM judge is objective | It needs rubric, calibration, and spot checks. |
+| LLM judge is objective | It needs criteria, calibration, and spot checks. |
 | Offline eval replaces monitoring | Eval and observability feed each other. |
 | One aggregate score is enough | Layer-specific failures require layer-specific metrics and traces. |
 | Same data can train and test | Holdouts must stay protected, especially after tuning and synthetic-data generation. |
@@ -220,8 +220,8 @@ It should measure the path, not only the final text.
 | Judge | Use it for | Watch out |
 |---|---|---|
 | Deterministic assertion | Exact facts, schema, policy, permissions | May miss nuanced quality |
-| Human label | Safety, usefulness, ambiguous judgment | Expensive and inconsistent without rubrics |
-| LLM-as-judge | Scalable rubric scoring | Needs anchors, calibration, and disagreement checks |
+| Human label | Safety, usefulness, ambiguous judgment | Expensive and inconsistent without criteria |
+| LLM-as-judge | Scalable criteria-based scoring | Needs anchors, calibration, and disagreement checks |
 | Production canary | Real workload signal | Needs rollback and risk limits |
 
 ### Regression mindset
@@ -246,7 +246,7 @@ NeMo Evaluator is the NVIDIA cue for model/LLM/agent evaluation evidence. It is 
 | Recall@k | Relevant docs in top-k divided by gold docs, or binary expected-source-present | Query and gold doc/chunk IDs | Blaming generator when retrieval missed the source |
 | MRR/nDCG | Rank-sensitive retrieval score | Ranked retrieved IDs and relevance labels | Looking only at top-1 examples |
 | Tool success | Correct tool + valid args + authorization + successful side effect | Tool trace labels | Treating valid JSON as a successful action |
-| Judge calibration | Agreement with human anchors and rubric | Human-labeled anchor set | Blindly trusting an LLM-as-judge score |
+| Judge calibration | Agreement with human anchors and criteria | Human-labeled anchor set | Blindly trusting an LLM-as-judge score |
 
 Good evals are layered. For a RAG tool-using agent, one case can record retrieval recall, citation support, tool-call validity, final answer quality, guardrail outcome, latency, and cost. That is why one aggregate score is rarely enough.
 
@@ -260,7 +260,7 @@ Evaluation usually computes **metrics** rather than training losses. A metric an
 | Generation against reference | exact match, token F1, ROUGE/BLEU, semantic similarity, judge score | next-token cross-entropy during SFT/pretraining |
 | RAG retrieval | recall@k, MRR, nDCG, expected-source-present | contrastive loss, triplet loss, pairwise ranking loss for embedding/retrieval models |
 | Reranking | top-N precision, MRR, nDCG | pairwise logistic/listwise ranking loss or cross-entropy over candidates |
-| Groundedness/faithfulness | citation entailment pass rate, unsupported-claim rate, NLI/judge score | supervised classifier loss if training a verifier; otherwise rubric score |
+| Groundedness/faithfulness | citation entailment pass rate, unsupported-claim rate, NLI/judge score | supervised classifier loss if training a verifier; otherwise criteria-based score |
 | Tool use | correct tool rate, argument validity, side-effect success | cross-entropy for tool-call SFT; reward/preference objective for agent behavior |
 | Safety/guardrails | block precision/recall, false positive rate, PII leak rate | classifier cross-entropy or policy-rule pass/fail, depending implementation |
 | Preference quality | win rate, pairwise preference accuracy, judge preference | DPO/pairwise preference loss, RLHF/PPO-style reward objective |
@@ -375,7 +375,7 @@ In exam terms: choose the evaluation harness when the task is scoring and gating
 
 - "compare variants" -> evaluation harness.
 - "release gate" -> regression suite.
-- "LLM-as-judge" -> rubric/calibration.
+- "LLM-as-judge" -> criteria/calibration.
 - "RAG groundedness" -> faithfulness/citation eval.
 - "tool trajectory" -> agent eval.
 - "contamination" -> train/test/eval leakage check.
@@ -385,5 +385,5 @@ In exam terms: choose the evaluation harness when the task is scoring and gating
 ## Hands-on Checks
 
 1. Define metrics for a support agent: correctness, groundedness, tool success, safety, latency, cost.
-2. Write a rubric for LLM-as-judge and two human anchor examples.
+2. Write criteria for LLM-as-judge and two human anchor examples.
 3. Turn a production incident into a regression test.

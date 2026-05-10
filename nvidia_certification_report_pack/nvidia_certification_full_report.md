@@ -230,7 +230,7 @@ Must know:
 | Perplexity | Language modeling uncertainty, not direct task success |
 | RAG metrics | Context relevance, answer faithfulness, groundedness |
 | Human review | Quality, usefulness, safety, domain correctness |
-| LLM as judge | Scalable relative or rubric based assessment, requires validation |
+| LLM as judge | Scalable relative or criteria based assessment, requires validation |
 | Error analysis | Failure mode discovery and prioritization |
 | Benchmarking across platforms | Compare DGX, cloud GPU, and standardized configurations |
 

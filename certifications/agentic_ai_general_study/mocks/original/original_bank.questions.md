@@ -92,7 +92,7 @@
 - Why B is wrong: Client-side hiding does not protect server-side retrieval, logs, or model context.
 - Why C is wrong: Prompt instructions are not an access-control boundary.
 
-### Q7: A team needs an agent to follow a company-specific style and decision rubric. Its factual answers are already well grounded by retrieval, but reviewers keep correcting tone and decision framing. Which customization path is most appropriate to consider?
+### Q7: A team needs an agent to follow a company-specific style and decision criteria. Its factual answers are already well grounded by retrieval, but reviewers keep correcting tone and decision framing. Which customization path is most appropriate to consider?
 - ID: gen-model-001
 - Domain: Model Selection and Customization
 - Topic: behavior adaptation
@@ -102,9 +102,9 @@
 - C. PEFT or supervised fine-tuning on representative examples of the desired behavior, while keeping retrieval for facts.
 - D. Move all requests to a larger model and preserve the current prompting and retrieval design.
 - Answer: C
-- Explanation: Durable style and decision-rubric behavior are model customization or prompt-pattern problems; retrieval mainly changes evidence selection.
+- Explanation: Durable style and decision behavior from criteria are model customization or prompt-pattern problems; retrieval mainly changes evidence selection.
 - Why A is wrong: Chunking can improve grounding but will not reliably teach a stable company decision style.
-- Why B is wrong: More evidence can increase noise and does not directly train rubric-following behavior.
+- Why B is wrong: More evidence can increase noise and does not directly train criteria adherence behavior.
 - Why D is wrong: A stronger model may help, but it does not encode the organization-specific behavior as directly as curated examples.
 
 ### Q8: A product owner wants the largest available model for every agent request. The application has simple routing tasks, long document synthesis, and high-risk reasoning cases under a strict latency and cost budget. What is the best model-selection strategy?
@@ -264,10 +264,10 @@
 - Difficulty: medium
 - A. Average scores across several judge prompts so verbosity bias cancels out statistically.
 - B. Use the judge only on answers above a minimum word count so short answers are not penalized.
-- C. Calibrate the judge with human-labeled examples, explicit rubrics, pairwise checks, and bias monitoring.
+- C. Calibrate the judge with human-labeled examples, explicit criteria, pairwise checks, and bias monitoring.
 - D. Replace human labels with production click-through rate because it reflects real user behavior.
 - Answer: C
-- Explanation: Automated judges are useful but need rubrics and calibration against human labels. Bias monitoring should explicitly test whether verbosity changes scores.
+- Explanation: Automated judges are useful but need criteria and calibration against human labels. Bias monitoring should explicitly test whether verbosity changes scores.
 - Why A is wrong: Multiple prompts can reduce variance, but shared verbosity bias may remain.
 - Why B is wrong: A word-count floor encodes the bias instead of correcting it.
 - Why D is wrong: Click-through can be useful telemetry, but it is not a reliable correctness label.

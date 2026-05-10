@@ -304,7 +304,7 @@ Concrete OCR topic coverage:
 | LoRA, adapters, P-tuning | Covered/Partial | LoRA and adapters are strong; P-tuning is light. |
 | Early stopping | Covered | Present. |
 | BLEU, ROUGE, perplexity | Covered | Strong evaluation metric coverage. |
-| LLM-as-a-judge | Covered | Evaluation content covers judge rubrics, position/verbosity/self-enhancement bias, calibration, and human anchors. |
+| LLM-as-a-judge | Covered | Evaluation content covers judge criteria, position/verbosity/self-enhancement bias, calibration, and human anchors. |
 | DGX, DDP, FSDP, tensor/pipeline/sequence/expert parallelism | Covered | Strong GPU acceleration coverage. |
 | GEMM and gradient accumulation | Covered | Present. |
 | Dynamo-Triton and dynamic serving | Covered | Present, but ensure it is distinguished from old Triton naming. |
@@ -322,7 +322,7 @@ Audit watchlist for future GENL generation:
 
 - Advanced sampling tradeoffs for factuality and diversity.
 - Masked language modeling and next sentence prediction for encoder pretraining.
-- LLM-as-a-judge calibration and rubric design.
+- LLM-as-a-judge calibration and criteria design.
 - Ensemble workflow deployment with preprocessing, inference, safety, and postprocessing.
 - Bias/fairness audits beyond toxicity checks.
 - Contrastive loss for retrieval embeddings.
@@ -368,7 +368,7 @@ Mock evaluator findings:
 | NCP-AAI | 5 original mocks. Mostly 50-56 questions except one 65-question mock; only 30-41% hard/expert; 30-38% easy. | 4 generated mocks, all 60 questions, 77-83% hard/expert, 0% easy, blueprint deviation <= 0.7, status `good`. | Original mocks are useful warmups but too easy/short. Generated mocks are usable as readiness checks. |
 | NCP-GENL | 5 original mocks, all 50 questions; 46-54% hard/expert; 16-24% easy; many short stems; three mocks have high blueprint deviation. | 4 generated mocks, all 60 questions, 73-77% hard/expert, 0-2% easy, blueprint deviation <= 0.6, status `good`. | Original mocks are diagnostic warmups, not final exam simulators. Generated mocks are usable as readiness checks. |
 
-## Question Generation Rubric
+## Question Generation Criteria
 
 Every future generated question should be tied to one OCR-backed topic and one local blueprint domain.
 
@@ -394,7 +394,7 @@ GENL stem patterns to generate next:
 
 - A team changes sampling parameters and must preserve answer diversity without breaking factuality.
 - A pretraining scenario requires distinguishing MLM, CLM, and next sentence prediction.
-- A judge model gives unstable scores because the rubric and calibration set are weak.
+- A judge model gives unstable scores because the criteria and calibration set are weak.
 - A Triton or Dynamo-Triton deployment needs an ensemble workflow rather than a single model endpoint.
 - A compliance review finds guardrails but no bias/fairness audit or metric.
 

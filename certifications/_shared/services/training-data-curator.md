@@ -77,11 +77,11 @@ Do not memorize one generic "clean data" recipe. The right recipe depends on wha
 | Destination | Goal | Highest-value curation work | Do not confuse with |
 |---|---|---|---|
 | **Train from zero / pretraining** | Teach broad language, domain, code, or multimodal patterns from a large corpus | Source quality, license checks, exact/fuzzy dedupe, MinHash/LSH, language ID, toxicity/PII handling, data mixture, tokenizer impact, contamination checks, lineage | RAG freshness or small labeled examples |
-| **Continued pretraining** | Shift an existing base model toward a domain without losing general capability | Domain corpus quality, domain/general blend, tokenizer coverage, PII/license controls, benchmark contamination, regression holdouts | SFT rubrics or prompt fixes |
-| **SFT / PEFT / LoRA** | Teach durable task behavior from examples | Prompt/response quality, labels, rubrics, tool traces, duplicate prompts, answer format, coverage, train/validation/test split hygiene | Adding fresh facts; use RAG for that |
+| **Continued pretraining** | Shift an existing base model toward a domain without losing general capability | Domain corpus quality, domain/general blend, tokenizer coverage, PII/license controls, benchmark contamination, regression holdouts | SFT criteria or prompt fixes |
+| **SFT / PEFT / LoRA** | Teach durable task behavior from examples | Prompt/response quality, labels, criteria, tool traces, duplicate prompts, answer format, coverage, train/validation/test split hygiene | Adding fresh facts; use RAG for that |
 | **Preference tuning / alignment** | Teach ranking or preference behavior | Pair quality, annotator agreement, reward signal balance, safety examples, conflict detection, held-out preference evals | Pretraining-scale web cleanup |
 | **RAG knowledge ingestion** | Prepare documents the model reads at query time | Parsing, structure-aware chunking, metadata, ACLs, source/date/version, embedding/index handoff, deletion/refresh path | Weight-changing training data |
-| **Evaluation holdout** | Produce trustworthy evidence | Protected splits, leakage checks, private canaries, source lineage, no training reuse, versioned rubrics | Training augmentation |
+| **Evaluation holdout** | Produce trustworthy evidence | Protected splits, leakage checks, private canaries, source lineage, no training reuse, versioned criteria | Training augmentation |
 
 The overlap is real: PII detection, dedupe, normalization, lineage, and quality checks appear in several lanes. The output is what changes the mental model.
 
@@ -161,7 +161,7 @@ For SFT and PEFT:
 
 - Curate examples around tasks, not only topics.
 - Keep prompts realistic and varied.
-- Check labels, rubrics, expected format, refusal behavior, and edge cases.
+- Check labels, criteria, expected format, refusal behavior, and edge cases.
 - Remove duplicate or near-duplicate prompts that overweight one answer pattern.
 - Keep a clean validation split that represents the deployment workload.
 - Preserve examples that test old capabilities so tuning does not cause regression or catastrophic forgetting.
@@ -190,7 +190,7 @@ RAG-specific curation focuses on:
 - Pre-retrieval permission filters.
 - Citation and deletion lineage.
 
-If the fact changes weekly, RAG is usually the right path. If the model needs a durable behavior, style, rubric, or tool-use pattern, tuning may be appropriate after the tuning data is curated.
+If the fact changes weekly, RAG is usually the right path. If the model needs a durable behavior, style, criteria, or tool-use pattern, tuning may be appropriate after the tuning data is curated.
 
 ## Contamination checks
 
@@ -224,7 +224,7 @@ If contamination is found, remove overlapping training examples, rebuild splits,
 
 - Base model and tokenizer selected first.
 - Prompt/response examples match the intended behavior.
-- Labels, rubrics, tool traces, and preference pairs reviewed.
+- Labels, criteria, tool traces, and preference pairs reviewed.
 - Duplicate prompts and repeated answer templates removed.
 - PII/license/safety policy checked.
 - Validation and test holdouts separated before iteration.
@@ -243,7 +243,7 @@ If contamination is found, remove overlapping training examples, rebuild splits,
 ### Evaluation holdout
 
 - Keep it out of training and tuning loops.
-- Version the prompts, expected answers, rubrics, and source policy.
+- Version the prompts, expected answers, criteria, and source policy.
 - Run exact, n-gram, embedding, and MinHash overlap checks.
 - Protect private canary sets.
 - Record who can edit the set and why.
@@ -276,7 +276,7 @@ Too much narrow domain data can cause overfitting or catastrophic forgetting. To
 - "Exact duplicates" -> normalized hash first.
 - "Eval score seems too good" -> contamination check.
 - "Private documents change weekly" -> runtime retrieval, not training-data curation alone.
-- "Need company style or rubric" -> customization after data curation.
+- "Need company style or criteria" -> customization after data curation.
 - "PII in corpus" -> redaction/anonymization before training.
 
 ## Hands-on checks

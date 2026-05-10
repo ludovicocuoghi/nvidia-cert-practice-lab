@@ -54,7 +54,7 @@ Use this page first for these NCP-AAI sections:
 ## What to study first
 
 - **Core idea:** How to choose a model and decide whether to prompt, retrieve, tune, or preference-align.
-- **Use it when:** Requirements mention model choice, adapter versions, durable behavior, style, rubric-following, or rollback.
+- **Use it when:** Requirements mention model choice, adapter versions, durable behavior, style, criteria adherence, or rollback.
 - **Study first:** Dense models: run most parameters for every token
 - **MoE models** route tokens to selected experts, so total parameters and active compute are different.
 - Embedding models: create vectors for retrieval
@@ -74,7 +74,7 @@ This is the vendor-neutral home for choosing models and deciding between prompti
 
 - **What it covers:** How to choose a model and decide whether to prompt, retrieve, tune, or preference-align.
 - **Lifecycle:** Model lifecycle
-- **Use this section when:** Requirements mention model choice, adapter versions, durable behavior, style, rubric-following, or rollback.
+- **Use this section when:** Requirements mention model choice, adapter versions, durable behavior, style, criteria adherence, or rollback.
 - **Common trap:** Fine-tuning for fast-changing knowledge.
 - **Recognition clues:** Use RAG for current policy facts; use customization for durable decision behavior.
 

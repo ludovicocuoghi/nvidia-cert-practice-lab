@@ -11,10 +11,10 @@ status: populated
 - **Core idea:** Python library + API microservice — automated LLM/agent quality benchmarking and regression detection
 - **Use it when:** Use when model or agent outputs need benchmark scoring, LLM-as-judge evaluation, regression checks, or release-quality comparisons.
 - **Choose another path when:** Choose NIM/Triton for serving, Nsight for GPU/runtime profiling, NeMo Guardrails for runtime policy enforcement, and NeMo Curator for dataset preparation.
-- **Concrete surface:** Access: `pip install nvidia-nemo-evaluator`, REST API, Python: `from nemo_evaluator import evaluate` Inside: MMLU/HELM/BIG-Bench harness, LLM-as-Judge (rubric, position-bias correction), RAG metrics I/O: Model endpoint URL + benchmark selection (MMLU, HELM) / generated answers + references -> Evaluation report (per-task scores, faithfulness, ROUGE, BERTScore) / drift alerts
+- **Concrete surface:** Access: `pip install nvidia-nemo-evaluator`, REST API, Python: `from nemo_evaluator import evaluate` Inside: MMLU/HELM/BIG-Bench harness, LLM-as-Judge (criteria, position-bias correction), RAG metrics I/O: Model endpoint URL + benchmark selection (MMLU, HELM) / generated answers + references -> Evaluation report (per-task scores, faithfulness, ROUGE, BERTScore) / drift alerts
 - **Study first:** ROUGE, BLEU, BERTScore — n-gram overlap and embedding-based metrics with known blind spots
 - faithfulness/groundedness — whether claims are entailed by retrieved context, distinct from answer relevance
-- LLM-as-Judge — position bias, verbosity bias, self-enhancement bias, and rubric-guided scoring
+- LLM-as-Judge — position bias, verbosity bias, self-enhancement bias, and criteria-guided scoring
 - recall@k, precision@k, MRR, nDCG — retrieval-side evaluation metrics
 - contamination checks — n-gram overlap, embedding similarity, temporal separation, canary strings
 - **Real trap:** Treating "evaluation" as a dashboard or profiler. Evaluator owns repeatable quality/regression scoring; observability and Nsight explain live behavior and performance after or during execution.
@@ -27,7 +27,7 @@ status: populated
 | **How you access it** | `pip install nvidia-nemo-evaluator`, REST API, Python: `from nemo_evaluator import evaluate` |
 | **Input** | Model endpoint URL + benchmark selection (MMLU, HELM) / generated answers + references |
 | **Output** | Evaluation report (per-task scores, faithfulness, ROUGE, BERTScore) / drift alerts |
-| **Inside** | MMLU/HELM/BIG-Bench harness, LLM-as-Judge (rubric, position-bias correction), RAG metrics |
+| **Inside** | MMLU/HELM/BIG-Bench harness, LLM-as-Judge (criteria, position-bias correction), RAG metrics |
 
 ```python
 results = evaluate(model="nim://localhost:8000/nemotron-4-15b",
@@ -97,7 +97,7 @@ This deep dive covers the key concepts behind NeMo Evaluator that the exam tests
 - **[LLM Evaluation Taxonomy]**: perplexity, ROUGE, BLEU, BERTScore, human evaluation, and LLM-as-Judge — with each metric's blind spots
 - **[RAG Evaluation Metrics]**: recall@k, precision@k, MRR, nDCG, faithfulness/groundedness, answer relevance, and context relevance
 - **[Evaluation Set Construction]**: stratified sampling, ground truth creation, contamination checks, and eval set size guidelines
-- **[LLM-as-Judge]**: position bias, verbosity bias, self-enhancement bias, and mitigations (swap-and-average, rubrics, multiple judges)
+- **[LLM-as-Judge]**: position bias, verbosity bias, self-enhancement bias, and mitigations (swap-and-average, criteria, multiple judges)
 - **[Harness Frameworks]**: lm-evaluation-harness, HELM, BIG-Bench, and MMLU — their structure, strengths, and limitations
 
 ## DEEP DIVE: LLM Evaluation Taxonomy
@@ -178,7 +178,7 @@ Using one LLM to evaluate the outputs of another is a powerful technique for sca
 
 **When It Works Well**
 - **Relative comparisons (pairwise):** "Which output is better?" Judges are more reliable at ranking than absolute scoring. A/B comparisons between two model versions are the canonical use case.
-- **Rubric-guided evaluation:** Provide a structured rubric (score 1-5 on correctness, conciseness, harmlessness) with calibrated example outputs for each score level. This significantly improves consistency over free-form scoring (mock_1 eval-003).
+- **Criteria-guided evaluation:** Provide structured evaluation criteria (score 1-5 on correctness, conciseness, harmlessness) with calibrated example outputs for each score level. This significantly improves consistency over free-form scoring (mock_1 eval-003).
 - **Coarse discrimination:** Distinguishing acceptable from unacceptable outputs is reliable. Distinguishing "good" from "very good" requires careful calibration.
 - **Factual consistency checking:** An LLM-as-judge can decompose an answer into atomic claims and verify each against a reference context. This is more reliable than holistic scoring.
 
@@ -193,8 +193,8 @@ Using one LLM to evaluate the outputs of another is a powerful technique for sca
 
 - **Swap positions and average:** Run each pairwise evaluation twice with order reversed, then average the scores. This is the single most effective mitigation for position bias and is standard practice (mock_1 eval-003).
 - **Multiple judges with aggregation:** Use 3-5 different LLM judges and aggregate via majority vote or average. Reduces the impact of single-model bias patterns.
-- **Structured rubric with chain-of-thought:** Require the judge to reason step-by-step before assigning a score, referencing specific rubric dimensions. CoT reasoning reduces superficial biases (mock_1 eval-004).
-- **Calibration with human ratings:** Periodically compare LLM-as-judge scores against human ratings on a held-out calibration set. Adjust the rubric or temperature when alignment drifts.
+- **Structured evaluation criteria with chain-of-thought:** Require the judge to reason step-by-step before assigning a score, referencing specific criteria dimensions. CoT reasoning reduces superficial biases (mock_1 eval-004).
+- **Calibration with human ratings:** Periodically compare LLM-as-judge scores against human ratings on a held-out calibration set. Adjust the criteria or temperature when alignment drifts.
 - **Separate judge model:** Use a different model for judging than the one being evaluated to avoid self-enhancement bias. Ideally, use a model known for strong instruction-following and impartiality.
 
 ## DEEP DIVE: Harness Frameworks
@@ -249,7 +249,7 @@ The most common LLM knowledge test in the industry. Key facts:
 ### Must know
 - ROUGE, BLEU, BERTScore — n-gram overlap and embedding-based metrics with known blind spots
 - faithfulness/groundedness — whether claims are entailed by retrieved context, distinct from answer relevance
-- LLM-as-Judge — position bias, verbosity bias, self-enhancement bias, and rubric-guided scoring
+- LLM-as-Judge — position bias, verbosity bias, self-enhancement bias, and criteria-guided scoring
 - recall@k, precision@k, MRR, nDCG — retrieval-side evaluation metrics
 - contamination checks — n-gram overlap, embedding similarity, temporal separation, canary strings
 ### What to recognize
@@ -274,7 +274,7 @@ The most common LLM knowledge test in the industry. Key facts:
 - **mock_1 Q41** / `eval-003` (Evaluation): LLM-as-judge has a known bias. Which one is most often controlled for? Correct idea: Position bias — judges prefer the first option presented; mitigated by randomizing order and averaging across positions.
 - **mock_1 Q17, mock_2 Q18, mock_3 Q23, mock_4 Q19, mock_5 Q18** / `eval-003` (Evaluation and Tuning): No labeled eval set exists for a new enterprise RAG agent. What is a strong way to bootstrap retrieval evaluation? Correct idea: Generate questions from specific document chunks, keep only answerable pairs after verification, and use the source chunk as gr.. Trap: Self-judgment has circularity.
 - **eval-004** / `eval-004` (Evaluation): For evaluating open-ended writing quality, BLEU and ROUGE alone are insufficient because: Correct idea: They reward n-gram overlap with references, which penalizes valid paraphrases and stylistic variation.
-- **mock_1 Q18, mock_2 Q19, mock_3 Q24, mock_4 Q20** / `eval-004` (Evaluation and Tuning): An LLM-as-judge prefers longer answers even when they contain unsupported details. Which mitigation is best? Correct idea: Use a rubric that separately scores correctness, support, conciseness, and harmfulness, with calibrated examples and position/o.. Trap: Generic fairness instructions are weak.
+- **mock_1 Q18, mock_2 Q19, mock_3 Q24, mock_4 Q20** / `eval-004` (Evaluation and Tuning): An LLM-as-judge prefers longer answers even when they contain unsupported details. Which mitigation is best? Correct idea: Use criteria that separately score correctness, support, conciseness, and harmfulness, with calibrated examples and position/o.. Trap: Generic fairness instructions are weak.
 - **eval-005** / `eval-005` (Evaluation): To detect instruction-following regressions, the most useful eval is: Correct idea: A targeted instruction-following benchmark (e.g., IFEval-style verifiable constraints — output length, JSON schema, refusal tri..
 - **mock_1 Q20, mock_2 Q21, mock_3 Q26, mock_4 Q22, mock_5 Q20** / `eval-006` (Evaluation and Tuning): A prompt change improves benchmark score but increases unnecessary human escalations in production. What should the eval include? Correct idea: Escalation precision/recall and reviewer-load metrics on representative production-like cases. Trap: Toxicity is separate.
 - **mock_3 Q52** / `m2-052` (Model Deployment): How should A/B testing be implemented when deploying new LLM variants in production? Correct idea: A/B testing for LLMs involves routing a percentage of production traffic to the new model variant while the rest uses the exist.. Trap: This describes offline validation on a held-out test set, which is model evaluation, not A/B testing. A/B testing inv..

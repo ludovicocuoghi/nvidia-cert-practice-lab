@@ -63,9 +63,9 @@ The key shift from LLM eval to agent eval: **you're evaluating a process, not a 
 
 ### LLM-as-judge
 
-- Use rubric that separately scores: correctness, support, conciseness, harmfulness
+- Use criteria that separately score: correctness, support, conciseness, harmfulness
 - Include **calibrated examples** and position/order randomization to reduce bias
-- **Trap**: LLM judges prefer longer answers even with unsupported details. **Rubric decomposition** mitigates this.
+- **Trap**: LLM judges prefer longer answers even with unsupported details. **Criteria decomposition** mitigates this.
 
 ### Task-specific metrics (not one metric for everything)
 
@@ -135,7 +135,7 @@ The key shift from LLM eval to agent eval: **you're evaluating a process, not a 
 - **Trajectory evaluation** > **final-answer evaluation** for tool-using agents
 - **Faithfulness** — entailment from evidence, not topicality or embedding similarity
 - **Cost-quality frontier**: track **task success** + tool calls + **tokens** + **latency** + cost per task
-- **LLM-as-judge** — needs **rubric decomposition** (correctness, support, conciseness, harmfulness) + **calibrated examples** + **position randomization**
+- **LLM-as-judge** — needs **criteria decomposition** (correctness, support, conciseness, harmfulness) + **calibrated examples** + **position randomization**
 - **Synthetic chunk-grounded queries** — bootstrap **retrieval** eval when no labels exist
 - **Canary evaluation** — compares trajectory quality, **groundedness**, and safety, not just infrastructure metrics
 - **Task-specific metrics** — weighted by importance for cross-task model comparison
@@ -145,7 +145,7 @@ The key shift from LLM eval to agent eval: **you're evaluating a process, not a 
 ## Hands-on checks / study prompts
 
 1. An agent uses wrong tool, gets lucky with right answer. Which eval catches this — final-answer or trajectory?
-2. What three dimensions should an **LLM-as-judge** rubric separately score?
+2. Which three dimensions should **LLM-as-judge** evaluation criteria separate?
 3. How do you bootstrap **retrieval evaluation** with no labeled dataset?
 4. What's the difference between **faithfulness** and topicality in **RAG evaluation**?
 5. When is caching a tuning fix vs. a prompt change?
@@ -178,11 +178,11 @@ Evidence source: `mock_1` through `mock_5`, especially **trajectory evaluation**
 
 - Evaluate trajectories, not just final answers. A final answer can be correct while the agent used an unsafe tool, leaked data, ignored evidence, or took an expensive path.
 - Use **task success**, tool-call accuracy, **groundedness**, safety, cost, **latency**, and regression suites. **Human review** matters when tasks are ambiguous or policy-sensitive.
-- **LLM-as-judge** can scale **evaluation**, but it needs rubrics, **calibrated examples**, **position randomization**, and periodic checks against human labels.
+- **LLM-as-judge** can scale **evaluation**, but it needs criteria, **calibrated examples**, **position randomization**, and periodic checks against human labels.
 - **Agent-specific evaluation metrics**: (a) Task completion rate — did the agent achieve the user's goal? Binary or multi-level scoring. (b) **Tool selection** accuracy — did the agent pick the correct tool for each step? Compare against a gold-standard tool trace. (c) End-to-end success — a composite score of task completion + trajectory quality + safety + cost efficiency. A high e2e score means the agent completed the task correctly, safely, and efficiently.
-- **RAG evaluation** has three distinct dimensions: (a) **Faithfulness** — are generated claims entailed by retrieved evidence? Measure via NLI-based **entailment checking**. This catches hallucination even when the answer is on-topic. (b) **Retrieval** quality — does the retriever return relevant documents for the query? Use recall@k, precision@k, NDCG against a labeled relevance set. (c) Answer relevance — is the generated answer responsive to the query? Use **LLM-as-judge** with rubric scoring, not just embedding similarity.
+- **RAG evaluation** has three distinct dimensions: (a) **Faithfulness** — are generated claims entailed by retrieved evidence? Measure via NLI-based **entailment checking**. This catches hallucination even when the answer is on-topic. (b) **Retrieval** quality — does the retriever return relevant documents for the query? Use recall@k, precision@k, NDCG against a labeled relevance set. (c) Answer relevance — is the generated answer responsive to the query? Use **LLM-as-judge** with criteria-based scoring, not just embedding similarity.
 - **Memory evaluation**: (a) Stale memory detection — test that the agent uses the most recent value for a time-sensitive fact (e.g., preferred shipping address). (b) Irrelevant memory suppression — test that the agent does not retrieve memories from unrelated tasks. (c) **Memory governance** compliance — test that memories with restricted **sensitivity labels** are not returned to unauthorized users. (d) Write policy adherence — test that transient or **sensitive data** is not written to **long-term memory** without **consent**.
-- **LLM-as-judge for agent outputs**: Define a rubric with 4-5 dimensions (correctness, evidence support, conciseness, safety, tool-use appropriateness). Provide **calibrated examples** at each score level. Randomize presentation order to reduce position bias. Cross-validate against human labels periodically. The judge can evaluate both the final answer and the trajectory (e.g., "Were all tool calls justified by the evidence?").
+- **LLM-as-judge for agent outputs**: Define evaluation criteria with 4-5 dimensions (correctness, evidence support, conciseness, safety, tool-use appropriateness). Provide **calibrated examples** at each score level. Randomize presentation order to reduce position bias. Cross-validate against human labels periodically. The judge can evaluate both the final answer and the trajectory (e.g., "Were all tool calls justified by the evidence?").
 - **Bootstrap evaluation when no labeled data exists**: (1) Generate synthetic questions from your document corpus using an LLM — one question per document chunk. (2) Filter to keep only questions that are definitively answerable from that chunk (remove ambiguous or multi-chunk questions). (3) Use the source chunk as ground-truth evidence for **retrieval evaluation** (recall@k). (4) Use the question-chunk pair as a minimal QA eval set. (5) Expand with human review of a sample to estimate quality. Do NOT use agent self-judgment as the only **evaluation** — it has circularity.
 
 ### Must know
@@ -192,8 +192,8 @@ Evidence source: `mock_1` through `mock_5`, especially **trajectory evaluation**
 - **Faithfulness/groundedness**: whether each claim is entailed by retrieved evidence — measured via NLI-based **entailment checking** — NOT topical similarity or embedding distance
 - **Faithfulness vs topicality**: a **RAG** answer can be on-topic but unsupported (hallucinated). Topical similarity = embedding closeness to query. **Faithfulness** = entailment from evidence. Distinct metrics.
 - **Citation-support score**: per-claim entailment check against cited sources — catches plausible-sounding unsupported statements
-- **LLM-as-judge**: rubric with 4-5 decomposed dimensions (correctness, evidence support, conciseness, safety, tool-use appropriateness) + **calibrated examples** + **position randomization**
-- **LLM judge bias**: judges may prefer longer, verbose answers even with unsupported details — mitigate with **rubric decomposition**, **position randomization**, and **human calibration**
+- **LLM-as-judge**: evaluation criteria with 4-5 decomposed dimensions (correctness, evidence support, conciseness, safety, tool-use appropriateness) + **calibrated examples** + **position randomization**
+- **LLM judge bias**: judges may prefer longer, verbose answers even with unsupported details — mitigate with **criteria decomposition**, **position randomization**, and **human calibration**
 - **Cost-quality frontier**: **task success** + tool calls + **tokens** + **latency** + **cost per completed task** — not accuracy alone; a tiny quality gain at doubled cost may be a regression
 - **Task-specific metrics**: classification → accuracy/F1, QA → F1/Exact Match, summarization → ROUGE/BERTScore, **retrieval** → recall@k/precision@k/NDCG, dialogue → task completion + escalation rate
 - **Synthetic chunk-grounded queries**: bootstrap **retrieval** eval — generate questions from specific document chunks, verify answerability, use source chunk as ground-truth context for recall@k
@@ -208,7 +208,7 @@ Evidence source: `mock_1` through `mock_5`, especially **trajectory evaluation**
 |---|---|---|
 | correct final answer but wrong tools or unsafe path | **trajectory evaluation** scoring tool choice, arguments, observations, and policy compliance | final-answer accuracy only |
 | answer sounds relevant but unsupported by evidence | **faithfulness/groundedness evaluation** with **entailment checking** per claim | topical similarity or embedding distance only |
-| LLM judge bias (prefers longer answers) | **rubric decomposition** + **calibrated examples** + **position randomization** + **human calibration** | one vague judge prompt or "be fair" instruction |
+| LLM judge bias (prefers longer answers) | **criteria decomposition** + **calibrated examples** + **position randomization** + **human calibration** | one vague judge prompt or "be fair" instruction |
 | no labeled **retrieval evaluation** data | **synthetic chunk-grounded queries** — generate from documents, filter answerable pairs, use source as ground truth | agent self-judgment (circular) or production thumbs-up only (**sparse**, biased) |
 | better accuracy but higher cost | **cost-quality frontier** analysis — track **task success** + **tokens** + **latency** + **cost per completed task** | accuracy alone without cost context |
 | benchmark score improved but production escalations increased | add **escalation precision/recall** to eval set, use production-like cases in canary | trusting benchmark as sole quality signal |
@@ -224,7 +224,7 @@ Evidence source: `mock_1` through `mock_5`, especially **trajectory evaluation**
 |---|---|
 | **Trajectory evaluation** vs **Final-answer evaluation** | Trajectory = scores each step (tool choice, arguments, observations, policy/safety). Final-answer = scores output only. A correct answer achieved with wrong tools or unsafe steps still fails **trajectory evaluation**. |
 | **Faithfulness** vs Topicality | **Faithfulness** = are claims entailed by evidence? (NLI-based). Topicality = is the answer about the right subject? (embedding similarity). An answer can be on-topic but factually unsupported. |
-| **LLM-as-judge** vs Human **evaluation** | LLM judge = scalable, needs rubric + calibration + randomization. Human eval = gold standard but expensive. LLM judges can be biased by verbosity/style — never use without calibration against human labels. |
+| **LLM-as-judge** vs Human **evaluation** | LLM judge = scalable, needs criteria + calibration + randomization. Human eval = gold standard but expensive. LLM judges can be biased by verbosity/style — never use without calibration against human labels. |
 | Benchmark score vs Production quality | Benchmark = controlled test set and may miss escalation rate, **reviewer load**, cost, or user trust. Production canary = real traffic sample with workflow-impact metrics. Canary eval is needed before full ramp. |
 | **Retrieval** quality metrics vs Answer quality metrics | **Retrieval** = recall@k, precision@k, NDCG (are right docs in top-k?). Answer = **faithfulness**, **task success** (is output correct and supported?). Both needed in **RAG evaluation**. |
 | **Evaluation** vs Monitoring | **Evaluation** = offline, comparing versions, regression detection before/after changes. Monitoring = online, continuous, detecting drift in production. **Canary evaluation** bridges the two during rollout. |
@@ -242,7 +242,7 @@ Evidence source: `mock_1` through `mock_5`, especially **trajectory evaluation**
    Trap: Trusting benchmark score as the only quality signal without production-aligned metrics.
 
 3. Scenario: An **LLM-as-judge** consistently gives higher scores to longer, more verbose answers — even when those answers contain hallucinated details not in the retrieved evidence.
-   Best answer pattern: Decompose the judge rubric into separate dimensions (correctness, evidence support, conciseness, safety). Provide **calibrated examples** at each score level. Randomize answer order.
+   Best answer pattern: Decompose the judge criteria into separate dimensions (correctness, evidence support, conciseness, safety). Provide **calibrated examples** at each score level. Randomize answer order.
    Trap: A single vague prompt like "rate the answer quality" — amplifies verbosity bias.
 
 ### What to recognize
@@ -260,7 +260,7 @@ Evidence source: `mock_1` through `mock_5`, especially **trajectory evaluation**
 ### Hands-on checks
 
 - Define metrics for a support agent: final correctness, tool accuracy, policy compliance, **latency**, and cost.
-- Design a **RAG evaluation** suite with three dimensions: **faithfulness** (**entailment checking**), **retrieval** quality (recall@k), and answer relevance (**LLM-as-judge** rubric). Write the rubric.
+- Design a **RAG evaluation** suite with three dimensions: **faithfulness** (**entailment checking**), **retrieval** quality (recall@k), and answer relevance (**LLM-as-judge** criteria). Write the criteria.
 - Design a memory **evaluation** test: create test cases for stale memory detection, irrelevant memory suppression, and governance compliance.
 - Bootstrap an eval set for a new agent with no labeled data: describe the synthetic generation pipeline and the filtering steps.
 
@@ -279,7 +279,7 @@ Evidence source: `mock_1` through `mock_5`, especially **trajectory evaluation**
 - **mock_1 Q15, mock_3 Q21, mock_4 Q17, mock_5 Q16** / `eval-001`: Two agents produce the same final answer on a task. One used the correct database query, the other guessed and got lucky. Which **evaluation** catches the difference? Correct idea: **Trajectory evaluation** that scores **tool selection**, **tool arguments**, observations used, and final answer correctness.. Trap: Exact match misses unsafe or lucky trajectories.
 - **mock_1 Q16, mock_2 Q17, mock_3 Q22, mock_4 Q18, mock_5 Q17** / `eval-002`: A **RAG** agent answers legal questions. It is usually on-topic but sometimes cites passages that do not support the claim. Which metric is most directly needed? Correct idea: **Faithfulness** or **citation-support evaluation** that checks whether each claim is entailed by retrieved evidence.. Trap: Length is not **groundedness**.
 - **mock_1 Q17, mock_2 Q18, mock_3 Q23, mock_4 Q19, mock_5 Q18** / `eval-003`: No labeled eval set exists for a new enterprise **RAG** agent. What is a strong way to bootstrap **retrieval evaluation**? Correct idea: Generate questions from specific document chunks, keep only answerable pairs after verification, and use the source chunk as gr.... Trap: Self-judgment has circularity.
-- **mock_1 Q18, mock_2 Q19, mock_3 Q24, mock_4 Q20** / `eval-004`: An **LLM-as-judge** prefers longer answers even when they contain unsupported details. Which mitigation is best? Correct idea: Use a rubric that separately scores correctness, support, conciseness, and harmfulness, with **calibrated examples** and position/o.... Trap: Generic fairness instructions are weak.
+- **mock_1 Q18, mock_2 Q19, mock_3 Q24, mock_4 Q20** / `eval-004`: An **LLM-as-judge** prefers longer answers even when they contain unsupported details. Which mitigation is best? Correct idea: Use criteria that separately score correctness, support, conciseness, and harmfulness, with **calibrated examples** and position/o.... Trap: Generic fairness instructions are weak.
 - **mock_1 Q19, mock_2 Q20, mock_3 Q25, mock_4 Q21, mock_5 Q19** / `eval-005`: A tool-using agent's **task success** improved, but cost doubled. Which **evaluation** view is missing? Correct idea: A **cost-quality frontier** that tracks **task success**, tool calls, **tokens**, **latency**, and **cost per completed task**.. Trap: GPU count is too indirect.
 - **mock_1 Q20, mock_2 Q21, mock_3 Q26, mock_4 Q22, mock_5 Q20** / `eval-006`: A prompt change improves benchmark score but increases unnecessary human escalations in production. What should the eval include? Correct idea: **Escalation precision/recall** and reviewer-load metrics on representative production-like cases.. Trap: Toxicity is separate.
 - **mock_1 Q21, mock_2 Q22, mock_3 Q27, mock_4 Q23, mock_5 Q21** / `eval-007`: A memory-enabled agent seems personalized but sometimes uses stale user preferences. Which **evaluation** best targets the failure? Correct idea: **Memory **retrieval** tests** with time-stamped preference updates, expected current value, and checks that stale memories are ignored.... Trap: Old conversations may reinforce stale preferences.

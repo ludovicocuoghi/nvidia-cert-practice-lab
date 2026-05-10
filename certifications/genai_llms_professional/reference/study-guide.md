@@ -471,7 +471,7 @@ Evaluation is about choosing the right measurement for the task.
 
 ### Experimental Design
 
-Avoid peeking at metrics during A/B tests without a predeclared stopping rule. Use held-out sets, stratification, confidence intervals, and task-specific rubrics. Always separate development, validation, and final test data.
+Avoid peeking at metrics during A/B tests without a predeclared stopping rule. Use held-out sets, stratification, confidence intervals, and task-specific criteria. Always separate development, validation, and final test data.
 
 Exam instinct:
 

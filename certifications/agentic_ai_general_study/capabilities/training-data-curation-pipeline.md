@@ -48,7 +48,7 @@ The first question is always: what will this data become?
 | Lane | What this page means there | Output |
 |---|---|---|
 | Train model from zero | Build the large pretraining corpus. Emphasize source blend, license/provenance, exact/fuzzy dedupe, PII/secrets handling, contamination checks, tokenizer impact, and document-level splits. | Versioned training corpus + validation/test holdouts + dataset card |
-| Fine-tune existing model | Curate smaller, label-heavy examples: SFT prompt/response rows, preference pairs, tool traces, rubrics, duplicate prompt removal, and regression holdouts. | Tuning dataset + validation/regression split + label-quality notes |
+| Fine-tune existing model | Curate smaller, label-heavy examples: SFT prompt/response rows, preference pairs, tool traces, criteria, duplicate prompt removal, and regression holdouts. | Tuning dataset + validation/regression split + label-quality notes |
 | Use existing model/API | Usually no training-data curation. Use prompt evals and runtime logging unless you decide to tune later. | Evaluation examples or prompt test cases, not weight-changing corpus |
 | Build agent/RAG application | Use the knowledge ingestion/RAG pages for runtime documents. Use this page only if agent incidents become curated eval/tuning examples. | Incident/eval/tuning candidates after privacy and holdout checks |
 | Operate, govern, and improve | Convert reviewed failures into eval cases, prompt fixes, retrieval fixes, or tuning data. Do not dump raw production logs into training. | Curated feedback dataset with PII, consent, and leakage controls |

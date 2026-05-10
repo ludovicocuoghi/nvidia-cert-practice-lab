@@ -19,14 +19,14 @@ RAG query:
 
 Training or tuning curation:
   raw examples -> license/PII checks -> exact/fuzzy dedupe
-               -> label/rubric review -> split holdouts -> contamination checks
+               -> label and criteria review -> split holdouts -> contamination checks
 ```
 
 | Destination | Artifact | First question |
 |---|---|---|
 | Runtime knowledge | Chunks, metadata, embeddings, rerank scores, citations | Can the agent retrieve current permitted evidence? |
 | Fine-tuning | Prompt/response examples, tool traces, preference pairs | Is the durable behavior worth changing model weights? |
-| Evaluation | Private holdouts, rubrics, canaries | Can this detect regressions without leakage? |
+| Evaluation | Private holdouts, criteria, canaries | Can this detect regressions without leakage? |
 | Pretraining | Large licensed corpus and tokenizer-ready shards | Is full model learning actually in scope? |
 
 ## Exam coverage map
@@ -46,7 +46,7 @@ Use this page first for these NCP-AAI sections:
 - **Use it when:** A scenario mentions corpus quality, MinHash/LSH deduplication, benchmark contamination, PII, SFT examples, preference pairs, chunking, metadata filtering, vector search, hybrid retrieval, reranking, or citations.
 - **Study first:** Use data curation for noisy corpora, duplicates, PII, license checks, train/eval splits, and contamination checks.
 - For training from zero, focus on source mix, corpus scale, licenses, exact/fuzzy dedupe, quality filters, tokenizer impact, and contamination.
-- For fine-tuning, focus on example quality, labels, rubrics, tool traces, preference pairs, duplicate prompts, split hygiene, and regression holdouts.
+- For fine-tuning, focus on example quality, labels, criteria, tool traces, preference pairs, duplicate prompts, split hygiene, and regression holdouts.
 - Use RAG for changing, private, or citation-required knowledge.
 - Use fine-tuning/customization for durable behavior, style, or task patterns.
 - **Real trap:** Fine-tuning and RAG solve different problems. Fine-tuning changes durable behavior; retrieval supplies fresh or private knowledge at query time.
@@ -68,7 +68,7 @@ The most important mental model: **curation changes depending on the destination
 ### Key ideas
 
 - **Training data curation** prepares corpora or examples before a model learns from them.
-- **Fine-tuning curation** is label/rubric/example quality work, not just web-corpus cleanup.
+- **Fine-tuning curation** is label, criteria, and example quality work, not just web-corpus cleanup.
 - **Knowledge grounding** retrieves external evidence at query time without changing weights.
 - **Evaluation curation** protects holdouts so scores mean something.
 - **MinHash/LSH** is a generic fuzzy-dedup method, not a vendor-specific service.
@@ -78,7 +78,7 @@ The most important mental model: **curation changes depending on the destination
 
 - Use data curation for noisy corpora, duplicates, PII, license checks, train/eval splits, and contamination checks.
 - For training from zero, focus on source mix, corpus scale, licenses, exact/fuzzy dedupe, quality filters, tokenizer impact, and contamination.
-- For fine-tuning, focus on example quality, labels, rubrics, tool traces, preference pairs, duplicate prompts, split hygiene, and regression holdouts.
+- For fine-tuning, focus on example quality, labels, criteria, tool traces, preference pairs, duplicate prompts, split hygiene, and regression holdouts.
 - Use RAG for changing, private, or citation-required knowledge.
 - Use fine-tuning/customization for durable behavior, style, or task patterns.
 - Use guardrails and authorization around retrieval; do not rely on final-answer filtering after sensitive chunks are already in prompt context.
@@ -117,7 +117,7 @@ Metrics differ by path: duplicate/removal rates for curation, contamination hit 
 | Raw web corpus has copied pages and boilerplate | Training Data Curator | Pretraining data needs exact/fuzzy dedupe and quality filtering before the model learns from it |
 | Support-ticket examples need labels and tool traces before LoRA tuning | Training Data Curator + Customization Toolkit | Fine-tuning curation is smaller, label-heavy, and behavior-focused |
 | Policy docs change weekly | Knowledge Retrieval Pipeline | Runtime retrieval can refresh without retraining |
-| Assistant must adopt a claims rubric | Customization Toolkit | Durable behavior comes from examples or prompt contracts |
+| Assistant must adopt claims criteria | Customization Toolkit | Durable behavior comes from examples or prompt contracts |
 | Eval set may overlap training data | Data Curator + Evaluation Harness | Contamination invalidates metrics |
 | User receives another tenant's document chunk | Retrieval authorization | Access filtering must happen before context construction |
 
@@ -126,10 +126,10 @@ Metrics differ by path: duplicate/removal rates for curation, contamination hit 
 | Destination | Main question | Typical methods | Failure if skipped |
 |---|---|---|---|
 | Train from zero / continued pretraining | Is the corpus safe, diverse, licensed, deduped, and representative enough to learn from at scale? | Source inventory, exact hash dedupe, MinHash/LSH, language ID, quality filters, PII handling, data blending, contamination checks | Memorization, benchmark inflation, legal/privacy risk, biased or narrow model behavior |
-| SFT / PEFT / LoRA | Are these examples good enough for the model to imitate? | Label/rubric review, duplicate prompt removal, format checks, tool-trace validation, task coverage, clean validation split | Overfitting, brittle behavior, repeated bad answer style, regression on old capabilities |
+| SFT / PEFT / LoRA | Are these examples good enough for the model to imitate? | Label and criteria review, duplicate prompt removal, format checks, tool-trace validation, task coverage, clean validation split | Overfitting, brittle behavior, repeated bad answer style, regression on old capabilities |
 | Preference tuning | Are the pairwise preferences consistent and policy-aligned? | Annotator agreement, conflict detection, reward-signal balance, safety/helpfulness split, held-out pairs | Reward hacking, inconsistent style, unsafe ranking behavior |
 | RAG knowledge | Can the model retrieve permitted, current, source-grounded evidence at query time? | Parsing, chunking, metadata, ACL propagation, embeddings, index refresh, hybrid retrieval, reranking | Stale answers, cross-tenant leakage, bad citations |
-| Evaluation holdout | Can this dataset measure real generalization? | Private canaries, exact/n-gram/embedding/MinHash leakage checks, versioned rubrics, access control | Inflated scores and false release confidence |
+| Evaluation holdout | Can this dataset measure real generalization? | Private canaries, exact/n-gram/embedding/MinHash leakage checks, versioned criteria, access control | Inflated scores and false release confidence |
 
 ### Mini scenario drill
 
@@ -171,7 +171,7 @@ Trap: Asking the model not to reveal unauthorized information.
 | If the need is... | Use | Not |
 |---|---|---|
 | Private or changing facts | RAG/retrieval | Fine-tune facts into weights |
-| Durable answer style or rubric | Prompt, SFT, PEFT, or preference tuning | More retrieval chunks |
+| Durable answer style or criteria | Prompt, SFT, PEFT, or preference tuning | More retrieval chunks |
 | Training corpus cleanup | Data curation pipeline | Runtime retriever |
 | Eval leakage detection | Holdout curation and contamination checks | Higher benchmark score |
 | Cross-tenant safety | Pre-retrieval authorization and metadata filters | Final-answer instruction not to reveal |

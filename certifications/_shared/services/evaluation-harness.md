@@ -11,7 +11,7 @@ status: populated
 - **Core idea:** The lifecycle owner for measuring whether the system works.
 - **Use it when:** The scenario mentions benchmarks, regression, trajectory scoring, RAG groundedness, LLM-as-judge, human ratings, or release gates.
 - **Choose another path when:** Choose a neighboring service when the problem is live operational monitoring only.
-- **Concrete surface:** Access: Eval jobs, CI gates, judge workflows, human review tasks, RAG metrics, replay datasets Inside: Golden sets, trajectory checks, groundedness, tool accuracy, safety tests, LLM-as-judge calibration I/O: Dataset, task rubric, model/prompt/retriever variant, expected behavior, traces, human labels -> Scores, failure cases, regressions, judge reports, approval or block signal
+- **Concrete surface:** Access: Eval jobs, CI gates, judge workflows, human review tasks, RAG metrics, replay datasets Inside: Golden sets, trajectory checks, groundedness, tool accuracy, safety tests, LLM-as-judge calibration I/O: Dataset, task criteria, model/prompt/retriever variant, expected behavior, traces, human labels -> Scores, failure cases, regressions, judge reports, approval or block signal
 - **Real trap:** Scoring only final answers when unsafe tool calls happened in the middle.
 
 ## At a glance
@@ -20,7 +20,7 @@ status: populated
 |---|---|
 | **What it is technically** | Test system for prompts, models, retrieval, tools, safety, agent trajectories, regression, and human/LLM judging |
 | **How you access it** | Eval jobs, CI gates, judge workflows, human review tasks, RAG metrics, replay datasets |
-| **Input** | Dataset, task rubric, model/prompt/retriever variant, expected behavior, traces, human labels |
+| **Input** | Dataset, task criteria, model/prompt/retriever variant, expected behavior, traces, human labels |
 | **Output** | Scores, failure cases, regressions, judge reports, approval or block signal |
 | **Inside** | Golden sets, trajectory checks, groundedness, tool accuracy, safety tests, LLM-as-judge calibration |
 
@@ -67,7 +67,7 @@ Evaluate more than final text:
 - Human satisfaction.
 - Regression against old failures.
 
-LLM-as-judge helps scale review, but it needs rubrics, calibration, and human-labeled anchors.
+LLM-as-judge helps scale review, but it needs criteria, calibration, and human-labeled anchors.
 
 ## Decision guide
 
@@ -90,4 +90,4 @@ LLM-as-judge helps scale review, but it needs rubrics, calibration, and human-la
 ## Hands-on checks
 
 1. Define metrics for a support agent: final correctness, tool accuracy, groundedness, safety, latency, cost.
-2. Write one judge rubric and one human calibration plan.
+2. Write one judge criteria and one human calibration plan.

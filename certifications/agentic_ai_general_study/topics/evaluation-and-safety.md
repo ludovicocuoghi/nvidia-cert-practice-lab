@@ -53,7 +53,7 @@ Use this page first for these NCP-AAI sections:
 - Faithfulness: asks whether the answer stays true to that evidence without adding unsupported claims.
 - Citation support: is stricter than "has a citation": the cited passage must actually entail the claim.
 - Trajectory evaluation: checks retrieval choices, tool calls, guardrail decisions, retries, and cost, not only the final answer.
-- LLM-as-judge: is useful for scale, but it needs a rubric, human anchor examples, disagreement checks, and drift monitoring.
+- LLM-as-judge: is useful for scale, but it needs criteria, human anchor examples, disagreement checks, and drift monitoring.
 - **Real trap:** A correct final answer can hide an unsafe or expensive trajectory.
 
 ## Concept ownership
@@ -82,7 +82,7 @@ This is the vendor-neutral home for model, RAG, and agent evaluation plus runtim
 - **Faithfulness** asks whether the answer stays true to that evidence without adding unsupported claims.
 - **Citation support** is stricter than "has a citation": the cited passage must actually entail the claim.
 - **Trajectory evaluation** checks retrieval choices, tool calls, guardrail decisions, retries, and cost, not only the final answer.
-- **LLM-as-judge** is useful for scale, but it needs a rubric, human anchor examples, disagreement checks, and drift monitoring.
+- **LLM-as-judge** is useful for scale, but it needs criteria, human anchor examples, disagreement checks, and drift monitoring.
 - **PII and unsafe-tool failures** should be evaluated at the boundary where they happen: input, retrieval, tool proposal, tool result, or output.
 
 ### Code anchor
@@ -117,7 +117,7 @@ Loss functions show up when training evaluators or policies; release evaluation 
 | Unsafe final text | Output guardrail | No policy |
 | Malicious retrieved chunk | Retrieved-content policy | Final-only filter |
 | Wrong tool call | Trajectory eval + tool gateway | Final answer accuracy |
-| Judge favors verbosity | Calibrated rubric | Blind LLM judge |
+| Judge favors verbosity | Calibrated criteria | Blind LLM judge |
 | Release change | Regression suite | Manual spot check |
 
 ### Deep dive: layered safety boundaries
@@ -134,7 +134,7 @@ Loss functions show up when training evaluators or policies; release evaluation 
 
 | Symptom | Better fix | Trap |
 |---|---|---|
-| Judge rewards long answers | Calibrate rubric with human anchors and disagreement checks | Blind LLM-as-judge score |
+| Judge rewards long answers | Calibrate evaluation criteria with human anchors and disagreement checks | Blind LLM-as-judge score |
 | Correct final answer with wrong tool path | Trajectory eval and tool-call scoring | Final-answer-only metric |
 | RAG answer cites weak evidence | Citation entailment and groundedness tests | Count citations only |
 | Prompt change improves one demo | Regression suite by domain and risk tier | Manual spot check |

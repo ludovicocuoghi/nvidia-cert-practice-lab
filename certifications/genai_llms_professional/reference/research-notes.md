@@ -111,5 +111,4 @@ Source: https://docs.nvidia.com/nemo/guardrails/0.19.0/index.html
 - Added candidate agreement/rules copy.
 - Added top exam status bar with time, delivery mode, and item progress.
 - Kept numbered navigation, orange flagging, and end-exam flow.
-- Question bank remains editable at `data/questions.md`.
-
+- Question banks remain editable under `certifications/<cert_slug>/mocks/original/` and `certifications/<cert_slug>/generated/`.

@@ -420,52 +420,6 @@ function cleanMarkdownLine(value) {
   return String(value || "").replace(/\r?\n/g, " ").trim();
 }
 
-function slugPart(value) {
-  return String(value || "topic")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 18) || "topic";
-}
-
-function localQuestionDrafts({ blueprint, count, focusDomains = [], weakOnly = false, serviceContext = null }) {
-  const domains = (blueprint?.domains || []).length
-    ? blueprint.domains
-    : [{ name: serviceContext?.name || "NVIDIA Platform", weight: 100, focus: serviceContext?.description || "NVIDIA certification topic." }];
-  const focusSet = new Set(focusDomains);
-  const pool = focusSet.size ? domains.filter((domain) => focusSet.has(domain.name)) : domains;
-  const usable = pool.length ? pool : domains;
-  const stamp = Date.now().toString(36);
-  const targetName = serviceContext?.name
-    ? (serviceContext.fullName ? `${serviceContext.name} (${serviceContext.fullName})` : serviceContext.name)
-    : blueprint?.name || "the selected NVIDIA topic";
-  const useText = serviceContext?.use || "Map the scenario to the correct lifecycle phase and NVIDIA platform capability.";
-  const avoidText = serviceContext?.avoid || "Avoid choosing a tool that solves a different lifecycle phase.";
-  const trapText = serviceContext?.traps || "The trap is selecting a plausible NVIDIA tool that does not match the stated bottleneck.";
-  const scenarioText = serviceContext?.scenario || "A team is preparing a production AI workflow and must choose the safest next technical step.";
-
-  return Array.from({ length: count }, (_, index) => {
-    const domain = usable[index % usable.length];
-    const id = `${slugPart(domain.name)}-${stamp}-${String(index + 1).padStart(2, "0")}`;
-    const seq = index + 1;
-    return [
-      `### Q${seq}: A team is working on ${targetName} for ${domain.name}. Given this scenario: ${scenarioText} What is the best next step?`,
-      `- ID: ${id}`,
-      `- Domain: ${domain.name}`,
-      `- Difficulty: ${seq % 3 === 0 ? "hard" : seq % 3 === 1 ? "medium" : "advanced"}`,
-      `- A. Use ${targetName} only where it matches the stated lifecycle requirement: ${useText}`,
-      `- B. Choose it for every NVIDIA-related requirement, even when the problem is serving, retrieval, profiling, or governance.`,
-      `- C. Skip the platform/tooling decision and rely on a larger base model to solve the operational constraint.`,
-      `- D. Add more GPU capacity before identifying whether the bottleneck is data, orchestration, safety, serving, or profiling.`,
-      `- Answer: A`,
-      `- Explanation: The correct answer maps the scenario to the service or section's intended role and preserves the engineering constraint instead of treating all NVIDIA components as interchangeable.`,
-      `- Why B is wrong: ${trapText}`,
-      `- Why C is wrong: A larger model does not replace the lifecycle decision, and it can increase latency, cost, and safety risk.`,
-      `- Why D is wrong: More hardware is premature before locating the actual bottleneck or requirement mismatch.`
-    ].join("\n");
-  });
-}
-
 const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);

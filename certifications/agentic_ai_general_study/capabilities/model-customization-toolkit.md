@@ -26,7 +26,7 @@ customization_job:
 - **Core idea:** You are building the path for changing an existing model's durable behavior with curated examples: SFT, PEFT/LoRA, QLoRA, preference tuning, alignment, or continued pretraining. Use it when prompting and RAG are not enough.
 - **Study first:** Establish a baseline model, prompt, and eval.
 - Decide whether the requirement is behavior, style, domain reasoning, or fresh knowledge.
-- Curate examples, labels, rubrics, tool traces, preference pairs, and validation holdouts.
+- Curate examples, labels, criteria, tool traces, preference pairs, and validation holdouts.
 - Choose method: PEFT/LoRA, full SFT, preference tuning, or continued pretraining.
 - Train/tune with adapter and dataset lineage.
 
@@ -41,14 +41,14 @@ You are building the path for changing an existing model's durable behavior with
 | Train model from zero | Usually not used; full training creates the base model. Customization may happen later as a separate lane. | Not the foundation checkpoint |
 | Fine-tune existing model | Main lane: choose PEFT/LoRA/QLoRA/SFT/preference tuning based on data shape, budget, and required behavior change. | Adapter or tuned checkpoint with eval evidence |
 | Use existing model/API | Use only if prompt/context does not produce durable behavior. Otherwise avoid unnecessary tuning. | Optional tuned variant |
-| Build agent/RAG application | Use when tool-call behavior, rubric following, or response style must stick beyond prompts/RAG. | Adapter trained on curated trajectories or preference data |
+| Build agent/RAG application | Use when tool-call behavior, criteria following, or response style must stick beyond prompts/RAG. | Adapter trained on curated trajectories or preference data |
 | Operate, govern, and improve | Incidents or reviewer labels may become tuning data after curation; eval first, tune only when prompt/RAG/policy fixes are insufficient. | Curated tuning issue and regression proof |
 
 ## Pipeline
 
 1. Establish a baseline model, prompt, and eval.
 2. Decide whether the requirement is behavior, style, domain reasoning, or fresh knowledge.
-3. Curate examples, labels, rubrics, tool traces, preference pairs, and validation holdouts.
+3. Curate examples, labels, criteria, tool traces, preference pairs, and validation holdouts.
 4. Choose method: PEFT/LoRA, full SFT, preference tuning, or continued pretraining.
 5. Train/tune with adapter and dataset lineage.
 6. Evaluate against target tasks, regressions, safety, and overfitting.
@@ -72,7 +72,7 @@ You are building the path for changing an existing model's durable behavior with
 
 | If the scenario says... | Think... | Avoid... |
 |---|---|---|
-| "style/rubric must be learned" | SFT or PEFT | RAG-only |
+| "style or criteria must be learned" | SFT or PEFT | RAG-only |
 | "fresh policy facts" | RAG | fine-tuning for freshness |
 | "limited GPU budget" | LoRA/QLoRA | full fine-tune by default |
 | "domain vocabulary weak" | continued pretraining or tokenizer work | only prompt wording |
@@ -112,7 +112,7 @@ Customization is the **durable behavior change layer** for an existing model. It
         -> [Regression + safety eval] -> [Registry] -> [Adapter-backed endpoint]
 ```
 
-Use it when the requirement must live in model behavior: company style, rubric following, tool-call trajectories, domain reasoning pattern, or preference alignment.
+Use it when the requirement must live in model behavior: company style, criteria following, tool-call trajectories, domain reasoning pattern, or preference alignment.
 
 ### Which method is the right answer
 
@@ -124,7 +124,7 @@ Use it when the requirement must live in model behavior: company style, rubric f
 | QLoRA | Adapter training with limited memory | You mean production inference quantization |
 | Full SFT | Larger behavior shift with labeled examples | Many customer variants need cheap storage |
 | Preference tuning/DPO/RLHF | Ranking safer/better answers | You only have single gold responses |
-| Continued pretraining | Shift domain language/distribution | You need a narrow JSON/output rubric |
+| Continued pretraining | Shift domain language/distribution | You need a narrow JSON/output criteria |
 
 ### LoRA and adapter knobs
 
@@ -158,7 +158,7 @@ Every adapter or tuned checkpoint needs a release record:
 | SFT | Model learns to imitate target responses | Prompt/response examples with clean formats and labels |
 | PEFT/LoRA | Small adapter weights are trained while base model stays mostly frozen | Same task examples, usually cheaper and easier to version |
 | QLoRA | Adapter training with the frozen base loaded in low-bit form to save memory | Useful when GPU memory is limited; not the same as serving quantization |
-| Preference tuning | Model learns which answer is preferred | Pairs or rankings: response A better than response B with reason/rubric |
+| Preference tuning | Model learns which answer is preferred | Pairs or rankings: response A better than response B with reason/criteria |
 | DPO | Direct preference optimization from pairs | Preference data without a separate reward-model pipeline |
 | Continued pretraining | Base distribution shifts with raw domain text | Large unlabeled domain corpus, not instruction examples |
 | Catastrophic forgetting | Prior ability regresses after narrow tuning | General chat, safety, or old tasks fail after update |

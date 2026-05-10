@@ -55,10 +55,8 @@ Local React simulator for NVIDIA certification practice. Multi-cert capable. The
 │       ├── sessions.md             # auto-appended session journal: Q, my answer, correct, my note, coach note
 │       ├── reference/              # NVIDIA PDF, deep-research report, notes
 │       └── archive/                # superseded question banks
-├── scripts/
-│   └── normalize_question_bank.py  # legacy importer
 └── test/
-    └── simulator.test.js
+    └── simulator.test.ts
 ```
 
 ## API
@@ -94,7 +92,6 @@ All endpoints accept an optional `?cert=<slug>` query param (defaults to `CERT_S
   - **Practice a Mock** — pick mock_N, get the same 50 questions as the timed exam but untimed and with the tutor.
   - **Adaptive Practice** — weak-domain biased, with 48h deboost on mock IDs you've recently seen.
   - **Generated Practice** — drill the high-fidelity generated bank plus approved draft questions.
-  - **Drill recent mistakes** — auto-generates 5 questions targeting your recent traps and runs them.
   - **Review Queue** — approve/reject pending generated questions before they enter the practice pool.
 - **Exam (Mock)** — timed, deferred grading, no helper. Mock 1–5 from `mocks/original/mock_N.json`.
 

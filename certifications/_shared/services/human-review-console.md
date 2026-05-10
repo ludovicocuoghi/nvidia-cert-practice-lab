@@ -11,7 +11,7 @@ status: populated
 - **Core idea:** The governance layer for human judgment and feedback.
 - **Use it when:** The scenario mentions approval, escalation, reviewer load, regulated actions, sampled QA, or audit evidence.
 - **Choose another path when:** Let low-risk actions run automatically or use sampled review when full approval would overload reviewers.
-- **Concrete surface:** Access: Case queues, moderation/review UIs, labeling tools, approval workflows, governance systems Inside: Risk tiers, assignment, SLA, reviewer rubric, audit log, feedback export, sampling strategy I/O: Risk score, proposed action, trace, retrieved evidence, model output, policy result, reviewer rubric -> Approved action, rejected action, escalation, label, correction, policy update, eval case
+- **Concrete surface:** Access: Case queues, moderation/review UIs, labeling tools, approval workflows, governance systems Inside: Risk tiers, assignment, SLA, reviewer criteria, audit log, feedback export, sampling strategy I/O: Risk score, proposed action, trace, retrieved evidence, model output, policy result, reviewer criteria -> Approved action, rejected action, escalation, label, correction, policy update, eval case
 - **Real trap:** Collecting review comments that never become evals, policy fixes, or training data.
 
 ## At a glance
@@ -20,9 +20,9 @@ status: populated
 |---|---|
 | **What it is technically** | Reviewer workflow for approvals, escalations, sampled QA, feedback labels, issue triage, and audit evidence |
 | **How you access it** | Case queues, moderation/review UIs, labeling tools, approval workflows, governance systems |
-| **Input** | Risk score, proposed action, trace, retrieved evidence, model output, policy result, reviewer rubric |
+| **Input** | Risk score, proposed action, trace, retrieved evidence, model output, policy result, reviewer criteria |
 | **Output** | Approved action, rejected action, escalation, label, correction, policy update, eval case |
-| **Inside** | Risk tiers, assignment, SLA, reviewer rubric, audit log, feedback export, sampling strategy |
+| **Inside** | Risk tiers, assignment, SLA, reviewer criteria, audit log, feedback export, sampling strategy |
 
 ```yaml
 review_case:

@@ -954,7 +954,7 @@
 - Why B is wrong: It keeps agent self-judgment as ground truth in control instead of adding a measurable bootstrap evals decision point.
 - Why C is wrong: It moves attention to a neighboring control instead of making bootstrap evals testable in the scenario.
 
-### Q57: A pharmaceutical research team passes the happy-path demo for an agent release that changes prompts, retrieval, and tool routing, but trusting a judge score with no calibration is being used as the shortcut, but it does not give the team a reliable way to anchor judge rubrics with human labels and disagreement review. Which change should be made before release?
+### Q57: A pharmaceutical research team passes the happy-path demo for an agent release that changes prompts, retrieval, and tool routing, but trusting a judge score with no calibration is being used as the shortcut, but it does not give the team a reliable way to anchor judge scoring criteria with human labels and disagreement review. Which change should be made before release?
 - ID: aai-hf-evaluation-and-tuning-007
 - Domain: Evaluation and Tuning
 - Topic: LLM-as-judge calibration; agentic_ai_professional
@@ -963,10 +963,10 @@
 - Source: generated
 - A. Prioritize task success even though the observed failure is around LLM-as-judge calibration.
 - B. Release prompt, model, and regression suite changes together with one aggregate score.
-- C. Make LLM-as-judge calibration explicit in the workflow: anchor judge rubrics with human labels and disagreement review.
+- C. Make LLM-as-judge calibration explicit in the workflow: anchor judge scoring criteria with human labels and disagreement review.
 - D. Keep trusting a judge score with no calibration as the main control and add a dashboard for final outputs.
 - Answer: C
-- Explanation: LLM-as-judge calibration is the missing control in this scenario. The right answer makes it explicit so the system can anchor judge rubrics with human labels and disagreement review.
+- Explanation: LLM-as-judge calibration is the missing control in this scenario. The right answer makes it explicit so the system can anchor judge scoring criteria with human labels and disagreement review.
 - Why A is wrong: It moves attention to a neighboring control instead of making LLM-as-judge calibration testable in the scenario.
 - Why B is wrong: Changing several layers at once makes it harder to prove whether LLM-as-judge calibration fixed the failure.
 - Why D is wrong: It keeps trusting a judge score with no calibration in control instead of adding a measurable LLM-as-judge calibration decision point.
@@ -1107,19 +1107,19 @@
 - Why B is wrong: It changes capacity or wording before fixing the measured root cause.
 - Why C is wrong: It moves attention to a neighboring control instead of making bootstrap evals testable in the scenario.
 
-### Q66: A public-sector casework team passes the happy-path demo for an agent release that changes prompts, retrieval, and tool routing, but trusting a judge score with no calibration is being used as the shortcut, but it does not give the team a reliable way to anchor judge rubrics with human labels and disagreement review. Which change should be made before release?
+### Q66: A public-sector casework team passes the happy-path demo for an agent release that changes prompts, retrieval, and tool routing, but trusting a judge score with no calibration is being used as the shortcut, but it does not give the team a reliable way to anchor judge scoring criteria with human labels and disagreement review. Which change should be made before release?
 - ID: aai-hf-evaluation-and-tuning-016
 - Domain: Evaluation and Tuning
 - Topic: LLM-as-judge calibration; agentic_ai_professional
 - Difficulty: expert
 - Scope: general_concept
 - Source: generated
-- A. Change the design around LLM-as-judge calibration so the system can anchor judge rubrics with human labels and disagreement review.
+- A. Change the design around LLM-as-judge calibration so the system can anchor judge scoring criteria with human labels and disagreement review.
 - B. Increase model capacity or context length while leaving LLM-as-judge calibration implicit.
 - C. Use latency and cost eval as the main gate even though reviewers are asking for LLM-as-judge calibration evidence.
 - D. Move the check to post-release monitoring without changing the release path for LLM-as-judge calibration.
 - Answer: A
-- Explanation: LLM-as-judge calibration is the missing control in this scenario. The right answer makes it explicit so the system can anchor judge rubrics with human labels and disagreement review.
+- Explanation: LLM-as-judge calibration is the missing control in this scenario. The right answer makes it explicit so the system can anchor judge scoring criteria with human labels and disagreement review.
 - Why B is wrong: It changes capacity or wording before fixing the measured root cause.
 - Why C is wrong: It moves attention to a neighboring control instead of making LLM-as-judge calibration testable in the scenario.
 - Why D is wrong: Monitoring is useful, but this scenario needs LLM-as-judge calibration controlled before release or execution.
@@ -1260,7 +1260,7 @@
 - Why B is wrong: It keeps agent self-judgment as ground truth in control instead of adding a measurable bootstrap evals decision point.
 - Why C is wrong: It moves attention to a neighboring control instead of making bootstrap evals testable in the scenario.
 
-### Q75: A manufacturing quality team is triaging a failed pilot for a RAG agent for policy questions. The current design still relies on trusting a judge score with no calibration. Reviewers need a control that can anchor judge rubrics with human labels and disagreement review. Which control addresses the root cause?
+### Q75: A manufacturing quality team is triaging a failed pilot for a RAG agent for policy questions. The current design still relies on trusting a judge score with no calibration. Reviewers need a control that can anchor judge scoring criteria with human labels and disagreement review. Which control addresses the root cause?
 - ID: aai-hf-evaluation-and-tuning-025
 - Domain: Evaluation and Tuning
 - Topic: LLM-as-judge calibration; agentic_ai_professional
@@ -1269,10 +1269,10 @@
 - Source: generated
 - A. Prioritize bootstrap evals even though the observed failure is around LLM-as-judge calibration.
 - B. Release prompt, model, and latency and cost eval changes together with one aggregate score.
-- C. Make LLM-as-judge calibration explicit in the workflow: anchor judge rubrics with human labels and disagreement review.
+- C. Make LLM-as-judge calibration explicit in the workflow: anchor judge scoring criteria with human labels and disagreement review.
 - D. Keep trusting a judge score with no calibration as the main control and add a dashboard for final outputs.
 - Answer: C
-- Explanation: LLM-as-judge calibration is the missing control in this scenario. The right answer makes it explicit so the system can anchor judge rubrics with human labels and disagreement review.
+- Explanation: LLM-as-judge calibration is the missing control in this scenario. The right answer makes it explicit so the system can anchor judge scoring criteria with human labels and disagreement review.
 - Why A is wrong: It moves attention to a neighboring control instead of making LLM-as-judge calibration testable in the scenario.
 - Why B is wrong: Changing several layers at once makes it harder to prove whether LLM-as-judge calibration fixed the failure.
 - Why D is wrong: It keeps trusting a judge score with no calibration in control instead of adding a measurable LLM-as-judge calibration decision point.

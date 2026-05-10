@@ -280,9 +280,9 @@
 - A. Tell the judge to be fair and keep the same prompt.
 - B. Always choose the more detailed answer.
 - C. Use answer length as the main quality score.
-- D. Use a rubric that separately scores correctness, support, conciseness, and harmfulness, with calibrated examples and position/order randomization.
+- D. Use criteria that separately score correctness, support, conciseness, and harmfulness, with calibrated examples and position/order randomization.
 - Answer: D
-- Explanation: Rubric decomposition reduces length bias and separates quality dimensions.
+- Explanation: Criteria decomposition reduces length bias and separates quality dimensions.
 - Why A is wrong: Generic fairness instructions are weak.
 - Why B is wrong: More detail can mean more hallucination.
 - Why C is wrong: Length is the biased feature.

@@ -964,7 +964,7 @@
 - A. Agent Orchestration Runtime is the best fit for this layer: framework/runtime for composing agent roles, workflows, planners, tools, retrieval, memory, routing, retries, and traceable handoffs.
 - B. Choose Training Data Curation Pipeline; it provides fit-for-purpose data curation for model learning and evaluation: corpus cleanup for training from zero, high-precision examples for tuning, protected holdouts for evaluation, and clear boundaries from RAG ingestion.
 - C. Use Cost/Latency Optimizer when you need to handle user count, p99 latency, TTFT, throughput, token cost, context bloat, model routing, caching, quantization, or batching.
-- D. Select Model Customization Toolkit; it owns training and customization work such as changing durable behavior, style, rubric-following, or domain task adaptation learned from examples.
+- D. Select Model Customization Toolkit; it owns training and customization work such as changing durable behavior, style, criteria adherence, or domain task adaptation learned from examples.
 - Answer: B
 - Explanation: Training Data Curation Pipeline is the best fit because it sits in Training-time data curation: Fit-for-purpose data curation for model learning and evaluation: corpus cleanup for training from zero, high-precision examples for tuning, protected holdouts for evaluation, and clear boundaries from RAG ingestion.
 - Why A is wrong: Agent Orchestration Runtime belongs to Agent orchestration, while this scenario asks for Training-time data curation.
@@ -997,7 +997,7 @@
 - Source: generated
 - A. Human Review and Governance Console is the best fit for this layer: oversight workspace for approvals, escalations, sampled review, reviewer feedback, issue triage, and policy/governance workflows.
 - B. Choose Foundation Model Training Stack; it provides heavy training path for creating or continuing a model with distributed training recipes, accelerators, checkpoints, data mixtures, and experiment tracking.
-- C. Use Model Customization Toolkit when you need to change durable behavior, style, rubric-following, or domain task adaptation learned from examples.
+- C. Use Model Customization Toolkit when you need to change durable behavior, style, criteria adherence, or domain task adaptation learned from examples.
 - D. Select Training Data Curation Pipeline; it owns training-time data curation work such as preparing model-learning or evaluation data: pretraining corpora, continued-pretraining corpora, SFT examples, preference pairs, tool-use traces, synthetic examples, validation sets, and benchmark holdouts.
 - Answer: D
 - Explanation: Training Data Curation Pipeline is the best fit because it sits in Training-time data curation: Fit-for-purpose data curation for model learning and evaluation: corpus cleanup for training from zero, high-precision examples for tuning, protected holdouts for evaluation, and clear boundaries from RAG ingestion.
@@ -1014,7 +1014,7 @@
 - Source: generated
 - A. Training Data Curation Pipeline is the best fit for this layer: fit-for-purpose data curation for model learning and evaluation: corpus cleanup for training from zero, high-precision examples for tuning, protected holdouts for evaluation, and clear boundaries from RAG ingestion.
 - B. Choose Knowledge and RAG Pipeline; it provides query-time grounding path for embeddings, indexing, metadata filtering, search, reranking, context assembly, citations, and freshness-aware retrieval.
-- C. Use Model Customization Toolkit when you need to change durable behavior, style, rubric-following, or domain task adaptation learned from examples.
+- C. Use Model Customization Toolkit when you need to change durable behavior, style, criteria adherence, or domain task adaptation learned from examples.
 - D. Select Model Selection and Registry; it owns model selection work such as deciding whether to call an existing API/model, choose a base model, use a catalog artifact, approve an adapter, compare variants, or roll back a release.
 - Answer: A
 - Explanation: Training Data Curation Pipeline is the best fit because it sits in Training-time data curation: Fit-for-purpose data curation for model learning and evaluation: corpus cleanup for training from zero, high-precision examples for tuning, protected holdouts for evaluation, and clear boundaries from RAG ingestion.
@@ -1031,7 +1031,7 @@
 - Source: generated
 - A. Agent Orchestration Runtime is the best fit for this layer: framework/runtime for composing agent roles, workflows, planners, tools, retrieval, memory, routing, retries, and traceable handoffs.
 - B. Choose Training Data Curation Pipeline; it provides fit-for-purpose data curation for model learning and evaluation: corpus cleanup for training from zero, high-precision examples for tuning, protected holdouts for evaluation, and clear boundaries from RAG ingestion.
-- C. Use Model Customization Toolkit when you need to change durable behavior, style, rubric-following, or domain task adaptation learned from examples.
+- C. Use Model Customization Toolkit when you need to change durable behavior, style, criteria adherence, or domain task adaptation learned from examples.
 - D. Select Model Inference Endpoint; it owns serving and deployment work such as for production model APIs, self-hosted endpoints, deployment packaging, latency SLOs, concurrency, or operational model serving.
 - Answer: B
 - Explanation: Training Data Curation Pipeline is the best fit because it sits in Training-time data curation: Fit-for-purpose data curation for model learning and evaluation: corpus cleanup for training from zero, high-precision examples for tuning, protected holdouts for evaluation, and clear boundaries from RAG ingestion.
@@ -1294,7 +1294,7 @@
 - Why C is wrong: Memory Store belongs to Memory and state, while this scenario asks for Foundation training.
 - Why D is wrong: Observability and Trace Monitor belongs to Monitoring and profiling, while this scenario asks for Foundation training.
 
-### Q77: A bank fraud team needs to choose the right implementation surface. The trace points to the need to change durable behavior, style, rubric-following, or domain task adaptation learned from examples. What is the best first implementation choice?
+### Q77: A bank fraud team needs to choose the right implementation surface. The trace points to the need to change durable behavior, style, criteria adherence, or domain task adaptation learned from examples. What is the best first implementation choice?
 - ID: ags-hf-svc-model-customization-toolkit-001
 - Domain: Model Selection and Customization
 - Topic: Study capability: Model Customization Toolkit; lifecycle: Training and customization; When is customization better than only changing retrieval?
@@ -1311,14 +1311,14 @@
 - Why B is wrong: Evaluation and Regression Harness belongs to Evaluation, while this scenario asks for Training and customization.
 - Why C is wrong: Model Selection and Registry belongs to Model selection, while this scenario asks for Training and customization.
 
-### Q78: A manufacturing quality team is preparing a production rollout. The rollout is blocked until the team can change durable behavior, style, rubric-following, or domain task adaptation learned from examples. Which General Study capability owns this requirement?
+### Q78: A manufacturing quality team is preparing a production rollout. The rollout is blocked until the team can change durable behavior, style, criteria adherence, or domain task adaptation learned from examples. Which General Study capability owns this requirement?
 - ID: ags-hf-svc-model-customization-toolkit-002
 - Domain: Model Selection and Customization
 - Topic: Study capability: Model Customization Toolkit; lifecycle: Training and customization; When is customization better than only changing retrieval?
 - Difficulty: medium
 - Scope: general_concept
 - Source: generated
-- A. Use Model Customization Toolkit when you need to change durable behavior, style, rubric-following, or domain task adaptation learned from examples.
+- A. Use Model Customization Toolkit when you need to change durable behavior, style, criteria adherence, or domain task adaptation learned from examples.
 - B. Select Knowledge Ingestion and Permission Pipeline; it owns runtime knowledge preparation work such as preparing private or changing documents as safe, searchable, permission-aware knowledge for an agent without changing model weights.
 - C. Observability and Trace Monitor is the best fit for this layer: live operations layer for traces, logs, metrics, tool-call health, retrieval quality, user-facing latency, errors, drift, incidents, and replay.
 - D. Choose Model Inference Endpoint; it provides packaged model endpoint that exposes optimized inference APIs with health checks, model profiles, auth, concurrency limits, latency metrics, and deployment hooks.
@@ -1328,7 +1328,7 @@
 - Why C is wrong: Observability and Trace Monitor belongs to Monitoring and profiling, while this scenario asks for Training and customization.
 - Why D is wrong: Model Inference Endpoint belongs to Serving and deployment, while this scenario asks for Training and customization.
 
-### Q79: A logistics planning team is reviewing the implementation plan. The blocker is changing durable behavior, style, rubric-following, or domain task adaptation learned from examples. What is the best first implementation choice?
+### Q79: A logistics planning team is reviewing the implementation plan. The blocker is changing durable behavior, style, criteria adherence, or domain task adaptation learned from examples. What is the best first implementation choice?
 - ID: ags-hf-svc-model-customization-toolkit-003
 - Domain: Model Selection and Customization
 - Topic: Study capability: Model Customization Toolkit; lifecycle: Training and customization; When is customization better than only changing retrieval?
@@ -1336,7 +1336,7 @@
 - Scope: general_concept
 - Source: generated
 - A. Use Cost/Latency Optimizer when you need to handle user count, p99 latency, TTFT, throughput, token cost, context bloat, model routing, caching, quantization, or batching.
-- B. Select Model Customization Toolkit; it owns training and customization work such as changing durable behavior, style, rubric-following, or domain task adaptation learned from examples.
+- B. Select Model Customization Toolkit; it owns training and customization work such as changing durable behavior, style, criteria adherence, or domain task adaptation learned from examples.
 - C. Latency, Throughput, and Traffic Control is the best fit for this layer: production traffic-control concepts for model and agent systems: percentiles, TTFT, concurrency, queueing, batching, autoscaling, backpressure, circuit breakers, and rollout safety.
 - D. Choose Tool Gateway and Function Runtime; it provides execution boundary that exposes tools/functions with schemas, validation, permissions, risk checks, idempotency, and audit logs.
 - Answer: B
@@ -1345,7 +1345,7 @@
 - Why C is wrong: Latency, Throughput, and Traffic Control belongs to Serving and deployment, while this scenario asks for Training and customization.
 - Why D is wrong: Tool Gateway and Function Runtime belongs to Tool execution, while this scenario asks for Training and customization.
 
-### Q80: An automotive support team is fixing the layer called out by the trace and design review. The work to finish before release is changing durable behavior, style, rubric-following, or domain task adaptation learned from examples. The team wants the choice that acts at this layer, not a neighboring one. Which capability best matches the release blocker?
+### Q80: An automotive support team is fixing the layer called out by the trace and design review. The work to finish before release is changing durable behavior, style, criteria adherence, or domain task adaptation learned from examples. The team wants the choice that acts at this layer, not a neighboring one. Which capability best matches the release blocker?
 - ID: ags-hf-svc-model-customization-toolkit-004
 - Domain: Model Selection and Customization
 - Topic: Study capability: Model Customization Toolkit; lifecycle: Training and customization; When is customization better than only changing retrieval?
@@ -1362,7 +1362,7 @@
 - Why B is wrong: Knowledge and RAG Pipeline belongs to RAG and retrieval, while this scenario asks for Training and customization.
 - Why D is wrong: Tool Gateway and Function Runtime belongs to Tool execution, while this scenario asks for Training and customization.
 
-### Q81: A semiconductor design group is setting a release gate. The trace points to the need to change durable behavior, style, rubric-following, or domain task adaptation learned from examples. What is the best first implementation choice?
+### Q81: A semiconductor design group is setting a release gate. The trace points to the need to change durable behavior, style, criteria adherence, or domain task adaptation learned from examples. What is the best first implementation choice?
 - ID: ags-hf-svc-model-customization-toolkit-005
 - Domain: Model Selection and Customization
 - Topic: Study capability: Model Customization Toolkit; lifecycle: Training and customization; When is customization better than only changing retrieval?

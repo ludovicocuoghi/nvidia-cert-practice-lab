@@ -9,9 +9,9 @@ status: populated
 ## What to study first
 
 - **Core idea:** The lifecycle role for adapting how a model behaves.
-- **Use it when:** The system needs durable style, rubric-following, domain behavior, tool-use habits, or preference alignment.
+- **Use it when:** The system needs durable style, criteria adherence, domain behavior, tool-use habits, or preference alignment.
 - **Choose another path when:** Choose the neighboring capability when the only missing piece is current/private knowledge that should be retrieved.
-- **Concrete surface:** Access: Training frameworks, managed customization APIs, adapter jobs, prompt/version pipelines Inside: Prompt contracts, SFT, LoRA/QLoRA, DPO/RLHF-style preference learning, overfitting checks, regression evals I/O: Base model, curated examples, instruction data, preference pairs, domain rubric, eval set -> Prompt template, adapter, tuned model, or preference-aligned release candidate
+- **Concrete surface:** Access: Training frameworks, managed customization APIs, adapter jobs, prompt/version pipelines Inside: Prompt contracts, SFT, LoRA/QLoRA, DPO/RLHF-style preference learning, overfitting checks, regression evals I/O: Base model, curated examples, instruction data, preference pairs, domain criteria, eval set -> Prompt template, adapter, tuned model, or preference-aligned release candidate
 - **Real trap:** Fine-tuning for facts that change weekly.
 
 ## At a glance
@@ -20,7 +20,7 @@ status: populated
 |---|---|
 | **What it is technically** | A framework or managed service for adapting model behavior through prompts, SFT, PEFT/LoRA, preference tuning, or alignment workflows |
 | **How you access it** | Training frameworks, managed customization APIs, adapter jobs, prompt/version pipelines |
-| **Input** | Base model, curated examples, instruction data, preference pairs, domain rubric, eval set |
+| **Input** | Base model, curated examples, instruction data, preference pairs, domain criteria, eval set |
 | **Output** | Prompt template, adapter, tuned model, or preference-aligned release candidate |
 | **Inside** | Prompt contracts, SFT, LoRA/QLoRA, DPO/RLHF-style preference learning, overfitting checks, regression evals |
 
@@ -41,10 +41,10 @@ customization_job = {
 - **What it is:** The lifecycle role for adapting how a model behaves.
 - **Lifecycle:** Training and customization
 - **Relevant exams:** Agentic AI General Study
-- **Use it when:** The system needs durable style, rubric-following, domain behavior, tool-use habits, or preference alignment.
+- **Use it when:** The system needs durable style, criteria adherence, domain behavior, tool-use habits, or preference alignment.
 - **Do not use it when:** Choose the neighboring capability when the only missing piece is current/private knowledge that should be retrieved.
 - **Common trap:** Fine-tuning for facts that change weekly.
-- **Recognition clues:** "The model must follow our claims triage rubric even when the relevant policy document is retrieved correctly."
+- **Recognition clues:** "The model must follow our claims triage criteria even when the relevant policy document is retrieved correctly."
 
 ## Related service map
 
@@ -78,7 +78,7 @@ Customization should be measured against held-out tasks and old regression tasks
 
 ## High-yield signals
 
-- "Style/rubric/behavior" -> customization.
+- "Style/criteria/behavior" -> customization.
 - "Fresh facts/citations" -> RAG.
 - "Overfitting/catastrophic forgetting" -> customization risk.
 - "Adapter" -> PEFT.

@@ -308,7 +308,7 @@ Retrieval metrics usually include recall@k, MRR, nDCG, answer-bearing chunk rank
 |---|---|
 | Right document never appears | Connector, parser, metadata, embedding, index freshness |
 | Right document appears but low rank | Hybrid search, reranker, query rewrite |
-| Citation does not support claim | Context packing, answer rubric, groundedness check |
+| Citation does not support claim | Context packing, answer criteria, groundedness check |
 | User sees forbidden source | ACL filter before retrieval |
 | Answers are stale | Source version, refresh/delete pipeline |
 | Long slow prompts | Chunk pruning, parent-child retrieval, top-k/reranker budget |

@@ -216,7 +216,7 @@ Production     → Business metrics, drift detection, user feedback
 
 Across the mock exams, **evaluation** questions repeatedly test these durable ideas:
 
-- **Metric-task fit**: use **retrieval** **metrics** for **retrieval**, generation **metrics** for generated text, and human/LLM-judge rubrics for subjective quality.
+- **Metric-task fit**: use **retrieval** **metrics** for **retrieval**, generation **metrics** for generated text, and human/LLM-judge criteria for subjective quality.
 - **Validation discipline**: keep train/validation/test roles separate; do not tune on the test set.
 - **Statistical confidence**: compare changes with significance checks, not single noisy scores.
 - **Overfitting diagnosis**: watch validation loss, gap to training loss, and performance on held-out data.
@@ -246,7 +246,7 @@ Evidence source: `mock_1` through `mock_5`, especially LLM **metrics**, **retrie
 - **Evaluation set design** — should be targeted, not massive. 500-2000 **examples** per capability is usually sufficient for reliable measurement beyond noise. Bootstrap from real production documents by extracting query-document pairs from **logs** and having annotators write gold answers. Cover failure modes you've seen in the past (regression sets). Split by capability category (factual, instruction-following, **safety**, formatting) to diagnose which dimension regressed. A single overall score hides critical degradation in one capability.
 - **Contamination checks** — are non-negotiable. Before reporting any metric, verify that eval **examples** (or close paraphrases) do not appear in training data. Methods: exact string match, n-gram overlap (e.g., 13-gram Bloom filter used in GPT-3), embedding similarity with a threshold, and MinHash near-duplicate detection. The worst-case scenario is a model that "scores well" on a contaminated benchmark but fails on genuinely novel inputs in production. Never use public benchmarks alone — maintain private eval sets created after the model's training data cutoff.
 
-- Match **metrics** to the task: **perplexity** for language modeling, **retrieval** **metrics** for **RAG** search, **faithfulness**/**groundedness** for cited answers, human rubrics for open-ended quality.
+- Match **metrics** to the task: **perplexity** for language modeling, **retrieval** **metrics** for **RAG** search, **faithfulness**/**groundedness** for cited answers, human evaluation criteria for open-ended quality.
 - **LLM-as-judge** is useful but must be calibrated; it can be biased by verbosity, style, or its own prior knowledge.
 - **Evaluation** should include regression sets so prompt/model/**deployment** changes do not silently break old behavior.
 
@@ -270,7 +270,7 @@ Evidence source: `mock_1` through `mock_5`, especially LLM **metrics**, **retrie
 | Language model confidence | **Perplexity** within the same tokenizer/model setup | Comparing perplexity across different tokenizers |
 | Summarization overlap | **ROUGE** plus human or semantic review | Treating ROUGE as factual correctness |
 | Translation surface match | **BLEU** with brevity penalty awareness | Using BLEU for open-ended helpfulness |
-| Paraphrase-heavy generation | **BERTScore** or semantic/human rubric | Relying only on n-gram overlap |
+| Paraphrase-heavy generation | **BERTScore** or semantic/human evaluation criteria | Relying only on n-gram overlap |
 | RAG answer has unsupported claims | **Faithfulness/groundedness** against retrieved context | Looking only at answer relevance or fluency |
 | Retriever quality | **MRR**, **Recall@k**, and context precision | Scoring only the final generated answer |
 | LLM-as-judge result favors long answers | Control verbosity, randomize order, calibrate with humans | Accepting judge scores as objective truth |

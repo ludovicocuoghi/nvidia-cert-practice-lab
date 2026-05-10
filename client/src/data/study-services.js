@@ -268,11 +268,11 @@ const vendorNeutralCapabilities = [
     studyNotes: [
       "First classify the destination: train-from-zero corpus, continued-pretraining corpus, SFT/PEFT examples, preference data, RAG knowledge, or evaluation holdout. The curation recipe changes with the destination.",
       "For training from zero or continued pretraining, optimize corpus quality at scale: source mixture, language balance, exact dedupe, MinHash/LSH near-dedupe, license safety, PII handling, contamination checks, tokenizer impact, and lineage.",
-      "For fine-tuning, optimize example quality more than volume: task coverage, labels, rubrics, tool-call traces, answer format, preference pairs, duplicate prompts, split hygiene, and regression holdouts.",
+      "For fine-tuning, optimize example quality more than volume: task coverage, labels, criteria, tool-call traces, answer format, preference pairs, duplicate prompts, split hygiene, and regression holdouts.",
       "For RAG, use the related knowledge-ingestion/RAG capabilities instead: parse, chunk, embed, tag permissions, refresh indexes, and retrieve at query time without changing weights.",
       "For evaluation, protect holdouts aggressively. Eval data is evidence, not training material; leakage through duplicates, paraphrases, or synthetic examples invalidates the measurement."
     ],
-    mustKnow: ["exact hash dedupe before fuzzy dedupe", "MinHash estimates Jaccard similarity", "LSH avoids all-pairs comparison", "PII detection uses regex plus NER/classifiers", "contamination checks compare train data against validation/test/benchmarks", "fine-tuning data curation is smaller and label/rubric-heavy", "RAG ingestion is runtime knowledge preparation, not weight-changing training data"],
+    mustKnow: ["exact hash dedupe before fuzzy dedupe", "MinHash estimates Jaccard similarity", "LSH avoids all-pairs comparison", "PII detection uses regex plus NER/classifiers", "contamination checks compare train data against validation/test/benchmarks", "fine-tuning data curation is smaller and label-and-criteria-heavy", "RAG ingestion is runtime knowledge preparation, not weight-changing training data"],
     examSignals: ["train from zero", "continued pretraining", "raw web corpus", "near duplicates", "MinHash/LSH", "preference pairs", "tool traces", "benchmark leakage", "validation holdout", "PII in corpus"],
     handsOn: ["Write four separate checklists: pretraining corpus, SFT/PEFT examples, RAG knowledge ingestion, and evaluation holdout. Mark which steps are shared and which are unique."],
     relatedServices: ["Foundation Model Training Stack", "Model Customization Toolkit", "Knowledge Ingestion and Permission Pipeline", "Knowledge and RAG Pipeline", "Evaluation and Regression Harness"]
@@ -355,10 +355,10 @@ const vendorNeutralCapabilities = [
     lifecycle: "Training and customization",
     group: "Model lifecycle",
     filters: ["Agentic AI General", "Training and customization", "Model selection"],
-    use: "Use when the scenario requires durable behavior, style, rubric-following, or domain task adaptation learned from examples.",
+    use: "Use when the scenario requires durable behavior, style, criteria adherence, or domain task adaptation learned from examples.",
     avoid: "Do not choose it for rapidly changing facts, citations, permissioned documents, or simple formatting that prompt/context design can solve.",
     traps: "Fine-tuning for knowledge freshness. Retrieval is usually the first answer for changing facts; prompting is often the first answer for task framing.",
-    scenario: "A claims assistant must learn a company-specific decision rubric while still retrieving current policy text.",
+    scenario: "A claims assistant must learn company-specific decision criteria while still retrieving current policy text.",
     quizPrompt: "When is customization better than only changing retrieval?",
     keywords: ["fine-tuning", "LoRA", "PEFT", "SFT", "DPO", "alignment"],
     studyNotes: [
@@ -367,7 +367,7 @@ const vendorNeutralCapabilities = [
       "Evaluate before and after customization to detect overfitting and regression."
     ],
     mustKnow: ["prompt vs RAG vs PEFT vs SFT", "adapter lineage", "overfitting", "catastrophic forgetting", "preference tuning"],
-    examSignals: ["durable behavior", "style", "rubric", "examples", "adapter", "preference pairs"],
+    examSignals: ["durable behavior", "style", "criteria", "examples", "adapter", "preference pairs"],
     handsOn: ["Classify five requirements as prompt/context, RAG, PEFT, full SFT, preference tuning, or full training."],
     relatedServices: ["Training Data Curation Pipeline", "Prompt and Context Design", "Model Selection and Registry", "Evaluation and Regression Harness"]
   },
@@ -598,7 +598,7 @@ const vendorNeutralCapabilities = [
     studyNotes: [
       "This maps to NVIDIA NeMo Evaluator, AWS Bedrock evaluation, OpenAI evals, RAG/agent eval frameworks, and internal QA suites.",
       "Agent evals need final answer correctness, groundedness, tool correctness, policy compliance, latency, and cost.",
-      "LLM-as-judge is useful only with rubrics, calibration, and human-labeled anchors."
+      "LLM-as-judge is useful only with criteria, calibration, and human-labeled anchors."
     ],
     mustKnow: ["trajectory eval", "groundedness", "LLM-as-judge", "human labels", "regression suite"],
     examSignals: ["release gate", "compare variants", "judge bias", "unsafe intermediate step"],
@@ -751,7 +751,7 @@ const vendorNeutralRelatedServices = {
   "Evaluation and Regression Harness": [
     { vendor: "NVIDIA", service: "NeMo Evaluator + NeMo Agent Toolkit evals", role: "Model, RAG, and agent workflow evaluation with benchmarks and trajectory checks." },
     { vendor: "AWS", service: "Amazon Bedrock Evaluations", role: "Automatic and human evaluation for models, knowledge bases, and RAG resources." },
-    { vendor: "Open source", service: "OpenAI Evals, Ragas, DeepEval, promptfoo", role: "Portable regression suites, RAG metrics, LLM-as-judge, and human rubric workflows." }
+    { vendor: "Open source", service: "OpenAI Evals, Ragas, DeepEval, promptfoo", role: "Portable regression suites, RAG metrics, LLM-as-judge, and human review workflows with clear criteria." }
   ],
   "Observability and Trace Monitor": [
     { vendor: "NVIDIA", service: "NeMo Agent Toolkit observability + Nsight Systems", role: "Agent traces plus NVIDIA system/profiling tools for performance diagnosis." },
@@ -805,7 +805,7 @@ export const studySections = [
     keyIdeas: ["model routing", "registry", "prompt vs RAG vs fine-tuning", "PEFT", "rollback"],
     use: "Study this when requirements mention durable behavior, model tradeoffs, or artifact governance.",
     traps: "Do not fine-tune for fast-changing facts when retrieval with citations is the better first design.",
-    scenario: "Use RAG for weekly policy changes and PEFT/SFT for durable decision-rubric behavior."
+    scenario: "Use RAG for weekly policy changes and PEFT/SFT for durable decision behavior from criteria."
   },
   {
     exam: "Agentic AI General",
@@ -1207,7 +1207,7 @@ const sectionDeepDive = {
     studyNotes: [
       "Evaluate trajectories, not just final answers. A final answer can be correct while the agent used an unsafe tool, leaked data, or took an expensive path.",
       "Use task success, tool-call accuracy, groundedness, safety, cost, latency, and regression suites. Human review is important for ambiguous tasks.",
-      "LLM-as-judge can help scale evaluation but can be biased; calibrate it against human labels and fixed rubrics."
+      "LLM-as-judge can help scale evaluation but can be biased; calibrate it against human labels and fixed criteria."
     ],
     mustKnow: ["trajectory evaluation", "tool-call success", "groundedness", "LLM-as-judge bias", "regression suite"],
     examSignals: ["agent benchmark", "unsafe intermediate step", "cost spike", "judge bias", "human review"],
@@ -1327,11 +1327,11 @@ const sectionDeepDive = {
   },
   "Evaluation": {
     studyNotes: [
-      "Match metrics to the task: perplexity for language modeling, retrieval metrics for RAG search, faithfulness/groundedness for cited answers, human rubrics for open-ended quality.",
+      "Match metrics to the task: perplexity for language modeling, retrieval metrics for RAG search, faithfulness/groundedness for cited answers, human evaluation criteria for open-ended quality.",
       "LLM-as-judge is useful but must be calibrated; it can be biased by verbosity, style, or its own prior knowledge.",
       "Evaluation should include regression sets so prompt/model/deployment changes do not silently break old behavior."
     ],
-    mustKnow: ["perplexity", "BLEU/ROUGE limits", "faithfulness", "LLM-as-judge", "human rubric"],
+    mustKnow: ["perplexity", "BLEU/ROUGE limits", "faithfulness", "LLM-as-judge", "human evaluation criteria"],
     examSignals: ["benchmark", "model comparison", "RAG faithfulness", "judge bias", "regression"],
     handsOn: ["Pair each metric with one failure it can catch and one failure it misses."]
   },

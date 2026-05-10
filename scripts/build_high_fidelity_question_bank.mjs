@@ -271,7 +271,7 @@ const agenticDomainConcepts = {
     ["task success", "measure whether the user goal was completed, not just whether text looked plausible", "BLEU-style text similarity for agent success"],
     ["latency and cost eval", "include p95/p99, TTFT, tool wait, and cost per task in release gates", "quality-only evals"],
     ["bootstrap evals", "create verified question-chunk pairs when labels are missing", "agent self-judgment as ground truth"],
-    ["LLM-as-judge calibration", "anchor judge rubrics with human labels and disagreement review", "trusting a judge score with no calibration"],
+    ["LLM-as-judge calibration", "anchor judge scoring criteria with human labels and disagreement review", "trusting a judge score with no calibration"],
     ["regression suite", "compare prompt, model, retrieval, and tool changes before release", "changing several layers with one score"],
     ["ablation", "isolate whether prompt, retrieval, model, or tools caused the failure", "fine-tuning without root cause analysis"]
   ],
@@ -415,7 +415,7 @@ const genaiDomainConcepts = {
   "Evaluation": [
     ["perplexity", "measure next-token prediction quality for language modeling", "semantic similarity"],
     ["bootstrap confidence", "estimate score uncertainty for small differences", "choosing the winner from one noisy run"],
-    ["task metrics", "use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task", "one metric for all tasks"],
+    ["task metrics", "use accuracy, F1, ROUGE, BLEU, NDCG, or human evaluation criteria by task", "one metric for all tasks"],
     ["data contamination", "prevent train/test overlap and benchmark leakage", "post-hoc score interpretation only"],
     ["human evaluation", "judge nuance, safety, helpfulness, and high-stakes acceptability", "automatic metrics alone"]
   ],
@@ -630,7 +630,7 @@ const domainScenarioBank = {
   ],
   "Evaluation and Tuning": [
     ["an agent release that changes prompts, retrieval, and tool routing", "the release gate checks only the final answer text.", "wrong tools and missing evidence still produce fluent answers", "trajectory-level evaluation"],
-    ["a RAG agent for policy questions", "the team trusts an LLM judge score with no human calibration.", "judge ratings disagree with reviewers on edge cases", "calibrated rubrics and disagreement review"],
+    ["a RAG agent for policy questions", "the team trusts an LLM judge score with no human calibration.", "judge ratings disagree with reviewers on edge cases", "calibrated criteria and disagreement review"],
     ["a new model route for agent tasks", "several layers changed at once and one aggregate score improved.", "nobody can tell whether quality came from retrieval, model, prompt, or tools", "ablation and regression comparison by layer"]
   ],
   "Deployment and Scaling": [

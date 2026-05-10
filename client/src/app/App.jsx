@@ -650,12 +650,6 @@ function App() {
     bestPercent: parseBestMockAttempt(mockResultsMd, selectedMockId)
   }), [mockResultsMd, selectedMockId]);
 
-  function updateConfidence(domain, value) {
-    const next = { ...confidence, [domain]: value };
-    setConfidence(next);
-    saveJson(`${selectedCertSlug}-confidence`, next);
-  }
-
   function rememberCoachReply(questionId, learnerQuestion, reply) {
     const note = [
       learnerQuestion ? `Learner asked: ${learnerQuestion}` : "",
@@ -742,50 +736,6 @@ function App() {
     } catch (err) {
       if (aborted()) return;
       setGenerationStatus({ state: 'error', message: (err.message || String(err)).replace(/DeepSeek|moonshot|kimi|anthropic.com|openai|model/gi, 'question generator').slice(0, 200) });
-    } finally {
-      clearTimeout(timeoutId);
-    }
-  }
-
-  async function drillRecentMistakes(count = 5) {
-    if (genAbortRef.current) { genAbortRef.current.abort(); genAbortRef.current = null; }
-    const controller = new AbortController();
-    genAbortRef.current = controller;
-    const aborted = () => controller.signal.aborted;
-    const timeoutId = setTimeout(() => controller.abort(), 120000);
-
-    setGenerationStatus({ state: 'running', message: 'Generating ' + count + ' question' + (count === 1 ? '' : 's') + ' targeting your recent mistakes…' });
-    try {
-      const result = await api(certPath('/api/generate-questions', selectedCertSlug), {
-        method: 'POST',
-        signal: controller.signal,
-        body: JSON.stringify({ mode: 'mistakes', count, difficulty: 'hard' })
-      });
-      if (aborted()) return;
-      if (!result.accepted) {
-        setGenerationStatus({ state: 'warn', message: 'No questions generated. Try logging more mistakes or use the targeted generator.' });
-        return;
-      }
-      const refreshed = await api(certPath('/api/exam', selectedCertSlug));
-      if (aborted()) return;
-      setExam(refreshed);
-      const drillIds = new Set(result.autoApprovedIds || []);
-      const drillSet = uniqueQuestionList(refreshed.questions.filter((q) => drillIds.has(q.id))).map(shuffleQuestionChoices);
-      if (!drillSet.length) {
-        setGenerationStatus({ state: 'warn', message: "Generated questions weren't found in the bank. Refresh and try Practice → NVIDIA-specific questions." });
-        return;
-      }
-      resetSessionState({ keepGeneration: true });
-      setFlow('practice-generated');
-      setSessionKind('practice');
-      setSessionQuestions(drillSet);
-      setSecondsLeft(0);
-      setMode('exam');
-      setGenerationStatus({ state: 'idle', message: 'Drilling ' + drillSet.length + ' mistake-targeted questions.' });
-      scrollToTop();
-    } catch (err) {
-      if (aborted()) return;
-      setGenerationStatus({ state: 'error', message: (err.message || String(err)).slice(0, 200) });
     } finally {
       clearTimeout(timeoutId);
     }
@@ -1325,7 +1275,7 @@ function App() {
           h("button", { onClick: () => setError("") }, "Dismiss"))
       : null,
     mode === "start" ? h(StartScreen, {
-      exam, domainStats, dashboard, confidence, learnerProfile, mockSummary, mockResultsMd,
+      exam, domainStats, dashboard, learnerProfile, mockSummary, mockResultsMd,
       track, setTrack, busy, certifications, studyView, setStudyView,
       branding,
       availableMocks, selectedMockId, setSelectedMockId, selectedMockSource, setSelectedMockSource,
@@ -1335,8 +1285,8 @@ function App() {
       activeSectionExam, setActiveSectionExam, selectedSectionName, setSelectedSectionName,
       pendingStudyJump, setPendingStudyJump,
       studyStatus, setStudyStatus,
-      drillRecentMistakes, setExam,
-      updateConfidence, startFlow, startTargetedGuidedPractice, startQuestionDrill, startSectionPractice, startKeywordPractice, generateQuestions, generateStudyQuiz, generationStatus, cancelGeneration
+      setExam,
+      startFlow, startTargetedGuidedPractice, startQuestionDrill, startSectionPractice, startKeywordPractice, generateQuestions, generateStudyQuiz, generationStatus, cancelGeneration
     }) : null,
     mode === "exam"
       ? h(ExamScreen, {
@@ -1407,7 +1357,7 @@ function flowLabel(flow, mockDef) {
 }
 
 function StartScreen(props) {
-  const { exam, domainStats, dashboard, confidence, learnerProfile, mockSummary, mockResultsMd,
+  const { exam, domainStats, dashboard, learnerProfile, mockSummary, mockResultsMd,
     track, setTrack, busy, certifications, studyView, setStudyView,
     branding,
     availableMocks, selectedMockId, setSelectedMockId, selectedMockSource, setSelectedMockSource,
@@ -1417,8 +1367,8 @@ function StartScreen(props) {
     activeSectionExam, setActiveSectionExam, selectedSectionName, setSelectedSectionName,
     pendingStudyJump, setPendingStudyJump,
     studyStatus, setStudyStatus,
-    drillRecentMistakes, setExam,
-    updateConfidence, startFlow, startTargetedGuidedPractice, startQuestionDrill, startSectionPractice, startKeywordPractice, generateQuestions, generateStudyQuiz, generationStatus, cancelGeneration } = props;
+    setExam,
+    startFlow, startTargetedGuidedPractice, startQuestionDrill, startSectionPractice, startKeywordPractice, generateQuestions, generateStudyQuiz, generationStatus, cancelGeneration } = props;
   const isGenericStudy = exam.certification.code === "AAI-GEN";
 
   return h(
@@ -1428,10 +1378,10 @@ function StartScreen(props) {
     h(TrackChooser, { track, setTrack, mockSummary, exam, branding }),
     track === "practice"
       ? h(PracticePanel, {
-          exam, domainStats, dashboard, confidence, learnerProfile,
-          updateConfidence, startFlow, startTargetedGuidedPractice, startQuestionDrill, generateQuestions, generationStatus, cancelGeneration,
+          exam, domainStats, dashboard, learnerProfile,
+          startFlow, startTargetedGuidedPractice, startQuestionDrill, generateQuestions, generationStatus, cancelGeneration,
           availableMocks, selectedMockId, setSelectedMockId, selectedMockSource, setSelectedMockSource,
-          selectedCertSlug, drillRecentMistakes,
+          selectedCertSlug,
           refreshExam: () => api(certPath("/api/exam", selectedCertSlug)).then(setExam)
         })
       : null,
@@ -1588,7 +1538,7 @@ const LIFECYCLE_FLOWS = {
     lanes: {
       "Core: Deploy optimized LLM endpoint": "Main NCP-GENL path: choose an approved model, optimize generation, expose it as an endpoint, then profile bottlenecks.",
       "Core: Build grounded LLM application": "Use when the model needs private or fresh knowledge, prompt/context control, guardrails, and answer-quality evaluation.",
-      "Secondary: Fine-tune existing model": "Use when durable behavior, style, rubric-following, or preference alignment must change. Tune only after data and evals are ready.",
+      "Secondary: Fine-tune existing model": "Use when durable behavior, style, criteria adherence, or preference alignment must change. Tune only after data and evals are ready.",
       "Reference: Train model from zero": "Background lifecycle anchor for this cert. Know the steps, but full pretraining is not the default professional LLM application path."
     },
     stages: [
@@ -1680,7 +1630,7 @@ const LIFECYCLE_FLOWS = {
     lanes: {
       "Build agent/RAG application": "Most exam and product work starts here: choose workflow vs RAG vs bounded agent, wire tools/memory, add policy, and evaluate trajectories.",
       "Use existing model or API": "Default product path when no weight change is needed: choose a model/API, adapt with prompts/context, wrap it in a serving layer, then measure it.",
-      "Fine-tune existing model": "Use when an existing model is close, but durable behavior, style, rubric-following, or preference alignment must change.",
+      "Fine-tune existing model": "Use when an existing model is close, but durable behavior, style, criteria adherence, or preference alignment must change.",
       "Train model from zero": "Rare anchor path: prepare corpora, run distributed training, evaluate the new artifact, then publish it for serving.",
       "Operate, govern, and improve": "After release, observe behavior, evaluate regressions, optimize cost/latency, and turn feedback into fixes."
     },
@@ -5347,87 +5297,6 @@ function renderInline(text, options = {}) {
   return out;
 }
 
-function ServiceMarkdown({ serviceName }) {
-  const [state, setState] = useState({ status: "idle", markdown: "" });
-  const slug = topicSlug(serviceName);
-  useEffect(() => {
-    let cancelled = false;
-    setState({ status: "loading", markdown: "" });
-    fetch(`/api/service?slug=${encodeURIComponent(slug)}`)
-      .then((r) => r.ok ? r.json() : Promise.reject(r.status))
-      .then((data) => { if (!cancelled) setState({ status: "ok", markdown: data.markdown || "" }); })
-      .catch(() => { if (!cancelled) setState({ status: "missing", markdown: "" }); });
-    return () => { cancelled = true; };
-  }, [slug]);
-  if (state.status === "loading") return null;
-  if (state.status === "missing") {
-    return h("div", { className: "topic-md missing" },
-      h("p", { className: "muted" },
-        `No deep-dive markdown yet for "${serviceName}". Create `,
-        h("code", null, `certifications/_shared/services/${slug}.md`),
-        ` from `,
-        h("code", null, "certifications/_SERVICE_TEMPLATE.md"),
-        ".")
-    );
-  }
-  const isStub = /status:\s*stub/i.test(state.markdown) || /Stub — populate/i.test(state.markdown);
-  if (isStub) {
-    return h("details", { className: "topic-md missing" },
-      h("summary", null, "Markdown source is ready to edit"),
-      h("p", { className: "muted" },
-        "Deep-dive content will render here after you replace the TODOs in ",
-        h("code", null, `certifications/_shared/services/${slug}.md`),
-        ".")
-    );
-  }
-  const body = state.markdown.replace(/^---[\s\S]*?---\s*/, "");
-  return h("details", { className: "topic-md", open: true },
-    h("summary", null, "Deep-dive notes (shared across certs)"),
-    h("div", { className: "topic-md-body" }, renderMarkdown(body))
-  );
-}
-
-function TopicMarkdown({ certSlug, sectionName }) {
-  const [state, setState] = useState({ status: "idle", markdown: "" });
-  useEffect(() => {
-    let cancelled = false;
-    setState({ status: "loading", markdown: "" });
-    const slug = topicSlug(sectionName);
-    fetch(`/api/topic?cert=${encodeURIComponent(certSlug)}&slug=${encodeURIComponent(slug)}`)
-      .then((r) => r.ok ? r.json() : Promise.reject(r.status))
-      .then((data) => { if (!cancelled) setState({ status: "ok", markdown: data.markdown || "" }); })
-      .catch(() => { if (!cancelled) setState({ status: "missing", markdown: "" }); });
-    return () => { cancelled = true; };
-  }, [certSlug, sectionName]);
-  if (state.status === "loading") return null;
-  if (state.status === "missing") {
-    return h("div", { className: "topic-md missing" },
-      h("p", { className: "muted" },
-        `No deep-dive markdown yet for "${sectionName}". Create `,
-        h("code", null, `certifications/${certSlug}/topics/${topicSlug(sectionName)}.md`),
-        ` from the template at `,
-        h("code", null, "certifications/_TOPIC_TEMPLATE.md"),
-        ".")
-    );
-  }
-  const isStub = /status:\s*stub/i.test(state.markdown) || /Stub — populate/i.test(state.markdown);
-  if (isStub) {
-    return h("details", { className: "topic-md missing" },
-      h("summary", null, "Markdown source is ready to edit"),
-      h("p", { className: "muted" },
-        "Deep-dive content will render here after you replace the TODOs in ",
-        h("code", null, `certifications/${certSlug}/topics/${topicSlug(sectionName)}.md`),
-        ".")
-    );
-  }
-  // Strip frontmatter for display.
-  const body = state.markdown.replace(/^---[\s\S]*?---\s*/, "");
-  return h("details", { className: "topic-md", open: true },
-    h("summary", null, "Deep-dive notes"),
-    h("div", { className: "topic-md-body" }, renderMarkdown(body))
-  );
-}
-
 function StudyDeepDive({ item, generic = false }) {
   const groups = [
       [generic ? "Mental model notes" : "How to think about it", item.studyNotes],
@@ -5456,8 +5325,6 @@ function StudyDeepDive({ item, generic = false }) {
   );
 }
 
-const GENERATE_COUNTS = [1, 5, 10];
-const GENERATE_DIFFICULTIES = ["easier", "medium", "hard", "advanced", "expert"];
 function practiceStudyByOptions(isGenericStudy, currentExamLabel = "Agentic AI") {
   const isAgenticExam = currentExamLabel === "Agentic AI";
   const options = [
@@ -5584,64 +5451,6 @@ function filteredPracticeQuestions(questions, target, studyBy) {
   return questions.filter((question) => questionMatchesAnyKeyword(question, target.keywords));
 }
 
-function mergePracticeTopic(target, extraTopic) {
-  const extra = String(extraTopic || "").trim();
-  return [target?.topic, extra].filter(Boolean).join(" | ");
-}
-
-function ContextualDrillBar({ topic, certSlug, quickQuiz, onGenerate, quizDifficulty, setQuizDifficulty, generationStatus, cancelGeneration, studyStatus }) {
-  const [count, setCount] = useState(1);
-  const running = generationStatus?.state === "running";
-
-  return h("div", { className: "ctx-drill-bar" },
-    h("div", { className: "ctx-drill-cols" },
-      h("div", { className: "ctx-drill-col ctx-drill-generate" },
-        h("div", { className: "ctx-drill-head" },
-          h("span", { className: "eyebrow" }, "Drill this topic"),
-          h("strong", null, topic)
-        ),
-        h("div", { className: "ctx-drill-row" },
-          h("span", { className: "ctx-drill-label" }, "Quantity"),
-          h("div", { className: "ctx-drill-pills" },
-            GENERATE_COUNTS.map((n) => h("button", {
-              key: n, type: "button",
-              className: `ctx-pill ${count === n ? "active" : ""}`,
-              onClick: () => setCount(n), disabled: running
-            }, `${n}Q`))
-          )
-        ),
-        h("div", { className: "ctx-drill-row" },
-          h("span", { className: "ctx-drill-label" }, "Difficulty"),
-          h("div", { className: "ctx-drill-pills" },
-            GENERATE_DIFFICULTIES.map((d) => h("button", {
-              key: d, type: "button",
-              className: `ctx-pill ctx-diff ctx-diff-${d} ${quizDifficulty === d ? "active" : ""}`,
-              onClick: () => setQuizDifficulty(d), disabled: running
-            }, d))
-          )
-        ),
-        h("div", { className: "ctx-drill-actions" },
-          h("button", {
-            type: "button", className: "ctx-generate-btn",
-            onClick: () => onGenerate({ difficulty: quizDifficulty, count }),
-            disabled: running
-          }, running ? "Generating…" : `Generate ${count} ${quizDifficulty}`),
-          h("button", {
-            type: "button", className: "ctx-bank-btn",
-            onClick: quickQuiz, disabled: running
-          }, "Bank quiz"),
-          running ? h("button", { type: "button", className: "ghost small", onClick: cancelGeneration }, "Cancel") : null
-        ),
-        studyStatus ? h("p", { className: "study-status" }, studyStatus) : null,
-        generationStatus?.message ? h("p", { className: `generation-status ${generationStatus.state}` }, generationStatus.message) : null
-      ),
-      h("div", { className: "ctx-drill-col ctx-drill-coach" },
-        h(StudyChatPanel, { certSlug, topic, alwaysOpen: true })
-      )
-    )
-  );
-}
-
 function PracticeDrillSetup({
   count,
   setCount,
@@ -5754,90 +5563,6 @@ function PracticeDrillSetup({
     ),
     generationStatus?.message ? h("p", { className: `generation-status ${generationStatus.state}` }, generationStatus.message) : null,
     running && onCancelGenerate ? h("button", { type: "button", className: "ghost small", onClick: onCancelGenerate }, "Cancel generation") : null
-  );
-}
-
-function DrillInlineForm({
-  exam,
-  generateQuestions,
-  generationStatus,
-  cancelGeneration,
-  drillRecentMistakes,
-  generatedPracticeCount,
-  startFlow,
-  target,
-  studyBy,
-  allowBank,
-  allowGenerate,
-  bankMatches,
-  startTargetedGuidedPractice
-}) {
-  const [topic, setTopic] = useState("");
-  const [difficulty, setDifficulty] = useState("hard");
-  const [count, setCount] = useState(1);
-  const running = generationStatus.state === "running";
-  const targetLabel = target?.label || "recommended weak domains";
-  const bankCount = bankMatches?.length || 0;
-
-  function doGenerate(e) {
-    e.preventDefault();
-    if (!allowGenerate) return;
-    generateQuestions({
-      count,
-      difficulty,
-      topic: mergePracticeTopic(target, topic),
-      weakOnly: studyBy === "recommended" && !topic.trim(),
-      service: target?.service || null
-    });
-  }
-
-  function startBankDrill() {
-    if (!allowBank) return;
-    if (studyBy === "recommended") {
-      startFlow("practice-coach-bank");
-      return;
-    }
-    startTargetedGuidedPractice({ questions: bankMatches, label: targetLabel });
-  }
-
-  return h("div", { className: "pp-card-foot drill-inline" },
-    h("form", { onSubmit: doGenerate },
-      h("div", { className: "drill-selectors" },
-        h("div", { className: "drill-group" },
-          h("span", { className: "drill-label" }, "Count"),
-          h("div", { className: "drill-chip-group" },
-            GENERATE_COUNTS.map((n) =>
-              h("button", { key: n, type: "button", className: `drill-chip ${count === n ? "active" : ""}`, onClick: () => setCount(n), disabled: running }, `${n}Q`)
-            )
-          )
-        ),
-        h("div", { className: "drill-group drill-group-diff" },
-          h("span", { className: "drill-label" }, "Difficulty"),
-          h("div", { className: "drill-chip-group" },
-            GENERATE_DIFFICULTIES.map((d) =>
-              h("button", { key: d, type: "button", className: `drill-chip drill-chip-difficulty diff-${d} ${difficulty === d ? "active" : ""}`, onClick: () => setDifficulty(d), disabled: running }, d)
-            )
-          )
-        )
-      ),
-      h("div", { className: "drill-generate-row" },
-        h("input", { type: "text", className: "drill-topic", placeholder: "Extra keyword or topic (optional)", value: topic, onChange: (e) => setTopic(e.target.value), disabled: running, maxLength: 200 }),
-        h("button", { type: "submit", className: "pp-btn pp-btn-generate", disabled: running || !allowGenerate },
-          running ? "Generating…" : `Generate ${count}`
-        ),
-        running ? h("button", { type: "button", className: "ghost small", onClick: cancelGeneration }, "Cancel") : null
-      )
-    ),
-    generationStatus?.message ? h("p", { className: `generation-status ${generationStatus.state}` }, generationStatus.message) : null,
-    h("div", { className: "drill-shortcuts" },
-      h("button", { type: "button", className: "drill-shortcut-btn", disabled: running || !allowBank || !bankCount, onClick: startBankDrill },
-        studyBy === "recommended" ? "Start concept guided" : `Start concepts (${bankCount}Q)`
-      ),
-      h("button", { type: "button", className: "drill-shortcut-btn", disabled: running, onClick: () => drillRecentMistakes(5) }, "Drill 5 recent mistakes"),
-      generatedPracticeCount
-        ? h("button", { type: "button", className: "drill-shortcut-btn", onClick: () => startFlow("practice-generated") }, `Drill NVIDIA-specific (${generatedPracticeCount}Q)`)
-        : null
-    )
   );
 }
 
@@ -6055,35 +5780,6 @@ function MockSourceControl({ availableMocks = [], selectedMockSource = "original
       },
         h("strong", null, sourceLabel(source, variant)),
         h("span", null, mockSetSummary(groups[source], variant))
-      ))
-    )
-  );
-}
-
-function MockInventory({ availableMocks = [], selectedMockSource = "original", selectedMockId = "" }) {
-  const groups = groupMocksBySource(availableMocks);
-  const sources = ["original", "generated"].filter((source) => groups[source].length);
-  if (!sources.length) return null;
-  return h("div", { className: "mock-inventory" },
-    h("div", { className: "mock-inventory-head" },
-      h("strong", null, "Available mock tests"),
-      h("span", null, `${availableMocks.length} total`)
-    ),
-    h("div", { className: "mock-inventory-grid" },
-      sources.map((source) => h("section", { key: source, className: `mock-inventory-set ${source === selectedMockSource ? "active" : ""}` },
-        h("div", { className: "mock-set-title" },
-          h("span", null, sourceLabel(source)),
-          h("em", null, mockSetSummary(groups[source]))
-        ),
-        h("ul", null,
-          groups[source].map((mock) => h("li", {
-            key: `${source}-${mock.id}`,
-            className: mock.id === selectedMockId && source === selectedMockSource ? "selected" : ""
-          },
-            h("span", null, mock.name),
-            h("strong", null, `${mock.questionCount}Q`)
-          ))
-        )
       ))
     )
   );
@@ -6528,7 +6224,7 @@ function PracticePanel(props) {
     focusedPracticeControls,
     recommendedReviewGrid,
 
-    pendingCount ? h(ReviewQueueCompact, { pendingCount, selectedCertSlug, onChange: refreshExam }) : null,
+    pendingCount ? h(ReviewQueue, { pendingCount, selectedCertSlug, onChange: refreshExam }) : null,
 
     dashboard.attempts || learnerProfile?.sessions
       ? h("p", { className: "profile-summary" },
@@ -6699,18 +6395,6 @@ function ProfileRecommendations({ dashboard, learnerProfile, isGenericStudy = fa
   );
 }
 
-function ReviewQueueCompact({ pendingCount, selectedCertSlug, onChange }) {
-  if (!pendingCount) return null;
-  return h("details", { className: "card-details" },
-    h("summary", null, `Review Queue (${pendingCount} pending)`),
-    h("p", { className: "muted" }, "Approve or reject generated questions before they enter the practice pool."),
-    h("button", {
-      className: "primary small",
-      onClick: (e) => { e.preventDefault(); document.querySelector(".review-queue-full")?.scrollIntoView({ behavior: "smooth" }); }
-    }, "Open full review queue")
-  );
-}
-
 function ReviewQueue({ pendingCount, selectedCertSlug, onChange }) {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState([]);
@@ -6775,122 +6459,6 @@ function ReviewQueue({ pendingCount, selectedCertSlug, onChange }) {
 }
 
 
-function GeneratePanel({ exam, generateQuestions, generationStatus }) {
-  const [topic, setTopic] = useState("");
-  const [difficulty, setDifficulty] = useState("hard");
-  const [count, setCount] = useState(1);
-  const [domain, setDomain] = useState("");
-  const running = generationStatus.state === "running";
-  const verdicts = generationStatus.qcVerdicts || [];
-  const topics = [...new Set(exam.questions
-    .filter((q) => !domain || q.domain === domain)
-    .map((q) => q.topic)
-    .filter(Boolean))]
-    .sort((a, b) => a.localeCompare(b));
-
-  useEffect(() => {
-    if (topic && !topics.includes(topic)) setTopic("");
-  }, [domain, topic, topics.join("|")]);
-
-  function submit() {
-    generateQuestions({
-      count,
-      difficulty,
-      topic: topic.trim(),
-      focusDomains: domain ? [domain] : [],
-      weakOnly: !domain && !topic.trim()
-    });
-  }
-
-  return h(
-    "details",
-    { className: "generate-panel-collapsible", open: false },
-    h("summary", null, "Generate practice questions (LLM, with QC)"),
-    h("p", { className: "muted" }, "Drafts pass through a quality-check pass before appending to generated/drafts.md. Accepted questions appear immediately in your practice pool."),
-    h("div", { className: "filter-block" },
-      h("div", { className: "filter-block-head" }, h("span", { className: "filter-label" }, "Domain (optional)")),
-      h("select", {
-        value: domain,
-        onChange: (e) => setDomain(e.target.value),
-        disabled: running
-      },
-        h("option", { value: "" }, "Any (weak-domain weighted)"),
-        exam.domains.map((d) => h("option", { key: d.name, value: d.name }, d.name))
-      )
-    ),
-    h("div", { className: "filter-block" },
-      h("div", { className: "filter-block-head" }, h("span", { className: "filter-label" }, "Topic (optional)")),
-      h("select", {
-        value: topic,
-        onChange: (e) => setTopic(e.target.value),
-        disabled: running,
-        style: { width: "100%", padding: "0.4rem 0.6rem" }
-      },
-        h("option", { value: "" }, domain ? "Any topic in this domain" : "Any topic"),
-        topics.map((t) => h("option", { key: t, value: t }, t))
-      )
-    ),
-    h("div", { className: "filter-block" },
-      h("div", { className: "filter-block-head" }, h("span", { className: "filter-label" }, "Difficulty")),
-      h("div", { className: "chip-list" },
-        ["easier", "medium", "hard", "advanced", "expert"].map((d) => h("label", {
-          key: d,
-          className: `chip radio ${difficulty === d ? "checked" : ""} diff-${d}`
-        },
-          h("input", {
-            type: "radio",
-            name: "gen-difficulty",
-            checked: difficulty === d,
-            onChange: () => setDifficulty(d),
-            disabled: running
-          }),
-          h("span", null, d.charAt(0).toUpperCase() + d.slice(1))
-        ))
-      )
-    ),
-    h("div", { className: "filter-block" },
-      h("div", { className: "filter-block-head" }, h("span", { className: "filter-label" }, "How many")),
-      h("div", { className: "chip-list" },
-        [1, 5, 10].map((n) => h("label", {
-          key: n,
-          className: `chip radio ${count === n ? "checked" : ""}`
-        },
-          h("input", {
-            type: "radio",
-            name: "gen-count",
-            checked: count === n,
-            onChange: () => setCount(n),
-            disabled: running
-          }),
-          h("span", null, `${n}`)
-        ))
-      )
-    ),
-    h("div", { className: "mode-buttons primary-actions" },
-      h("button", {
-        className: "primary big",
-        disabled: running,
-        onClick: submit
-      }, running ? "Generating + QC…" : `Generate ${count} ${difficulty} question${count === 1 ? "" : "s"}`)
-    ),
-    generationStatus.message
-      ? h("p", { className: `generation-status ${generationStatus.state}` }, generationStatus.message)
-      : null,
-    verdicts.length
-      ? h("details", { className: "filter-block", open: false },
-          h("summary", null, `QC verdicts (${verdicts.length})`),
-          h("ul", { style: { fontSize: "0.85rem", paddingLeft: "1rem" } },
-            verdicts.map((v, i) => h("li", { key: i },
-              h("strong", null, v.verdict),
-              v.id ? ` ${v.id}` : ` draft ${i + 1}`,
-              (v.issues && v.issues.length) ? h("ul", null, v.issues.map((iss, j) => h("li", { key: j }, iss))) : null
-            ))
-          )
-        )
-      : null
-  );
-}
-
 function TestPanel({ exam, mockSummary, mockResultsMd, busy, startFlow, availableMocks = [], selectedMockId = "mock_1", setSelectedMockId = () => {}, selectedMockSource = "original", setSelectedMockSource = () => {} }) {
   const hasQuestionBank = exam.questions.length > 0;
   const sourceMocks = availableMocks.filter((m) => (m.source || "original") === selectedMockSource);
@@ -6952,27 +6520,6 @@ function TestPanel({ exam, mockSummary, mockResultsMd, busy, startFlow, availabl
           h("summary", null, "Full mock results history"),
           h("pre", null, mockResultsMd))
       : null
-  );
-}
-
-function ConfidenceRow({ domain, value, onChange }) {
-  const labels = ["Weak", "Shaky", "OK", "Strong", "Expert"];
-  const measuredText = domain.measured && domain.measured.attempts
-    ? `measured ${Math.round(domain.measured.accuracy * 100)}% (${domain.measured.correct}/${domain.measured.attempts}, ${domain.measured.bucket})`
-    : domain.percent === null
-      ? "no score yet"
-      : domain.sampleSize < 5
-        ? `last sample ${domain.percent}% (${domain.sampleSize}Q, not enough evidence)`
-        : `last session ${domain.percent}%`;
-  return h(
-    "div",
-    { className: "confidence-row" },
-    h("div", null, h("strong", null, domain.name), h("span", null, `${domain.weight}% exam weight · ${measuredText}`)),
-    h(
-      "div",
-      { className: "confidence-buttons" },
-      labels.map((label, index) => h("button", { key: label, className: value === index ? "active" : "", onClick: () => onChange(domain.name, index) }, label))
-    )
   );
 }
 

@@ -45,7 +45,7 @@
 - Source: generated
 - A. Choose Agent Orchestration Runtime; it provides framework/runtime for composing agent roles, workflows, planners, tools, retrieval, memory, routing, retries, and traceable handoffs.
 - B. Use Memory Store when you need to remember task progress, user preferences, prior tool results, or reusable facts across turns or sessions.
-- C. Select Model Customization Toolkit; it owns training and customization work such as changing durable behavior, style, rubric-following, or domain task adaptation learned from examples.
+- C. Select Model Customization Toolkit; it owns training and customization work such as changing durable behavior, style, criteria adherence, or domain task adaptation learned from examples.
 - D. Model Serving Gateway is the best fit for this layer: serving layer that routes requests across models/endpoints, handles batching, fallback, rate limits, canaries, and multi-model operations.
 - Answer: B
 - Explanation: Memory Store is the best fit because it sits in Memory and state: Scoped memory layer for short-term task state, episodic session memory, semantic facts, user preferences, expiration, and consent-aware recall.
@@ -112,7 +112,7 @@
 - Scope: general_concept
 - Source: generated
 - A. Choose Policy and Guardrails Layer; it provides runtime controls for input checks, retrieved-content checks, tool-call policy, dialog constraints, output moderation, and prompt-injection defense.
-- B. Use Model Customization Toolkit when you need to change durable behavior, style, rubric-following, or domain task adaptation learned from examples.
+- B. Use Model Customization Toolkit when you need to change durable behavior, style, criteria adherence, or domain task adaptation learned from examples.
 - C. Select Model Inference Endpoint; it owns serving and deployment work such as for production model APIs, self-hosted endpoints, deployment packaging, latency SLOs, concurrency, or operational model serving.
 - D. Model Serving Gateway is the best fit for this layer: serving layer that routes requests across models/endpoints, handles batching, fallback, rate limits, canaries, and multi-model operations.
 - Answer: A
@@ -503,7 +503,7 @@
 - Scope: general_concept
 - Source: generated
 - A. Choose Agent Orchestration Runtime; it provides framework/runtime for composing agent roles, workflows, planners, tools, retrieval, memory, routing, retries, and traceable handoffs.
-- B. Use Model Customization Toolkit when you need to change durable behavior, style, rubric-following, or domain task adaptation learned from examples.
+- B. Use Model Customization Toolkit when you need to change durable behavior, style, criteria adherence, or domain task adaptation learned from examples.
 - C. Select Knowledge Ingestion and Permission Pipeline; it owns runtime knowledge preparation work such as preparing private or changing documents as safe, searchable, permission-aware knowledge for an agent without changing model weights.
 - D. Evaluation and Regression Harness is the best fit for this layer: test and measurement system for prompts, models, retrieval, tool calls, agent trajectories, safety, regressions, and human/LLM judging.
 - Answer: D
@@ -587,7 +587,7 @@
 - Difficulty: expert
 - Scope: general_concept
 - Source: generated
-- A. Use Model Customization Toolkit when you need to change durable behavior, style, rubric-following, or domain task adaptation learned from examples.
+- A. Use Model Customization Toolkit when you need to change durable behavior, style, criteria adherence, or domain task adaptation learned from examples.
 - B. Select Knowledge Ingestion and Permission Pipeline; it owns runtime knowledge preparation work such as preparing private or changing documents as safe, searchable, permission-aware knowledge for an agent without changing model weights.
 - C. Observability and Trace Monitor is the best fit for this layer: live operations layer for traces, logs, metrics, tool-call health, retrieval quality, user-facing latency, errors, drift, incidents, and replay.
 - D. Choose Model Serving Gateway; it provides serving layer that routes requests across models/endpoints, handles batching, fallback, rate limits, canaries, and multi-model operations.
@@ -760,7 +760,7 @@
 - A. Select Observability and Trace Monitor; it owns monitoring and profiling work such as diagnosing live failures, p95/p99 latency, TTFT, route drift, empty tool results, trace replay, or incident diagnosis.
 - B. Human Review and Governance Console is the best fit for this layer: oversight workspace for approvals, escalations, sampled review, reviewer feedback, issue triage, and policy/governance workflows.
 - C. Choose Agent Orchestration Runtime; it provides framework/runtime for composing agent roles, workflows, planners, tools, retrieval, memory, routing, retries, and traceable handoffs.
-- D. Use Model Customization Toolkit when you need to change durable behavior, style, rubric-following, or domain task adaptation learned from examples.
+- D. Use Model Customization Toolkit when you need to change durable behavior, style, criteria adherence, or domain task adaptation learned from examples.
 - Answer: B
 - Explanation: Human Review and Governance Console is the best fit because it sits in Human oversight: Oversight workspace for approvals, escalations, sampled review, reviewer feedback, issue triage, and policy/governance workflows.
 - Why A is wrong: Observability and Trace Monitor belongs to Monitoring and profiling, while this scenario asks for Human oversight.

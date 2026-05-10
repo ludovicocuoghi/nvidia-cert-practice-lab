@@ -631,7 +631,7 @@
 - Why B is wrong: It changes capacity or wording before fixing the measured root cause.
 - Why D is wrong: It moves attention to a neighboring control instead of making bootstrap confidence testable in the scenario.
 
-### Q38: A cybersecurity response team passes the happy-path demo for an LLM evaluation release gate, but the failure is tied to task metrics. The safer design is the one that can use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task. Which change should be made before release?
+### Q38: A cybersecurity response team passes the happy-path demo for an LLM evaluation release gate, but the failure is tied to task metrics. The safer design is the one that can use accuracy, F1, ROUGE, BLEU, NDCG, or human evaluation criteria by task. Which change should be made before release?
 - ID: genl-hf-evaluation-003
 - Domain: Evaluation
 - Topic: task metrics; genai_llms_professional
@@ -641,9 +641,9 @@
 - A. Release prompt, model, and human evaluation changes together with one aggregate score.
 - B. Increase model capacity or context length while leaving task metrics implicit.
 - C. Use human evaluation as the main gate even though reviewers are asking for task metrics evidence.
-- D. Add a release gate for task metrics: use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- D. Add a release gate for task metrics: use accuracy, F1, ROUGE, BLEU, NDCG, or human evaluation criteria by task.
 - Answer: D
-- Explanation: Task metrics is the missing control in this scenario. The right answer makes it explicit so the system can use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- Explanation: Task metrics is the missing control in this scenario. The right answer makes it explicit so the system can use accuracy, F1, ROUGE, BLEU, NDCG, or human evaluation criteria by task.
 - Why A is wrong: Changing several layers at once makes it harder to prove whether task metrics fixed the failure.
 - Why B is wrong: It changes capacity or wording before fixing the measured root cause.
 - Why C is wrong: It moves attention to a neighboring control instead of making task metrics testable in the scenario.
@@ -716,19 +716,19 @@
 - Why B is wrong: It moves attention to a neighboring control instead of making bootstrap confidence testable in the scenario.
 - Why C is wrong: Changing several layers at once makes it harder to prove whether bootstrap confidence fixed the failure.
 
-### Q43: A manufacturing quality team is triaging a failed pilot for an LLM evaluation release gate. The failure is tied to task metrics. The safer design is the one that can use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task. Which control addresses the root cause?
+### Q43: A manufacturing quality team is triaging a failed pilot for an LLM evaluation release gate. The failure is tied to task metrics. The safer design is the one that can use accuracy, F1, ROUGE, BLEU, NDCG, or human evaluation criteria by task. Which control addresses the root cause?
 - ID: genl-hf-evaluation-008
 - Domain: Evaluation
 - Topic: task metrics; genai_llms_professional
 - Difficulty: hard
 - Scope: general_concept
 - Source: generated
-- A. Use task metrics as the control boundary and require the system to use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- A. Use task metrics as the control boundary and require the system to use accuracy, F1, ROUGE, BLEU, NDCG, or human evaluation criteria by task.
 - B. Prioritize human evaluation even though the observed failure is around task metrics.
 - C. Release prompt, model, and data contamination changes together with one aggregate score.
 - D. Increase model capacity or context length while leaving task metrics implicit.
 - Answer: A
-- Explanation: Task metrics is the missing control in this scenario. The right answer makes it explicit so the system can use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- Explanation: Task metrics is the missing control in this scenario. The right answer makes it explicit so the system can use accuracy, F1, ROUGE, BLEU, NDCG, or human evaluation criteria by task.
 - Why B is wrong: It moves attention to a neighboring control instead of making task metrics testable in the scenario.
 - Why C is wrong: Changing several layers at once makes it harder to prove whether task metrics fixed the failure.
 - Why D is wrong: It changes capacity or wording before fixing the measured root cause.
@@ -808,12 +808,12 @@
 - Difficulty: hard
 - Scope: general_concept
 - Source: generated
-- A. Make task metrics explicit in the workflow: use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- A. Make task metrics explicit in the workflow: use accuracy, F1, ROUGE, BLEU, NDCG, or human evaluation criteria by task.
 - B. Keep one metric for all tasks as the main control and add a dashboard for final outputs.
 - C. Prioritize bootstrap confidence even though the observed failure is around task metrics.
 - D. Release prompt, model, and perplexity changes together with one aggregate score.
 - Answer: A
-- Explanation: Task metrics is the missing control in this scenario. The right answer makes it explicit so the system can use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- Explanation: Task metrics is the missing control in this scenario. The right answer makes it explicit so the system can use accuracy, F1, ROUGE, BLEU, NDCG, or human evaluation criteria by task.
 - Why B is wrong: It keeps one metric for all tasks in control instead of adding a measurable task metrics decision point.
 - Why C is wrong: It moves attention to a neighboring control instead of making task metrics testable in the scenario.
 - Why D is wrong: Changing several layers at once makes it harder to prove whether task metrics fixed the failure.
@@ -886,7 +886,7 @@
 - Why C is wrong: Monitoring is useful, but this scenario needs bootstrap confidence controlled before release or execution.
 - Why D is wrong: It keeps choosing the winner from one noisy run in control instead of adding a measurable bootstrap confidence decision point.
 
-### Q53: A global retailer passes the happy-path demo for an LLM evaluation release gate, but the failure appears when the system keeps one metric for all tasks as the workaround. The release needs a design step that can use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task. Which change should be made before release?
+### Q53: A global retailer passes the happy-path demo for an LLM evaluation release gate, but the failure appears when the system keeps one metric for all tasks as the workaround. The release needs a design step that can use accuracy, F1, ROUGE, BLEU, NDCG, or human evaluation criteria by task. Which change should be made before release?
 - ID: genl-hf-evaluation-018
 - Domain: Evaluation
 - Topic: task metrics; genai_llms_professional
@@ -896,9 +896,9 @@
 - A. Move the check to post-release monitoring without changing the release path for task metrics.
 - B. Keep one metric for all tasks as the main control and add a dashboard for final outputs.
 - C. Prioritize perplexity even though the observed failure is around task metrics.
-- D. Put task metrics before rollout so the team can use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- D. Put task metrics before rollout so the team can use accuracy, F1, ROUGE, BLEU, NDCG, or human evaluation criteria by task.
 - Answer: D
-- Explanation: Task metrics is the missing control in this scenario. The right answer makes it explicit so the system can use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- Explanation: Task metrics is the missing control in this scenario. The right answer makes it explicit so the system can use accuracy, F1, ROUGE, BLEU, NDCG, or human evaluation criteria by task.
 - Why A is wrong: Monitoring is useful, but this scenario needs task metrics controlled before release or execution.
 - Why B is wrong: It keeps one metric for all tasks in control instead of adding a measurable task metrics decision point.
 - Why C is wrong: It moves attention to a neighboring control instead of making task metrics testable in the scenario.
@@ -979,11 +979,11 @@
 - Scope: general_concept
 - Source: generated
 - A. Keep one metric for all tasks as the main control and add a dashboard for final outputs.
-- B. Instrument and enforce task metrics; the system must use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- B. Instrument and enforce task metrics; the system must use accuracy, F1, ROUGE, BLEU, NDCG, or human evaluation criteria by task.
 - C. Use bootstrap confidence as the main gate even though reviewers are asking for task metrics evidence.
 - D. Move the check to post-release monitoring without changing the release path for task metrics.
 - Answer: B
-- Explanation: Task metrics is the missing control in this scenario. The right answer makes it explicit so the system can use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- Explanation: Task metrics is the missing control in this scenario. The right answer makes it explicit so the system can use accuracy, F1, ROUGE, BLEU, NDCG, or human evaluation criteria by task.
 - Why A is wrong: It keeps one metric for all tasks in control instead of adding a measurable task metrics decision point.
 - Why C is wrong: It moves attention to a neighboring control instead of making task metrics testable in the scenario.
 - Why D is wrong: Monitoring is useful, but this scenario needs task metrics controlled before release or execution.
@@ -1056,7 +1056,7 @@
 - Why C is wrong: Changing several layers at once makes it harder to prove whether bootstrap confidence fixed the failure.
 - Why D is wrong: It changes capacity or wording before fixing the measured root cause.
 
-### Q63: An automotive support team passes the happy-path demo for an LLM evaluation release gate, but one metric for all tasks is being used as the shortcut, but it does not give the team a reliable way to use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task. Which change should be made before release?
+### Q63: An automotive support team passes the happy-path demo for an LLM evaluation release gate, but one metric for all tasks is being used as the shortcut, but it does not give the team a reliable way to use accuracy, F1, ROUGE, BLEU, NDCG, or human evaluation criteria by task. Which change should be made before release?
 - ID: genl-hf-evaluation-028
 - Domain: Evaluation
 - Topic: task metrics; genai_llms_professional
@@ -1065,10 +1065,10 @@
 - Source: generated
 - A. Use perplexity as the main gate even though reviewers are asking for task metrics evidence.
 - B. Move the check to post-release monitoring without changing the release path for task metrics.
-- C. Change the design around task metrics so the system can use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- C. Change the design around task metrics so the system can use accuracy, F1, ROUGE, BLEU, NDCG, or human evaluation criteria by task.
 - D. Increase model capacity or context length while leaving task metrics implicit.
 - Answer: C
-- Explanation: Task metrics is the missing control in this scenario. The right answer makes it explicit so the system can use accuracy, F1, ROUGE, BLEU, NDCG, or human rubrics by task.
+- Explanation: Task metrics is the missing control in this scenario. The right answer makes it explicit so the system can use accuracy, F1, ROUGE, BLEU, NDCG, or human evaluation criteria by task.
 - Why A is wrong: It moves attention to a neighboring control instead of making task metrics testable in the scenario.
 - Why B is wrong: Monitoring is useful, but this scenario needs task metrics controlled before release or execution.
 - Why D is wrong: It changes capacity or wording before fixing the measured root cause.

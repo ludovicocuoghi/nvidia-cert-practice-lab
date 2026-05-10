@@ -75,7 +75,7 @@ You are building the no-weight-change control layer: system/developer instructio
 |---|---|---|
 | "format as JSON" | schema and validation | full fine-tuning first |
 | "fresh private facts" | RAG plus prompt context | stuffing stale facts in prompt |
-| "durable rubric behavior" | maybe tuning after prompt baseline | endless prompt tweaks |
+| "durable behavior from criteria" | maybe tuning after prompt baseline | endless prompt tweaks |
 | "tool use instructions" | explicit tool policy and examples | giving credentials to model |
 | "regression after prompt edit" | prompt evals and version rollback | untracked prompt changes |
 | "model ignores evidence" | evidence rules, citation requirements, groundedness eval | adding more unrelated context |

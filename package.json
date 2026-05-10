@@ -14,8 +14,7 @@
     "test": "vitest run",
     "test:ui": "vitest run",
     "typecheck": "tsc --noEmit",
-    "shuffle:bank": "python3 scripts/shuffle_question_bank.py",
-    "normalize:questions": "python3 scripts/normalize_question_bank.py genai_llms_nvidia_questions_1.md -o data/questions.md --backup data/questions.before-import.md"
+    "shuffle:bank": "python3 scripts/shuffle_question_bank.py"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.4",
