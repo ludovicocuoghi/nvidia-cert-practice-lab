@@ -3,7 +3,7 @@
   "name": "NVIDIA Certified Professional — Agentic AI",
   "code": "NCP-AAI",
   "level": "Professional",
-  "homepage": "https://www.nvidia.com/en-us/learn/certification/",
+  "homepage": "https://www.nvidia.com/en-us/learn/certification/agentic-ai-professional/",
   "format": {
     "questionCount": { "min": 60, "max": 70 },
     "durationMinutes": 120,

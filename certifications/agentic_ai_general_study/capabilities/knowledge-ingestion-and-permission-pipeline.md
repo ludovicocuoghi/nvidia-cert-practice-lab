@@ -6,18 +6,6 @@ source_lens: general-study
 
 # Knowledge Ingestion and Permission Pipeline
 
-## Actual implementation / How you use it
-
-```text
-sources -> connectors -> parse/OCR/layout -> normalize -> classify PII/secrets
-        -> chunk with source structure -> attach ACL/version/retention metadata
-        -> emit records for retrieval indexing
-```
-
-| Input | Ingestion owns | Output |
-|---|---|---|
-| Enterprise documents, tickets, wikis, PDFs, APIs | Parsing, structure, metadata, ACLs, retention, deletion lineage | Safe permission-aware chunks for retrieval |
-
 ## What to study first
 
 - **Core idea:** You are building the offline or scheduled pipeline that turns private, changing, messy enterprise knowledge into safe, searchable, permission-aware chunks. The output is not an answer. The output is structured records ready for indexing and retrieval, with source, version, ACL, sensitivity, and deletion lineage attached.

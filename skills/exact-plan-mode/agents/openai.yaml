@@ -1,0 +1,4 @@
+interface:
+  display_name: "Exact Plan Mode"
+  short_description: "Follow user-provided plans verbatim."
+  default_prompt: "Use this skill when the user provides an implementation plan and asks Codex to follow it exactly without rewriting, reframing, broadening scope, or removing constraints."

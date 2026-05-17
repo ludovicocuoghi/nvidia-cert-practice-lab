@@ -6,21 +6,6 @@ source_lens: general-study
 
 # Tool Gateway and Function Runtime
 
-## Actual implementation / How you use it
-
-```yaml
-tool:
-  name: update_case_status
-  schema: { case_id: string, status: enum[open,pending,closed] }
-  requires: [authenticated_user, case_access, workflow_state_allows_write]
-  risk: mutating
-  retry: idempotency_key_required
-```
-
-| Input | Gateway owns | Output |
-|---|---|---|
-| Model-proposed tool call | Schema, authorization, risk, preconditions, idempotency, audit | Safe execution or deterministic rejection/escalation |
-
 ## What to study first
 
 - **Core idea:** You are building the execution boundary between model intent and real systems. The model proposes a tool call; the gateway validates schema, authorization, risk, idempotency, and audit before anything happens.

@@ -67,6 +67,16 @@ The key shift from LLM eval to agent eval: **you're evaluating a process, not a 
 - Include **calibrated examples** and position/order randomization to reduce bias
 - **Trap**: LLM judges prefer longer answers even with unsupported details. **Criteria decomposition** mitigates this.
 
+### Golden sets, LLM judges, and human review
+
+| Method | Best use | Weakness |
+|---|---|---|
+| **Golden set** | Deterministic regression where expected outputs, expected docs, or expected tools are known | Expensive to author and brittle for open-ended answers |
+| **LLM-as-judge** | Open-ended quality, tone, helpfulness, groundedness rubric scoring at scale | Bias toward verbosity, position, and agreeable answers unless calibrated |
+| **Sampled human review** | Calibration, high-risk slices, ambiguous policy cases, judge-bias checks | Slow and expensive; needs reviewer criteria |
+
+Production pattern: use all three. Golden sets catch regressions, LLM judges scale open-ended scoring, and sampled human review keeps judge behavior anchored.
+
 ### Task-specific metrics (not one metric for everything)
 
 - Classification → accuracy, F1
@@ -108,6 +118,13 @@ The key shift from LLM eval to agent eval: **you're evaluating a process, not a 
 - **Few-shot prompting with curated examples**: Concrete guidance on structure, tone, behavior
 - **Not**: increasing temperature (more variability), removing system instructions (less constraint), random instruction shuffling
 
+### Generation parameter controls
+
+- **Temperature** controls randomness. Lower values make output more repeatable for compliance, extraction, and routing; higher values increase diversity for brainstorming but can make tool choice and formatting less stable.
+- **Top-p / nucleus sampling** limits sampling to the smallest token set whose cumulative probability reaches `p`. Lower `top_p` narrows choices; higher `top_p` allows more diverse continuations.
+- **Max tokens** caps response length and cost. Too low can truncate required evidence or JSON; too high can increase latency and invite verbose unsupported detail.
+- **Deterministic-output cue**: For a compliance or audit agent, prefer low temperature plus constrained decoding/schema validation. Do not rely on parameter tuning alone for safety or policy enforcement.
+
 ### Quantization and distillation for latency-sensitive deployments
 
 - **INT8 quantization**: Reduces model size and speeds inference for resource-constrained or **latency**-sensitive environments
@@ -135,6 +152,7 @@ The key shift from LLM eval to agent eval: **you're evaluating a process, not a 
 - **Trajectory evaluation** > **final-answer evaluation** for tool-using agents
 - **Faithfulness** — entailment from evidence, not topicality or embedding similarity
 - **Cost-quality frontier**: track **task success** + tool calls + **tokens** + **latency** + cost per task
+- **Generation parameter controls**: low temperature and narrower top-p for consistency; max tokens for bounded length/cost; schema validation for reliable structured outputs
 - **LLM-as-judge** — needs **criteria decomposition** (correctness, support, conciseness, harmfulness) + **calibrated examples** + **position randomization**
 - **Synthetic chunk-grounded queries** — bootstrap **retrieval** eval when no labels exist
 - **Canary evaluation** — compares trajectory quality, **groundedness**, and safety, not just infrastructure metrics
@@ -212,6 +230,8 @@ Evidence source: `mock_1` through `mock_5`, especially **trajectory evaluation**
 | no labeled **retrieval evaluation** data | **synthetic chunk-grounded queries** — generate from documents, filter answerable pairs, use source as ground truth | agent self-judgment (circular) or production thumbs-up only (**sparse**, biased) |
 | better accuracy but higher cost | **cost-quality frontier** analysis — track **task success** + **tokens** + **latency** + **cost per completed task** | accuracy alone without cost context |
 | benchmark score improved but production escalations increased | add **escalation precision/recall** to eval set, use production-like cases in canary | trusting benchmark as sole quality signal |
+| deterministic regressions plus open-ended quality both matter | combine **golden sets**, **LLM-as-judge**, and sampled human review | claiming one evaluation method replaces all others |
+| compliance agent needs repeatable, structured answers | low temperature, narrower top-p, max-token budget, and schema validation | high temperature/top-p because the answer sounds more fluent |
 | agent guesses instead of using tools | **schema-constrained tool calling** + **structured observation** requirement | higher temperature or removing tools |
 | high hallucination when no relevant docs found | expose **retrieval confidence / empty-result state**, require refusal when evidence insufficient | top-k=100 to always fill context (adds noise) |
 | **RAG** agent is on-topic but cites passages that don't support claim | **faithfulness/citation-support evaluation** (entailment check per claim) | answer length or **relevance scoring** alone |

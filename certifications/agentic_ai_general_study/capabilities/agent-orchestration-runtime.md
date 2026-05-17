@@ -6,24 +6,6 @@ source_lens: general-study
 
 # Agent Orchestration Runtime
 
-## Actual implementation / How you use it
-
-```yaml
-workflow:
-  _type: router_agent
-  routes:
-    simple: faq_or_direct_model_call
-    evidence_needed: rag_agent
-    dynamic_tools: react_agent
-    high_risk: human_approval_workflow
-  state:
-    owns: [task, route, evidence, tool_results, memory_writes, approvals]
-```
-
-| Input | Runtime decision | Output |
-|---|---|---|
-| User task, risk, tools, evidence need | Route to graph, ReAct, supervisor, or human review | Traceable workflow with state, budgets, and stop conditions |
-
 ## What to study first
 
 - **Core idea:** You are building the workflow/runtime that coordinates model calls, tools, retrieval, memory, state, routing, retries, handoffs, and termination for an agentic application.

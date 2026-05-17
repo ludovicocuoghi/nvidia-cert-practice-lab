@@ -60,6 +60,15 @@ Knowledge Integration sits between agent reasoning and external data:
 - **Sparse retrieval**: Keyword-based (**BM25**) — finds exact term matches
 - **Combined**: Improves recall and precision, essential for domains where both meaning and exact terminology matter (legal contracts, compliance docs, technical specs)
 - **Always the right answer** when the question mentions both "semantic understanding" and "precision/exact matching"
+- **Rerank after retrieval**: Use a cross-encoder reranker on the merged candidate set to improve precision before sending only the best chunks to the LLM. Hybrid search gets the right candidates into the pool; reranking decides which candidates deserve context budget.
+
+### Advanced retrieval variants
+
+- **Multi-query retrieval / query expansion**: Generate several reformulations of the same user question, retrieve for each, then merge and rerank. Use when one phrasing misses relevant chunks or users use vague wording.
+- **Query decomposition**: Split a compound or comparison query into separate subqueries, retrieve evidence for each entity/policy/product independently, then synthesize. Use when the user asks to compare A vs. B or asks a multi-part question where one vector query would average the intents together.
+- **HyDE (Hypothetical Document Embeddings)**: Generate a plausible answer-like document, embed that hypothetical document, and retrieve chunks similar to it. Useful when the original query is short, abstract, or lacks the terms used in the corpus.
+- **Metadata-filtered retrieval**: Apply tenant, permission, product, date, jurisdiction, or document-version filters before or during search so retrieved evidence is both relevant and allowed.
+- **Trap**: Query expansion can improve recall, but it does not replace permission filters, freshness metadata, or faithfulness checks.
 
 ### Vector database configuration for performance
 
@@ -181,6 +190,7 @@ Knowledge Integration sits between agent reasoning and external data:
 
 - **Authorization filters:** before **retrieval** at index/metadata level, not output filtering
 - **Hybrid retrieval:** **dense** (semantic) + **sparse** (keyword) for both meaning and precision
+- **Advanced retrieval variants:** query decomposition for comparison/multi-part questions; multi-query/query expansion for recall gaps; HyDE for short or abstract queries; metadata filtering for tenant/date/product/jurisdiction constraints
 - **Structure-aware chunking:** preserves **clause boundaries**, sections, definitions for legal/contract documents
 - **HNSW indexing + scalar quantization:** for **vector search** performance at scale
 - **Tool routing:** SQL for structured facts, **RAG** for documents, synthesis with **provenance**
@@ -259,7 +269,10 @@ Evidence source: `mock_1` through `mock_5`, especially tenant filtering, **hybri
 | If the question mentions... | Prefer this answer | Avoid this trap |
 |---|---|---|
 | tenant or role permissions, user sees another tenant's data | **authorization filters before retrieval** using metadata/**index filters** | filtering after generation |
+| user asks to compare two products, policies, or entities | **query decomposition**: retrieve for each side separately, then synthesize | one vector search over the combined comparison query |
 | exact terms (product codes, **legal citations**) plus semantic meaning | **hybrid retrieval** (**dense** + **sparse**) with **RRF** fusion | pure **vector search** only |
+| complex technical queries retrieve irrelevant documents | **hybrid search** for recall, then **cross-encoder reranking** for precision | reducing embedding dimensions, flat text files, or sending a huge top-k to the LLM |
+| short or vague query misses relevant corpus terms | **multi-query retrieval/query expansion** or **HyDE**, followed by reranking and faithfulness checks | using query expansion to bypass metadata or permission filters |
 | legal clauses, contracts, compliance documents | **structure-aware chunking** preserving **clause boundaries**, headings, definitions | **fixed-token chunking** that splits clauses apart |
 | tables (financial data, inventory) plus policy documents | **SQL/database tools** for structured data + **RAG** for documents, synthesis with **provenance** | vectorize everything or ignore documents |
 | stale manuals returned after new versions uploaded | **index freshness**: **version metadata** + **recency-aware reranking** + **stale-document monitoring** | **fine-tuning** on old documents |

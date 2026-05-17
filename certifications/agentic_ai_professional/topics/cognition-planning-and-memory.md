@@ -125,6 +125,19 @@ Cognition, Planning, and Memory covers **how agents think, plan, and remember**:
 - **Key features**: Deduplication, eviction policies, recency decay, time-aware **retrieval**
 - **Not**: storing everything in context window (bloat), storing only last N turns (loses context), pinning only first message
 
+### Scratchpad vs long context vs KV cache
+
+Long context is not the same as reliable working memory. A model can technically receive a value in a huge context and still fail to attend to it later, especially when the value is buried in the middle of a long trace. Use a structured scratchpad for intermediate results the workflow must retrieve by name.
+
+| Need | Right primitive | Avoid |
+|---|---|---|
+| Carry a calculated value from step 3 to step 8 | Structured scratchpad or task-state field such as `step_3_total` | Hoping the value remains salient in a 200k-token context |
+| Keep conversation coherence for this session | Working memory / short-term buffer | Long-term vector memory for every turn |
+| Remember prior sessions or user history | Episodic/entity memory with consent and retention | KV cache or current context window |
+| Improve serving throughput for repeated prefix tokens | KV/prefix caching in the inference layer | Treating KV cache as durable user memory |
+
+Exam cue: if the stem says the agent **forgets intermediate results**, the fix is usually structured working memory or scratchpad state. Bigger context or bigger KV cache may help serving mechanics, but it does not create durable, addressable task memory.
+
 ### Memory governance
 
 - **Write filters**: Not everything should be stored — relevance and sensitivity checks
@@ -140,6 +153,18 @@ Cognition, Planning, and Memory covers **how agents think, plan, and remember**:
 - **Short-term state buffer**: Detect repeated actions/states → force query reformulation, alternative tools, or termination
 - **Reflection/critic step**: Evaluate whether previous actions succeeded → change strategy if looping
 - "Increase max iterations" makes loops worse
+
+### What to do when the agent gets stuck
+
+| Symptom | Likely missing piece | Best next design move |
+| ------- | -------------------- | --------------------- |
+| Same tool called repeatedly with same arguments | Progress detector and handled-observation state | Store tool-call signature + observation ID; block exact repeats unless a new fact changed |
+| Tool returns valid data but agent does not finish | Evidence sufficiency or stop condition | Add "goal reached" and "all required fields collected" checks |
+| Plan keeps executing after a contradiction | Re-planning trigger | Replan when observations invalidate assumptions or preconditions |
+| Agent forgets intermediate result after retry | Checkpointed working memory | Save step outputs in task state before moving to next node |
+| Agent is unsure but keeps searching | Escalation/confidence threshold | Stop, ask clarification, or route to human review |
+
+Exam shorthand: loops are fixed by state, stop conditions, reflection, and escalation. They are not fixed by more context, higher temperature, or larger max-iteration limits.
 
 ## Reasoning adaptation
 
@@ -257,6 +282,7 @@ Evidence source: `mock_1` through `mock_5`, especially memory, ReAct/CoT, replan
 | puzzle with many constraints, branching, multiple candidate paths | Tree-of-Thought / search-style planning with branch **evaluation** | first-valid answer or pure **retrieval** |
 | tool results contradict the plan, but agent continues | **re-planning trigger** on contradicting observations | "increase iterations" or "try harder" |
 | agent loops between same failed query and same irrelevant result | **reflection/critic** step detects repeated actions → reformulate, switch tool, escalate, or terminate | "increase max iterations" |
+| intermediate result is lost in a long context | structured scratchpad / task-state field keyed by step and value | bigger context window or bigger KV cache as the only fix |
 | agent forgets user preference across sessions | **long-term/episodic memory** with **retrieval** at session start + **consent** + **expiry** | storing everything in context window or global prompts |
 | agent uses stale preference (old shipping address) | memory **TTL** + **staleness detection** + time-stamped updates with **recency boost** | retrieving all memories without recency or **relevance scoring** |
 | user preference + transaction history + cross-session recall | **hybrid memory**: short-term buffer for session + long-term vector store for cross-session | dumping all history into context (bloat) or only last N turns (loses context) |

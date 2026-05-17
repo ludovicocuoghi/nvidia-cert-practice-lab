@@ -87,11 +87,32 @@ Agent Development sits between architecture (design) and deployment (ops). It co
 - Embed clear, constrained formatting examples to enforce output style and focus
 - Structured extraction (schema-validated) before reasoning — reduces ambiguity and enables validation
 
+### Tool contract hardening
+
+When wrong tool arguments appear, treat it as a contract failure first. Two controls stack well:
+
+- **Strict JSON schema / guided decoding**: constrain names, types, enums, ranges, required fields, and regex patterns so the runtime can reject or prevent malformed calls.
+- **Few-shot valid tool calls**: show concrete examples of correct arguments and returned observations so the model has in-context evidence for the desired shape.
+
+Do not raise temperature to "explore" valid tool calls. Higher temperature increases output variance and usually makes schema violations worse. Do not swallow tool errors with a broad `try/except`; map them into structured observations so the agent can retry, fallback, or escalate.
+
+### MCP and shared tool servers
+
+MCP-style tool servers solve a duplication problem: one tool team exposes a tool once, and multiple agents consume the same contract. They do not choose the best LLM, replace the agent runtime, or bypass authentication. The tool gateway/server still owns schema, auth, rate limits, retries, and audit.
+
 ## API and external system integration
 
 - **Custom tool wrapping REST APIs**: Encapsulates authentication (OAuth token refresh), error handling, JSON transformation into usable objects
 - **Secure API wrapper pattern**: Authenticated, well-defined API with custom agent tool — not direct SQL generation, not embedding CSVs in prompts
 - **HTTP GET via function-calling framework**: Standard pattern for real-time data (weather, stock, CRM)
+
+## Multimodal integration
+
+- **Model as a workflow node**: Treat vision, speech, embedding, reranking, and generation models as typed nodes in the agent workflow, not as one giant prompt.
+- **Modality-specific tools**: Use OCR/document parsers for PDFs and scans, vision models for images, ASR for audio, and text LLMs for reasoning/generation after the modality has been converted into structured observations.
+- **Structured observations**: Return extracted fields, bounding boxes/page numbers/timestamps, confidence, and source IDs so downstream agents can cite evidence and avoid reinterpreting raw media repeatedly.
+- **Serving boundary**: Triton is the NVIDIA cue for multi-framework or multimodal serving; NIM is the cue for supported model APIs; Agent Toolkit wires the model/tool nodes into an agent workflow.
+- **Trap**: Do not dump raw images, audio transcripts, OCR text, and tables into one context window without parsing, metadata, or evidence boundaries.
 
 ## Reliability patterns
 
@@ -115,12 +136,33 @@ Agent Development sits between architecture (design) and deployment (ops). It co
 
 ## Workflow and state management
 
+### Stateless vs. stateful orchestration
+
+| Pattern | Use it when | If something breaks | Exam trap |
+| ------- | ----------- | ------------------- | --------- |
+| **Stateless** | Single-turn or short read-only work where every call can be recomputed from the request | Retry the whole request or return a clean fallback; no checkpoint needed because no durable step happened | Using stateless prompt chains for multi-step work and losing intermediate results |
+| **Stateful** | Multi-step workflows, approval gates, tool dependencies, long-running jobs, memory writes, or mutating actions | Resume from the last successful checkpoint, reconcile external state, then continue or escalate | Re-executing the whole workflow and duplicating side effects |
+
+Stateless does not mean "no context in the prompt." It means the system has no durable workflow state to resume from. Stateful orchestration keeps a task graph with step status, observations, tool outputs, approvals, retries, and checkpoints.
+
 ### Stateful orchestration
 
 - Context memory across prompt chain steps, checkpointed transitions
 - Maintains task graph to track progress and dependencies
 - Supports resumption from checkpoints, retries, dynamic context updates
 - Contrast with: stateless prompt chaining (loses context), monolithic single prompt (brittle)
+
+### Recovery when a workflow breaks
+
+| Failure signal | Best response | Avoid |
+| -------------- | ------------- | ----- |
+| Read-only API timeout or transient 5xx | Bounded retry with exponential backoff and jitter, then fallback/escalation | Infinite retries or exposing raw error |
+| Rate limit / 429 | Respect rate limits, back off, queue, or use cached safe read data | Immediate aggressive retry |
+| Dependency repeatedly failing | Circuit breaker + fail-fast + periodic probe + graceful degradation | Let all workers block on the dependency |
+| Mutating tool result unknown | Idempotency key + transaction-state check before retry | Re-running the mutation blindly |
+| Agent repeats same tool call | Loop detector + state buffer + critic step; reformulate, switch tool, terminate, or escalate | Increasing max iterations |
+| Step succeeds, then later step fails | Resume from last checkpoint and keep completed step outputs | Re-execute the entire workflow from scratch |
+| High-risk action needs approval | Pause at approval gate with proposed action, evidence, risk, and audit trail | Email notification plus manual restart after the fact |
 
 ### Tool availability gated by workflow state
 
@@ -154,10 +196,12 @@ Agent Development sits between architecture (design) and deployment (ops). It co
 - **Schema-constrained tool calling** > prompt-based tool guidance for preventing hallucinated function names
 - **Idempotency keys + transaction-state checks** for mutation tools that may be retried
 - **Tool preconditions** — enforced by workflow state, not model discretion
+- **Stateless vs stateful** — stateless can retry from start; stateful resumes from checkpoints and protects against duplicate side effects
 - **Shaped tool outputs** (summary + key fields + audit ref) — not raw JSON dumps
 - **Sandbox code execution** (ephemeral, **network-isolated**, resource-limited) — not keyword filters
 - **Parallelize independent reads** — sequential calls for independent data is a **latency** antipattern
 - **YAML/config-driven workflows** — for **auditability**, versionability, reproducibility
+- **Multimodal integration** — convert images/audio/PDFs into structured observations with source metadata before downstream reasoning
 - **Exponential backoff + max retries + fallback** — for external API resilience
 - **Structured observations** — as first-class state, cite observation IDs in final answers
 
@@ -226,10 +270,15 @@ Evidence source: `mock_1` through `mock_5`, especially tool safety, prompt chain
 | If the question mentions... | Prefer this answer | Avoid this trap |
 |---|---|---|
 | hallucinated tool names or invalid arguments | **schema-constrained tool calling** + **runtime validation** before execution | better prompt wording, higher temperature, or "be careful" instructions |
+| wrong argument types in tool calls | strict JSON schema / guided decoding plus few-shot valid examples | increasing temperature or swallowing the error |
+| same 14 tools reimplemented by several agents | shared MCP/API tool servers consumed by each agent | treating MCP as model routing or auth bypass |
 | retrying payment/refund/write tools | **idempotency keys** + **transaction-state checks** + **bounded retries** with **error classification** | infinite retries or disabling all retries |
+| long-running workflow fails at step 4 of 8 | resume from last successful checkpoint after reconciling external state | re-execute all prior mutation steps from scratch |
+| simple read-only request fails before any side effect | stateless retry from the beginning or clean fallback | building checkpoint infrastructure for a one-shot call |
 | slow independent API reads (order status, shipment, refund eligibility) | parallelize read-only calls, then merge **structured observations** before reasoning | sequential calls when there is no data dependency |
 | unsafe code execution (generated Python, shell, SQL helpers) | **ephemeral sandbox** with resource, network, credential, and filesystem limits | keyword filtering ("block os, subprocess") or model self-certification |
 | raw JSON tool output bloating context | shaped output with key fields + audit reference — not the full payload | dumping full API responses into the prompt |
+| agent must reason across PDFs, images, audio, or tables | modality-specific parsers/models produce structured observations, then the workflow routes to reasoning/generation | one giant prompt containing raw OCR/media dumps |
 | agent ignores tool result, answers from prior assumptions | **structured observations** as first-class state; final answers must cite observation IDs | trusting parametric memory for current external facts |
 | tool available at wrong workflow step | **tool preconditions** gated by workflow state; engine rejects unready calls | hiding tool names or relying on vague tool descriptions |
 | SQL agent generating expensive full-table scans | **query validation layer**: read-only access, allowed tables, **row limits**, **cost estimates**, **timeout policies** | admin access or unrestricted SQL generation |

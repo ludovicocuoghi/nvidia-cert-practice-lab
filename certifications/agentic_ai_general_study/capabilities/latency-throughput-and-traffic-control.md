@@ -6,28 +6,6 @@ source_lens: general-study
 
 # Latency, Throughput, and Traffic Control
 
-## Actual implementation / How you use it
-
-```yaml
-traffic_control:
-  measure:
-    request_rate: requests_per_second
-    concurrency: in_flight_requests
-    latency: [p50_ms, p95_ms, p99_ms, ttft_ms, inter_token_ms]
-    saturation: [queue_depth, gpu_utilization, tool_timeout_rate, vector_db_wait_ms]
-  protect:
-    admission: [rate_limit, priority_queue, shed_low_value_work]
-    isolation: [realtime_lane, batch_lane, bulkhead_per_dependency]
-    failure: [timeout_budget, circuit_breaker, fallback, graceful_degradation]
-  release:
-    rollout: [canary, shadow, blue_green, rollback]
-    gates: [task_success, groundedness, safety, p99_latency, cost_per_task]
-```
-
-| Input | Traffic-control decision | Output |
-|---|---|---|
-| User load, token shape, queue depth, trace spans, SLO | Pick batching, isolation, backpressure, autoscaling, or rollout control | Stable user-facing latency without breaking quality or safety |
-
 ## What to study first
 
 - **Core idea:** You are managing production traffic, not just making a model faster.

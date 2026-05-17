@@ -6,21 +6,6 @@ source_lens: general-study
 
 # Model Selection and Registry
 
-## Actual implementation / How you use it
-
-```yaml
-release_record:
-  model_family: approved_reasoning_model
-  artifact: checkpoint_or_adapter_or_api_version
-  role: generator_or_embedding_or_reranker_or_router
-  constraints: [latency, cost, context, license, residency, safety]
-  rollback_target: previous_approved_route
-```
-
-| Input | Registry decision | Output |
-|---|---|---|
-| Task, constraints, eval report, lineage | Choose and approve the right model role and version | Versioned artifact or API route with rollback evidence |
-
 ## What to study first
 
 - **Core idea:** You are building the decision and governance layer for choosing, approving, versioning, comparing, and rolling back model artifacts. This is where the team decides whether to use a hosted API, open-weight model, self-hosted endpoint, base checkpoint, tuned adapter, embedding model, reranker, reasoning model, or multimodal model.

@@ -105,13 +105,16 @@ When a question says "1,000 users," "1 million users," "slow first token," or "h
 | Scenario clue | Think NVIDIA layer | Best NVIDIA answer pattern | Avoid this trap |
 | ---- | ---- | ---- | ---- |
 | Need the fastest supported LLM/embedding/reranker API | **NIM** | Deploy separate NIM microservices for LLM, embedding, and reranker endpoints | Pick NeMo Framework just because a model is involved |
+| Real-time tool-calling agent needs low-latency inference | **NIM** | Use preconfigured, GPU-optimized inference endpoints with standardized APIs for the model calls inside the tool loop | Pick a visual builder or human-approval UI; those do not reduce inference latency |
 | Many users require Kubernetes lifecycle and autoscaling | **NIM Operator** | Manage NIM deployments, warm replicas, health checks, rolling updates, and GPU-aware scheduling | Treat one manual `docker run` as the scale answer |
 | p99 rises with concurrent users and queue depth grows | **Triton / serving gateway / NIM metrics** | Inspect queue time, dynamic batching, instance groups, route policy, and serving lanes | Tune prompts before checking the serving queue |
 | Slow first token in chat | **NIM/Triton + prefill/queue metrics** | Check TTFT, queue time, prompt length, streaming, and warm readiness | Measure only total response time |
+| Slow first token caused by repeated stable system prefix | **NIM/Triton/TensorRT-LLM serving profile** | Use prefix caching/reuse where supported, trim prompt/context, and track prefill time | Lower `max_tokens`; that limits output, not prefill |
 | Good TTFT but poor tokens/sec | **TensorRT-LLM** | Look for in-flight batching, paged KV cache, precision, attention kernels, and model profile issues | Use NeMo Retriever for a decode bottleneck |
 | GPU utilization low but agent is slow | **NeMo Agent Toolkit / Retriever / tool spans first** | Trace retrieval, reranking, tools, guardrails, and orchestration before GPU tuning | Buy more GPUs for a non-GPU bottleneck |
 | GPU busy but root cause unclear | **Nsight Systems first** | Get CPU/GPU/system timeline, then decide if kernel drilldown is needed | Start with Nsight Compute before knowing the hot kernel |
 | One CUDA kernel dominates after timeline analysis | **Nsight Compute** | Inspect occupancy, memory bandwidth, tensor core use, and kernel stalls | Use dashboard snapshots as a profiler |
+| Vision, text, embedding, and reranker models share GPU hardware | **Triton Inference Server** | Use multi-framework/multi-model serving, instance groups, and dynamic batching so workloads share expensive GPUs efficiently | Basic Python wrappers or one web server per model |
 | Multi-node LLM serving or distributed inference scheduling | **Triton Dynamo** | Coordinate larger distributed serving workloads | Confuse inference scheduling with agent planning |
 
 Exam shorthand: **NIM serves**, **NIM Operator operates NIM on Kubernetes**, **Triton schedules and batches serving**, **TensorRT-LLM optimizes LLM execution**, **Nsight Systems finds where time goes**, and **Nsight Compute explains the hot kernel**.
@@ -224,6 +227,8 @@ Evidence source: `mock_1` through `mock_5`, especially NVIDIA platform, deployme
 | evaluate agent quality, detect regressions, trajectory scoring | **NeMo Evaluator** | **Nsight Systems** (**profiling**, not quality **evaluation**) |
 | inference throughput, KV cache, quantization, in-flight batching | **TensorRT-LLM** | **RAPIDS** (data processing, not inference) |
 | multi-framework or multi-model **serving** with dynamic batching | **Triton Inference Server** | **NIM** alone (**NIM** = packaged single-model APIs; Triton = multi-model platform) |
+| concurrent vision/text/reranker workloads on the same GPU fleet | **Triton Inference Server** with dynamic batching and model instances | one dedicated GPU cluster per model or basic web-app scheduling |
+| stable prompt prefix dominates TTFT | prefix caching / prompt-prefix reuse in the serving stack | output-token caps as a prefill fix |
 | system-level CPU/GPU bottleneck across services | **Nsight Systems** timeline analysis | **Nsight Compute** first (too narrow for system-wide diagnosis) |
 | kernel-level GPU bottleneck — why one kernel is slow | **Nsight Compute** | **NVIDIA SMI** (status snapshot, not **profiling**) |
 | multi-GPU communication, collectives, all-reduce performance | **NCCL** | **NIM** or **NeMo Agent Toolkit** |

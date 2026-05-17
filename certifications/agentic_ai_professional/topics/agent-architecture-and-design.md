@@ -12,6 +12,7 @@ status: populated
 - **Use it when:** Study this when questions ask what architecture fits a task, how agents coordinate, or when autonomy is too risky.
 - **Study first:** Graph/workflow agent: explicit nodes + transitions, static states, LLM only at interpretation/generation steps — right for compliance, predictable paths, and high-risk domains
 - ReAct loop: Thought → Action → Observation → Thought — right for dynamic environments, streaming data, uncertain intermediate steps
+- Reactive vs deliberative vs hybrid: reactive handles bounded low-latency responses; deliberative plans across steps; hybrid routes fast-path requests to reactive handlers and complex cases to planning workflows
 - Plan-and-execute: plan first, then execute — must re-plan when observations contradict the plan (missing **re-planning trigger** = decision trap)
 - Supervisor/orchestrator: **centralized state** transitions + **approval gates** — right for safety-critical multi-agent, auditable workflows
 - Peer-to-peer/choreography: decentralized coordination with no single bottleneck — right for distributed robots or search-and-rescue
@@ -53,6 +54,9 @@ Agent architecture sits at the **design** stage — before development, before d
 
 | Pattern | When it is the right answer | When it is a trap |
 | ------- | --------------------------- | ----------------- |
+| **Reactive agent** | Ultra-low-latency, bounded action space: intent routing, acknowledgements, alert response, status lookup | Multi-step reasoning, context accumulation, tool sequencing |
+| **Deliberative agent** | Multi-step planning, tool composition, goal-directed work over several turns | Sub-second acknowledgement or every event routed through slow planning |
+| **Hybrid agent** | Mixed workload: fast acknowledgement plus slower multi-step workflow behind a router/classifier | Router misclassification, shared memory leakage, fast path bypassing safety |
 | **Graph/workflow agent** | Fixed sequence of steps, predictable branches, compliance requirements | Open-ended exploration, creative tasks |
 | **ReAct (observe-reason-act) loop** | Dynamic environments, streaming data, uncertain intermediate steps | Deterministic workflows with known transitions |
 | **Supervisor/orchestrator** | Multi-agent with **approval gates**, safety-critical, role-specialized agents | Two agents doing simple Q&A |
@@ -77,6 +81,8 @@ Agent architecture sits at the **design** stage — before development, before d
 
 7. **Single agent for everything.** When the task has separable responsibilities with different permissions (vendor analysis, budget, legal, PO creation), role decomposition is expected.
 
+8. **Confusing reactive with ReAct.** A reactive agent is stimulus -> action with little or no internal planning state. ReAct is a deliberative reasoning-plus-action loop that can call tools, observe, and revise.
+
 ## Architecture patterns: exam-level distinctions
 
 ### Supervisor/Orchestrator vs. Peer-to-Peer
@@ -84,11 +90,57 @@ Agent architecture sits at the **design** stage — before development, before d
 - **Supervisor**: **Centralized state** transitions, explicit **approval gates**, easier to audit. Right answer for safety-critical multi-agent systems.
 - **Peer-to-peer**: Decentralized, scales better, no single bottleneck. Wrong answer when **audit trail** or compliance is required. Right for distributed coordination (warehouse robots, search-and-rescue) when combined with structured protocols.
 
+### Reactive vs. Deliberative vs. Hybrid
+
+| Architecture type | Core mechanism | Best fit | What breaks if chosen wrong |
+| ----------------- | -------------- | -------- | --------------------------- |
+| **Reactive** | Immediate perception -> action mapping; no real planning horizon | 200-500 ms acknowledgement, alert triage, intent classification, simple status answers | Fails when the task needs multi-step reasoning, context accumulation, or three APIs called in a dependent sequence |
+| **Deliberative** | Maintains an internal task/world model, plans before acting, executes, observes, revises | Refund investigation, fraud review, research, code generation with validation, regulatory reasoning | Misses hard latency SLAs, costs more tokens, is harder to debug, and can overthink simple requests |
+| **Hybrid** | Lightweight classifier/router sends simple cases to a fast path and complex cases to a planning path | Customer service, logistics, operations centers, financial support: mixed simple and complex workload | Router mistakes send complex work to the fast path or simple work to the slow path; shared memory must be scoped and safe |
+
+Exam cue: if one requirement says "acknowledge/respond under 200-500 ms" and another says "coordinate multi-step workflow across inventory/dispatch/compliance/refund APIs," the correct architecture is usually **hybrid**. Pure reactive fails the multi-step path. Pure deliberative fails the latency path. "Reduce planning depth for every request" is a trap because it still pays planning overhead while weakening complex-case reasoning.
+
+Use this mental model:
+
+```
+Incoming event
+  -> lightweight classifier / rules / risk router
+     -> reactive fast path: acknowledge, classify, retrieve simple answer
+     -> deliberative slow path: plan, call tools, checkpoint, validate, escalate
+```
+
+Memory split matters. The reactive path may need only current turn/session context. The deliberative path may need working memory, episodic memory, tool observations, checkpoints, approvals, and audit trace.
+
 ### ReAct vs. Plan-and-Execute vs. Graph
 
 - **ReAct**: Interleave reasoning and action, adapt to observations. Best for dynamic or uncertain environments. Risk: loops without stopping criteria.
 - **Plan-and-execute**: Plan first, then execute. Best when subgoals are predictable but tool results may force replanning. Risk: continuing with invalidated plan.
 - **Graph/workflow**: Explicit nodes and transitions, LLM only at interpretation/generation steps. Best for known workflows with compliance needs. Risk: overkill for simple or creative tasks.
+
+Exam latency cue: if the stem says a tool-heavy agent makes many **sequential** tool calls and latency is unacceptable, prefer **plan-and-execute** or a graph with a deterministic executor that can run independent branches in parallel. Reflexion/self-critique can improve answer quality after a draft, but it adds extra model round trips and is usually the wrong fix for a latency bottleneck.
+
+Exam simplicity cue: if the design is a purely linear chain such as extractor -> summarizer -> fact checker -> formatter -> critic, do not call it multi-agent by default. Use separate agents only when the roles need distinct tools, permissions, model specializations, or parallel work. A single structured call or deterministic pipeline is often the better architecture.
+
+### ReAct in detail
+
+ReAct is best understood as a bounded observe -> decide -> act -> observe loop. Each LLM call can be stateless, but the workflow around it must keep task state: the user goal, tool-call history, latest observations, evidence collected, retry budget, remaining tool budget, and stop condition.
+
+```
+Goal + state
+  -> choose next action
+  -> validate tool name, schema, permission, and risk
+  -> execute tool
+  -> save structured observation
+  -> check stop condition, loop detector, or escalation rule
+  -> answer, continue, replan, or escalate
+```
+
+- **Use ReAct when**: the next step depends on live tool results, external data may change the plan, or the agent must iteratively search/refine.
+- **Prefer plan-and-execute when**: the subgoals are known upfront, but tool results may invalidate later steps; the key is a **re-planning trigger**.
+- **Prefer graph/workflow when**: the process is fixed, auditable, compliance-heavy, or contains high-risk actions.
+- **Stop conditions**: goal satisfied, evidence sufficiency reached, max tool calls/iterations, wall-clock limit, no new evidence, low confidence, or human escalation.
+- **Common failure**: agent calls the same tool with the same arguments even though the tool returns valid data. Root cause is usually missing stop/progress detection, missing max iterations, or failure to mark the observation as already handled — not a tool error.
+- **Best fix**: add a state buffer, repeated-action detector, critic/reflection check, evidence-sufficiency gate, and explicit termination/escalation path. Do not simply raise the max iteration limit.
 
 ### Router patterns
 
@@ -130,7 +182,7 @@ The exam tests **when to route**:
 
 - **Execution layer** — enforcement boundary, not the LLM, not the prompt, not user confirmation after the fact
 - **Planning gates** — require evidence enumeration before decision nodes to prevent premature action
-- **Budgets + critic node** — control for open-ended exploration (max tool calls, stopping criteria)
+- **Budgets + critic node** — control for open-ended ReAct exploration (max tool calls, stopping criteria, repeated-action detection)
 - **Source evidence + confidence propagation** — pass alongside summaries to prevent error amplification in multi-agent chains
 - **Risk-based routing** — match cost and oversight to task complexity, not one-size-fits-all
 - **Re-planning triggers** — **plan-and-execute** must revise on contradicting observations, not plow forward
@@ -197,6 +249,9 @@ Evidence source: `mock_1` through `mock_5`, especially architecture, planning, c
 - Know the boundary between deterministic workflows and autonomous agents. Use agents when the path depends on reasoning, tool feedback, or changing context; use workflows when steps are predictable, auditable, and high-risk.
 - Multi-agent designs add specialization, but also **latency**, state synchronization, and debugging complexity. The exam often rewards the simplest architecture that still enforces the risk boundary.
 - Separate roles such as planner, executor, **critic**, router, and memory manager only when each role reduces real complexity or enforces a different permission boundary.
+- **Reactive agent**: Best for bounded, low-latency stimulus-response work such as acknowledgement, alert triage, intent classification, simple routing, or status lookup. It should not own complex reasoning because it has little or no planning horizon.
+- **Deliberative agent**: Best for tasks that require planning, tool sequencing, context accumulation, and revising the plan from observations. It is slower, costs more, and needs trace/state controls.
+- **Hybrid agent**: Best for mixed workloads. A lightweight classifier or rules layer routes simple/time-sensitive requests to a reactive fast path and complex/high-risk cases to a deliberative planning path.
 - **ReAct (Reason + Act) pattern**: Best for dynamic environments where each tool call may change the next action. The loop is Thought -> Action -> Observation -> Thought. Use it when intermediate steps are unknown upfront and the agent must adapt to live feedback. Do NOT use it for deterministic workflows — it adds **latency** and can loop without budgets and stopping criteria.
 - **Plan-and-Execute pattern**: Best when the task has predictable subgoals but tool results may invalidate later steps. The agent plans first (evidence, tools, decision points), then executes with explicit re-planning triggers. Critical requirement: re-plan when an observation contradicts the plan. Continuing with an invalidated plan is the trap.
 - **Router pattern**: Best for mixed-complexity workloads. A classifier determines intent, risk, or complexity and routes to the appropriate handler (simple FAQ path, **RAG** path, full agent workflow, or **human escalation**). Use when different requests need different levels of processing. The router is NOT for single-task agents.
@@ -209,6 +264,9 @@ Evidence source: `mock_1` through `mock_5`, especially architecture, planning, c
 ### Must know
 
 - **Graph/workflow agent**: explicit nodes + transitions, static states, LLM only at interpretation/generation steps — right for compliance, predictable paths, and high-risk domains
+- **Reactive agent**: immediate stimulus -> action mapping with little/no planning state — right for low-latency, bounded decisions
+- **Deliberative agent**: explicit planning before action — right for multi-step reasoning and tool coordination, but slower and costlier
+- **Hybrid agent**: router/classifier splits reactive fast path from deliberative slow path — right for mixed SLA + multi-step workloads
 - **ReAct loop**: Thought → Action → Observation → Thought — right for dynamic environments, streaming data, uncertain intermediate steps
 - **Plan-and-execute**: plan first, then execute — must re-plan when observations contradict the plan (missing **re-planning trigger** = decision trap)
 - **Supervisor/orchestrator**: **centralized state** transitions + **approval gates** — right for safety-critical multi-agent, auditable workflows
@@ -228,6 +286,11 @@ Evidence source: `mock_1` through `mock_5`, especially architecture, planning, c
 | If the question mentions... | Prefer this answer | Avoid this trap |
 |---|---|---|
 | fixed steps, compliance, predictable outcomes | **graph/workflow agent** with **explicit state transitions** and **approval gates** | ReAct autonomy for a known process |
+| many sequential tool calls and unacceptable latency | **plan-and-execute** with a planner plus deterministic/parallel executor | reflexion as the primary latency fix |
+| linear extractor -> summarizer -> fact checker -> formatter pipeline | simple workflow or one structured model call unless permissions/tools differ | multi-agent system just because it sounds advanced |
+| sub-500 ms acknowledgement plus multi-step refund/fraud/logistics workflow | **hybrid agent**: reactive fast path + deliberative planning path behind a router | pure reactive or pure deliberative for every request |
+| bounded low-latency alert or intent routing | **reactive agent** or router path | deliberative planning loop before every acknowledgement |
+| multi-API investigation with dependencies and changing observations | **deliberative/ReAct or plan-and-execute** with checkpoints and validation | reactive tool calls without planning state |
 | uncertain steps, tool feedback, streaming data | **ReAct loop** with stopping criteria, budgets, and **critic** | rigid graph/workflow for a dynamic environment |
 | separable responsibilities with different permissions (vendor, budget, legal) | role-specialized multi-agent with supervisor and least-privilege tools | single agent holding every permission |
 | high-risk domain (healthcare, finance, legal) | constrained workflow with explicit states + **approval gates** | full autonomy or open-ended ReAct |
@@ -243,6 +306,8 @@ Evidence source: `mock_1` through `mock_5`, especially architecture, planning, c
 | Confusion | Correct distinction |
 |---|---|
 | Agent vs workflow | Agent = LLM dynamically decides next steps. Workflow = predetermined path with explicit states. Use an agent when the path depends on reasoning; use workflow when the process is known, auditable, and compliance-heavy. |
+| Reactive agent vs ReAct | Reactive agent = immediate stimulus-response architecture with minimal state. ReAct = deliberative observe-reason-act loop with tool calls and observations. They sound similar but answer different scenario cues. |
+| Reactive vs Deliberative vs Hybrid | Reactive optimizes latency and bounded actions. Deliberative optimizes planning and multi-step coordination. Hybrid uses a classifier/router so each request takes the cheapest safe path that satisfies its SLA and complexity. |
 | ReAct vs **Plan-and-Execute** | ReAct interleaves reasoning and action (dynamic, tool-driven). **Plan-and-Execute** plans first then executes (predictable subgoals). Key test: can tool results invalidate the plan? If yes → **Plan-and-Execute** with re-planning triggers. If path is unknown → ReAct. |
 | Supervisor vs **Peer-to-Peer** | Supervisor centralizes state transitions and **approval gates** (auditable, safe). **Peer-to-peer** decentralizes coordination (scalable, no bottleneck). Pick supervisor when compliance/audit matters; pick **peer-to-peer** for distributed coordination like warehouse robots. |
 | Blackboard vs **Message Passing** | Blackboard = indirect communication via shared memory (agents post/read asynchronously). **Message passing** = direct agent-to-agent communication (gRPC, structured messages). |
@@ -265,10 +330,15 @@ Evidence source: `mock_1` through `mock_5`, especially architecture, planning, c
    Best answer pattern: ReAct observe-reason-act loop with periodic re-planning, budgeted tool calls, and guarded tool execution.
    Trap: **Plan-and-execute** without re-planning triggers — continues with invalidated plan.
 
+4. Scenario: A customer-service agent must acknowledge every user message under 500 ms, but refund disputes require coordinating account, payment, and compliance APIs before a decision.
+   Best answer pattern: **Hybrid agent** with a reactive fast path for acknowledgement/simple routing and a deliberative workflow for refund investigation, checkpoints, and approvals.
+   Trap: Pure reactive fails the refund investigation; pure deliberative violates the acknowledgement SLA.
+
 ### What to recognize
 
 - **Coordination failure**: agents disagree on task status because no shared state protocol, ontology, or message format exists
 - **Agent handoff with lost context**: one agent passes a summary without **source evidence** or confidence, causing downstream errors or repeated work
+- **Mixed-SLA workload**: fast alert/acknowledgement plus complex exception resolution means hybrid routing, not one architecture for every event
 - **Agent role confusion**: two agents attempt the same expensive tool call because roles and permissions are not clearly separated
 - **Autonomy level mismatch**: deterministic compliance workflow is given full ReAct autonomy instead of a constrained graph
 - **Architecture selection trap**: multi-agent design is chosen for a simple two-step Q&A task, adding **latency** and state-sync overhead without reducing complexity

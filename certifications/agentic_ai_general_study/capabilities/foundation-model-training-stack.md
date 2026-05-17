@@ -6,21 +6,6 @@ source_lens: general-study
 
 # Foundation Model Training Stack
 
-## Actual implementation / How you use it
-
-```yaml
-training_run:
-  architecture: transformer_or_moe
-  data_mixture: curated_corpus_shards
-  parallelism: [data, tensor, pipeline, sequence]
-  checkpoints: versioned_and_restorable
-  release_inputs: [eval_report, model_card, contamination_audit, serving_profile]
-```
-
-| Input | Training stack owns | Output |
-|---|---|---|
-| Curated corpus, architecture, compute plan | Distributed training, checkpoints, logs, validation | Candidate foundation checkpoint, not an agent application |
-
 ## What to study first
 
 - **Core idea:** You are building the heavy training system that turns curated data and model architecture decisions into checkpoints. This is the path for training from zero or continued pretraining, not the default answer for most application problems. The output is a candidate model artifact plus evidence: checkpoints, configs, tokenizer, training logs, eval reports, model card, and release notes.

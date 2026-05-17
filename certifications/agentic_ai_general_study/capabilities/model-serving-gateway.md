@@ -6,25 +6,6 @@ source_lens: general-study
 
 # Model Serving Gateway
 
-## Actual implementation / How you use it
-
-```yaml
-routes:
-  simple:
-    endpoint: small_fast_model
-  complex:
-    endpoint: large_reasoning_model
-  embedding:
-    endpoint: embedding_model
-  rerank:
-    endpoint: reranker_model
-controls: [rate_limit, fallback, canary, circuit_breaker, batching_policy]
-```
-
-| Input | Gateway decision | Output |
-|---|---|---|
-| Request class, risk, route policy, endpoint health | Select endpoint, fallback, canary, or reject | Routed model call with metrics and rollback control |
-
 ## What to study first
 
 - **Core idea:** You are building the traffic layer in front of model endpoints. It routes requests, applies admission/rate limits, handles fallback, canaries, batching policy, endpoint selection, and multi-model operations.
@@ -62,6 +43,7 @@ You are building the traffic layer in front of model endpoints. It routes reques
 - Gateway chooses where requests go; endpoints run models.
 - Routing can be by task, risk, tenant, cost, latency, model availability, or eval score.
 - A gateway can implement a model portfolio: small router/model for simple tasks, larger reasoner for hard tasks, specialized embedding/reranker/code endpoints for non-chat work.
+- Cascade routing is the cost-control pattern for bimodal traffic: try the small model or classifier first, then escalate to the large model only when confidence/risk/complexity requires it.
 - Canary and traffic splitting reduce rollout risk.
 - Fallback helps availability but can change quality.
 - Dynamic batching improves throughput but can increase latency.
@@ -73,6 +55,7 @@ You are building the traffic layer in front of model endpoints. It routes reques
 | If the scenario says... | Think... | Avoid... |
 |---|---|---|
 | "route simple tasks to small model" | serving gateway | one large model |
+| "70% easy / 30% hard workload" | cascade route with confidence escalation | run every model on every request |
 | "canary new model" | traffic split and monitoring | immediate full rollout |
 | "fallback on endpoint failure" | gateway fallback | retraining |
 | "tenant/risk-specific endpoint" | route policy with auth/risk context | endpoint-only configuration |

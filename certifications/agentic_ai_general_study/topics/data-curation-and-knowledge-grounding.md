@@ -121,6 +121,18 @@ Metrics differ by path: duplicate/removal rates for curation, contamination hit 
 | Eval set may overlap training data | Data Curator + Evaluation Harness | Contamination invalidates metrics |
 | User receives another tenant's document chunk | Retrieval authorization | Access filtering must happen before context construction |
 
+### Anti-hallucination measures
+
+Anti hallucination measures belong in the same grounding path as retrieval, citations, and evaluation. The practical goal is to make unsupported claims hard to produce, easy to detect, and visible in release gates.
+
+| Failure signal | First measure to reach for | Why |
+|---|---|---|
+| Answer cites a source that does not support the sentence | Citation entailment and faithfulness check | A citation is useful only when the passage proves the claim |
+| Answer fills in facts when no evidence was retrieved | No-evidence refusal or clarification | Missing evidence should be an explicit state, not a guess |
+| Correct document appears but wrong paragraph is used | Better chunking, hybrid search, and reranking | Hallucination often starts as a retrieval-quality problem |
+| Evidence mixes tenants, products, dates, or jurisdictions | Metadata filters and compatible context packing | Incompatible chunks invite invented synthesis |
+| Quality regresses after a model, prompt, or index update | Groundedness regression suite and canary queries | Anti-hallucination controls must survive changes |
+
 ## Curation recipes by destination
 
 | Destination | Main question | Typical methods | Failure if skipped |

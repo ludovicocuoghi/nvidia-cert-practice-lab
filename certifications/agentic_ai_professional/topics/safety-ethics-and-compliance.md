@@ -29,6 +29,7 @@ Read `Agentic AI General Study -> Evaluation and Safety`, `Agentic AI General St
 
 - **Retrieved text** is **untrusted data**. Webpages, documents, user uploads can contain **prompt injection** payloads ("Ignore all previous instructions..."). Retrieved content must be treated as untrusted, isolated from instructions, and validated by **guardrails**.
 - **Layered safety** beats single-point defenses. Content filters + confidence thresholds + escalation to human oversight + **guardrails** on output — not just "a prompt saying be careful." The exam expects multiple defensive layers.
+- **Guardrails are a runtime control plane, not a personality tweak.** They sit around the LLM application as middleware/proxy checks that inspect inputs, retrieved/tool content, and outputs against policy. Lowering temperature may reduce randomness, but it does not enforce business-domain boundaries or compliance policy.
 - **Human approval gates** for **high-impact actions**. Trades, diagnoses, contract signing — these need explicit human approval or policy approval before execution. Model self-approval is not a control.
 - **Memory governance** is a safety concern. **Consent**, **purpose limitation**, encryption, access control, **retention** rules, deletion ability, **sensitivity labels** — "store everything for personalization" is always wrong.
 
@@ -108,6 +109,12 @@ Safety sits at every stage but is enforced at specific control points:
 - **Not**: disabling demographic **profiling** entirely (hides problem, doesn't fix), increasing temperature for more diverse outputs
 - **Exam signal**: "Disproportionately recommends fewer products to female users" → fix is representative training data
 
+### Counterfactual fairness probe
+
+Aggregate approval-rate parity is useful but incomplete. To test causal bias, rerun the same case with everything held constant except a protected attribute or proxy, such as name, gender marker, or ZIP code. If the decision flips, the protected attribute is influencing the outcome.
+
+Exam cue: if the question asks whether the protected attribute **causes** a decision change, prefer counterfactual testing. Group-level approval rates can hide individual unfairness or offsetting biases.
+
 ### Transparency
 - **Users must know they interact with AI**: Introduce agent as AI-powered at session start
 - **Not**: hiding AI identity for "natural engagement," embedding disclaimer in website footer only, training to behave indistinguishably from human
@@ -139,6 +146,7 @@ Safety sits at every stage but is enforced at specific control points:
 - **Immutable audit trails + RBAC**: Log all actions tamper-proof, restrict access by role
 - **Log integrity**: Cryptographically hashed, **write-once** storage
 - **Traceability**: Log tool calls, **tool arguments**, observations, citations, policy decisions, state transitions, approvals, and concise rationale/evidence summaries
+- **Replayability**: Capture prompt template version, retrieved chunk IDs and hashes, tool inputs/outputs, model name/version, parameters, seed when available, timestamp, policy decisions, and approval records so a decision can be reconstructed later
 - **Not**: storing only final decisions, editable logs, raw hidden chain-of-thought, private prompts, credentials, or unredacted **sensitive data**
 
 ### Licensing compliance
@@ -258,9 +266,12 @@ Evidence source: `mock_1` through `mock_5`, especially **prompt injection**, **R
 | single defense layer (prompt or content filter) proposed as sufficient | **layered safety**: input → **retrieval** → content → confidence → output → escalation → approval | any single-point defense |
 | user uploads file containing "export customer list" instruction | **retrieval guardrail** validates external content + **data-instruction separation** | trusting uploaded files as "user data" |
 | "prompt the model to be safe/careful" as safety strategy | deterministic **guardrails** + **approval gates** + execution-layer validation | prompt-only safety (not enforceable) |
+| agent drifts outside intended business domain or discusses sensitive topics | **NeMo Guardrails** / runtime input-output policy layer with topical restrictions | lowering temperature or trusting the LLM to police itself |
 | agent with read-only credentials calls write API | tool-level permission enforcement + **least privilege** per agent/role | prompt-based "don't use write tools" (bypassable) |
 | biased outcomes (disproportionately recommends fewer to certain groups) | fine-tune with diverse, representative, balanced dataset | disabling demographic **profiling** only (hides problem, doesn't fix) |
+| need to know whether a protected attribute changes a decision | counterfactual fairness test with all other inputs held constant | aggregate approval-rate parity as the only test |
 | incident investigation can't determine what prompt was active | versioned prompt/model/tool IDs in **immutable audit logs** | editable or unstructured logs |
+| regulated decision must be reproducible 12 months later | replayable audit log: prompt version, retrieved chunk IDs/hashes, tool I/O, model/version/params, policy and approval records | encrypted but incomplete logs, or retaining only final input/output |
 | sensitive employee data in **long-term memory** without user knowledge | **consent** + **purpose limitation** + encryption + user visibility + deletion capability + **sensitivity labels** | hiding memory from users |
 | healthcare agent operating without HIPAA-compliant third-party API verification | verify all third-party APIs support required compliance frameworks before deployment | assuming API compliance or disabling API calls |
 | agent must not use dangerous tool, prompting says "don't use X" | tool precondition gating by workflow state + permission enforcement at **execution layer** | prompt-based tool restriction |

@@ -136,6 +136,19 @@ User count matters when it changes the traffic shape. A large registered-user nu
 - Structured logs with correlation IDs to track requests across services
 - **Not**: rebooting server immediately, relying on user complaints, switching models without diagnosis
 
+### When quality drops but model and prompt did not change
+
+If quality drops without a model, prompt, tool, or deployment change, suspect **data drift** before retraining. The world around the agent may have changed.
+
+Check:
+
+- Recent input distribution vs. historical baseline: new intents, new products, new terminology, new user segments.
+- Tool output schemas and status codes: upstream API fields renamed, nested differently, or returning partial data.
+- Retrieval index freshness: missing new documents, stale policies, deleted documents still indexed.
+- Route distribution: more traffic going down a fallback, small-model, or human-escalation path than expected.
+
+Trap: rolling back a deployment that did not change or retraining the LLM first. Most production regressions are data, retrieval, route, or dependency changes until proven otherwise.
+
 ## Ongoing maintenance
 
 ### RAG maintenance
@@ -188,6 +201,8 @@ User count matters when it changes the traffic shape. A large registered-user nu
 
 7. **Indexed doc count as metric:** "Number of indexed documents as quality metric." Document count says nothing about relevance or correctness. Recall@k and **faithfulness** are the quality metrics.
 
+8. **Rollback when nothing changed:** If model, prompt, and deployment are unchanged, first investigate input distribution, tool schemas, route drift, and index freshness.
+
 ## Must-know exam bullets
 
 - **Distributed tracing:** across all spans (inference, tools, **retrieval**, **guardrails**, queueing) — identify bottleneck before acting
@@ -196,6 +211,7 @@ User count matters when it changes the traffic shape. A large registered-user nu
 - **TTFT:** key **latency** metric for real-time agent responsiveness
 - **Vector store refresh + embedding regeneration:** essential **RAG** maintenance
 - **Telemetry for drift detection:** prediction accuracy and data quality over time
+- **Data drift diagnosis:** compare recent inputs, tool outputs, retrieval freshness, and route distribution against baseline before retraining
 - **Structured feedback loop:** collect → retrain → evaluate → deploy if improved
 - **Centralized logging:** (ELK, Fleet Command) with correlation IDs for multi-service debugging
 

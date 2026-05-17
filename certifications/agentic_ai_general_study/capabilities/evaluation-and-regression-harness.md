@@ -6,23 +6,6 @@ source_lens: general-study
 
 # Evaluation and Regression Harness
 
-## Actual implementation / How you use it
-
-```yaml
-eval_run:
-  baseline: last_approved_release
-  candidate: prompt_or_model_or_agent_change
-  cases: [task_success, rag_grounding, tool_correctness, safety, latency_cost]
-  gates:
-    groundedness: ">= 0.90"
-    tool_validity: ">= 0.98"
-    safety_regression: "no_new_high_severity_failures"
-```
-
-| Input | Harness owns | Output |
-|---|---|---|
-| Cases, criteria, traces, baseline, candidate | Metrics, judge calibration, deterministic checks, release gates | Pass/fail decision and regression evidence |
-
 ## What to study first
 
 - **Core idea:** You are building the test system that measures prompts, models, retrieval, tools, policies, trajectories, safety, cost, and regressions before and after release.
@@ -152,6 +135,7 @@ Typical gate: the incident replay passes, protected regression suites hold, poli
 - Final answer correctness is not enough for agents.
 - Trajectory eval checks intermediate retrieval, tool use, policy, and state.
 - LLM-as-judge needs criteria and calibration.
+- Golden sets give deterministic regression signal; LLM-as-judge scales open-ended scoring; sampled human review calibrates both.
 - RAG eval includes recall, groundedness, faithfulness, and citation support.
 - Regression suites protect prior behavior.
 - Eval sets need protected splits and contamination checks so training/tuning examples do not leak into test evidence.
@@ -219,10 +203,13 @@ It should measure the path, not only the final text.
 
 | Judge | Use it for | Watch out |
 |---|---|---|
+| Golden set | Deterministic expected answers, docs, tools, policy labels, regression gates | Costly to author; weak for subjective open-ended quality |
 | Deterministic assertion | Exact facts, schema, policy, permissions | May miss nuanced quality |
 | Human label | Safety, usefulness, ambiguous judgment | Expensive and inconsistent without criteria |
 | LLM-as-judge | Scalable criteria-based scoring | Needs anchors, calibration, and disagreement checks |
 | Production canary | Real workload signal | Needs rollback and risk limits |
+
+Production eval stacks usually combine these methods instead of choosing one: golden sets for known regression cases, LLM-as-judge for scalable open-ended rubric scoring, and sampled human review to measure judge drift and policy ambiguity.
 
 ### Regression mindset
 

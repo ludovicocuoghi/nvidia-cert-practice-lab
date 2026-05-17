@@ -9,8 +9,8 @@ status: populated
 ## What to study first
 
 - **Core idea:** Model family — pre-trained neural network weights (checkpoints) released by NVIDIA
-- **Use it when:** Use when the scenario asks for NVIDIA model weights or model families for reasoning, instruction following, reward modeling, or agent workflows.
-- **Choose another path when:** Choose NIM/Triton for serving, TensorRT-LLM for optimization, NeMo Evaluator for scoring, or NeMo Framework/Customizer for changing weights; Nemotron is the model artifact those tools operate on.
+- **Use it when:** The system needs NVIDIA model weights or model families for reasoning, instruction following, reward modeling, or agent workflows.
+- **Choose another path when:** Use NIM/Triton for serving, TensorRT-LLM for optimization, NeMo Evaluator for scoring, or NeMo Framework/Customizer for changing weights; Nemotron is the model artifact those tools operate on.
 - **Concrete surface:** Access: NGC model registry, Hugging Face (`nvidia/Nemotron-*`), or as NIM containers from NGC I/O: Text prompt / chat messages / preference pair (for reward model) -> Generated text (autoregressive sampling) / reward score 0-5 (Nemotron Reward)
 - **Study first:** Nemotron family and model sizes: Nemotron-3 8B, Nemotron-4 15B, Nemotron-4-340B, Nemotron-Mini 4B
 - models at multiple sizes for different hardware budgets (single GPU to multi-GPU)
@@ -23,7 +23,7 @@ status: populated
 - Open model vs API trade-offs: open weights for customization/data privacy/predictable cost
 - NIM API for rAPId prototyping/elastic scaling/no GPU infra
 - self-hosted NIM as middle ground
-- **Real trap:** Confusing the model family itself with NIM serving, TensorRT-LLM optimization, or NeMo training tools.
+- **Common mix-up:** Confusing the model family itself with NIM serving, TensorRT-LLM optimization, or NeMo training tools.
 
 ## At a glance
 
@@ -62,11 +62,11 @@ NVIDIA's family of large language models, trained using the NeMo Framework. Nemo
 [NeMo Framework: trains Nemotron] → [NeMo Customizer: fine-tunes] → [NIM: serves] → [Agent consumes]
 ```
 
-## When it is the right answer
+## When it fits
 
-- Questions specifically naming Nemotron as the model family choice
+- Workloads specifically naming Nemotron as the model family choice
 - "Which NVIDIA model family is purpose-built for agentic AI workloads?"
-- When the question asks about NVIDIA's own LLM offering (vs. Llama, Mistral, etc.)
+- When the system needs NVIDIA's own LLM offering rather than Llama, Mistral, or another model family.
 
 ## Adjacent-service decision boundary
 
@@ -88,11 +88,11 @@ NVIDIA's family of large language models, trained using the NeMo Framework. Nemo
 - Available via NIM, NGC, or direct deployment
 - Designed for agentic AI workloads (instruction following, tool use, reasoning)
 
-## Example exam-style scenario
+## Study scenario
 
 > An enterprise wants to deploy an NVIDIA-native LLM for their agentic AI application using the NVIDIA platform stack. Which model family should they consider?
 >
-> **Answer**: Nemotron models — NVIDIA's purpose-built LLM family, available through NIM and optimized for the NVIDIA ecosystem.
+> **Model boundary**: Nemotron models — NVIDIA's purpose-built LLM family, available through NIM and optimized for the NVIDIA ecosystem.
 
 ## Mock signals
 
@@ -101,7 +101,7 @@ NVIDIA's family of large language models, trained using the NeMo Framework. Nemo
 
 ## Deep Dive Contents
 
-This deep dive covers the key concepts behind Nemotron models that the exam tests:
+This deep dive covers the key concepts behind Nemotron models that matter for the service boundary:
 
 - **[NVIDIA's Model Family]**: Nemotron vs Llama/Mistral/Qwen comparison, model sizes (4B to 340B), and integrated NVIDIA toolchain
 - **[Model Selection Criteria]**: size-quality-latency tradeoffs, dense vs MoE architecture, context length requirements, and license considerations
@@ -131,7 +131,7 @@ Nemotron models are designed to be **served via NIM**, **fine-tuned via NeMo Cus
                                                     → [NeMo Agent Toolkit orchestrates agents]
 ```
 
-If an exam question mentions "NVIDIA's end-to-end model development and deployment stack," this integration is the answer: train with NeMo Framework, evaluate with NeMo Evaluator, customize with NeMo Customizer, serve with NIM, optimize with TensorRT-LLM, orchestrate with NeMo Agent Toolkit — all centered on the Nemotron model family.
+If a study prompt mentions "NVIDIA's end-to-end model development and deployment stack," this integration is the boundary to learn: train with NeMo Framework, evaluate with NeMo Evaluator, customize with NeMo Customizer, serve with NIM, optimize with TensorRT-LLM, orchestrate with NeMo Agent Toolkit — all centered on the Nemotron model family.
 
 **Model sizes and architectures:**
 Nemotron has shipped in several configurations:
@@ -144,7 +144,7 @@ The trend: NVIDIA offers models at multiple sizes so customers can match the mod
 
 ### DEEP DIVE: Model Selection Criteria
 
-Choosing the right model for a given task is a core exam skill. The key criteria are:
+Choosing the right model for a given task is a core study skill. The key criteria are:
 
 **Size (number of parameters):**
 
@@ -177,11 +177,11 @@ Nemotron models are available under NVIDIA's Open Model License, which permits c
 - **Mistral:** Apache 2.0 (permissive, no restrictions).
 - **Qwen:** Custom license (commercial use permitted with registration for larger models).
 
-When an exam scenario involves "deploying in a regulated industry" or "proprietary data," license terms may be a deciding factor.
+When a project involves "deploying in a regulated industry" or "proprietary data," license terms may be a deciding factor.
 
 **When a model family matters vs when any capable model works:**
 - **Model family matters when:** The scenario specifies NVIDIA's integrated toolchain (NeMo, NIM, TensorRT-LLM), requires NVIDIA-specific features (e.g., reward modeling with Nemotron-4-340B-Reward), or mentions ecosystem compatibility.
-- **Any capable model works when:** The scenario is about generic LLM deployment, does not mention NVIDIA toolchain integration, is externally facing (customer chose their own model), or the question tests infrastructure rather than model selection.
+- **Any capable model works when:** The scenario is about generic LLM deployment, does not mention NVIDIA toolchain integration, is externally facing (customer chose their own model), or the prompt is really about infrastructure rather than model selection.
 
 ### DEEP DIVE: Specialized Models
 
@@ -225,11 +225,11 @@ The architectural insight: a single 340B model is suboptimal for all tasks. It w
 - **NeMo Customizer for domain adaptation:** Fine-tune base models for specific tasks.
 - **Agent Toolkit for model routing:** Route queries to the appropriate specialized model.
 
-For the exam: when a scenario involves "retrieval quality," think embedding + re-ranker models. When it involves "code generation," think code-specialized models. When it involves "document analysis with images," think multimodal models.
+For study: when a scenario involves "retrieval quality," think embedding + re-ranker models. When it involves "code generation," think code-specialized models. When it involves "document analysis with images," think multimodal models.
 
 ### DEEP DIVE: Open Model vs API Model Trade-offs
 
-NVIDIA occupies a unique position by offering **both** open weights Nemotron models and NIM-hosted API endpoints. Understanding the trade-offs is critical for exam scenarios.
+NVIDIA occupies a unique position by offering **both** open weights Nemotron models and NIM-hosted API endpoints. Understanding the trade-offs is critical for service selection.
 
 **Open weights models (self-hosted):**
 The model weights are downloadable and deployable on your own infrastructure.
@@ -258,7 +258,7 @@ NVIDIA offers Nemotron in both forms:
 - **Open weights on NGC/Hugging Face:** Download and self-host Nemotron models under the NVIDIA Open Model License.
 - **NIM microservices:** Deploy Nemotron models as optimized, containerized microservices on NVIDIA hardware — either self-hosted (in your data center) or on NVIDIA's cloud infrastructure.
 
-This dual approach means the exam can test **when to choose each path**:
+This dual approach means the study path should cover **when to choose each route**:
 
 - **Choose open weights when:** Customization is needed (fine-tuning on proprietary data), data cannot leave the premises (regulated industry), the workload is large and predictable (better ROI with owned GPUs), or offline operation is required.
 
@@ -266,7 +266,7 @@ This dual approach means the exam can test **when to choose each path**:
 
 - **Choose self-hosted NIM (containerized) when:** You want the benefits of NIM (optimized inference, standard API) but on your own infrastructure for data privacy or cost reasons. This is the middle ground: NVIDIA's optimization, your GPUs.
 
-The key exam insight: the question is rarely "open vs API" in isolation. It is about the **constraints** in the scenario:
+The key design insight: the choice is rarely "open vs API" in isolation. It is about the **constraints** in the scenario:
 - Is there a data residency requirement? Open weights or self-hosted NIM.
 - Is the workload steady and large? Self-hosting for cost efficiency.
 - Is this a prototype or experiment? API for fast iteration.
@@ -278,13 +278,13 @@ The key exam insight: the question is rarely "open vs API" in isolation. It is a
 - **Lifecycle:** Model / foundation
 - **Relevant exams:** GenAI LLMs, Agentic AI
 - **What it is:** Model family — pre-trained neural network weights (checkpoints) released by NVIDIA
-- **Use it when:** Use when the scenario asks for NVIDIA model weights or model families for reasoning, instruction following, reward modeling, or agent workflows.
+- **Use it when:** The system needs NVIDIA model weights or model families for reasoning, instruction following, reward modeling, or agent workflows.
 - **Do not use it when:** Choose NIM/Triton for serving, TensorRT-LLM for optimization, NeMo Evaluator for scoring, or NeMo Framework/Customizer for changing weights; Nemotron is the model artifact those tools operate on.
 - **Common trap:** Confusing the model family itself with NIM serving, TensorRT-LLM optimization, or NeMo training tools.
-- **Recognition clues:** An agent or application needs an NVIDIA reasoning, instruction, embedding, or reward model family as the base model.
+- **Scenario signal:** An agent or application needs an NVIDIA reasoning, instruction, embedding, or reward model family as the base model.
 ### Study notes
 - Place **Nemotron models** at **Model / foundation**: NVIDIA's pre-trained model weights — download from Hugging Face/NGC, serve via NIM (production) or load via transformers (experimentation).
-- Boundary cue: choose it when the scenario asks for NVIDIA model weights or model families for reasoning, instruction following, reward modeling, or agent workflows. Adjacent-service cue: not as the serving stack, optimizer, evaluator, or training framework; models are the artifact those tools operate on.
+- Boundary cue: use it when the system needs NVIDIA model weights or model families for reasoning, instruction following, reward modeling, or agent workflows. Neighboring-service cue: not as the serving stack, optimizer, evaluator, or training framework; models are the artifact those tools operate on.
 ### Must know
 - **Nemotron family and model sizes**: Nemotron-3 8B, Nemotron-4 15B, Nemotron-4-340B, Nemotron-Mini 4B; models at multiple sizes for different hardware budgets (single GPU to multi-GPU)
 - **Model selection criteria**: quality vs latency vs cost tradeoff; dense (all params active per token) vs MoE (subset active per token); per-model context length; license compatibility
@@ -298,14 +298,14 @@ The key exam insight: the question is rarely "open vs API" in isolation. It is a
 - **Open weights vs API decision** → scenario describes data residency requirements, workload predictability, or customization needs; open weights for regulated/offline/customization use cases, NIM API for prototyping/unpredictable/no-GPU scenarios
 - **Dense vs MoE architecture trap** → scenario mentions model capacity without proportional compute cost but also notes memory constraints; MoE requires loading all experts into GPU memory despite lower per-token FLOPs
 ### Hands-on checks
-- Write one scenario where this service is correct and one where it is a tempting but wrong distractor.
-## Exam tips from mocks
-- Mock-style questions test whether **Nemotron models** matches **Model / foundation**, not whether the product name sounds familiar.
-- Boundary cue: choose it when the scenario asks for NVIDIA model weights or model families for reasoning, instruction following, reward modeling, or agent workflows.
-- Adjacent-service cue: not as the serving stack, optimizer, evaluator, or training framework; models are the artifact those tools operate on.
+- Draw one build situation where Nemotron is the model-family choice, then change one constraint so NIM, TensorRT-LLM, NeMo Evaluator, or NeMo Customizer becomes the better fit.
+## Study tips from practice questions
+- Practice questions usually check whether **Nemotron models** matches **Model / foundation**, not whether the product name sounds familiar.
+- Boundary cue: use it when the system needs NVIDIA model weights or model families for reasoning, instruction following, reward modeling, or agent workflows.
+- Neighboring-service cue: not as the serving stack, optimizer, evaluator, or training framework; models are the artifact those tools operate on.
 - The common trap pattern is: Confusing the model family itself with NIM serving, TensorRT-LLM optimization, or NeMo training tools.
-- If it appears only as a distractor, decide by the required lifecycle phase before choosing a product name.
-- Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where it is the wrong tool.
+- If it appears as a nearby option, decide by the required lifecycle phase before choosing a product name.
+- Do not memorize question wording. Memorize the role boundary, the failure mode it solves, and the cases where a neighboring service is the better tool.
 <details>
 <summary>Mock question links (click to expand)</summary>
 
@@ -319,6 +319,6 @@ The key exam insight: the question is rarely "open vs API" in isolation. It is a
 
 ## Concept boundary
 
-This page should stay product-specific: what the NVIDIA component is, where it sits in the NVIDIA stack, how to choose it on an NVIDIA exam, and which neighboring NVIDIA services are common distractors. Portable algorithms, lifecycle patterns, and vendor-neutral architecture belong in the Agentic AI General Study pages, with this NVIDIA service referenced as one implementation example.
+This page should stay product-specific: what the NVIDIA component is, where it sits in the NVIDIA stack, how to choose it for NVIDIA-specific study, and which neighboring NVIDIA services are easy to confuse. Portable algorithms, lifecycle patterns, and vendor-neutral architecture belong in the Agentic AI General Study pages, with this NVIDIA service referenced as one implementation example.
 
 <!-- STUDY_ENRICHMENT_END -->

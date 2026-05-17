@@ -6,19 +6,6 @@ source_lens: general-study
 
 # Cost/Latency Optimizer
 
-## Actual implementation / How you use it
-
-```yaml
-optimize:
-  inspect: [route, queue, retrieval, rerank, prefill, decode, tools, guardrails]
-  levers: [cache, route_smaller_model, trim_context, batch, quantize, parallelize_reads]
-  gates: [task_success, groundedness, safety, p95_latency, cost_per_task]
-```
-
-| Input | Optimizer decision | Output |
-|---|---|---|
-| Stage-level trace and quality metrics | Pick the cheapest latency fix that preserves quality | Lower p95/p99 or cost per task with regression evidence |
-
 ## What to study first
 
 - **Core idea:** You are building the measurement-driven loop that reduces latency and cost without breaking quality or safety.
@@ -62,6 +49,8 @@ You are building the measurement-driven loop that reduces latency and cost witho
 - TensorRT-LLM/NIM profiles optimize LLM serving with kernel fusion, in-flight batching, paged KV cache, and precision choices.
 - Caching must respect permissions, version, and freshness.
 - Routing simple tasks to smaller models can cut cost.
+- Prefix caching helps when many requests share the same long system/policy prefix; it reduces repeated prefill work but does not replace context trimming or retrieval quality.
+- Cascade routing helps when workload difficulty is bimodal; a small model handles easy cases and escalates uncertain or hard cases to a larger model.
 - Nsight Systems answers "where is the bottleneck"; Nsight Compute answers "why is this kernel slow."
 
 ## Decision Guide
@@ -71,7 +60,9 @@ You are building the measurement-driven loop that reduces latency and cost witho
 | "long context slow" | prefill/context reduction/KV cache | bigger model |
 | "output generation slow" | decode/token budget/model size | chunking only |
 | "same query repeated" | permission/version-aware cache | cross-tenant cache |
+| "same long system prefix every request" | prefix caching / prompt-prefix reuse | lowering max output tokens as a TTFT fix |
 | "simple tasks use premium model" | routing to smaller model | one model for all |
+| "easy and hard workload split" | cascade routing with confidence thresholds | running all models on every request |
 | "GPU idle but request slow" | tools/retrieval/queue tracing | adding GPUs |
 | "GPU busy but low tokens/sec" | TensorRT-LLM profile, batching, KV cache, kernel analysis | prompt rewrite only |
 | "system-level latency mystery" | Nsight Systems / distributed trace first | Nsight Compute as first step |
@@ -115,6 +106,7 @@ Do not optimize the model first if traces show retrieval, tool APIs, queueing, o
 | Symptom | Likely layer | Better first move |
 |---|---|---|
 | Slow first token | Prefill/context | Reduce prompt, retrieved chunks, history |
+| Slow first token with stable shared prefix | Repeated prefill | Prefix caching and prompt-prefix reuse |
 | Slow long answer | Decode | Output cap, batching, TensorRT-LLM, quantization |
 | High p99 with good average | Queueing/tool tail latency | Span tracing, route limits, timeout budget |
 | GPU low utilization | Serving scheduler | Dynamic batching or capacity tuning |
@@ -153,7 +145,9 @@ For interactive UX, p95/p99 TTFT and inter-token latency matter more than averag
 Cost optimization is not only smaller models:
 
 - Route simple tasks to small models and hard tasks to reasoning models.
+- Use cascade routing when low-risk/simple traffic dominates, but define confidence and escalation thresholds so hard cases still reach the stronger model.
 - Reduce prompt and retrieved context before buying longer context.
+- Use prefix caching for stable system prompts, policy blocks, or few-shot examples shared across requests; scope caches by model, prompt version, and policy version.
 - Tune retrieval top-k, reranker candidate count, and output token caps.
 - Use caching only when tenant, document version, prompt version, and policy make reuse safe.
 - Validate every precision, batching, and fallback change against quality and safety evals.
@@ -169,6 +163,7 @@ Cost optimization is not only smaller models:
 | Dynamic batching | Group requests to improve GPU throughput | Tune batch windows so p99 does not suffer |
 | Quantization | Lower numerical precision for weights/activations | Eval quality, calibration, and edge cases |
 | Cache hit | Reused safe result or prefix | Scope by tenant, policy, model, prompt, and source version |
+| Cascade route | Small model handles easy cases, larger model handles low-confidence/hard cases | Tune threshold with eval and monitor route drift |
 
 If the scenario says "GPU is idle but the user waits," suspect queueing, retrieval, tools, network, or orchestration before kernel optimization. If it says "GPU is busy with low tokens/sec," then serving profile, batching, precision, and kernel analysis become more likely.
 

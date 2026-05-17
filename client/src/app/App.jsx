@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { nvidiaAcronymExpansions, nvidiaServices, serviceFilters, studySections } from "../data/study-services.js";
+import { generalBuilderPaths, generalConceptIndex, nvidiaAcronymExpansions, nvidiaServices, serviceFilters, studySections } from "../data/study-services.js";
 
 const h = React.createElement;
 const MISSING_LLM_KEY_MESSAGE = "Coach chat needs an LLM API key. Create .env from .env.example, set LLM_API_KEY, then restart the dev server.";
@@ -116,6 +116,19 @@ function scrollToTop() {
   window.requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: "instant" }));
 }
 
+function scrollToElementId(id, block = "center") {
+  if (!id) return;
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block });
+    });
+  });
+}
+
+function scrollToStudyPanel() {
+  scrollToElementId("study-mode-panel", "start");
+}
+
 function uniqueQuestionList(questions) {
   return [...new Map((questions || []).map((question) => [question.id, question])).values()];
 }
@@ -222,11 +235,11 @@ function questionsForSource(questions, sourceFilter = "all") {
 function mixedSourceProfile(examLabelValue) {
   if (examLabelValue === "Agentic AI") {
     return {
-      conceptShare: 0.72,
-      conceptPercent: 72,
-      nvidiaPercent: 28,
-      label: "AAI PDF-shaped mix",
-      description: "Mostly agentic-AI concepts with enough NVIDIA platform practice to cover NeMo, NIM, Guardrails, deployment, and operations."
+      conceptShare: 0.93,
+      conceptPercent: 93,
+      nvidiaPercent: 7,
+      label: "NCP-AAI blueprint mix",
+      description: "Follows the current Agentic AI blueprint: mostly agent design, development, evaluation, deployment, memory, knowledge, safety, operations, and oversight, with a dedicated NVIDIA Platform Implementation slice."
     };
   }
   if (examLabelValue === "GenAI LLMs") {
@@ -238,6 +251,15 @@ function mixedSourceProfile(examLabelValue) {
       description: "General LLM architecture, optimization, tuning, and evaluation balanced with NVIDIA GPU and deployment practice."
     };
   }
+  if (examLabelValue === "Agentic AI General") {
+    return {
+      conceptShare: 0.3,
+      conceptPercent: 30,
+      nvidiaPercent: 70,
+      label: "General study coverage mix",
+      description: "Balances the saved baseline with generated scenario questions across the builder-path study cards."
+    };
+  }
   return {
     conceptShare: 0.5,
     conceptPercent: 50,
@@ -245,6 +267,79 @@ function mixedSourceProfile(examLabelValue) {
     label: "Balanced mix",
     description: "A balanced split between broad concepts and implementation-specific questions."
   };
+}
+
+function practiceScopeConfig(exam) {
+  const label = examLabel(exam);
+  if (label === "Agentic AI") {
+    return {
+      isSecondary: (question) => question.domain === "NVIDIA Platform Implementation",
+      primaryLabel: "Exam sections",
+      secondaryLabel: "NVIDIA Platform Implementation",
+      mixedLabel: "Blueprint-weighted mix",
+      primaryMatchLabel: "exam-section",
+      secondaryMatchLabel: "platform-section",
+      primaryCountLabel: "exam-section question",
+      secondaryCountLabel: "platform question",
+      primaryPercentLabel: "other sections",
+      secondaryPercentLabel: "NVIDIA platform",
+      primaryActionLabel: "Core exam sections",
+      secondaryActionLabel: "NVIDIA platform section",
+      noSecondaryLabel: "No NVIDIA Platform Implementation questions yet",
+      panelDescription: "Pick from fixed mock tests, current exam sections, or the dedicated NVIDIA Platform Implementation section.",
+      focusDescription: "Choose an exam section, concept-map lane, NVIDIA service boundary, or keyword, then pick source and focus for the drill.",
+      sourceTitle: "Question focus",
+      sourceHint: "Current blueprint sections vs the dedicated NVIDIA platform section",
+      keywordPlaceholder: "ReAct, tool schemas, memory, RAG, guardrails..."
+    };
+  }
+  if (label === "Agentic AI General") {
+    return {
+      isSecondary: (question) => practiceQuestionSource(question) === "generated",
+      primaryLabel: "Saved baseline",
+      secondaryLabel: "Generated scenarios",
+      mixedLabel: "Mixed scenarios",
+      primaryMatchLabel: "saved-baseline",
+      secondaryMatchLabel: "generated-scenario",
+      primaryCountLabel: "saved question",
+      secondaryCountLabel: "generated question",
+      primaryPercentLabel: "saved baseline",
+      secondaryPercentLabel: "generated scenarios",
+      primaryActionLabel: "Saved baseline",
+      secondaryActionLabel: "Generated scenarios",
+      noSecondaryLabel: "No generated scenarios yet",
+      panelDescription: "Pick the next best drill or generate new scenario questions.",
+      focusDescription: "Choose a blueprint section, study playbook, lifecycle path, or keyword, then pick source and scenario set for the drill.",
+      sourceTitle: "Question set",
+      sourceHint: "Saved/original questions vs generated scenario questions",
+      keywordPlaceholder: "RAG, policy controls, model routing..."
+    };
+  }
+  return {
+    isSecondary: (question) => question.questionScope === "nvidia_specific",
+    primaryLabel: "Certificate concepts",
+    secondaryLabel: "NVIDIA-specific",
+    mixedLabel: "Recommended mix",
+    primaryMatchLabel: "certificate-concept",
+    secondaryMatchLabel: "NVIDIA-specific",
+    primaryCountLabel: "concept question",
+    secondaryCountLabel: "NVIDIA-specific question",
+    primaryPercentLabel: "certificate concepts",
+    secondaryPercentLabel: "NVIDIA-specific",
+    primaryActionLabel: "Concepts only",
+    secondaryActionLabel: "NVIDIA platform scope",
+    noSecondaryLabel: "No NVIDIA-specific questions yet",
+    panelDescription: "Pick from fixed mock tests, NVIDIA-specific questions, or broader certificate concept questions.",
+    focusDescription: "Choose an exam section, lifecycle path, NVIDIA service, or keyword, then pick source and scope for the drill.",
+    sourceTitle: "Question scope",
+    sourceHint: "General concepts vs NVIDIA-specific",
+    keywordPlaceholder: "TensorRT-LLM, NIM, Retriever, LoRA..."
+  };
+}
+
+function countPhrase(count, noun) {
+  const clean = String(noun || "question");
+  return `${count} ${clean}${count === 1 || clean.endsWith("s") ? "" : "s"}`;
 }
 
 function buildBalancedMixedQuestions(conceptQuestions, nvidiaQuestions, count, conceptShare = 0.5) {
@@ -424,13 +519,13 @@ function brandingForExam(exam) {
       brand: "GENERAL",
       chooserLabel: "Study track",
       resourceLabel: "Reference page",
-      suiteLabel: "Lifecycle map",
-      serviceLabel: "Study Playbooks",
-      studyDescription: "Study the vendor-neutral AI lifecycle by real build paths, then open playbooks that explain what to build, which concepts matter, and where products fit as examples.",
+      suiteLabel: "Builder paths",
+      serviceLabel: "Study cards",
+      studyDescription: "Study vendor-neutral AI systems by the builder path: what you are trying to build, which decision comes next, and where platform examples fit.",
       studyCardCopy: {
-        study: "Study the agentic AI lifecycle map and vendor-neutral playbooks as an architecture reference.",
-        lifecycle: "Lifecycle map",
-        services: "Study Playbooks",
+        study: "Study agentic AI by builder paths and decision cards.",
+        lifecycle: "Builder paths",
+        services: "Study cards",
         suite: "Cross-vendor patterns",
         quiz: "Banked quick quizzes from local questions"
       }
@@ -458,12 +553,12 @@ function brandingForExam(exam) {
       brand: "NVIDIA",
       chooserLabel: "Certification",
       resourceLabel: "Official NVIDIA page",
-      suiteLabel: "NVIDIA suite",
-      serviceLabel: "NVIDIA service",
-      studyDescription: "Study the official Agentic AI exam concept map, NVIDIA service boundaries, or blueprint sections. Quick quiz pulls from the local bank.",
+      suiteLabel: "Platform map",
+      serviceLabel: "NVIDIA services",
+      studyDescription: "Study the official Agentic AI exam sections in handbook order, then open NVIDIA service boundaries only when product wording matters. Quick quiz pulls from the local bank.",
       studyCardCopy: {
-        study: "Study the official-section concept map first, then open NVIDIA services only when product wording matters.",
-        lifecycle: "Exam Concept Map",
+        study: "Study official exam sections first, then open NVIDIA services only when product wording matters.",
+        lifecycle: "Exam sections",
         services: "NVIDIA service boundaries",
         suite: "Agentic AI concepts in official exam order",
         quiz: "Banked quick quizzes from section questions"
@@ -474,8 +569,8 @@ function brandingForExam(exam) {
     brand: "NVIDIA",
     chooserLabel: "Certification",
     resourceLabel: "Official NVIDIA page",
-    suiteLabel: "NVIDIA suite",
-    serviceLabel: "NVIDIA service",
+    suiteLabel: "Platform map",
+    serviceLabel: "NVIDIA services",
     studyDescription: "Study by lifecycle order, grouped NVIDIA services, or blueprint section. Quick quiz pulls from the local bank.",
     studyCardCopy: {
       study: "Study exam sections and NVIDIA services before taking questions.",
@@ -722,7 +817,7 @@ function App() {
       const ids = new Set(result.autoApprovedIds || []);
       const questions = uniqueQuestionList(refreshed.questions.filter((q) => ids.has(q.id))).map(shuffleQuestionChoices);
       if (!questions.length) {
-        setGenerationStatus({ state: 'warn', message: 'Questions generated but not found in bank. Try Practice → NVIDIA-specific questions.' });
+        setGenerationStatus({ state: 'warn', message: 'Questions generated but not found in bank. Try Practice → focused questions.' });
         return;
       }
       resetSessionState({ keepGeneration: true });
@@ -768,7 +863,7 @@ function App() {
       const ids = new Set(result.autoApprovedIds || []);
       const questions = uniqueQuestionList(refreshed.questions.filter((q) => ids.has(q.id))).map(shuffleQuestionChoices);
       if (!questions.length) {
-        setGenerationStatus({ state: 'warn', message: 'Questions generated but not found in bank. Try Practice → NVIDIA-specific questions.' });
+        setGenerationStatus({ state: 'warn', message: 'Questions generated but not found in bank. Try Practice → focused questions.' });
         return;
       }
       resetSessionState({ keepGeneration: true });
@@ -1208,10 +1303,13 @@ function App() {
   const adaptivePosition = isAdaptivePractice ? `${sessionQuestions.length}/${ADAPTIVE_PRACTICE_TARGET}` : null;
   const showHeaderStatus = !(mode === "exam" && sessionKind === "practice");
   const branding = brandingForExam(exam);
+  const certificationCodeClass = exam.certification?.code
+    ? `cert-code-${exam.certification.code.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`
+    : "";
 
   return h(
     "main",
-    { className: `exam-shell theme-${themeForCertification(exam)}` },
+    { className: `exam-shell theme-${themeForCertification(exam)} ${exam.slug ? `cert-${exam.slug}` : ""} ${certificationCodeClass}` },
     h(
       "header",
       { className: "exam-header" },
@@ -1346,9 +1444,9 @@ function flowLabel(flow, mockDef) {
     case "practice-section": return "Certificate Concept Practice";
     case "practice-adaptive": return "Guided Practice";
     case "practice-coach-bank": return "Guided Certificate Concepts";
-    case "practice-coach-generated": return "Guided NVIDIA-Specific";
+    case "practice-coach-generated": return "Guided Focus Set";
     case "practice-coach-mixed": return "Guided Recommended Mix";
-    case "practice-generated": return "NVIDIA-Specific Practice";
+    case "practice-generated": return "Focused Practice";
     case "practice-mixed": return "Mixed Practice";
     case "practice-mock": return mockDef ? `Mock Review — ${mockDef.name}` : "Mock Review";
     case "test-mock-1": return mockDef?.name || "Mock Test";
@@ -1477,12 +1575,20 @@ function BlueprintPanel({ exam, domainStats, selectedCertSlug, compact = false, 
 function TrackChooser({ track, setTrack, mockSummary, exam, branding }) {
   const hasQuestionBank = exam.questions.length > 0;
   const isGenericStudy = exam.certification.code === "AAI-GEN";
+  if (track === "study") {
+    return h("div", { className: "track-chooser track-chooser-compact", "aria-label": "Session mode" },
+      h("span", null, "Mode"),
+      h("button", { type: "button", className: "active", onClick: () => setTrack("study") }, "Study"),
+      h("button", { type: "button", onClick: () => setTrack("practice") }, "Practice"),
+      isGenericStudy ? null : h("button", { type: "button", onClick: () => setTrack("test") }, "Mock Tests")
+    );
+  }
   return h(
     "div",
     { className: "track-chooser" },
     h("h2", null, "Choose your session"),
     h("p", { className: "muted" }, isGenericStudy
-      ? "Use Study for the lifecycle map and Practice for short guided drills."
+      ? "Use Study for builder paths and Practice for short guided drills."
       : "Practice = short shuffled study sets with explanations. Test = exam-style under time."),
     h(
       "div",
@@ -1493,7 +1599,7 @@ function TrackChooser({ track, setTrack, mockSummary, exam, branding }) {
         h("strong", null, "Study"),
         h("p", null, branding.studyCardCopy.study),
         h("ul", null,
-          h("li", null, isGenericStudy ? "Lifecycle map for agentic AI systems" : "Blueprint sections for the selected certification"),
+          h("li", null, isGenericStudy ? "Builder paths for agentic AI systems" : "Blueprint sections for the selected certification"),
           h("li", null, branding.studyCardCopy.services),
           h("li", null, isGenericStudy ? "Curate data, select models, build agents, serve, evaluate" : branding.studyCardCopy.suite),
           h("li", null, branding.studyCardCopy.quiz)
@@ -1635,9 +1741,9 @@ const LIFECYCLE_FLOWS = {
       "Operate, govern, and improve": "After release, observe behavior, evaluate regressions, optimize cost/latency, and turn feedback into fixes."
     },
     stages: [
-      { id: "gen-agent-architecture", lane: "Build agent/RAG application", context: "Architecture", name: "Choose workflow, RAG, or ReAct agent", tools: ["Agent Orchestration Runtime", "Prompt and Context Design"], note: "Start with the smallest runtime: direct answer, deterministic workflow, RAG workflow, bounded ReAct loop, router, or supervisor." },
+      { id: "gen-agent-architecture", lane: "Build agent/RAG application", context: "Decision rule", name: "Decide: fixed workflow, RAG, or ReAct loop", tools: ["Agent Orchestration Runtime", "Prompt and Context Design"], note: "Study the split: fixed workflow for known/auditable steps, RAG for source-grounded answers, ReAct when tool observations decide the next action." },
       { id: "gen-agent-ingest", lane: "Build agent/RAG application", context: "Knowledge prep", name: "Ingest private knowledge", tools: ["Knowledge Ingestion and Permission Pipeline"], note: "Extract, chunk, enrich metadata, preserve ACLs, source lineage, retention rules" },
-      { id: "gen-agent-rag", lane: "Build agent/RAG application", context: "Grounding", name: "Build retrieval path", tools: ["Knowledge and RAG Pipeline"], note: "Search, filter, rerank, assemble context, cite sources, evaluate groundedness" },
+      { id: "gen-agent-rag", lane: "Build agent/RAG application", context: "Grounding", name: "Build retrieval path", tools: ["Knowledge and RAG Pipeline"], note: "Search, filter, rerank, assemble context, cite sources, evaluate groundedness and anti-hallucination measures" },
       { id: "gen-agent-react", lane: "Build agent/RAG application", context: "ReAct loop", name: "Use ReAct only for dynamic tool loops", tools: ["Agent Orchestration Runtime", "Tool Gateway and Function Runtime"], note: "ReAct = Reason -> Act -> Observe -> decide next step. Use it when tool observations change the path; avoid it for fixed audited workflows." },
       { id: "gen-agent-workflow", lane: "Build agent/RAG application", context: "Workflow", name: "Orchestrate tools and memory", tools: ["Agent Orchestration Runtime", "Tool Gateway and Function Runtime", "Memory Store"], note: "State, routing, tool schemas, permissions, idempotency, memory scopes" },
       { id: "gen-agent-policy", lane: "Build agent/RAG application", context: "Runtime safety", name: "Apply policy controls", tools: ["Policy and Guardrails Layer"], note: "Input, retrieved content, tool proposal, tool result, and output checks" },
@@ -1671,80 +1777,69 @@ const LIFECYCLE_FLOWS = {
 const STUDY_ROUTE_JUMP_TARGETS = {
   "Agent Lifecycle and Architecture": {
     certSlug: "agentic_ai_general_study",
-    studyView: "lifecycle",
-    stageId: "gen-agent-architecture",
-    serviceName: "Agent Orchestration Runtime",
-    serviceFilter: "Build agent/RAG application"
+    studyView: "builder",
+    builderPathId: "build-tool-using-agent",
+    cardId: "choose-workflow-or-agent"
   },
   "Data Curation and Knowledge Grounding": {
     certSlug: "agentic_ai_general_study",
-    studyView: "lifecycle",
-    stageId: "gen-agent-rag",
-    serviceName: "Knowledge and RAG Pipeline",
-    serviceFilter: "Build agent/RAG application"
+    studyView: "builder",
+    builderPathId: "build-rag-application",
+    cardId: "define-knowledge-need"
   },
   "Model Selection and Customization": {
     certSlug: "agentic_ai_general_study",
-    studyView: "lifecycle",
-    stageId: "gen-api-select",
-    serviceName: "Model Selection and Registry",
-    serviceFilter: "Use existing model or API"
+    studyView: "builder",
+    builderPathId: "use-existing-model-or-api",
+    cardId: "choose-model-or-api"
   },
   "Tooling, Orchestration, and Memory": {
     certSlug: "agentic_ai_general_study",
-    studyView: "lifecycle",
-    stageId: "gen-agent-workflow",
-    serviceName: "Tool Gateway and Function Runtime",
-    serviceFilter: "Build agent/RAG application"
+    studyView: "builder",
+    builderPathId: "build-tool-using-agent",
+    cardId: "design-tool-contracts"
   },
   "Inference Serving and Deployment": {
     certSlug: "agentic_ai_general_study",
-    studyView: "lifecycle",
-    stageId: "gen-api-serve",
-    serviceName: "Model Inference Endpoint",
-    serviceFilter: "Use existing model or API"
+    studyView: "builder",
+    builderPathId: "deploy-and-serve-ai-system",
+    cardId: "choose-serving-shape"
   },
   "Latency, Throughput, and Traffic Control": {
     certSlug: "agentic_ai_general_study",
-    studyView: "lifecycle",
-    stageId: "gen-ops-scale-users",
-    serviceName: "Latency, Throughput, and Traffic Control",
-    serviceFilter: "Operate, govern, and improve"
+    studyView: "builder",
+    builderPathId: "deploy-and-serve-ai-system",
+    cardId: "handle-latency-and-throughput"
   },
   "Evaluation and Safety": {
     certSlug: "agentic_ai_general_study",
-    studyView: "lifecycle",
-    stageId: "gen-agent-eval",
-    serviceName: "Evaluation and Regression Harness",
-    serviceFilter: "Build agent/RAG application"
+    studyView: "builder",
+    builderPathId: "build-tool-using-agent",
+    cardId: "evaluate-trajectory"
   },
   "Observability, Operations, and Cost": {
     certSlug: "agentic_ai_general_study",
-    studyView: "lifecycle",
-    stageId: "gen-ops-observe",
-    serviceName: "Observability and Trace Monitor",
-    serviceFilter: "Operate, govern, and improve"
+    studyView: "builder",
+    builderPathId: "run-evaluate-and-improve",
+    cardId: "trace-every-run"
   },
   "Human Oversight and Governance": {
     certSlug: "agentic_ai_general_study",
-    studyView: "lifecycle",
-    stageId: "gen-ops-review",
-    serviceName: "Human Review and Governance Console",
-    serviceFilter: "Operate, govern, and improve"
+    studyView: "builder",
+    builderPathId: "run-evaluate-and-improve",
+    cardId: "review-human-risk"
   },
   "Prompt and Context Design": {
     certSlug: "agentic_ai_general_study",
-    studyView: "services",
-    stageId: "gen-api-prompt",
-    serviceName: "Prompt and Context Design",
-    serviceFilter: "Use existing model or API"
+    studyView: "builder",
+    builderPathId: "use-existing-model-or-api",
+    cardId: "write-prompt-contract"
   },
   "Policy and Guardrails Layer": {
     certSlug: "agentic_ai_general_study",
-    studyView: "services",
-    stageId: "gen-agent-policy",
-    serviceName: "Policy and Guardrails Layer",
-    serviceFilter: "Build agent/RAG application"
+    studyView: "builder",
+    builderPathId: "build-tool-using-agent",
+    cardId: "apply-runtime-safety"
   },
   "NVIDIA Platform Implementation": {
     certSlug: "agentic_ai_professional",
@@ -2110,6 +2205,1236 @@ function lifecycleStageDetailFor(examLabel, stageKey) {
   return null;
 }
 
+const STUDY_CONCEPT_LOOKUP = {
+  "Agentic AI": [
+    {
+      id: "aai-react-vs-workflow",
+      title: "ReAct vs workflow decision rule",
+      route: "Agent Architecture and Design / Agent vs workflow card",
+      summary: "Read this to learn the exam rule: ReAct is for dynamic tool-observation loops; workflow/graph is for fixed, auditable steps; RAG is for grounding answers in documents.",
+      keywords: ["react", "re act", "reason act", "workflow", "graph", "agent vs workflow", "deterministic workflow", "bounded agent", "dynamic tools"],
+      target: { certSlug: "agentic_ai_professional", studyView: "lifecycle", stageId: "aai-arch-boundary", sectionName: "Agent Architecture and Design", sectionExam: "Agentic AI" },
+      lookFor: ["ReAct = next action depends on observation", "Workflow/graph = fixed path, audit, recovery", "RAG = retrieve evidence before answering"],
+      also: ["Pick the reasoning pattern", "Use ReAct with stopping criteria", "General Study: Agent Lifecycle and Architecture"],
+      featured: true
+    },
+    {
+      id: "aai-react-loop",
+      title: "ReAct loop and stopping criteria",
+      route: "Study handbook -> Use ReAct with stopping criteria",
+      summary: "Use this when the next step depends on tool observations and you need budgets, loop detection, stop conditions, or escalation rules.",
+      keywords: ["react", "reason action observation", "thought action observation", "tool loop", "stop condition", "max iteration", "looping agent", "observation"],
+      target: { certSlug: "agentic_ai_professional", studyView: "lifecycle", stageId: "aai-cog-react", sectionName: "Cognition, Planning, and Memory", sectionExam: "Agentic AI" },
+      also: ["Agent Architecture and Design", "Agent Development"],
+      featured: true
+    },
+    {
+      id: "aai-stateful-stateless",
+      title: "Stateless vs stateful orchestration",
+      route: "Exam Sections -> Agent Development",
+      summary: "Use this for checkpoints, recovery after failures, idempotency, retries, and the difference between recomputing a request and resuming a workflow.",
+      keywords: ["stateful", "stateless", "checkpoint", "resume", "recovery", "idempotency", "retry", "workflow breaks", "step fails", "long running"],
+      target: { certSlug: "agentic_ai_professional", studyView: "sections", sectionName: "Agent Development", sectionExam: "Agentic AI" },
+      also: ["Parallelize safely and recover", "Own state and handoffs"],
+      featured: true
+    },
+    {
+      id: "aai-tool-contracts-mcp",
+      title: "Tool schemas, guided decoding, and MCP",
+      route: "Study handbook -> Wire tool/API contracts",
+      summary: "Use this when questions mention malformed tool arguments, duplicated wrappers, JSON schemas, function calling, permissions, or MCP servers.",
+      keywords: ["tool schema", "json schema", "guided decoding", "function calling", "mcp", "tool server", "wrong argument type", "permissions", "api wrapper"],
+      target: { certSlug: "agentic_ai_professional", studyView: "lifecycle", stageId: "aai-dev-tool-contracts", sectionName: "Agent Development", sectionExam: "Agentic AI" },
+      also: ["Tooling, Orchestration, and Memory", "Tool Gateway and Function Runtime"],
+      featured: true
+    },
+    {
+      id: "aai-rag-retrieval",
+      title: "RAG, query decomposition, and hybrid retrieval",
+      route: "Study handbook -> Build the retrieval path",
+      summary: "Use this for compare-A-vs-B questions, BM25 plus vector search, RRF, reranking, citations, ACLs, freshness, and grounding.",
+      keywords: ["rag", "retrieval", "query decomposition", "compare", "hybrid search", "bm25", "rrf", "rerank", "cross encoder", "citations", "acl"],
+      target: { certSlug: "agentic_ai_professional", studyView: "lifecycle", stageId: "aai-knowledge-rag", sectionName: "Knowledge Integration and Data Handling", sectionExam: "Agentic AI" },
+      also: ["Data Curation and Knowledge Grounding", "Knowledge and RAG Pipeline"],
+      featured: true
+    },
+    {
+      id: "aai-nim-triton-tensorrt",
+      title: "NIM vs Triton vs TensorRT-LLM",
+      route: "Study handbook -> Map serving and optimization tools",
+      summary: "Use this for product-boundary questions about packaged inference APIs, multi-model serving, dynamic batching, KV cache, and LLM engine optimization.",
+      keywords: ["nim", "triton", "tensorrt", "tensorrt-llm", "dynamic batching", "inflight batching", "prefix caching", "kv cache", "serving", "low latency"],
+      target: { certSlug: "agentic_ai_professional", studyView: "lifecycle", stageId: "aai-platform-serving", sectionName: "NVIDIA Platform Implementation", sectionExam: "Agentic AI" },
+      also: ["NVIDIA service boundaries", "Deployment and Scaling"],
+      featured: true
+    },
+    {
+      id: "aai-guardrails-policy",
+      title: "Guardrails vs prompts or temperature",
+      route: "Study handbook -> Layer safety controls",
+      summary: "Use this when the stem asks about topic boundaries, jailbreaks, PII, tool policy, input rails, dialog rails, output rails, or runtime enforcement.",
+      keywords: ["guardrails", "rails", "input rail", "dialog rail", "output rail", "temperature", "prompt injection", "policy", "pii", "jailbreak", "compliance"],
+      target: { certSlug: "agentic_ai_professional", studyView: "lifecycle", stageId: "aai-safety-layered", sectionName: "Safety, Ethics, and Compliance", sectionExam: "Agentic AI" },
+      also: ["Policy and Guardrails Layer", "NeMo Guardrails"],
+      featured: false
+    },
+    {
+      id: "aai-eval-monitoring",
+      title: "Trajectory eval vs monitoring",
+      route: "Study handbook -> Score the whole trajectory",
+      summary: "Use this for final-answer accuracy traps, golden sets, LLM-as-judge, human review, data drift, trace replay, and production regressions.",
+      keywords: ["evaluation", "monitoring", "trajectory", "golden set", "llm judge", "human review", "data drift", "trace", "final answer accuracy", "regression"],
+      target: { certSlug: "agentic_ai_professional", studyView: "lifecycle", stageId: "aai-eval-trajectory", sectionName: "Evaluation and Tuning", sectionExam: "Agentic AI" },
+      also: ["Run, Monitor, and Maintain", "Evaluation and Safety"],
+      featured: false
+    },
+    {
+      id: "aai-human-approval",
+      title: "Human approval and oversight",
+      route: "Study handbook -> Choose HITL vs HOTL",
+      summary: "Use this for approval gates, review queues, high-impact actions, human-in-the-loop, human-on-the-loop, and reviewer evidence cards.",
+      keywords: ["human", "hitl", "hotl", "approval", "approval gate", "oversight", "review queue", "high risk", "high impact", "escalation"],
+      target: { certSlug: "agentic_ai_professional", studyView: "lifecycle", stageId: "aai-human-routing", sectionName: "Human-AI Interaction and Oversight", sectionExam: "Agentic AI" },
+      also: ["Human Oversight and Governance", "Safety, Ethics, and Compliance"],
+      featured: false
+    }
+  ],
+  "GenAI LLMs": [
+    {
+      id: "genl-kv-cache-optimization",
+      title: "KV cache, batching, and TensorRT-LLM",
+      route: "Study handbook -> Optimize generation runtime",
+      summary: "Use this for latency, throughput, memory, TTFT, batching, quantization, speculative decoding, and KV-cache pressure.",
+      keywords: ["kv cache", "batching", "continuous batching", "inflight batching", "tensorrt", "tensorrt-llm", "quantization", "ttft", "throughput", "latency"],
+      target: { certSlug: "genai_llms_professional", studyView: "lifecycle", stageId: "genl-infer-optimize", sectionName: "Model Optimization", sectionExam: "GenAI LLMs" },
+      also: ["Model Optimization", "TensorRT-LLM", "GPU Acceleration and Optimization"],
+      featured: true
+    },
+    {
+      id: "genl-nim-triton-deployment",
+      title: "NIM vs Triton vs NIM Operator",
+      route: "Services -> Production serving boundary",
+      summary: "Use this for packaged model APIs, multi-framework serving, Kubernetes lifecycle, rollout, scaling, and health management.",
+      keywords: ["nim", "triton", "nim operator", "kubernetes", "deployment", "serving", "model endpoint", "health check", "rollout", "triton inference server"],
+      target: { certSlug: "genai_llms_professional", studyView: "services", serviceName: "NIM" },
+      also: ["Model Deployment", "Triton Inference Server", "NIM Operator"],
+      featured: true
+    },
+    {
+      id: "genl-rag-grounding",
+      title: "RAG, citations, and private knowledge",
+      route: "Study handbook -> Build grounded LLM application",
+      summary: "Use this when answers need fresh/private facts, retrieval, reranking, citations, ACLs, abstention, or source-grounded evaluation.",
+      keywords: ["rag", "retrieval", "citations", "private knowledge", "fresh facts", "rerank", "embedding", "acl", "groundedness", "neMo retriever"],
+      target: { certSlug: "genai_llms_professional", studyView: "lifecycle", stageId: "genl-rag-ingest", sectionName: "Prompt Engineering", sectionExam: "GenAI LLMs" },
+      also: ["NeMo Retriever", "Prompt Engineering", "Evaluation"],
+      featured: true
+    },
+    {
+      id: "genl-lora-sft-tuning",
+      title: "LoRA, SFT, and tuning decision",
+      route: "Study handbook -> Fine-tune behavior",
+      summary: "Use this when durable behavior, style, preference data, adapters, PEFT, catastrophic forgetting, or held-out evals matter.",
+      keywords: ["lora", "qlora", "peft", "sft", "fine tuning", "fine-tuning", "adapter", "preference", "dpo", "rlhf", "forgetting"],
+      target: { certSlug: "genai_llms_professional", studyView: "lifecycle", stageId: "genl-tune-model", sectionName: "Fine-Tuning", sectionExam: "GenAI LLMs" },
+      also: ["NeMo Customizer", "NeMo Framework", "Fine-Tuning"],
+      featured: true
+    },
+    {
+      id: "genl-evaluation-judge",
+      title: "Evaluation, LLM-as-judge, and regression",
+      route: "Study handbook -> Evaluate and guard outputs",
+      summary: "Use this for model comparison, prompt/RAG/tuning variants, faithfulness, human review, safety checks, and production regressions.",
+      keywords: ["evaluation", "eval", "llm-as-judge", "judge", "regression", "faithfulness", "groundedness", "human evaluation", "benchmark", "quality"],
+      target: { certSlug: "genai_llms_professional", studyView: "lifecycle", stageId: "genl-rag-eval", sectionName: "Evaluation", sectionExam: "GenAI LLMs" },
+      also: ["NeMo Evaluator", "Production Monitoring and Reliability"],
+      featured: false
+    },
+    {
+      id: "genl-guardrails-pii-policy",
+      title: "Guardrails, PII, and policy controls",
+      route: "Study handbook -> Evaluate and guard outputs",
+      summary: "Use this for safety rails, PII, tenant isolation, prompt injection, refusals, red-teaming, and compliance checks.",
+      keywords: ["guardrails", "pii", "policy", "safety", "red team", "red-teaming", "prompt injection", "compliance", "tenant", "refusal"],
+      target: { certSlug: "genai_llms_professional", studyView: "services", serviceName: "NeMo Guardrails" },
+      also: ["Safety, Ethics, and Compliance", "NeMo Guardrails"],
+      featured: false
+    }
+  ],
+  "Agentic AI General": [
+    {
+      id: "gen-react-workflow",
+      title: "ReAct vs workflow decision rule",
+      route: "Agent Orchestration Runtime playbook / Architecture card",
+      summary: "Read this to learn the decision rule: ReAct is for dynamic tool-observation loops; workflow/graph is for fixed, auditable steps; RAG is for grounding answers in documents.",
+      keywords: ["react", "workflow", "rag", "agent", "graph", "router", "supervisor", "orchestration"],
+      target: { certSlug: "agentic_ai_general_study", studyView: "lifecycle", stageId: "gen-agent-architecture", serviceName: "Agent Orchestration Runtime", serviceFilter: "Build agent/RAG application" },
+      lookFor: ["ReAct = tool result changes next step", "Workflow/graph = known process and audit trail", "RAG = source-grounded answer from private docs"],
+      also: ["Agent Orchestration Runtime", "Tool Gateway and Function Runtime"],
+      featured: true
+    },
+    {
+      id: "gen-tools-memory",
+      title: "Tools, memory, and state",
+      route: "Lifecycle map -> Orchestrate tools and memory",
+      summary: "Use this when you need tool schemas, permissions, retries, idempotency, memory scope, and workflow state without NVIDIA-specific names.",
+      keywords: ["tools", "memory", "state", "checkpoint", "idempotency", "permissions", "schema", "workflow breaks"],
+      target: { certSlug: "agentic_ai_general_study", studyView: "lifecycle", stageId: "gen-agent-workflow", serviceName: "Agent Orchestration Runtime", serviceFilter: "Build agent/RAG application" },
+      also: ["Tool Gateway and Function Runtime", "Memory Store"],
+      featured: true
+    },
+    {
+      id: "gen-anti-hallucination",
+      title: "Anti-hallucination measures",
+      route: "Prompt and Context Design playbook / Knowledge and RAG Pipeline",
+      summary: "Use this for 2026-style hallucination mitigation: write evidence rules, allow uncertainty, require citations, expose unknowns, retrieve missing facts, and evaluate groundedness.",
+      keywords: ["anti hallucination", "anti-hallucination", "hallucination", "hallucination measures", "prompt engineering", "unsupported claims", "evidence rules", "groundedness", "faithfulness", "citation support", "no evidence refusal", "unknowns", "insufficient evidence"],
+      target: { certSlug: "agentic_ai_general_study", studyView: "services", stageId: "gen-api-prompt", serviceName: "Prompt and Context Design", serviceFilter: "Use existing model or API" },
+      also: ["Knowledge and RAG Pipeline", "Evaluation and Regression Harness", "Policy and Guardrails Layer"],
+      featured: true
+    }
+  ]
+};
+
+function normalizedStudyText(value) {
+  return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function conceptSearchText(entry) {
+  return normalizedStudyText([
+    entry.title,
+    entry.route,
+    entry.summary,
+    ...(entry.keywords || []),
+    ...(entry.also || [])
+  ].join(" "));
+}
+
+function rankedConceptLookupEntries(entries, query) {
+  const clean = normalizedStudyText(query);
+  if (!clean) {
+    return [
+      ...entries.filter((entry) => entry.featured),
+      ...entries.filter((entry) => !entry.featured)
+    ].slice(0, 6);
+  }
+  const terms = clean.split(/\s+/).filter(Boolean);
+  return entries
+    .map((entry) => {
+      const text = conceptSearchText(entry);
+      const title = normalizedStudyText(entry.title);
+      const keywordText = normalizedStudyText((entry.keywords || []).join(" "));
+      const matches = terms.filter((term) => text.includes(term)).length;
+      const score = matches * 10
+        + (title.includes(clean) ? 12 : 0)
+        + (keywordText.includes(clean) ? 8 : 0)
+        + (entry.featured ? 1 : 0);
+      return { entry, score, matches };
+    })
+    .filter((item) => item.matches > 0)
+    .sort((a, b) => b.score - a.score)
+    .map((item) => item.entry)
+    .slice(0, 6);
+}
+
+function StudyConceptFinder({ entries, query, setQuery, onOpen }) {
+  if (!entries.length) return null;
+  const visibleEntries = rankedConceptLookupEntries(entries, query);
+  const examples = entries.filter((entry) => entry.featured).slice(0, 4);
+  const hasQuery = Boolean(String(query || "").trim());
+  return h("details", { className: "concept-finder concept-finder-compact", open: hasQuery },
+    h("summary", null,
+      h("div", null,
+        h("span", null, "Concept finder"),
+        h("h3", null, "Find the chapter or concept")
+      )
+    ),
+    h("div", { className: "concept-finder-body" },
+      h("label", { className: "concept-finder-search" },
+        h("span", null, "Search concepts"),
+        h("input", {
+          type: "search",
+          value: query,
+          onChange: (event) => setQuery(event.target.value),
+          placeholder: "Try: ReAct vs workflow, stateful, NIM Triton, RAG..."
+        })
+      ),
+      h("div", { className: "concept-finder-examples" },
+        h("span", null, "Try"),
+        examples.map((entry) => h("button", {
+          key: entry.id,
+          type: "button",
+          onClick: () => setQuery(entry.keywords?.[0] || entry.title)
+        }, entry.title))
+      ),
+      hasQuery
+        ? visibleEntries.length
+          ? h("div", { className: "concept-finder-results" },
+              visibleEntries.map((entry) => {
+                const routeLabel = String(entry.route || "").replace(/^Exam Concept Map\s*->\s*/, "Exam Sections -> ");
+                return h("button", {
+                  key: entry.id,
+                  type: "button",
+                  className: "concept-finder-card",
+                  onClick: () => onOpen(entry)
+                },
+                  h("span", { className: "concept-finder-main" },
+                    h("strong", null, entry.title),
+                    h("p", null, entry.summary)
+                  ),
+                  h("span", { className: "concept-finder-route" }, routeLabel),
+                  h("span", { className: "concept-finder-open" }, "Open")
+                );
+              })
+            )
+          : h("p", { className: "concept-finder-empty" }, "No direct route yet. Try a broader term like workflow, RAG, guardrails, memory, evaluation, or serving.")
+        : null
+    )
+  );
+}
+
+function generalCardElementId(cardId) {
+  return `general-builder-card-${cardId}`;
+}
+
+function generalTagLabel(tag) {
+  return String(tag || "").replace(/_/g, " ");
+}
+
+function findGeneralBuilderPath(pathId) {
+  return generalBuilderPaths.find((path) => path.id === pathId) || generalBuilderPaths[0] || null;
+}
+
+function findGeneralBuilderCard(pathId, cardId) {
+  const path = findGeneralBuilderPath(pathId);
+  const card = path?.cards.find((item) => item.id === cardId) || path?.cards[0] || null;
+  return { path, card };
+}
+
+function generalCardText(path, card) {
+  return normalizedStudyText([
+    path?.title,
+    path?.description,
+    card?.title,
+    card?.purpose,
+    card?.keyDecision,
+    ...(card?.searchKeywords || []),
+    ...(card?.relatedPlatformExamples || []),
+    ...(card?.conceptSplitTags || []),
+    ...(card?.detailSections || []).flatMap((section) => [section.heading, section.content, ...(section.items || [])]),
+    ...(card?.studyPage?.examRecognition || []),
+    ...(card?.studyPage?.commonTraps || []),
+    ...(card?.studyPage?.nvidiaMapping || []),
+    ...(card?.studyPage?.whatToMeasure || []),
+    ...(card?.studyPage?.implementationPattern || []),
+    ...(card?.studyPage?.failureModes || []),
+    ...(card?.studyPage?.deepDiveNotes || []),
+    ...(card?.studyPage?.coreConcepts || [])
+  ].join(" "));
+}
+
+function generalIndexText(entry) {
+  return normalizedStudyText([
+    entry.keyword,
+    entry.matchLabel,
+    entry.description,
+    ...(entry.aliases || [])
+  ].join(" "));
+}
+
+function buildGeneralStudySearchResults(query) {
+  const clean = normalizedStudyText(query);
+  const seen = new Set();
+  const resultKey = (pathId, cardId) => `${pathId}:${cardId}`;
+  const addResult = (results, item) => {
+    const key = resultKey(item.builderPathId, item.cardId);
+    if (seen.has(key)) return;
+    const { path, card } = findGeneralBuilderCard(item.builderPathId, item.cardId);
+    if (!path || !card) return;
+    seen.add(key);
+    results.push({
+      ...item,
+      builderPathTitle: path.title,
+      cardTitle: card.title,
+      description: item.description || card.purpose,
+      label: item.matchLabel || item.keyword || card.title
+    });
+  };
+
+  if (!clean) {
+    const seeded = [];
+    generalConceptIndex.slice(0, 8).forEach((entry) => addResult(seeded, entry));
+    return seeded;
+  }
+
+  const terms = clean.split(/\s+/).filter(Boolean);
+  const indexed = generalConceptIndex
+    .map((entry) => {
+      const text = generalIndexText(entry);
+      const exact = normalizedStudyText(entry.keyword) === clean || normalizedStudyText(entry.matchLabel) === clean;
+      const phrase = text.includes(clean);
+      const matches = terms.filter((term) => text.includes(term)).length;
+      return { entry, score: (exact ? 60 : 0) + (phrase ? 25 : 0) + matches * 8 };
+    })
+    .filter((item) => item.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  const results = [];
+  indexed.forEach((item) => addResult(results, item.entry));
+
+  const fallback = [];
+  for (const path of generalBuilderPaths) {
+    for (const card of path.cards) {
+      const text = generalCardText(path, card);
+      const phrase = text.includes(clean);
+      const matches = terms.filter((term) => text.includes(term)).length;
+      const score = (phrase ? 10 : 0) + matches * 4;
+      if (score > 0) {
+        fallback.push({
+          builderPathId: path.id,
+          cardId: card.id,
+          matchLabel: card.title,
+          description: card.purpose,
+          score
+        });
+      }
+    }
+  }
+  fallback.sort((a, b) => b.score - a.score).forEach((item) => addResult(results, item));
+  return results.slice(0, 10);
+}
+
+function generalTutorExamples(card) {
+  if (!card) return ["Which builder path should I start with?", "RAG, agent, or fine tuning?", "What traps matter most?"];
+  const firstKeyword = (card.searchKeywords || []).find((keyword) => keyword !== card.title) || card.title;
+  return [
+    `What inputs matter for ${card.title}?`,
+    `What traps should I watch for in ${card.title}?`,
+    `How do I recognize ${firstKeyword} in exam questions?`
+  ];
+}
+
+function compactStudyPhrase(value, maxLength = 118) {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  if (text.length <= maxLength) return text;
+  const shortened = text.slice(0, maxLength - 1).replace(/\s+\S*$/, "").trim();
+  return `${shortened || text.slice(0, maxLength - 1)}…`;
+}
+
+const generalPathCardMeta = {
+  "use-existing-model-or-api": { lane: "Model/API app", cue: "Use when an approved model/API can solve the task without new retrieval, tools, or weight changes.", artifact: "Prompted call + runtime wrapper" },
+  "build-rag-application": { lane: "RAG knowledge app", cue: "Use when answers need fresh, private, cited facts.", artifact: "Permissioned retrieval path" },
+  "build-tool-using-agent": { lane: "Tool-using workflow", cue: "Use when the system must plan, use tools, or keep state.", artifact: "Workflow + tool contracts" },
+  "fine-tune-existing-model": { lane: "Model adaptation", cue: "Use when stable behavior must be learned into an existing model.", artifact: "Adapter/tuning release" },
+  "train-model-from-zero": { lane: "Foundation training", cue: "Use when full/foundation training is justified by a strategic capability gap.", artifact: "Corpus + training stack" },
+  "deploy-and-serve-ai-system": { lane: "Production serving", cue: "Use when the model or workflow must run under traffic.", artifact: "Endpoint + rollout plan" },
+  "run-evaluate-and-improve": { lane: "Evaluation loop", cue: "Use after launch to measure, review, and route fixes.", artifact: "Eval + feedback loop" }
+};
+
+function GeneralSearchRouter({ searchQuery, setSearchQuery, onOpenSearchResult, compact = false }) {
+  const searchResults = buildGeneralStudySearchResults(searchQuery);
+  const seedExamples = generalConceptIndex.slice(0, 6);
+  const hasQuery = Boolean(searchQuery.trim());
+  const visibleResults = hasQuery ? searchResults : (compact ? [] : searchResults.slice(0, 8));
+  return h("div", { className: `general-search-router ${compact ? "general-search-router-compact" : ""}` },
+    h("div", { className: "general-search-head" },
+      h("div", null,
+        h("span", null, "Find route"),
+        h("h3", null, "Jump by decision clue")
+      ),
+      h("label", { className: "general-search-field" },
+        h("span", null, "Decision clue"),
+        h("input", {
+          type: "search",
+          value: searchQuery,
+          onChange: (event) => setSearchQuery(event.target.value),
+          placeholder: "Try: hallucination, ReAct, p99, ACL, LoRA..."
+        })
+      )
+    ),
+    h("div", { className: "general-search-seeds" },
+      h("span", null, "Try"),
+      seedExamples.map((entry) => h("button", {
+        key: entry.keyword,
+        type: "button",
+        onClick: () => setSearchQuery(entry.keyword)
+      }, entry.keyword))
+    ),
+    visibleResults.length || hasQuery
+      ? h("div", { className: "general-search-results" },
+          visibleResults.length
+            ? visibleResults.map((result) => h("button", {
+            key: `${result.builderPathId}-${result.cardId}-${result.label}`,
+            type: "button",
+            className: "general-search-row",
+            onClick: () => onOpenSearchResult(result)
+          },
+            h("span", { className: "general-search-route" }, `${result.builderPathTitle} / ${result.cardTitle}`),
+            h("strong", null, result.label),
+            compact ? null : h("span", { className: "general-search-summary" }, result.description)
+          ))
+            : h("p", { className: "general-search-empty" }, "No exact route yet. Try a broader clue such as RAG, memory, audit, serving, tuning, or evaluation.")
+        )
+      : null
+  );
+}
+
+function StudyPageHeader({ path, card = null }) {
+  if (!path) return null;
+  const chapter = path.chapter || {};
+  const meta = generalPathCardMeta[path.id] || {};
+  const isCard = Boolean(card);
+  const title = isCard ? card.title : chapter.title || path.title;
+  const subtitle = isCard
+    ? card.purpose || card.keyDecision
+    : chapter.intro || path.description;
+  const tags = isCard
+    ? [
+        ...(card.conceptSplitTags || []).map(generalTagLabel),
+        meta.lane,
+        meta.artifact
+      ]
+    : [
+        meta.lane,
+        meta.artifact,
+        `${path.cards.length} focused study cards`
+      ];
+  return h("header", { className: `general-book-header general-page-header ${isCard ? "general-page-header-card" : "general-page-header-path"}` },
+    h("span", { className: "general-book-eyebrow" }, isCard ? `Builder path ${path.order} / Step ${card.stepNumber}` : `Builder path ${path.order}`),
+    h("h1", null, title),
+    h("p", null, renderInline(subtitle)),
+    h("div", { className: "general-book-badges" },
+      h("span", null, isCard ? "Focused study card" : "Technical chapter"),
+      tags.filter(Boolean).map((tag) => h("span", { key: tag }, tag))
+    )
+  );
+}
+
+function StudyToolsBar({ tutorNode, searchRouter }) {
+  if (!tutorNode && !searchRouter) return null;
+  return h("section", { className: "general-study-tools-bar", "aria-label": "Study tools" },
+    tutorNode ? h("div", { className: "general-study-tools-tutor" }, tutorNode) : null,
+    searchRouter ? h("div", { className: "general-study-tools-route" }, searchRouter) : null
+  );
+}
+
+function GeneralStudyBreadcrumbs({ path, card, onShowPaths, onShowPath }) {
+  return h("div", { className: "general-breadcrumbs", "aria-label": "General Study route" },
+    h("button", { type: "button", onClick: onShowPaths }, "Builder Paths"),
+    path ? h("span", { "aria-hidden": "true" }, "/") : null,
+    path ? h("button", { type: "button", onClick: onShowPath }, path.title) : null,
+    card ? h("span", { "aria-hidden": "true" }, "/") : null,
+    card ? h("strong", null, card.title) : null
+  );
+}
+
+function GeneralStudyList({ items, ordered = false }) {
+  const clean = (items || []).filter(Boolean);
+  if (!clean.length) return null;
+  const tag = ordered ? "ol" : "ul";
+  return h(tag, { className: "general-study-list" },
+    clean.map((item, index) => h("li", { key: `${index}-${item}` }, renderInline(item)))
+  );
+}
+
+function normalizeRichCodeBlock(block) {
+  if (typeof block === "string") return { code: block };
+  return block || {};
+}
+
+function legacyBlocksFromStudySection(section) {
+  const codeBlocks = (section.codeBlocks || []).map(normalizeRichCodeBlock);
+  return [
+    ...(section.paragraphs || []).map((text) => ({ type: "paragraph", text })),
+    ...(section.steps?.length ? [{ type: "numbered", items: section.steps }] : []),
+    ...(section.items?.length ? [{ type: "list", items: section.items }] : []),
+    ...(section.tables || []).map((table) => ({
+      type: "table",
+      title: table.caption,
+      columns: table.headers || table.columns || [],
+      rows: table.rows || []
+    })),
+    ...codeBlocks.map((block) => ({
+      type: block.type || "code",
+      title: block.label || block.title,
+      language: block.language || block.lang,
+      code: block.code || ""
+    })),
+    ...(section.callouts || []).map((callout) => ({
+      type: "callout",
+      tone: callout.tone || "note",
+      title: callout.title,
+      text: callout.body || callout.text,
+      items: callout.items || []
+    })),
+    ...(section.examples || []).map((example) => ({
+      type: "badGood",
+      badTitle: example.badTitle || "Bad pattern",
+      bad: example.bad,
+      goodTitle: example.goodTitle || "Better pattern",
+      good: example.good,
+      title: example.title
+    })),
+    ...(section.recap ? [{ type: "recap", items: [section.recap] }] : [])
+  ];
+}
+
+function richBlocksForSection(section) {
+  return section.blocks?.length ? section.blocks : legacyBlocksFromStudySection(section);
+}
+
+function renderRichText(value, options = {}) {
+  if (Array.isArray(value)) {
+    return value.map((text, index) => h("p", { key: `${index}-${text}` }, renderInline(text, options)));
+  }
+  return h("p", null, renderInline(value || "", options));
+}
+
+function FormulaBlock({ block }) {
+  const formula = block.latex || block.formula || block.text || "";
+  if (!formula) return null;
+  return h("figure", { className: "rich-formula-block" },
+    block.title ? h("figcaption", null, renderInline(block.title)) : null,
+    h("div", { className: "rich-formula-text", "aria-label": block.title || "Formula" }, formula)
+  );
+}
+
+function CodeBlock({ block, pseudocode = false }) {
+  const code = block.code || block.text || "";
+  if (!code) return null;
+  const language = block.language || block.lang || (pseudocode ? "pseudocode" : "");
+  return h("figure", { className: `rich-code-block ${pseudocode ? "rich-code-pseudocode" : ""}`.trim() },
+    (block.title || block.label || language)
+      ? h("figcaption", null,
+          block.title || block.label || null,
+          language ? h("span", null, language) : null
+        )
+      : null,
+    h("pre", { tabIndex: 0 }, h("code", null, code))
+  );
+}
+
+function RichTableBlock({ block }) {
+  const columns = block.columns || block.headers || block.header || [];
+  const rows = block.rows || [];
+  if (!columns.length || !rows.length) return null;
+  const normalizedColumns = columns.map((column) => (
+    typeof column === "string"
+      ? { key: column, label: column }
+      : { key: column.key || column.label || column.title, label: column.label || column.title || column.key }
+  ));
+  return h("figure", { className: "rich-table-block" },
+    block.title || block.caption ? h("figcaption", null, renderInline(block.title || block.caption)) : null,
+    h("div", { className: "rich-table-wrap" },
+      h("table", { className: "rich-table" },
+        h("thead", null,
+          h("tr", null, normalizedColumns.map((column, index) => h("th", { key: `${index}-${column.label}` }, renderInline(column.label || ""))))
+        ),
+        h("tbody", null,
+          rows.map((row, rowIndex) => {
+            const cells = Array.isArray(row)
+              ? row
+              : normalizedColumns.map((column) => row?.[column.key] ?? "");
+            return h("tr", { key: rowIndex },
+              normalizedColumns.map((column, columnIndex) => h("td", { key: `${columnIndex}-${column.key}` }, renderInline(cells[columnIndex] ?? "")))
+            );
+          })
+        )
+      )
+    )
+  );
+}
+
+function DiagramBlock({ block }) {
+  const nodes = block.nodes || [];
+  const edges = block.edges || [];
+  if (!nodes.length && !edges.length) return null;
+  const nodeLabel = (node) => typeof node === "string" ? node : (node.label || node.title || node.id || "");
+  const edgeLabel = (edge) => {
+    if (typeof edge === "string") return edge;
+    const from = edge.from || edge.source || "";
+    const to = edge.to || edge.target || "";
+    const label = edge.label ? `: ${edge.label}` : "";
+    return `${from} -> ${to}${label}`;
+  };
+  return h("figure", { className: "rich-diagram-block", role: "group", "aria-label": block.title || "Diagram" },
+    block.title ? h("figcaption", null, renderInline(block.title)) : null,
+    nodes.length ? h("div", { className: "rich-diagram-nodes" },
+      nodes.map((node, index) => h("div", { className: "rich-diagram-node", key: `${index}-${nodeLabel(node)}` },
+        h("strong", null, renderInline(nodeLabel(node))),
+        typeof node === "object" && node.detail ? h("p", null, renderInline(node.detail)) : null
+      ))
+    ) : null,
+    edges.length ? h("ol", { className: "rich-diagram-edges" },
+      edges.map((edge, index) => h("li", { key: `${index}-${edgeLabel(edge)}` }, renderInline(edgeLabel(edge))))
+    ) : null
+  );
+}
+
+function BadGoodBlock({ block }) {
+  if (!block.bad && !block.good) return null;
+  return h("div", { className: "rich-bad-good-block" },
+    block.title ? h("strong", { className: "rich-bad-good-title" }, renderInline(block.title)) : null,
+    h("div", { className: "rich-bad-good-grid" },
+      h("section", { className: "rich-example-bad" },
+        h("strong", null, block.badTitle || "Bad pattern"),
+        block.bad ? renderRichText(block.bad) : null
+      ),
+      h("section", { className: "rich-example-good" },
+        h("strong", null, block.goodTitle || "Better pattern"),
+        block.good ? renderRichText(block.good) : null
+      )
+    )
+  );
+}
+
+function RichContentBlock({ block, index, renderOptions = {} }) {
+  if (!block) return null;
+  const type = block.type || "paragraph";
+  switch (type) {
+    case "paragraph":
+      return h("div", { className: "rich-content-block rich-paragraph-block" }, renderRichText(block.text || block.body || "", renderOptions));
+    case "list":
+      return h("section", { className: "rich-content-block rich-organized-list rich-points-block" },
+        h("div", { className: "rich-list-heading" },
+          h("span", null, block.title || "Key checks")
+        ),
+        h("ul", { className: "rich-list rich-insight-list" },
+          (block.items || []).filter(Boolean).map((item, itemIndex) => h("li", { key: `${itemIndex}-${item}` },
+            h("span", { className: "rich-insight-copy" }, renderListItemInline(item, renderOptions))
+          ))
+        )
+      );
+    case "numbered":
+      return h("section", { className: "rich-content-block rich-organized-list rich-process-block" },
+        h("div", { className: "rich-list-heading" },
+          h("span", null, block.title || "Workflow sequence")
+        ),
+        h("ol", { className: "rich-list rich-numbered-list rich-step-card-list" },
+          (block.items || []).filter(Boolean).map((item, itemIndex) => h("li", { key: `${itemIndex}-${item}` },
+            h("span", { className: "rich-step-count", "aria-hidden": "true" }, String(itemIndex + 1)),
+            h("span", { className: "rich-step-copy" }, renderListItemInline(item, renderOptions))
+          ))
+        )
+      );
+    case "callout":
+    case "warning":
+    case "examTrap": {
+      const tone = type === "warning" ? "warning" : type === "examTrap" ? "exam-trap" : (block.tone || "note");
+      return h("aside", { className: `rich-content-block rich-callout rich-callout-${tone}` },
+        block.title ? h("strong", null, renderInline(block.title, renderOptions)) : null,
+        block.text || block.body ? renderRichText(block.text || block.body, renderOptions) : null,
+        block.items?.length ? h("ul", null, block.items.map((item, itemIndex) => h("li", { key: `${itemIndex}-${item}` }, renderListItemInline(item, renderOptions)))) : null
+      );
+    }
+    case "formula":
+      return h(FormulaBlock, { block });
+    case "code":
+      return h(CodeBlock, { block });
+    case "pseudocode":
+      return h(CodeBlock, { block, pseudocode: true });
+    case "table":
+      return h(RichTableBlock, { block });
+    case "diagram":
+      return h(DiagramBlock, { block });
+    case "badGood":
+      return h(BadGoodBlock, { block });
+    case "scenario":
+      return h("aside", { className: "rich-content-block rich-scenario-block" },
+        block.title ? h("strong", null, renderInline(block.title, renderOptions)) : null,
+        block.text || block.body ? renderRichText(block.text || block.body, renderOptions) : null
+      );
+    case "checklist":
+      return h("ul", { className: "rich-content-block rich-checklist" },
+        (block.items || []).filter(Boolean).map((item, itemIndex) => h("li", { key: `${itemIndex}-${item}` }, renderListItemInline(item, renderOptions)))
+      );
+    case "recap": {
+      const recapItems = (block.items || []).filter(Boolean);
+      return h("div", { className: "rich-content-block rich-recap-block" },
+        h("strong", null, block.title || "Recap"),
+        block.text ? renderRichText(block.text, renderOptions) : null,
+        recapItems.length === 1
+          ? h("p", { className: "rich-recap-copy" }, renderListItemInline(recapItems[0], renderOptions))
+          : recapItems.length
+            ? h("ul", null, recapItems.map((item, itemIndex) => h("li", { key: `${itemIndex}-${item}` }, renderListItemInline(item, renderOptions))))
+            : null
+      );
+    }
+    default:
+      return h("div", { className: "rich-content-block rich-unknown-block", key: `unknown-${index}` }, renderRichText(block.text || block.body || "", renderOptions));
+  }
+}
+
+function StudySection({ section, index, variant = "card" }) {
+  if (!section) return null;
+  const isPath = variant === "path";
+  const sectionClass = isPath ? "general-chapter-section" : "general-card-lesson-section";
+  const labelClass = isPath ? "general-chapter-section-label" : "general-card-lesson-label";
+  const bodyClass = isPath ? "general-chapter-section-body" : "general-card-lesson-body";
+  const blocks = richBlocksForSection(section);
+  const renderOptions = { autoHighlight: true, highlightSeen: new Set(), highlightCount: { value: 0 }, maxHighlights: isPath ? 10 : 12 };
+  return h("section", { className: `${sectionClass} study-section-rich` },
+    h("div", { className: labelClass },
+      h("h4", null, section.title)
+    ),
+    h("div", { className: bodyClass },
+      blocks.map((block, blockIndex) => h(RichContentBlock, {
+        key: `${section.title}-${blockIndex}-${block.type || "legacy"}`,
+        block,
+        index: blockIndex,
+        renderOptions
+      }))
+    )
+  );
+}
+
+function StudyArticle({ title, intro, eyebrow = "Chapter", className = "", children }) {
+  return h("article", { className: `study-article ${className}`.trim() },
+    title || intro ? h("div", { className: "general-card-lesson-cover" },
+      eyebrow ? h("span", null, eyebrow) : null,
+      title ? h("h3", null, title) : null,
+      intro ? h("p", null, renderInline(intro)) : null
+    ) : null,
+    children
+  );
+}
+
+function GeneralStudyDecisionTable({ rows }) {
+  if (!rows?.length) return null;
+  return h("div", { className: "general-table-wrap" },
+    h("table", { className: "general-study-table" },
+      h("thead", null,
+        h("tr", null,
+          h("th", null, "Scenario clue"),
+          h("th", null, "Choose"),
+          h("th", null, "Avoid"),
+          h("th", null, "Why")
+        )
+      ),
+      h("tbody", null,
+        rows.map((row, index) => h("tr", { key: `${index}-${row.clue}` },
+          h("td", null, renderInline(row.clue || "")),
+          h("td", null, renderInline(row.choose || "")),
+          h("td", null, renderInline(row.avoid || "")),
+          h("td", null, renderInline(row.why || ""))
+        ))
+      )
+    )
+  );
+}
+
+function GeneralStudyScenarioCards({ scenarios }) {
+  if (!scenarios?.length) return null;
+  return h("div", { className: "general-scenario-grid" },
+    scenarios.map((scenario, index) => h("article", { className: "general-scenario-card", key: `${index}-${scenario.scenario}` },
+      h("span", null, `Scenario ${index + 1}`),
+      h("p", null, renderInline(scenario.scenario || "")),
+      h("strong", null, "Best answer pattern"),
+      h("p", null, renderInline(scenario.answer || "")),
+      h("em", null, renderInline(scenario.trap || ""))
+    ))
+  );
+}
+
+function GeneralStudyCardSection({ title, children, className = "" }) {
+  if (!children) return null;
+  return h("section", { className: `general-study-section ${className}`.trim() },
+    h("h4", null, title),
+    children
+  );
+}
+
+function GeneralSourceCapabilityNotes({ card }) {
+  const sourceName = card.studyPage?.sourceCapabilityNames?.[0] || "";
+  const capabilityState = useCapabilityMarkdown(sourceName, Boolean(sourceName));
+  if (!sourceName) return null;
+  return h("details", { className: "general-source-notes" },
+    h("summary", null,
+      h("span", null, "Optional source reference"),
+      h("strong", null, sourceName),
+      h("em", null, "Open only if you want the backing playbook notes.")
+    ),
+    h("div", { className: "general-source-notes-body" },
+      h(CapabilityPlaybook, {
+        state: capabilityState,
+        title: sourceName,
+        missingPath: `certifications/agentic_ai_general_study/capabilities/${topicSlug(sourceName)}.md`,
+        idPrefix: `general-source-${topicSlug(sourceName)}`,
+        showIndex: true,
+        indexLabel: "Source index",
+        defaultOpenFirst: false,
+        className: "embedded"
+      })
+    )
+  );
+}
+
+function GeneralStudyLessonSection({ section, index }) {
+  return h(StudySection, { section, index, variant: "card" });
+}
+
+function GeneralCardQuickTabs({ tabs }) {
+  const cleanTabs = (tabs || []).filter((tab) => tab?.title && tab?.items?.length);
+  if (!cleanTabs.length) return null;
+  return h("section", { className: "general-card-review-panel", "aria-label": "Chapter review notes" },
+    h("div", { className: "general-card-review-head" },
+      h("span", null, "Chapter review"),
+      h("h3", null, "What to remember"),
+      h("p", null, "Decision frame, common traps, and evidence checks from this chapter.")
+    ),
+    h("div", { className: "general-card-review-list" },
+      cleanTabs.map((tab, index) => h("article", { className: "general-card-review-section", key: tab.title },
+        h("div", { className: "general-card-review-section-head" },
+          h("span", null, String(index + 1).padStart(2, "0")),
+          h("h4", null, tab.title)
+        ),
+        h(GeneralStudyList, { items: tab.items })
+      ))
+    )
+  );
+}
+
+function GeneralStudyLesson({ lesson }) {
+  if (!lesson?.sections?.length) return null;
+  return h(StudyArticle, {
+    className: "general-card-lesson",
+    eyebrow: "Chapter body",
+    intro: lesson.intro
+  },
+    h("div", { className: "general-card-lesson-flow" },
+      lesson.sections.map((section, index) => h(GeneralStudyLessonSection, {
+        key: `${index}-${section.title}`,
+        section,
+        index
+      }))
+    )
+  );
+}
+
+function GeneralStudyReferenceReview({ study, card }) {
+  return h("details", { className: "general-study-reference" },
+    h("summary", null,
+      h("span", null, "Reference appendix"),
+      h("strong", null, "Decision details, exam checks, and platform examples"),
+      h("em", null, "Open this after reading the chapter.")
+    ),
+    h("div", { className: "general-study-snapshot" },
+      h("section", null,
+        h("span", null, "Purpose"),
+        h("p", null, renderInline(study.purpose || card.purpose))
+      ),
+      h("section", null,
+        h("span", null, "Key decision"),
+        h("p", null, renderInline(study.keyDecision || card.keyDecision))
+      ),
+      h("section", null,
+        h("span", null, "When this step appears"),
+        h("p", null, renderInline(study.when || card.purpose))
+      ),
+      h("section", null,
+        h("span", null, "Mental model"),
+        h("p", null, renderInline(study.mentalModel || "Identify the decision owner before choosing a tool."))
+      )
+    ),
+    h("div", { className: "general-study-content" },
+      h(GeneralStudyCardSection, { title: "Decision", className: "decision" },
+        h("p", null, renderInline(study.decisionToMake || card.keyDecision))
+      ),
+      h(GeneralStudyCardSection, { title: "Inputs", className: "io" }, h(GeneralStudyList, { items: study.inputs || [] })),
+      h(GeneralStudyCardSection, { title: "Outputs", className: "io" }, h(GeneralStudyList, { items: study.outputs || [] })),
+      h(GeneralStudyCardSection, { title: "What To Measure", className: "measure" },
+        h(GeneralStudyList, { items: study.whatToMeasure || [] })
+      ),
+      h(GeneralStudyCardSection, { title: "Exam Recognition", className: "exam-signal" },
+        h(GeneralStudyList, { items: study.examRecognition || [] })
+      ),
+      h(GeneralStudyCardSection, { title: "Decision Table", className: "decision-table" },
+        h(GeneralStudyDecisionTable, { rows: study.decisionTable || [] })
+      ),
+      h(GeneralStudyCardSection, { title: "Traps", className: "risk" }, h(GeneralStudyList, { items: study.traps || [] })),
+      h(GeneralStudyCardSection, { title: "Common Traps", className: "risk wide" }, h(GeneralStudyList, { items: study.commonTraps || [] })),
+      h(GeneralStudyCardSection, { title: "Failure Modes", className: "risk" },
+        h(GeneralStudyList, { items: study.failureModes || [] })
+      ),
+      h(GeneralStudyCardSection, { title: "Implementation", className: "implementation" },
+        h(GeneralStudyList, { items: study.implementationPattern || [], ordered: true })
+      ),
+      h(GeneralStudyCardSection, { title: "NVIDIA Mapping", className: "platform" },
+        h(GeneralStudyList, { items: study.nvidiaMapping || [] })
+      ),
+      h(GeneralStudyCardSection, { title: "Platform Examples", className: "platform" },
+        h(GeneralStudyList, { items: study.relatedPlatformExamples || [] })
+      ),
+      h(GeneralStudyCardSection, { title: "Scenarios", className: "scenarios" },
+        h(GeneralStudyScenarioCards, { scenarios: study.scenarios || [] })
+      ),
+      h(GeneralStudyCardSection, { title: "Core Concepts", className: "deep-dive" },
+        h(GeneralStudyList, { items: study.coreConcepts || [] })
+      ),
+      h(GeneralStudyCardSection, { title: "Deep Dive Notes", className: "deep-dive" },
+        h(GeneralStudyList, { items: study.deepDiveNotes || [] })
+      ),
+      h(GeneralStudyCardSection, { title: "Hands-on Checks", className: "implementation" },
+        h(GeneralStudyList, { items: study.handsOnChecks || [], ordered: true })
+      ),
+      h(GeneralStudyCardSection, { title: "Search Keywords", className: "keywords" },
+        h("div", { className: "general-keyword-chips" },
+          (study.searchKeywords || card.searchKeywords || []).map((keyword) => h("span", { key: keyword }, keyword))
+        )
+      )
+    )
+  );
+}
+
+function GeneralStudyCardPage({ path, card, highlightedCardId, onShowPaths, onShowPath, onSelectCard, toolsNode = null }) {
+  const study = card.studyPage || {};
+  const isHighlighted = card.id === highlightedCardId;
+  return h("article", {
+    id: generalCardElementId(card.id),
+    className: `general-card-page ${isHighlighted ? "highlighted" : ""}`
+  },
+    h(GeneralStudyBreadcrumbs, { path, card, onShowPaths, onShowPath }),
+    h(StudyPageHeader, { path, card }),
+    h(FocusedLessonBanner, { path, card, onShowPath }),
+    h(CompactChapterNav, {
+      path,
+      activeCardId: card.id,
+      onSelectCard,
+      eyebrow: "Chapter path",
+      title: "Study this chapter in order",
+      variant: "focused"
+    }),
+    h("div", { className: "general-card-article-body" },
+      h(GeneralStudyLesson, { lesson: study.lesson }),
+      h(GeneralCardQuickTabs, { tabs: study.lesson?.quickReview }),
+      h(GeneralStudyReferenceReview, { study, card }),
+      h(GeneralSourceCapabilityNotes, { card })
+    ),
+    toolsNode,
+    h(CompactPrevNextNav, { path, card, onSelectCard })
+  );
+}
+
+function FocusedLessonBanner({ path, card, onShowPath }) {
+  if (!path || !card) return null;
+  return h("section", { className: "general-focused-lesson-banner", "aria-label": "Focused lesson context" },
+    h("div", null,
+      h("span", null, "Focused lesson"),
+      h("strong", null, `Step ${card.stepNumber} of ${path.cards.length}`),
+      h("p", null, path.title)
+    ),
+    h("button", { type: "button", onClick: () => onShowPath(path.id) }, "Back to chapter overview")
+  );
+}
+
+function GeneralPathChapterSection({ section, index }) {
+  return h(StudySection, { section, index, variant: "path" });
+}
+
+function GeneralPathChapter({ path }) {
+  const chapter = path.chapter;
+  if (!chapter?.sections?.length) return null;
+  return h("article", { className: "general-path-chapter" },
+    h("div", { className: "general-chapter-flow" },
+      chapter.sections.map((section, index) => h(GeneralPathChapterSection, {
+        key: `${index}-${section.title}`,
+        section,
+        index
+      }))
+    )
+  );
+}
+
+function CompactPrevNextNav({ path, card = null, onShowPath, onSelectCard }) {
+  if (!path) return null;
+  if (card) {
+    const currentIndex = path.cards.findIndex((item) => item.id === card.id);
+    const previous = currentIndex > 0 ? path.cards[currentIndex - 1] : null;
+    const next = currentIndex >= 0 && currentIndex < path.cards.length - 1 ? path.cards[currentIndex + 1] : null;
+    if (!previous && !next) return null;
+    return h("nav", { className: "general-compact-prev-next", "aria-label": "Focused study card navigation" },
+      previous ? h("button", {
+        type: "button",
+        className: "general-chapter-nav-box previous",
+        onClick: () => onSelectCard(previous.id)
+      },
+        h("span", null, "Previous step"),
+        h("strong", null, previous.title)
+      ) : h("span", { className: "general-compact-nav-spacer", "aria-hidden": "true" }),
+      next ? h("button", {
+        type: "button",
+        className: "general-chapter-nav-box next",
+        onClick: () => onSelectCard(next.id)
+      },
+        h("span", null, "Next step"),
+        h("strong", null, next.title)
+      ) : null
+    );
+  }
+  const paths = [...generalBuilderPaths].sort((a, b) => a.order - b.order);
+  const currentIndex = paths.findIndex((item) => item.id === path.id);
+  const previous = currentIndex > 0 ? paths[currentIndex - 1] : null;
+  const next = currentIndex >= 0 && currentIndex < paths.length - 1 ? paths[currentIndex + 1] : null;
+  if (!previous && !next) return null;
+  return h("nav", { className: "general-compact-prev-next", "aria-label": "Builder path chapter navigation" },
+    previous ? h("button", {
+      type: "button",
+      className: "general-chapter-nav-box previous",
+      onClick: () => onShowPath(previous.id)
+    },
+      h("span", null, "Previous chapter"),
+      h("strong", null, previous.title)
+    ) : h("span", { className: "general-compact-nav-spacer", "aria-hidden": "true" }),
+    next ? h("button", {
+      type: "button",
+      className: "general-chapter-nav-box next",
+      onClick: () => onShowPath(next.id)
+    },
+      h("span", null, "Next chapter"),
+      h("strong", null, next.title)
+    ) : null
+  );
+}
+
+function CompactChapterNav({ path, activeCardId = "", onSelectCard, eyebrow = "Chapter path", title = "Study these steps in order", variant = "overview" }) {
+  if (!path?.cards?.length) return null;
+  const activeCard = path.cards.find((card) => card.id === activeCardId) || null;
+  const orderedCards = [...path.cards].sort((a, b) => (a.stepNumber || 0) - (b.stepNumber || 0));
+  const context = activeCard ? `${path.title} - current step ${activeCard.stepNumber}: ${activeCard.title}` : `${path.title} - ${title}`;
+  const navTitle = path.title || "Chapter steps";
+  const isFocused = variant === "focused";
+  return h("nav", { className: `general-compact-chapter-nav ${isFocused ? "general-focused-step-rail" : "general-overview-step-grid"}`, "aria-label": `${navTitle} chapter path` },
+    h("div", { className: "general-focused-nav-head" },
+      h("span", null, eyebrow),
+      h("h2", null, activeCard ? "Switch step" : "Focused study cards"),
+      h("p", null, context)
+    ),
+    h("div", { className: "general-compact-step-list" },
+      orderedCards.map((card) => h("button", {
+        key: card.id,
+        type: "button",
+        className: `general-compact-step-link ${card.id === activeCardId ? "active" : ""}`,
+        onClick: () => onSelectCard(card.id),
+        "aria-current": card.id === activeCardId ? "step" : undefined
+      },
+        h("span", { className: "general-step-number" }, `Step ${card.stepNumber}`),
+        h("strong", null, card.title),
+        isFocused ? h("small", null, card.id === activeCardId ? "Current lesson" : "Open lesson") : [
+          h("p", { key: "phrase" }, compactStudyPhrase(card.purpose || card.keyDecision)),
+          h("small", { key: "action" }, "Open lesson")
+        ]
+      ))
+    )
+  );
+}
+
+function GeneralPathChooserPage({ onSelectPath, supportNode = null }) {
+  return h("div", { className: "general-path-chooser-page" },
+    h("div", { className: "general-path-title general-path-title-main" },
+      h("span", null, "Step 1"),
+      h("h3", null, "Choose Builder Path"),
+      h("p", null, "Start with what you are trying to build. Each path opens a sequential build page, then each step opens a full study card.")
+    ),
+    h("div", { className: "general-path-grid" },
+      generalBuilderPaths.map((path) => {
+        const meta = generalPathCardMeta[path.id] || {};
+        return h("button", {
+        key: path.id,
+        type: "button",
+        className: `general-path-card general-path-card-${path.id}`,
+        onClick: () => onSelectPath(path.id)
+      },
+        h("div", { className: "general-path-card-head" },
+          h("span", { className: "general-path-order" }, String(path.order).padStart(2, "0")),
+          h("small", null, meta.lane || "Builder path")
+        ),
+        h("strong", null, path.title),
+        meta.cue ? h("p", { className: "general-path-cue" }, meta.cue) : null,
+        h("p", null, path.description),
+        h("div", { className: "general-path-card-foot" },
+          h("em", null, `${path.cards.length} sequential study cards`),
+          meta.artifact ? h("span", null, meta.artifact) : null
+        )
+      );
+      })
+    ),
+    supportNode
+  );
+}
+
+function GeneralPathStepsPage({ path, onShowPaths, onShowPath, onSelectCard, toolsNode = null }) {
+  return h("div", { className: "general-path-page" },
+    h(GeneralStudyBreadcrumbs, { path, onShowPaths, onShowPath: () => {} }),
+    h(StudyPageHeader, { path }),
+    h(CompactChapterNav, {
+      path,
+      onSelectCard,
+      title: "Study these steps in order"
+    }),
+    h(GeneralPathChapter, { path }),
+    toolsNode,
+    h(CompactPrevNextNav, { path, onShowPath })
+  );
+}
+
+function GeneralBuilderStudy({
+  screen,
+  selectedPathId,
+  selectedCardId,
+  highlightedCardId,
+  searchQuery,
+  setSearchQuery,
+  tutorNode,
+  onSelectPath,
+  onSelectCard,
+  onShowPaths,
+  onShowPath,
+  onOpenSearchResult
+}) {
+  const selectedPath = selectedPathId ? findGeneralBuilderPath(selectedPathId) : null;
+  const selectedCard = selectedPath && selectedCardId
+    ? selectedPath.cards.find((card) => card.id === selectedCardId) || null
+    : null;
+  const searchRouter = h(GeneralSearchRouter, { searchQuery, setSearchQuery, onOpenSearchResult, compact: true });
+  const toolsNode = h(StudyToolsBar, { tutorNode, searchRouter });
+
+  if (screen === "card" && selectedPath && selectedCard) {
+    return h("section", { className: "general-builder-study general-builder-study-card" },
+      h("div", { className: "general-builder-main" },
+        h(GeneralStudyCardPage, {
+          path: selectedPath,
+          card: selectedCard,
+          highlightedCardId,
+          onShowPaths,
+          onShowPath: () => onShowPath(selectedPath.id),
+          onSelectCard,
+          toolsNode
+        })
+      )
+    );
+  }
+
+  if (screen === "path" && selectedPath) {
+    return h("section", { className: "general-builder-study general-builder-study-path" },
+      h("div", { className: "general-builder-main" },
+        h(GeneralPathStepsPage, {
+          path: selectedPath,
+          onShowPaths,
+          onShowPath,
+          onSelectCard,
+          toolsNode
+        })
+      )
+    );
+  }
+
+  return h("section", { className: "general-builder-study general-builder-study-paths" },
+    h("div", { className: "general-builder-main" },
+      h(GeneralPathChooserPage, { onSelectPath, supportNode: toolsNode })
+    )
+  );
+}
+
 const SECTION_NVIDIA_SERVICE_GUIDES = {
   "Agentic AI": {
     "Agent Architecture and Design": [
@@ -2371,14 +3696,15 @@ const GENERAL_LIFECYCLE_STAGE_DETAILS = {
     ].join("\n")
   },
   "gen-api-prompt": {
-    focus: "This adapts behavior without changing weights. It is the right lane for instructions, examples, schemas, and context packing.",
-    checks: ["Instruction hierarchy clear", "Retrieved/tool content isolated as data", "Schema validation and repair policy defined", "Prompt version tied to model and evals"],
-    metrics: ["schema valid rate", "exact/task score", "refusal correctness", "citation support", "prompt-regression pass rate"],
+    focus: "This adapts behavior without changing weights. For 2026 prompt engineering, treat the prompt as a contract for task, evidence, schema, uncertainty, and verification.",
+    checks: ["Instruction hierarchy clear", "Retrieved/tool content isolated as data", "Evidence-only factual claims and no-evidence behavior defined", "Citation support checked per claim", "Schema validation and repair policy defined", "Prompt version tied to model and evals"],
+    metrics: ["schema valid rate", "exact/task score", "refusal correctness", "citation support", "unsupported-claim rate", "prompt-regression pass rate"],
     code: [
       "messages = [system_policy, developer_schema, user_task, evidence_block]",
       "raw = model.generate(messages)",
       "parsed = validate_or_retry_json(raw, schema)",
-      "score = eval_prompt_output(parsed, gold, citations)"
+      "unsupported = unsupported_claims(parsed.answer, evidence_block)",
+      "score = eval_prompt_output(parsed, gold, citations, unsupported)"
     ].join("\n")
   },
   "gen-api-serve": {
@@ -2425,14 +3751,16 @@ const GENERAL_LIFECYCLE_STAGE_DETAILS = {
     ].join("\n")
   },
   "gen-agent-rag": {
-    focus: "This is the query-time evidence path: retrieve, rerank, pack context, answer with citations, and evaluate grounding.",
-    checks: ["Dense+sparse retrieval when exact terms matter", "ACL filters before retrieval/context", "Reranker top-N tuned", "Citation support checked per claim"],
-    metrics: ["recall@k", "MRR/nDCG", "answer-bearing chunk rank", "groundedness", "unsupported citation rate"],
+    focus: "This is the query-time evidence path: retrieve, rerank, pack context, answer with citations, and apply anti-hallucination measures.",
+    checks: ["Dense+sparse retrieval when exact terms matter", "ACL filters before retrieval/context", "Reranker top-N tuned", "Citation support checked per claim", "No-evidence refusal used instead of forced answers"],
+    metrics: ["recall@k", "MRR/nDCG", "answer-bearing chunk rank", "groundedness", "unsupported citation rate", "hallucination rate"],
     code: [
       "dense = vector_search(embed(query), filters=acl)",
       "sparse = bm25_search(query, filters=acl)",
       "candidates = rrf([dense, sparse])",
-      "context = pack(cross_encoder_rerank(query, candidates)[:8])"
+      "context = pack(cross_encoder_rerank(query, candidates)[:8])",
+      "answer = generate_from_context(query, context)",
+      "assert citations_entail_claims(answer, context)"
     ].join("\n")
   },
   "gen-agent-react": {
@@ -3120,6 +4448,235 @@ function LifecyclePlaybookCard({ service, stage, selected, onClick }) {
   );
 }
 
+function compactStudyText(value, maxLength = 150) {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength - 1).trim()}...`;
+}
+
+function nvidiaExamSections(examLabelValue) {
+  return studySections.filter((section) => section.exam === examLabelValue);
+}
+
+function nvidiaSectionNumber(section, sections = nvidiaExamSections(section?.exam)) {
+  const index = sections.findIndex((item) => item.name === section?.name);
+  return index >= 0 ? String(index + 1).padStart(2, "0") : "01";
+}
+
+function nvidiaServiceId(service) {
+  return service?.name || "";
+}
+
+function nvidiaSectionId(section) {
+  return section?.name || "";
+}
+
+function lifecycleStageId(stage) {
+  return lifecycleStageKey(stage);
+}
+
+function NvidiaStudyBreadcrumbs({ examLabel: label, viewLabel, itemLabel = "", onHome, onView }) {
+  return h("div", { className: "general-breadcrumbs nvidia-breadcrumbs", "aria-label": "NVIDIA study route" },
+    h("button", { type: "button", onClick: onHome }, label),
+    viewLabel ? h("span", { "aria-hidden": "true" }, "/") : null,
+    viewLabel ? h("button", { type: "button", onClick: onView || onHome }, viewLabel) : null,
+    itemLabel ? h("span", { "aria-hidden": "true" }, "/") : null,
+    itemLabel ? h("strong", null, itemLabel) : null
+  );
+}
+
+function NvidiaStudyPageHeader({ eyebrow, title, subtitle, badges = [], tags = [] }) {
+  return h("header", { className: "general-book-header general-page-header nvidia-book-header" },
+    h("span", { className: "general-book-eyebrow" }, eyebrow),
+    h("h1", null, title),
+    subtitle ? h("p", null, renderInline(subtitle)) : null,
+    h("div", { className: "general-book-badges" },
+      [...badges, ...tags].filter(Boolean).slice(0, 10).map((tag, index) => h("span", { key: `${index}-${tag}` }, tag))
+    )
+  );
+}
+
+function NvidiaStudyTabs({ activeView, onSelectView, branding, currentExamLabel }) {
+  const showLifecycle = currentExamLabel !== "Agentic AI";
+  const tabs = [
+    { key: "suite", label: "Platform map" },
+    showLifecycle ? { key: "lifecycle", label: "Study handbook" } : null,
+    showLifecycle ? { key: "services", label: "Services" } : { key: "sections", label: "Exam chapters" },
+    showLifecycle ? { key: "sections", label: "Exam chapters" } : { key: "services", label: "Services" }
+  ].filter(Boolean);
+  return h("nav", { className: "study-tabs nvidia-study-tabs", "aria-label": "NVIDIA study views" },
+    tabs.map((tab) => h("button", {
+      key: tab.key,
+      type: "button",
+      className: activeView === tab.key ? "active" : "",
+      onClick: () => onSelectView(tab.key)
+    }, tab.label))
+  );
+}
+
+function NvidiaSectionChapterNav({ sections, selectedSection, onSelectSection, eyebrow = "Official exam sections", title = "Chapter navigation" }) {
+  if (!sections?.length) return null;
+  return h("nav", { className: "general-compact-chapter-nav nvidia-compact-chapter-nav", "aria-label": title },
+    h("div", { className: "general-focused-nav-head" },
+      h("span", null, eyebrow),
+      h("h2", null, title)
+    ),
+    h("div", { className: "nvidia-compact-row-list" },
+      sections.map((section, index) => h(SectionCard, {
+        key: `${section.exam}-${section.name}`,
+        section,
+        selected: section.name === selectedSection?.name,
+        index: index + 1,
+        compact: true,
+        onClick: () => onSelectSection(section.name)
+      }))
+    )
+  );
+}
+
+function NvidiaSectionJumpBar({ sections, selectedSection, onSelectSection }) {
+  if (!sections?.length) return null;
+  return h("div", { className: "nvidia-section-jump-bar" },
+    h("label", { htmlFor: "nvidia-section-jump-select" },
+      h("span", null, "Official chapter"),
+      h("strong", null, "Open another full chapter")
+    ),
+    h("select", {
+      id: "nvidia-section-jump-select",
+      className: "service-jump-select",
+      value: selectedSection?.name || "",
+      onChange: (event) => onSelectSection(event.target.value)
+    },
+      sections.map((section, index) => h("option", {
+        key: `${section.exam}-${section.name}`,
+        value: section.name
+      }, `${String(index + 1).padStart(2, "0")} · ${section.name}`))
+    ),
+    selectedSection ? h("span", { className: "nvidia-section-jump-meta" }, `${selectedSection.weight}% exam weight`) : null
+  );
+}
+
+function NvidiaServiceChapterNav({ services, selectedService, onSelectService, eyebrow = "Focused concepts", title = "Concept navigation" }) {
+  if (!services?.length) return null;
+  return h("nav", { className: "general-compact-chapter-nav nvidia-compact-chapter-nav", "aria-label": title },
+    h("div", { className: "general-focused-nav-head" },
+      h("span", null, eyebrow),
+      h("h2", null, title)
+    ),
+    h("div", { className: "nvidia-compact-row-list nvidia-service-row-list" },
+      services.map((service, index) => h(ServiceCard, {
+        key: service.name,
+        service,
+        selected: service.name === selectedService?.name,
+        index: index + 1,
+        compact: true,
+        onClick: () => onSelectService(service.name)
+      }))
+    )
+  );
+}
+
+function NvidiaStageConceptNav({ stages, selectedStage, onSelectStage, onSelectService, onSelectSection, examLabel }) {
+  if (!stages?.length) return null;
+  const sections = nvidiaExamSections(examLabel);
+  const selectedStageKey = selectedStage ? lifecycleStageKey(selectedStage) : "";
+  return h("nav", { className: "general-compact-chapter-nav nvidia-compact-chapter-nav nvidia-stage-nav", "aria-label": "Concept cues" },
+    h("div", { className: "general-focused-nav-head" },
+      h("span", null, "Compact concept navigation"),
+      h("h2", null, "Concept cues in exam order")
+    ),
+    h("div", { className: "nvidia-compact-row-list" },
+      stages.map((stage, index) => {
+        const stageKey = lifecycleStageKey(stage);
+        const detail = lifecycleStageDetailFor(examLabel, stageKey);
+        const section = sections.find((item) => item.name === (detail?.sections || [])[0]);
+        return h("article", {
+          id: `lifecycle-stage-${topicSlug(stageKey)}`,
+          key: stageKey,
+          className: `nvidia-compact-nav-row nvidia-stage-row ${stageKey === selectedStageKey ? "active" : ""}`
+        },
+          h("button", {
+            type: "button",
+            className: "nvidia-compact-row-main",
+            onClick: () => onSelectStage?.(stageKey),
+            "aria-current": stageKey === selectedStageKey ? "step" : undefined
+          },
+            h("span", { className: "nvidia-row-number" }, String(index + 1).padStart(2, "0")),
+            h("span", { className: "nvidia-row-copy" },
+              h("strong", null, stage.name),
+              h("p", null, compactStudyText(detail?.focus || stage.note))
+            ),
+            h("span", { className: "nvidia-row-meta" }, section ? `${section.name} · ${section.weight}%` : stage.context)
+          ),
+          detail?.sections?.length ? h("div", { className: "nvidia-row-chips" },
+            detail.sections.slice(0, 2).map((item) => h("button", {
+              key: item,
+              type: "button",
+              onClick: () => onSelectSection?.(item)
+            }, item))
+          ) : null,
+          (stage.tools?.length || stage.optionalTools?.length)
+            ? h("div", { className: "nvidia-row-chips nvidia-row-tool-chips" },
+                [...(stage.tools || []), ...(stage.optionalTools || [])].slice(0, 4).map((tool) => h("button", {
+                  key: tool,
+                  type: "button",
+                  onClick: () => onSelectService?.(tool, stage)
+                }, tool))
+              )
+            : null
+        );
+      })
+    )
+  );
+}
+
+function NvidiaPrevNextNav({ items, selectedId, getId, getTitle, onSelect, previousLabel = "Previous", nextLabel = "Next" }) {
+  const currentIndex = (items || []).findIndex((item) => getId(item) === selectedId);
+  if (currentIndex < 0) return null;
+  const previous = currentIndex > 0 ? items[currentIndex - 1] : null;
+  const next = currentIndex < items.length - 1 ? items[currentIndex + 1] : null;
+  if (!previous && !next) return null;
+  return h("nav", { className: "general-compact-prev-next nvidia-compact-prev-next", "aria-label": "NVIDIA chapter navigation" },
+    previous ? h("button", {
+      type: "button",
+      className: "general-chapter-nav-box previous",
+      onClick: () => onSelect(previous)
+    },
+      h("span", null, previousLabel),
+      h("strong", null, getTitle(previous))
+    ) : h("span", { className: "general-compact-nav-spacer", "aria-hidden": "true" }),
+    next ? h("button", {
+      type: "button",
+      className: "general-chapter-nav-box next",
+      onClick: () => onSelect(next)
+    },
+      h("span", null, nextLabel),
+      h("strong", null, getTitle(next))
+    ) : null
+  );
+}
+
+function NvidiaRelatedLinks({ items, selectedId, getId, getTitle, getMeta, onSelect, eyebrow = "Related links", title = "Keep nearby concepts in view" }) {
+  const related = (items || []).filter((item) => getId(item) !== selectedId).slice(0, 8);
+  if (!related.length) return null;
+  return h("section", { className: "general-related-card-links nvidia-related-card-links", "aria-label": title },
+    h("div", { className: "general-related-card-links-head" },
+      h("span", null, eyebrow),
+      h("h2", null, title)
+    ),
+    h("div", { className: "general-related-card-link-list" },
+      related.map((item) => h("button", {
+        key: getId(item),
+        type: "button",
+        onClick: () => onSelect(item)
+      },
+        getMeta ? h("span", null, getMeta(item)) : null,
+        h("strong", null, getTitle(item))
+      ))
+    )
+  );
+}
+
 function LifecycleStagePlaybook({ stage, examLabel, onSelectService, onSelectSection, onSelectStudyPage }) {
   const stageKey = lifecycleStageKey(stage);
   const detail = lifecycleStageDetailFor(examLabel, stageKey);
@@ -3193,149 +4750,46 @@ function LifecycleStagePlaybook({ stage, examLabel, onSelectService, onSelectSec
 function LifecycleFlow({ examLabel: label, selectedStageId, onSelectStage, onSelectService, onSelectSection, onSelectStudyPage, branding }) {
   const flow = LIFECYCLE_FLOWS[label];
   if (!flow) return null;
-  const services = nvidiaServices.filter((service) => service.exams.includes(label));
-  const visibleGroups = SERVICE_GROUPS.filter((group) => services.some((service) => serviceGroupName(service) === group.name));
   const cardLabel = branding.serviceLabel === "Study Playbooks" ? "study playbook" : (branding.serviceLabel || "service").toLowerCase();
-  const conceptFirstAgentic = label === "Agentic AI";
-  const sidePanelLifecycle = conceptFirstAgentic || label === "Agentic AI General";
-  const hasLanes = flow.stages.some((stage) => stage.lane);
-  const laneGroups = hasLanes
-    ? [...new Set(flow.stages.map((stage) => stage.lane || "Shared"))].map((lane) => ({
-        lane,
-        stages: flow.stages.filter((stage) => (stage.lane || "Shared") === lane)
-      }))
-    : [];
   const selectedStage = flow.stages.find((stage) => lifecycleStageKey(stage) === selectedStageId) || flow.stages[0];
+  const sections = nvidiaExamSections(label);
+  const selectedDetail = lifecycleStageDetailFor(label, lifecycleStageKey(selectedStage));
+  const selectedSection = sections.find((section) => (selectedDetail?.sections || []).includes(section.name));
 
-  function openSectionChip(event, section) {
-    event.preventDefault();
-    event.stopPropagation();
-    onSelectSection?.(section);
-  }
-
-  function handleSectionChipKey(event, section) {
-    if (event.key !== "Enter" && event.key !== " ") return;
-    openSectionChip(event, section);
-  }
-
-  function renderStage(stage) {
-    const stageNumber = flow.stages.indexOf(stage) + 1;
-    const stageKey = lifecycleStageKey(stage);
-    const detail = lifecycleStageDetailFor(label, stageKey);
-    const showAgenticInlineTools = conceptFirstAgentic && stage.lane === "7. NVIDIA Platform Implementation";
-    function renderTool(tool, role = "core") {
-      const expandedTool = expandNvidiaAcronyms(tool);
-      return h("button", {
-        key: `${role}-${tool}`,
-        type: "button",
-        className: `lifecycle-tool ${role === "optional" ? "optional" : ""} ${serviceGroupClass(tool)}`,
-        onClick: (event) => {
-          event.stopPropagation();
-          onSelectStage?.(stageKey);
-          onSelectService?.(tool, stage);
-        },
-        title: `Open ${expandedTool}`,
-        "aria-label": `Open ${expandedTool}`
-      }, tool);
-    }
-
-    return h("article", {
-      key: stageKey,
-      className: `lifecycle-stage ${hasLanes ? "lifecycle-path-stage" : ""} ${selectedStageId === stageKey ? "active" : ""} ${serviceGroupClass(stage.tools[0] || "")}`
-    },
-      h("button", {
-        type: "button",
-        className: "lifecycle-stage-main",
-        onClick: () => onSelectStage?.(stageKey)
-      },
-        hasLanes ? null : h("div", { className: "lifecycle-num" }, stageNumber),
-        hasLanes && stage.context ? h("span", { className: "lifecycle-stage-context" }, stage.context) : null,
-        h("strong", null, stage.name),
-        h("p", { className: "lifecycle-note" }, stage.note),
-        conceptFirstAgentic && detail?.sections?.length
-          ? h("div", { className: "lifecycle-exam-sections" },
-              detail.sections.slice(0, 3).map((section) => h("span", {
-                key: section,
-                role: "button",
-                tabIndex: 0,
-                onClick: (event) => openSectionChip(event, section),
-                onKeyDown: (event) => handleSectionChipKey(event, section),
-                title: `Open ${section} exam section`
-              }, section))
-            )
-          : null,
-        conceptFirstAgentic && detail?.checks?.length
-          ? h("ul", { className: "lifecycle-stage-concepts" },
-              detail.checks.slice(0, 2).map((item) => h("li", { key: item }, item))
-            )
-          : null
-      ),
-      showAgenticInlineTools && (stage.tools.length || stage.optionalTools?.length)
-        ? h("div", { className: "lifecycle-tools lifecycle-tools-agentic" },
-            h("span", { className: "lifecycle-tool-hint-label" }, "NVIDIA to recognize"),
-            [...stage.tools.map((tool) => renderTool(tool, "core")), ...(stage.optionalTools || []).map((tool) => renderTool(tool, "optional"))])
-        : null,
-      !conceptFirstAgentic && stage.tools.length
-        ? h("div", { className: "lifecycle-tools" },
-            stage.tools.map((tool) => renderTool(tool, "core")))
-        : null
-      ,
-      !conceptFirstAgentic && stage.optionalTools?.length
-        ? h("div", { className: "lifecycle-tools lifecycle-tools-optional" },
-            stage.optionalTools.map((tool) => renderTool(tool, "optional")))
-        : null
-    );
-  }
-
-  const mapNode = hasLanes
-    ? h("div", { className: "lifecycle-lanes" },
-        laneGroups.map((group) => h("section", { key: group.lane, className: `lifecycle-lane lifecycle-lane-${topicSlug(group.lane)}` },
-          h("div", { className: "lifecycle-lane-title" },
-            h("span", null, group.lane),
-            h("p", null, flow.lanes?.[group.lane] || "Apply quality, safety, governance, and operations across every path.")
-          ),
-          h("div", { className: "lifecycle-grid lifecycle-grid-lane" }, group.stages.map(renderStage))
-        ))
-      )
-    : h("div", { className: "lifecycle-grid" }, flow.stages.map(renderStage));
-  const detailNode = h(LifecycleStagePlaybook, {
-    stage: selectedStage,
-    examLabel: label,
-    onSelectService,
-    onSelectSection,
-    onSelectStudyPage
-  });
-
-  return h(
-    "div",
-    { className: "lifecycle-flow" },
-    h("div", { className: "lifecycle-head" },
-      h("span", null, conceptFirstAgentic ? "Exam concept map" : "Lifecycle map"),
+  return h("article", { className: "study-article nvidia-lifecycle-article" },
+    h("div", { className: "general-card-lesson-cover" },
+      h("span", null, "Article body"),
       h("h3", null, flow.title),
-      h("p", { className: "muted" }, conceptFirstAgentic
-        ? "Click a concept to study the official exam section, wording signals, General Study route, and NVIDIA examples only when they matter."
-        : `Click a stage for context, or click a ${cardLabel} pill to open it directly.`)
+      h("p", null, label === "Agentic AI"
+        ? "Use the compact chapter links above for official exam sections, then use these concept cues to jump into the specific decision pattern the question is testing."
+        : `Use this as a handbook index for ${cardLabel} and official section study. The concept cues stay compact so the article remains the center of the page.`)
     ),
-    conceptFirstAgentic
-      ? h("div", { className: "lifecycle-pill-note lifecycle-pill-note-concepts" },
-          h("strong", null, "Concept first"),
-          h("span", null, "Lanes follow the official exam order. Product pills stay inline for NVIDIA Platform Implementation; other lanes show examples in the detail panel only when named.")
-        )
-      : lifecycleContextFiltersForExam(label)
-      ? h("div", { className: "lifecycle-pill-note" },
-          h("span", { className: "lifecycle-tool note-example data" }, "Solid = core"),
-          h("span", { className: "lifecycle-tool note-example optional data" }, "Dotted = support/reference")
-        )
-      : null,
-    conceptFirstAgentic ? null : h("div", { className: "lifecycle-legend" },
-      visibleGroups.map((group) => h("span", { key: group.name, className: `legend-chip ${group.className}` }, group.name))
-    ),
-    sidePanelLifecycle
-      ? h("div", { className: `lifecycle-concept-layout ${label === "Agentic AI General" ? "lifecycle-concept-layout-general" : ""}` },
-          h("div", { className: "lifecycle-concept-map" }, mapNode),
-          h("aside", { className: "lifecycle-concept-detail" }, detailNode)
-        )
-      : h(React.Fragment, null, mapNode, detailNode)
+    selectedSection ? h("aside", { className: "rich-content-block rich-callout nvidia-exam-signal" },
+      h("strong", null, "Current official section"),
+      h("p", null, `${selectedSection.name} is ${selectedSection.weight}% of the exam. ${selectedSection.description}`)
+    ) : null,
+    h(NvidiaStageConceptNav, {
+      stages: flow.stages,
+      selectedStage,
+      onSelectStage,
+      onSelectService,
+      onSelectSection,
+      examLabel: label
+    }),
+    h("section", { className: "general-card-lesson-section nvidia-selected-concept" },
+      h("div", { className: "general-card-lesson-label" },
+        h("h4", null, selectedStage.name)
+      ),
+      h("div", { className: "general-card-lesson-body" },
+        h(LifecycleStagePlaybook, {
+          stage: selectedStage,
+          examLabel: label,
+          onSelectService,
+          onSelectSection,
+          onSelectStudyPage
+        })
+      )
+    )
   );
 }
 
@@ -3371,30 +4825,65 @@ function StudyModePanel({
   const [selectedLifecycleStage, setSelectedLifecycleStage] = useState("");
   const [activeServiceGroup, setActiveServiceGroup] = useState("All");
   const [quizDifficulty, setQuizDifficulty] = useState("hard");
+  const [conceptLookupQuery, setConceptLookupQuery] = useState("");
+  const [generalStudyScreen, setGeneralStudyScreen] = useState("paths");
+  const [selectedGeneralPathId, setSelectedGeneralPathId] = useState("");
+  const [selectedGeneralCardId, setSelectedGeneralCardId] = useState("");
+  const [highlightedGeneralCardId, setHighlightedGeneralCardId] = useState("");
+  const [nvidiaServiceScreen, setNvidiaServiceScreen] = useState("list");
+  const [nvidiaSectionScreen, setNvidiaSectionScreen] = useState("list");
   const currentExamLabel = examLabel(exam);
   const currentCertSlug = exam.slug || selectedCertSlug || "genai_llms_professional";
   const isGenericStudy = exam.certification.code === "AAI-GEN";
+  const isAgenticExam = currentExamLabel === "Agentic AI";
   const isLifecycleAwareNvidia = Boolean(lifecycleContextFiltersForExam(currentExamLabel));
-  const effectiveStudyView = isGenericStudy && !["lifecycle", "services"].includes(studyView) ? "lifecycle" : studyView;
+  const effectiveStudyView = isGenericStudy ? "builder" : (isAgenticExam && studyView === "lifecycle" ? "sections" : studyView);
+  const defaultNvidiaStudyView = isAgenticExam ? "sections" : "lifecycle";
   useEffect(() => {
-    if (isGenericStudy && !["lifecycle", "services"].includes(studyView)) setStudyView("lifecycle");
-  }, [isGenericStudy, studyView, setStudyView]);
+    if (isGenericStudy && studyView !== "builder") setStudyView("builder");
+    if (!isGenericStudy && (studyView === "builder" || (isAgenticExam && studyView === "lifecycle"))) setStudyView(defaultNvidiaStudyView);
+  }, [isGenericStudy, isAgenticExam, defaultNvidiaStudyView, studyView, setStudyView]);
 
-  function applyStudyJumpTarget(target) {
-    setStudyView(target.studyView || "lifecycle");
+  useEffect(() => {
+    if (!isGenericStudy) return;
+    if (generalStudyScreen === "paths") return;
+    const path = selectedGeneralPathId ? findGeneralBuilderPath(selectedGeneralPathId) : generalBuilderPaths[0];
+    if (!selectedGeneralPathId && path) setSelectedGeneralPathId(path.id);
+    if (generalStudyScreen === "card" && path && !path.cards.some((card) => card.id === selectedGeneralCardId)) {
+      setSelectedGeneralCardId(path.cards[0]?.id || "");
+    }
+  }, [isGenericStudy, generalStudyScreen, selectedGeneralPathId, selectedGeneralCardId]);
+
+  function applyStudyJumpTarget(target, options = {}) {
+    const nextView = target.studyView || (target.builderPathId ? "builder" : defaultNvidiaStudyView);
+    setStudyView(isAgenticExam && nextView === "lifecycle" ? "sections" : nextView);
     setActiveServiceFilter(target.serviceFilter || "All");
     if (target.serviceName) {
       setActiveServiceGroup("All");
       setSelectedServiceName(target.serviceName);
+      if (!isGenericStudy) setNvidiaServiceScreen("detail");
+    }
+    if (target.builderPathId) setSelectedGeneralPathId(target.builderPathId);
+    if (target.cardId) {
+      setSelectedGeneralCardId(target.cardId);
+      setHighlightedGeneralCardId(target.cardId);
+      setGeneralStudyScreen("card");
+    } else if (target.builderPathId) {
+      setSelectedGeneralCardId("");
+      setGeneralStudyScreen("path");
     }
     if (target.stageId) setSelectedLifecycleStage(target.stageId);
     if (target.sectionName) {
       setActiveSectionExam(target.sectionExam || currentExamLabel);
       setSelectedSectionName(target.sectionName);
+      setNvidiaSectionScreen("detail");
     }
     if (target.suiteTopicId) setSelectedSuiteTopicId(target.suiteTopicId);
     if (target.studyPage) setStudyStatus(`Opened study route: ${target.studyPage}`);
-    scrollToTop();
+    if (options.scroll !== false && target.scrollMode !== "none") {
+      if (target.cardId) scrollToElementId(generalCardElementId(target.cardId));
+      else scrollToTop();
+    }
   }
 
   useEffect(() => {
@@ -3414,21 +4903,31 @@ function StudyModePanel({
   const suiteTopics = currentExamLabel === "Agentic AI General" ? GENERAL_SUITE_TOPICS : NVIDIA_SUITE_TOPICS;
   const selectedSuiteTopic = suiteTopics.find((topic) => topic.id === selectedSuiteTopicId) || suiteTopics[0];
   const filteredSections = studySections.filter((section) => section.exam === currentExamLabel);
-  const selectedSection = studySections.find((section) => section.name === selectedSectionName) || filteredSections[0] || studySections[0];
+  const selectedSection = filteredSections.find((section) => section.name === selectedSectionName) || filteredSections[0] || studySections[0];
   const lifecycleFlow = LIFECYCLE_FLOWS[currentExamLabel];
   const activeLifecycleStage = lifecycleFlow?.stages.find((stage) => lifecycleStageKey(stage) === selectedLifecycleStage) || lifecycleFlow?.stages[0] || null;
-  const lifecycleTabLabel = currentExamLabel === "Agentic AI" ? "Exam Concept Map" : "By Lifecycle";
-  const studyChatTopic = effectiveStudyView === "sections"
-    ? selectedSection.name
+  const selectedGeneralPath = selectedGeneralPathId ? findGeneralBuilderPath(selectedGeneralPathId) : null;
+  const selectedGeneralCard = selectedGeneralPath && selectedGeneralCardId
+    ? selectedGeneralPath.cards.find((card) => card.id === selectedGeneralCardId) || null
+    : null;
+  const selectedGeneralStudy = { path: selectedGeneralPath, card: selectedGeneralCard };
+  const generalStudyChatTopic = selectedGeneralStudy.path && selectedGeneralStudy.card
+    ? `${selectedGeneralStudy.path.title} / ${selectedGeneralStudy.card.title}`
+    : selectedGeneralStudy.path
+      ? selectedGeneralStudy.path.title
+      : "General Study / Builder Paths";
+  const studyChatTopic = isGenericStudy
+    ? generalStudyChatTopic
+    : effectiveStudyView === "sections"
+    ? nvidiaSectionScreen === "detail" ? selectedSection.name : `${currentExamLabel} official exam chapters`
     : effectiveStudyView === "services"
-      ? selectedService.name
+      ? nvidiaServiceScreen === "detail" ? selectedService.name : `${currentExamLabel} NVIDIA service boundaries`
       : effectiveStudyView === "suite"
         ? selectedSuiteTopic.title
         : activeLifecycleStage?.name || currentExamLabel;
   const groupedServices = SERVICE_GROUPS
     .map((group) => ({ ...group, services: sortServicesForStudyContext(filteredServices.filter((service) => serviceGroupName(service) === group.name), activeServiceFilter, currentExamLabel) }))
     .filter((group) => group.services.length);
-  const lifecyclePlaybookLaneGroups = isGenericStudy ? lifecyclePlaybookGroups(examServices, activeServiceFilter, currentExamLabel) : [];
   const otherServices = filteredServices.filter((service) => !SERVICE_GROUPS.some((group) => group.name === serviceGroupName(service)));
   const serviceFilterLabels = serviceFilterLabelsForExam(currentExamLabel, examServices, topicFilters);
 
@@ -3461,8 +4960,16 @@ function StudyModePanel({
     startSectionPractice(selectedSection.name);
   }
 
+  function openNvidiaServicePage(serviceName) {
+    if (!serviceName) return;
+    setSelectedServiceName(serviceName);
+    setNvidiaServiceScreen("detail");
+    scrollToStudyPanel();
+  }
+
   function selectServiceGroup(groupName) {
     setActiveServiceGroup(groupName);
+    setNvidiaServiceScreen("list");
     const first = firstServiceForFilters(examServices, activeServiceFilter, groupName, currentExamLabel);
     if (first) {
       setSelectedServiceName(first.name);
@@ -3477,6 +4984,7 @@ function StudyModePanel({
 
   function selectServiceFilter(filter) {
     setActiveServiceFilter(filter);
+    setNvidiaServiceScreen("list");
     const first = firstServiceForFilters(examServices, filter, activeServiceGroup, currentExamLabel);
     if (first) {
       setSelectedServiceName(first.name);
@@ -3491,6 +4999,7 @@ function StudyModePanel({
 
   function openServiceFromLifecycle(serviceName, stage = activeLifecycleStage) {
     setSelectedServiceName(serviceName);
+    setNvidiaServiceScreen("detail");
     setActiveServiceGroup("All");
     const nextFilter = lifecycleStageToServiceFilter(stage, currentExamLabel);
     if (nextFilter) setActiveServiceFilter(nextFilter);
@@ -3500,7 +5009,16 @@ function StudyModePanel({
   function openSectionFromLifecycle(sectionName) {
     setActiveSectionExam(currentExamLabel);
     setSelectedSectionName(sectionName);
+    setNvidiaServiceScreen("list");
+    setNvidiaSectionScreen("detail");
     setStudyView("sections");
+    scrollToStudyPanel();
+  }
+
+  function showNvidiaSectionIndex() {
+    setStudyView("sections");
+    setNvidiaSectionScreen("list");
+    scrollToStudyPanel();
   }
 
   function openStudyRouteFromLifecycle(studyPage) {
@@ -3514,6 +5032,70 @@ function StudyModePanel({
       return;
     }
     setSelectedCertSlug?.(target.certSlug);
+  }
+
+  function openConceptLookupEntry(entry) {
+    const target = entry.target || (entry.studyPage ? studyRouteJumpTarget(entry.studyPage) : null);
+    if (!target) return;
+    const nextTarget = { ...target, studyPage: entry.title, scrollMode: "none" };
+    setTrack?.("study");
+    if (target.certSlug && currentCertSlug !== target.certSlug) {
+      setPendingStudyJump?.(nextTarget);
+      setSelectedCertSlug?.(target.certSlug);
+      return;
+    }
+    applyStudyJumpTarget(nextTarget, { scroll: false });
+    if ((target.studyView || "") === "builder" && target.cardId) {
+      scrollToElementId(generalCardElementId(target.cardId));
+      return;
+    }
+    if (!isAgenticExam && (target.studyView || "lifecycle") === "lifecycle" && target.stageId) {
+      scrollToElementId(`lifecycle-stage-${topicSlug(target.stageId)}`);
+    }
+  }
+
+  function selectGeneralBuilderPath(pathId) {
+    const path = findGeneralBuilderPath(pathId);
+    if (!path) return;
+    setSelectedGeneralPathId(path.id);
+    setSelectedGeneralCardId("");
+    setHighlightedGeneralCardId("");
+    setGeneralStudyScreen("path");
+    scrollToStudyPanel();
+  }
+
+function selectGeneralBuilderCard(cardId) {
+    if (!selectedGeneralPathId) setSelectedGeneralPathId(generalBuilderPaths[0]?.id || "");
+    setSelectedGeneralCardId(cardId);
+    setHighlightedGeneralCardId(cardId);
+    setGeneralStudyScreen("card");
+    scrollToElementId(generalCardElementId(cardId), "start");
+  }
+
+  function showGeneralBuilderPaths() {
+    setSelectedGeneralPathId("");
+    setSelectedGeneralCardId("");
+    setHighlightedGeneralCardId("");
+    setGeneralStudyScreen("paths");
+    scrollToStudyPanel();
+  }
+
+  function showGeneralBuilderPath(pathId = selectedGeneralPathId) {
+    const path = findGeneralBuilderPath(pathId);
+    if (!path) return;
+    setSelectedGeneralPathId(path.id);
+    setSelectedGeneralCardId("");
+    setHighlightedGeneralCardId("");
+    setGeneralStudyScreen("path");
+    scrollToStudyPanel();
+  }
+
+  function openGeneralSearchResult(result) {
+    setSelectedGeneralPathId(result.builderPathId);
+    setSelectedGeneralCardId(result.cardId);
+    setHighlightedGeneralCardId(result.cardId);
+    setGeneralStudyScreen("card");
+    scrollToElementId(generalCardElementId(result.cardId), "start");
   }
 
   const familyFilterGroup = h("div", { key: "family", className: "filter-group filter-group-family" },
@@ -3578,7 +5160,7 @@ function StudyModePanel({
         value: serviceSelectValue,
         disabled: !filteredServices.length,
         onChange: (event) => {
-          if (event.target.value) setSelectedServiceName(event.target.value);
+          if (event.target.value) openNvidiaServicePage(event.target.value);
         }
       },
         h("option", { value: "", disabled: true }, filteredServices.length ? "Choose a service..." : "No services match these filters"),
@@ -3594,143 +5176,303 @@ function StudyModePanel({
       )
     )
   );
+  const studyChatNode = h(StudyChatPanel, {
+    certSlug: exam.slug || "genai_llms_professional",
+    topic: studyChatTopic,
+    examples: isGenericStudy ? generalTutorExamples(selectedGeneralStudy.card) : undefined,
+    inline: true
+  });
+
+  if (isGenericStudy) {
+    return h(
+      "div",
+      { className: "study-panel", id: "study-mode-panel" },
+      h(
+        "div",
+        { className: "study-head" },
+        h("div", null,
+          h("h2", null, "Study Mode"),
+          h("p", null, branding.studyDescription)
+        )
+      ),
+      h(GeneralBuilderStudy, {
+        screen: generalStudyScreen,
+        selectedPathId: selectedGeneralPathId,
+        selectedCardId: selectedGeneralCardId,
+        highlightedCardId: highlightedGeneralCardId,
+        searchQuery: conceptLookupQuery,
+        setSearchQuery: setConceptLookupQuery,
+        tutorNode: studyChatNode,
+        onSelectPath: selectGeneralBuilderPath,
+        onSelectCard: selectGeneralBuilderCard,
+        onShowPaths: showGeneralBuilderPaths,
+        onShowPath: showGeneralBuilderPath,
+        onOpenSearchResult: openGeneralSearchResult
+      })
+    );
+  }
+
+  const nvidiaConceptEntries = STUDY_CONCEPT_LOOKUP[currentExamLabel] || [];
+  const nvidiaConceptFinder = nvidiaConceptEntries.length ? h(StudyConceptFinder, {
+    entries: nvidiaConceptEntries,
+    query: conceptLookupQuery,
+    setQuery: setConceptLookupQuery,
+    onOpen: openConceptLookupEntry
+  }) : null;
+  const nvidiaToolsNode = h(StudyToolsBar, { tutorNode: studyChatNode, searchRouter: nvidiaConceptFinder });
+  const nvidiaTabsNode = h(NvidiaStudyTabs, {
+    activeView: effectiveStudyView,
+    onSelectView: (view) => {
+      if (view === "sections") {
+        showNvidiaSectionIndex();
+        return;
+      }
+      setStudyView(view);
+      if (view === "services") setNvidiaServiceScreen("list");
+    },
+    branding,
+    currentExamLabel
+  });
+  const sectionNav = h(NvidiaSectionChapterNav, {
+    sections: filteredSections,
+    selectedSection,
+    onSelectSection: openSectionFromLifecycle,
+    eyebrow: "Official chapter index",
+    title: "Exam chapters"
+  });
+  const serviceFilterNode = h(NvidiaServiceFilterStrip, {
+    sectionFilters: serviceFilterLabels,
+    activeSectionFilter: activeServiceFilter,
+    onSectionFilter: selectServiceFilter,
+    familyGroups: availableServiceGroups,
+    activeFamily: activeServiceGroup,
+    onFamily: selectServiceGroup,
+    services: filteredServices,
+    selectedServiceName: selectedService.name,
+    onService: openNvidiaServicePage
+  });
+  const serviceIndexNode = h(NvidiaServiceIndex, {
+    services: filteredServices,
+    selectedService,
+    onSelectService: openNvidiaServicePage,
+    currentExamLabel
+  });
+
+  function renderNvidiaPage({ viewKey, viewLabel, itemLabel = "", header, beforeNav = null, navNode = null, bodyNode, prevNextNode = null, relatedNode = null, onHome = null, onView = null }) {
+    return h("div", { className: `nvidia-handbook-page nvidia-handbook-${viewKey}` },
+      h(NvidiaStudyBreadcrumbs, {
+        examLabel: currentExamLabel,
+        viewLabel,
+        itemLabel,
+        onHome: onHome || (() => setStudyView(defaultNvidiaStudyView)),
+        onView: onView || (() => setStudyView(viewKey))
+      }),
+      h(NvidiaStudyPageHeader, header),
+      nvidiaToolsNode,
+      nvidiaTabsNode,
+      beforeNav,
+      navNode,
+      bodyNode,
+      prevNextNode,
+      relatedNode,
+      studyStatus ? h("p", { className: "study-status" }, studyStatus) : null
+    );
+  }
+
+  const lifecycleStages = lifecycleFlow?.stages || [];
+  const selectedStageId = activeLifecycleStage ? lifecycleStageKey(activeLifecycleStage) : "";
+  const activeStageTitle = activeLifecycleStage?.name || currentExamLabel;
+  const lifecyclePage = renderNvidiaPage({
+    viewKey: "lifecycle",
+    viewLabel: "Study Handbook",
+    itemLabel: activeStageTitle,
+    header: {
+      eyebrow: `NVIDIA · ${exam.certification?.code || currentExamLabel}`,
+      title: `${currentExamLabel} Study Handbook`,
+      subtitle: branding.studyDescription,
+      badges: ["Technical handbook", `${filteredSections.length} official sections`, `${examServices.length} NVIDIA references`],
+      tags: filteredSections.slice(0, 4).map((section) => `${section.name} · ${section.weight}%`)
+    },
+    navNode: sectionNav,
+    bodyNode: h(LifecycleFlow, {
+      examLabel: currentExamLabel,
+      selectedStageId,
+      onSelectStage: setSelectedLifecycleStage,
+      onSelectService: openServiceFromLifecycle,
+      onSelectSection: openSectionFromLifecycle,
+      onSelectStudyPage: openStudyRouteFromLifecycle,
+      branding
+    }),
+    prevNextNode: h(NvidiaPrevNextNav, {
+      items: lifecycleStages,
+      selectedId: selectedStageId,
+      getId: lifecycleStageId,
+      getTitle: (stage) => stage.name,
+      onSelect: (stage) => setSelectedLifecycleStage(lifecycleStageKey(stage)),
+      previousLabel: "Previous concept",
+      nextLabel: "Next concept"
+    }),
+    relatedNode: h(NvidiaRelatedLinks, {
+      items: filteredSections,
+      selectedId: selectedSection.name,
+      getId: nvidiaSectionId,
+      getTitle: (section) => section.name,
+      getMeta: (section) => `${section.weight}%`,
+      onSelect: (section) => openSectionFromLifecycle(section.name),
+      eyebrow: "Related official sections",
+      title: "Open a full exam chapter"
+    })
+  });
+
+  const sectionsListPage = renderNvidiaPage({
+    viewKey: "sections",
+    viewLabel: "Exam Sections",
+    itemLabel: "",
+    header: {
+      eyebrow: `Official chapters · ${currentExamLabel}`,
+      title: "Official Exam Chapters",
+      subtitle: "Official blueprint chapters for the selected certification, ordered by exam weight and concept flow.",
+      badges: ["Exam Sections", `${filteredSections.length} official chapters`, currentExamLabel],
+      tags: filteredSections.slice(0, 4).map((section) => `${section.name} · ${section.weight}%`)
+    },
+    onHome: showNvidiaSectionIndex,
+    onView: showNvidiaSectionIndex,
+    navNode: sectionNav
+  });
+
+  const sectionDetailPage = renderNvidiaPage({
+    viewKey: "sections",
+    viewLabel: "Exam Sections",
+    itemLabel: selectedSection.name,
+    header: {
+      eyebrow: `Official chapter · ${currentExamLabel}`,
+      title: selectedSection.name,
+      subtitle: selectedSection.description,
+      badges: ["Official chapter", `${selectedSection.weight}% exam weight`, currentExamLabel],
+      tags: selectedSection.keyIdeas || []
+    },
+    onHome: showNvidiaSectionIndex,
+    onView: showNvidiaSectionIndex,
+    beforeNav: h(NvidiaSectionJumpBar, {
+      sections: filteredSections,
+      selectedSection,
+      onSelectSection: openSectionFromLifecycle
+    }),
+    bodyNode: h(SectionDetail, {
+      section: selectedSection,
+      certSlug: exam.slug || "genai_llms_professional",
+      quickQuiz: quickSectionQuiz,
+      generateStudyQuiz,
+      quizDifficulty,
+      setQuizDifficulty,
+      studyStatus,
+      generationStatus,
+      cancelGeneration,
+      handbook: true
+    }),
+    prevNextNode: h(NvidiaPrevNextNav, {
+      items: filteredSections,
+      selectedId: selectedSection.name,
+      getId: nvidiaSectionId,
+      getTitle: (section) => section.name,
+      onSelect: (section) => openSectionFromLifecycle(section.name),
+      previousLabel: "Previous section",
+      nextLabel: "Next section"
+    })
+  });
+
+  const serviceListPage = renderNvidiaPage({
+    viewKey: "services",
+    viewLabel: branding.serviceLabel,
+    itemLabel: "",
+    header: {
+      eyebrow: `NVIDIA services · ${currentExamLabel}`,
+      title: "NVIDIA Service Pages",
+      subtitle: "Filter the product map, then open one service as its own study chapter.",
+      badges: ["Services", `${filteredServices.length} visible`, currentExamLabel],
+      tags: activeServiceFilter === "All" ? [] : [activeServiceFilter]
+    },
+    beforeNav: serviceFilterNode,
+    bodyNode: serviceIndexNode
+  });
+
+  const serviceDetailPage = renderNvidiaPage({
+    viewKey: "services",
+    viewLabel: branding.serviceLabel,
+    itemLabel: selectedService.name,
+    header: {
+      eyebrow: `${branding.serviceLabel} · ${currentExamLabel}`,
+      title: selectedService.name,
+      subtitle: serviceSummaryText(selectedService),
+      badges: [branding.serviceLabel, selectedService.lifecycle || serviceGroupName(selectedService), currentExamLabel],
+      tags: (selectedService.keywords || selectedService.filters || []).slice(0, 8)
+    },
+    onView: () => {
+      setStudyView("services");
+      setNvidiaServiceScreen("list");
+    },
+    bodyNode: h(ServiceDetail, {
+      service: selectedService,
+      certSlug: exam.slug || "genai_llms_professional",
+      quickQuiz: quickServiceQuiz,
+      generateStudyQuiz,
+      quizDifficulty,
+      setQuizDifficulty,
+      studyStatus,
+      generationStatus,
+      cancelGeneration,
+      branding,
+      showLifecyclePriority: false,
+      activeServiceFilter,
+      currentExamLabel,
+      handbook: true
+    }),
+    prevNextNode: h(NvidiaPrevNextNav, {
+      items: filteredServices,
+      selectedId: selectedService.name,
+      getId: nvidiaServiceId,
+      getTitle: (service) => service.name,
+      onSelect: (service) => openNvidiaServicePage(service.name),
+      previousLabel: "Previous concept",
+      nextLabel: "Next concept"
+    })
+  });
+
+  const suitePage = renderNvidiaPage({
+    viewKey: "suite",
+    viewLabel: branding.suiteLabel,
+    itemLabel: selectedSuiteTopic.title,
+    header: {
+      eyebrow: `${branding.suiteLabel} · ${currentExamLabel}`,
+      title: selectedSuiteTopic.title,
+      subtitle: selectedSuiteTopic.summary,
+      badges: [branding.suiteLabel, selectedSuiteTopic.category, currentExamLabel],
+      tags: (selectedSuiteTopic.related || []).slice(0, 8)
+    },
+    bodyNode: h(SuiteStudyView, {
+      topics: suiteTopics,
+      selectedTopic: selectedSuiteTopic,
+      setSelectedTopicId: setSelectedSuiteTopicId,
+      studyStatus,
+      suiteLabel: branding.suiteLabel,
+      handbook: true
+    })
+  });
 
   return h(
     "div",
-    { className: "study-panel" },
-    h(
-      "div",
-      { className: "study-head" },
-      h("div", null,
-        h("h2", null, "Study Mode"),
-        h("p", null, branding.studyDescription)
-      )
-    ),
-    h(
-      "div",
-      { className: `study-tabs ${isGenericStudy ? "study-tabs-compact" : ""}` },
-      isGenericStudy
-        ? [
-            h("button", { key: "lifecycle", className: effectiveStudyView === "lifecycle" ? "active" : "", onClick: () => setStudyView("lifecycle") }, "Lifecycle map"),
-            h("button", { key: "services", className: effectiveStudyView === "services" ? "active" : "", onClick: () => setStudyView("services") }, "Study Playbooks")
-          ]
-        : [
-            h("button", { key: "suite", className: effectiveStudyView === "suite" ? "active" : "", onClick: () => setStudyView("suite") }, branding.suiteLabel),
-            h("button", { key: "lifecycle", className: effectiveStudyView === "lifecycle" ? "active" : "", onClick: () => setStudyView("lifecycle") }, lifecycleTabLabel),
-            h("button", { key: "services", className: effectiveStudyView === "services" ? "active" : "", onClick: () => setStudyView("services") }, branding.serviceLabel),
-            h("button", { key: "sections", className: effectiveStudyView === "sections" ? "active" : "", onClick: () => setStudyView("sections") }, "Exam Sections")
-          ]
-    ),
-    h(StudyChatPanel, {
-      certSlug: exam.slug || "genai_llms_professional",
-      topic: studyChatTopic,
-      inline: true
-    }),
-    effectiveStudyView === "lifecycle"
-      ? h(React.Fragment, null,
-          h(LifecycleFlow, {
-            examLabel: currentExamLabel,
-            selectedStageId: activeLifecycleStage ? lifecycleStageKey(activeLifecycleStage) : "",
-            onSelectStage: setSelectedLifecycleStage,
-            onSelectService: openServiceFromLifecycle,
-            onSelectSection: openSectionFromLifecycle,
-            onSelectStudyPage: openStudyRouteFromLifecycle,
-            branding
-          })
-        )
-      : effectiveStudyView === "services"
-      ? h(React.Fragment, null,
-          h("div", { className: "service-filter-panel" },
-            isGenericStudy
-              ? [lifecycleContextFilterGroup, serviceSelectorGroup]
-              : isLifecycleAwareNvidia ? [lifecycleContextFilterGroup, familyFilterGroup, serviceSelectorGroup] : [familyFilterGroup, lifecycleContextFilterGroup, serviceSelectorGroup]
-          ),
-          h(
-            "div",
-            { className: "service-layout" },
-            h(
-              "div",
-              { className: "service-cards" },
-              isGenericStudy
-                ? lifecyclePlaybookLaneGroups.map((group) => h("section", {
-                    key: group.lane,
-                    className: `service-group lifecycle-playbook-group lifecycle-lane-${topicSlug(group.lane)}`
-                  },
-                    h("h3", null, group.lane),
-                    group.description ? h("p", { className: "service-group-note" }, group.description) : null,
-                    group.entries.map(({ service, stage }) => h(LifecyclePlaybookCard, {
-                      key: `${stage.id}-${service.name}`,
-                      service,
-                      stage,
-                      selected: service.name === selectedService.name,
-                      onClick: () => {
-                        setSelectedLifecycleStage(lifecycleStageKey(stage));
-                        setSelectedServiceName(service.name);
-                      }
-                    }))
-                  ))
-                : [
-                    ...groupedServices.map((group) => h("section", { key: group.name, className: `service-group ${group.className}` },
-                      h("h3", null, group.name),
-                      group.services.map((service) => h(ServiceCard, {
-                        key: service.name,
-                        service,
-                        selected: service.name === selectedService.name,
-                        showLifecyclePriority: isLifecycleAwareNvidia,
-                        activeServiceFilter,
-                        currentExamLabel,
-                        onClick: () => setSelectedServiceName(service.name)
-                      }))
-                    )),
-                    otherServices.length
-                      ? h("section", { key: "other", className: "service-group" },
-                          h("h3", null, "Other capabilities"),
-                          otherServices.map((service) => h(ServiceCard, {
-                            key: service.name,
-                            service,
-                            selected: service.name === selectedService.name,
-                            showLifecyclePriority: isLifecycleAwareNvidia,
-                            activeServiceFilter,
-                            currentExamLabel,
-                            onClick: () => setSelectedServiceName(service.name)
-                          }))
-                        )
-                      : null
-                  ]
-            ),
-            h(ServiceDetail, { service: selectedService, certSlug: exam.slug || "genai_llms_professional", quickQuiz: quickServiceQuiz, generateStudyQuiz, quizDifficulty, setQuizDifficulty, studyStatus, generationStatus, cancelGeneration, branding, showLifecyclePriority: isLifecycleAwareNvidia, activeServiceFilter, currentExamLabel })
-          )
-        )
+    { className: "study-panel nvidia-study-panel", id: "study-mode-panel" },
+    effectiveStudyView === "services"
+      ? nvidiaServiceScreen === "detail" ? serviceDetailPage : serviceListPage
       : effectiveStudyView === "suite"
-      ? h(SuiteStudyView, {
-          topics: suiteTopics,
-          selectedTopic: selectedSuiteTopic,
-          setSelectedTopicId: setSelectedSuiteTopicId,
-          studyStatus,
-          suiteLabel: branding.suiteLabel
-        })
-      : h(React.Fragment, null,
-          h("p", { className: "study-scope" }, `${currentExamLabel} blueprint sections only. Change the certification selector above to switch exams.`),
-          h(
-            "div",
-            { className: "service-layout" },
-            h(
-              "div",
-              { className: "service-cards" },
-              filteredSections.map((section) => h(SectionCard, {
-                key: `${section.exam}-${section.name}`,
-                section,
-                selected: section.name === selectedSection.name,
-                onClick: () => setSelectedSectionName(section.name)
-              }))
-            ),
-            h(SectionDetail, { section: selectedSection, certSlug: exam.slug || "genai_llms_professional", quickQuiz: quickSectionQuiz, generateStudyQuiz, quizDifficulty, setQuizDifficulty, studyStatus, generationStatus, cancelGeneration })
-          )
-        )
+        ? suitePage
+        : effectiveStudyView === "sections"
+          ? nvidiaSectionScreen === "detail" ? sectionDetailPage : sectionsListPage
+          : lifecyclePage
   );
 }
 
-function ServiceCard({ service, selected, onClick, priorityRole = "", showLifecyclePriority = false, activeServiceFilter = "All", currentExamLabel = "Agentic AI" }) {
+function ServiceCard({ service, selected, onClick, priorityRole = "", showLifecyclePriority = false, activeServiceFilter = "All", currentExamLabel = "Agentic AI", compact = false, index = 0 }) {
   const usageSummary = showLifecyclePriority ? allLifecycleUsageBadges(service, activeServiceFilter, currentExamLabel) : [];
   const activeUsage = showLifecyclePriority ? bestLifecycleUsage(service, activeServiceFilter, currentExamLabel) || usageSummary[0] : null;
   const priorityLabel = priorityRole === "core"
@@ -3738,6 +5480,24 @@ function ServiceCard({ service, selected, onClick, priorityRole = "", showLifecy
     : priorityRole === "optional"
       ? "Support"
       : "";
+  if (compact) {
+    return h("button", {
+      className: `service-card nvidia-compact-nav-row nvidia-service-nav-row ${serviceGroupClass(service)} ${selected ? "active" : ""}`,
+      type: "button",
+      onClick,
+      "aria-current": selected ? "page" : undefined
+    },
+      h("span", { className: "nvidia-row-number" }, String(index || 1).padStart(2, "0")),
+      h("span", { className: "nvidia-row-copy" },
+        h("strong", null, service.name),
+        h("p", null, compactStudyText(serviceSummaryText(service), 132))
+      ),
+      h("span", { className: "nvidia-row-meta" }, service.lifecycle || serviceGroupName(service)),
+      h("span", { className: "nvidia-row-chips" },
+        (service.filters || service.exams || []).slice(0, 3).map((item) => h("span", { key: item }, item))
+      )
+    );
+  }
   return h(
     "button",
     { className: `service-card ${serviceGroupClass(service)} ${priorityRole ? `stage-${priorityRole}` : ""} ${selected ? "active" : ""}`, onClick },
@@ -3757,7 +5517,27 @@ function ServiceCard({ service, selected, onClick, priorityRole = "", showLifecy
   );
 }
 
-function SectionCard({ section, selected, onClick }) {
+function SectionCard({ section, selected, onClick, compact = false, index = 0 }) {
+  if (compact) {
+    return h(
+      "button",
+      {
+        className: `service-card section-card nvidia-compact-nav-row nvidia-section-nav-row ${selected ? "active" : ""}`,
+        type: "button",
+        onClick,
+        "aria-current": selected ? "page" : undefined
+      },
+      h("span", { className: "nvidia-row-number" }, String(index || 1).padStart(2, "0")),
+      h("span", { className: "nvidia-row-copy" },
+        h("strong", null, section.name),
+        h("p", null, compactStudyText(section.description, 150))
+      ),
+      h("span", { className: "nvidia-row-meta" }, `${section.weight}% exam weight`),
+      h("span", { className: "nvidia-row-chips" },
+        section.keyIdeas.slice(0, 4).map((idea) => h("span", { key: idea }, idea))
+      )
+    );
+  }
   return h(
     "button",
     { className: `service-card section-card ${selected ? "active" : ""}`, onClick },
@@ -3768,11 +5548,42 @@ function SectionCard({ section, selected, onClick }) {
   );
 }
 
-function SuiteStudyView({ topics, selectedTopic, setSelectedTopicId, studyStatus, suiteLabel }) {
+function SuiteStudyView({ topics, selectedTopic, setSelectedTopicId, studyStatus, suiteLabel, handbook = false }) {
   const grouped = [...new Set(topics.map((topic) => topic.category))].map((category) => ({
     category,
     topics: topics.filter((topic) => topic.category === category)
   }));
+
+  if (handbook) {
+    return h("div", { className: "nvidia-suite-handbook" },
+      h("nav", { className: "general-compact-chapter-nav nvidia-compact-chapter-nav", "aria-label": suiteLabel },
+        h("div", { className: "general-focused-nav-head" },
+          h("span", null, suiteLabel),
+          h("h2", null, "Compact related links")
+        ),
+        h("div", { className: "nvidia-compact-row-list" },
+          topics.map((topic, index) => h("button", {
+            key: topic.id,
+            type: "button",
+            className: `service-card suite-topic-card nvidia-compact-nav-row ${topic.id === selectedTopic.id ? "active" : ""}`,
+            onClick: () => setSelectedTopicId(topic.id),
+            "aria-current": topic.id === selectedTopic.id ? "page" : undefined
+          },
+            h("span", { className: "nvidia-row-number" }, String(index + 1).padStart(2, "0")),
+            h("span", { className: "nvidia-row-copy" },
+              h("strong", null, topic.title),
+              h("p", null, compactStudyText(topic.summary, 145))
+            ),
+            h("span", { className: "nvidia-row-meta" }, topic.category),
+            h("span", { className: "nvidia-row-chips" },
+              topic.related.slice(0, 3).map((item) => h("span", { key: item }, item))
+            )
+          ))
+        )
+      ),
+      h(SuiteTopicDetail, { topic: selectedTopic, studyStatus, suiteLabel, handbook: true })
+    );
+  }
 
   return h(
     "div",
@@ -3805,11 +5616,11 @@ function SuiteTopicCard({ topic, selected, onClick }) {
   );
 }
 
-function SuiteTopicDetail({ topic, studyStatus, suiteLabel }) {
+function SuiteTopicDetail({ topic, studyStatus, suiteLabel, handbook = false }) {
   return h(
     "article",
-    { className: "service-detail suite-detail" },
-    h("div", { className: "service-detail-title" },
+    { className: `service-detail suite-detail nvidia-detail-article ${handbook ? "nvidia-handbook-article" : ""}`.trim() },
+    handbook ? null : h("div", { className: "service-detail-title" },
       h("span", null, suiteLabel),
       h("h3", null, topic.title),
       h("p", null, topic.summary)
@@ -3973,8 +5784,8 @@ function ImplementationCards({ impl }) {
 function ExamDecisionCards({ study }) {
   return h("div", { className: "exam-decision service-section" },
     h("div", { className: "service-section-heading" },
-      h("span", null, "Decision guide"),
-      h("h4", null, "Choose by adjacent-service clues")
+      h("span", null, "Service guide"),
+      h("h4", null, "Place it in the right part of the stack")
     ),
     h("div", { className: "study-map" },
       h("section", { className: "identity" },
@@ -3983,19 +5794,19 @@ function ExamDecisionCards({ study }) {
         h("p", null, renderInline(study.where))
       ),
       h("section", { className: "use" },
-        h("span", null, "Choose this when"),
+        h("span", null, "Use it when"),
         h("p", null, renderInline(study.use))
       ),
       h("section", { className: "avoid" },
-        h("span", null, "Choose another service when"),
+        h("span", null, "Use something else when"),
         h("p", null, renderInline(study.avoid))
       ),
       h("section", { className: "trap" },
-        h("span", null, "Real trap"),
+        h("span", null, "Common mix-up"),
         h("p", null, renderInline(study.traps))
       ),
       h("section", { className: "scenario" },
-        h("span", null, "Recognition clues"),
+        h("span", null, "Typical situation"),
         h("p", null, renderInline(study.scenario))
       )
     )
@@ -4146,6 +5957,7 @@ function buildStudyFlow({ markdown, title, kind = "Service", impl = null, fallba
     || impl?.nextStep
     || steps[steps.length - 1]
     || firstStudyFirstValue(markdown, "Output")
+    || valueFromCardData(generatedBlock(markdown), "Scenario signal")
     || valueFromCardData(generatedBlock(markdown), "Recognition clues")
     || "Correct service choice, architecture boundary, or study decision.";
   if (!summary && !input && !output && !codeChips.length) return null;
@@ -4323,7 +6135,363 @@ function LifecycleUsagePanel({ service, activeServiceFilter = "All", currentExam
   );
 }
 
-function ServiceDetail({ service, certSlug, quickQuiz, generateStudyQuiz, quizDifficulty, setQuizDifficulty, studyStatus, generationStatus, cancelGeneration, branding = { serviceLabel: "Service" }, showLifecyclePriority = false, activeServiceFilter = "All", currentExamLabel = "Agentic AI" }) {
+const NVIDIA_SECTION_CODE_EXAMPLES = {
+  "Agent Architecture and Design": {
+    label: "Architecture pattern to recognize",
+    code: `[User request]
+  -> risk_and_complexity_router
+     -> deterministic FAQ path
+     -> RAG path with cited evidence
+     -> stateful workflow / ReAct path
+     -> human approval path
+
+execution_layer.validate(action.schema, permissions, risk)
+workflow_state = { observations, approvals, tool_budget, stop_condition }`
+  },
+  "Agent Development": {
+    label: "Tool wrapper contract",
+    code: `tool:
+  name: refund_order
+  schema:
+    required: [order_id, reason]
+    properties:
+      order_id: { type: string }
+      reason: { type: string, enum: [duplicate, damaged, late] }
+  preconditions: [authenticated, policy_checked, amount_under_limit]
+  retry:
+    max_attempts: 3
+    backoff: exponential
+    idempotency_key: required
+  observation:
+    shape: { summary, key_fields, audit_ref }`
+  },
+  "Evaluation and Tuning": {
+    label: "Evaluation harness shape",
+    code: `eval_suite:
+  dataset: agent_regression_cases.jsonl
+  checks: [task_success, tool_choice, groundedness, safety, latency]
+  judge: llm_as_judge_with_rubric
+  gates:
+    groundedness: ">= 0.90"
+    unsafe_output_rate: "== 0"
+    p95_latency_ms: "<= 2500"`
+  },
+  "Deployment and Scaling": {
+    label: "Production serving boundary",
+    code: `client -> API gateway -> agent runtime -> NIM endpoint
+                                  -> retrieval service
+                                  -> tool gateway
+
+scale separately:
+  agent workers: concurrency and queues
+  model serving: batching, KV cache, GPU profiles
+  tools/RAG: rate limits, indexes, caches`
+  },
+  "Cognition, Planning, and Memory": {
+    label: "Bounded planning loop",
+    code: `while budget.remaining() and not state.done:
+    plan = planner(goal, state.observations, memory.scope(user_id))
+    action = policy.validate(plan.next_action)
+    observation = tools.run(action)
+    state.save(observation)
+    if loop_detector.repeated(action, observation):
+        escalate_or_replan(state)`
+  },
+  "Knowledge Integration and Data Handling": {
+    label: "RAG data path",
+    code: `documents -> extract -> chunk -> embed -> index
+query -> retrieve -> rerank -> assemble_context -> answer_with_citations
+
+preserve:
+  source_id, permissions, timestamp, chunk_id, citation span`
+  },
+  "NVIDIA Platform Implementation": {
+    label: "NVIDIA stack map",
+    code: `NeMo Agent Toolkit -> workflow, tools, memory, traces
+NeMo Retriever     -> extract, embed, retrieve, rerank, cite
+NIM                -> callable model endpoints
+NeMo Guardrails    -> runtime policy checks
+NeMo Evaluator     -> quality and regression gates
+Nsight             -> performance diagnosis`
+  },
+  "Run, Monitor, and Maintain": {
+    label: "Operational trace record",
+    code: `trace:
+  run_id: aai-2026-0517-001
+  route: risk_router -> rag -> tool_gateway -> answer
+  tool_calls: [{ name, args_hash, status, latency_ms }]
+  retrieval: { recall_set, citations, reranker_score }
+  quality: { groundedness, policy_result, user_feedback }
+  action: alert | rollback | tune_prompt | update_eval`
+  },
+  "Safety, Ethics, and Compliance": {
+    label: "Layered policy checks",
+    code: `policy_layers:
+  input: [jailbreak, pii, disallowed_topic]
+  retrieval: [permission_filter, source_policy]
+  tool_call: [schema, authorization, risk_gate]
+  output: [groundedness, refusal_policy, disclosure_rules]
+  audit: [trace_id, approval_id, evidence_refs]`
+  },
+  "Human-AI Interaction and Oversight": {
+    label: "Oversight routing",
+    code: `if risk_score > threshold or confidence < minimum:
+    create_review_task(
+      proposed_action=agent.next_action,
+      evidence=state.citations,
+      reversible=policy.is_reversible(agent.next_action),
+      approval_required=True
+    )`
+  }
+};
+
+function chapterCodeExampleFor(title, kind, markdown) {
+  if (kind === "section" && NVIDIA_SECTION_CODE_EXAMPLES[title]) {
+    return NVIDIA_SECTION_CODE_EXAMPLES[title];
+  }
+  const block = firstCodeBlocks(markdown, 1)[0];
+  if (!block) return null;
+  return { label: "Code/config surface to recognize", code: block.code };
+}
+
+function NvidiaChapterCodeCallout({ title, kind, markdown }) {
+  const example = chapterCodeExampleFor(title, kind, markdown);
+  if (!example?.code) return null;
+  return h("section", { className: "nvidia-chapter-code-callout" },
+    h("div", { className: "nvidia-chapter-code-copy" },
+      h("span", null, kind === "section" ? "Concrete pattern" : "Call surface"),
+      h("h3", null, example.label),
+      h("p", null, kind === "section"
+        ? "Use this as the shape to recognize in scenario questions before memorizing the surrounding notes."
+        : "Start from the concrete API, CLI, YAML, or model surface before reading product descriptions.")
+    ),
+    h("pre", null, h("code", null, example.code))
+  );
+}
+
+function nvidiaChapterBodyFromMarkdown(markdown) {
+  let body = stripFrontmatter(markdown).replace(/^#\s+.+\n+/, "");
+  [
+    "What to study first",
+    "Actual implementation / How you use it",
+    "At a glance",
+    "Certification boundary",
+    "General Study first",
+    "Must-know exam bullets",
+    "Hands-on checks / study prompts",
+    "Top terms to memorize",
+    "Mock signals"
+  ].forEach((heading) => {
+    body = removeMarkdownSection(body, heading);
+  });
+  body = removeMarkdownSection(body, "Study card data");
+  body = body.replace(/<!-- STUDY_ENRICHMENT_START -->\s*/g, "");
+  body = body.replace(/<!-- STUDY_ENRICHMENT_END -->/g, "");
+  return cleanMarkdownFragment(body);
+}
+
+function nvidiaFallbackChapterMarkdown(title, fallback = {}) {
+  const keyIdeas = fallback.keyIdeas || fallback.mustKnow || [];
+  return [
+    fallback.description ? `## What this chapter is about\n\n${fallback.description}` : "",
+    keyIdeas.length ? `## Core ideas\n\n${keyIdeas.map((item) => `- ${item}`).join("\n")}` : "",
+    fallback.use ? `## When this is the right chapter\n\n${fallback.use}` : "",
+    fallback.traps ? `## Exam traps\n\n${fallback.traps}` : "",
+    fallback.scenario ? `## Recognition clues\n\n${fallback.scenario}` : ""
+  ].filter(Boolean).join("\n\n").trim() || `## ${title}\n\nOpen the reference material below while this chapter loads.`;
+}
+
+function markdownHeadingEntries(markdown, levels = [2, 3], limit = 14) {
+  const wanted = new Set(levels);
+  const entries = [];
+  let inFence = false;
+  for (const line of String(markdown || "").split("\n")) {
+    if (/^```/.test(line.trim())) {
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) continue;
+    const match = line.match(/^(#{1,6})\s+(.+?)\s*$/);
+    if (!match) continue;
+    const level = match[1].length;
+    const title = match[2].trim();
+    if (wanted.has(level) && !/^deep dive contents$/i.test(title)) {
+      entries.push({ title, level });
+    }
+    if (entries.length >= limit) break;
+  }
+  return entries;
+}
+
+function scrollToNvidiaChapterHeading(title) {
+  const headings = [...document.querySelectorAll(".nvidia-topic-chapter-content .md-h")];
+  const target = headings.find((node) => node.textContent.trim() === title);
+  target?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function NvidiaChapterSectionMap({ markdown, kind = "section" }) {
+  const entries = markdownHeadingEntries(markdown);
+  if (entries.length < 3) return null;
+  return h("nav", { className: "nvidia-chapter-section-map", "aria-label": "Study section map" },
+    h("div", { className: "nvidia-chapter-section-map-head" },
+      h("span", null, kind === "section" ? "Section map" : "Page map"),
+      h("strong", null, kind === "section" ? "This exam section is split into study subtopics" : "Jump through this page")
+    ),
+    h("div", { className: "nvidia-chapter-section-map-list" },
+      entries.map((entry) => h("button", {
+        key: `${entry.level}-${entry.title}`,
+        type: "button",
+        className: entry.level > 2 ? "nested" : "",
+        onClick: () => scrollToNvidiaChapterHeading(entry.title)
+      }, entry.title))
+    )
+  );
+}
+
+function NvidiaChapterArticle({ state, title, fallback = {}, kind = "section", missingPath = "" }) {
+  const renderOptions = {
+    autoHighlight: true,
+    highlightSeen: new Set(),
+    highlightCount: { value: 0 },
+    maxHighlights: kind === "section" ? 34 : 26
+  };
+  const body = state.status === "ok"
+    ? nvidiaChapterBodyFromMarkdown(state.markdown)
+    : "";
+  const isStub = state.status === "ok" && (/status:\s*stub/i.test(state.markdown) || /Stub — populate/i.test(state.markdown));
+  const articleMarkdown = body && !isStub
+    ? body
+    : nvidiaFallbackChapterMarkdown(title, fallback);
+  return h("section", {
+    id: kind === "section" ? "nvidia-section-chapter" : `nvidia-${kind}-chapter`,
+    className: `nvidia-topic-chapter-body nvidia-${kind}-chapter-body`
+  },
+    h("div", { className: "nvidia-topic-chapter-lede" },
+      h("span", null, kind === "section" ? "Book chapter" : "Service chapter"),
+      h("h2", null, kind === "section" ? "What this chapter is really testing" : "How this service works"),
+      state.status === "loading" || state.status === "idle"
+        ? h("p", null, "Loading the full chapter text...")
+        : state.status === "missing"
+          ? h("p", null,
+              "No markdown source was found yet",
+              missingPath ? [" at ", h("code", { key: "path" }, missingPath)] : "",
+              ". The chapter summary below stays visible while the source is added."
+            )
+          : fallback.description ? h("p", null, renderInline(fallback.description, renderOptions)) : null
+    ),
+    h(NvidiaChapterCodeCallout, { title, kind, markdown: state.markdown }),
+    h(NvidiaChapterSectionMap, { markdown: articleMarkdown, kind }),
+    h("div", { className: "nvidia-topic-chapter-content" }, renderMarkdown(articleMarkdown, renderOptions))
+  );
+}
+
+function NvidiaReferencePanel({ summary = "Open compact reference material", subtitle = "", children }) {
+  const items = React.Children.toArray(children).filter(Boolean);
+  if (!items.length) return null;
+  return h("details", { className: "nvidia-reference-tabs" },
+    h("summary", null,
+      h("span", null, summary),
+      subtitle ? h("em", null, subtitle) : null
+    ),
+    h("div", { className: "nvidia-reference-tabs-body" }, items)
+  );
+}
+
+function NvidiaServiceFilterStrip({
+  sectionFilters,
+  activeSectionFilter,
+  onSectionFilter,
+  familyGroups,
+  activeFamily,
+  onFamily,
+  services,
+  selectedServiceName,
+  onService
+}) {
+  return h("section", { className: "nvidia-service-filter-strip", "aria-label": "NVIDIA service filters" },
+    h("label", null,
+      h("span", null, "Exam chapter"),
+      h("select", {
+        className: "service-jump-select",
+        value: activeSectionFilter,
+        onChange: (event) => onSectionFilter(event.target.value)
+      },
+        sectionFilters.map((filter) => h("option", { key: filter, value: filter }, filter === "All" ? "All chapters" : filter))
+      )
+    ),
+    h("label", null,
+      h("span", null, "Service family"),
+      h("select", {
+        className: "service-jump-select",
+        value: activeFamily,
+        onChange: (event) => onFamily(event.target.value)
+      },
+        ["All", ...familyGroups.map((group) => group.name)].map((group) => h("option", { key: group, value: group }, group))
+      )
+    ),
+    h("label", null,
+      h("span", null, "Open service page"),
+      h("select", {
+        className: "service-jump-select",
+        value: services.some((service) => service.name === selectedServiceName) ? selectedServiceName : "",
+        disabled: !services.length,
+        onChange: (event) => {
+          if (event.target.value) onService(event.target.value);
+        }
+      },
+        h("option", { value: "", disabled: true }, services.length ? "Choose a service..." : "No services match"),
+        services.map((service, index) => h("option", { key: service.name, value: service.name },
+          `${String(index + 1).padStart(2, "0")} · ${service.name}`
+        ))
+      )
+    ),
+    h("div", { className: "nvidia-service-filter-count" },
+      h("strong", null, services.length),
+      h("span", null, services.length === 1 ? "service visible" : "services visible")
+    )
+  );
+}
+
+function NvidiaServiceIndex({ services, selectedService, onSelectService, currentExamLabel }) {
+  if (!services?.length) {
+    return h("section", { className: "nvidia-service-index" },
+      h("div", { className: "nvidia-service-index-head" },
+        h("span", null, "Service pages"),
+        h("h2", null, "No services match these filters")
+      )
+    );
+  }
+  return h("section", { className: "nvidia-service-index" },
+    h("div", { className: "nvidia-service-index-head" },
+      h("span", null, "Service pages"),
+      h("h2", null, "Open one focused service chapter"),
+      h("p", null, `These are NVIDIA product boundaries for ${currentExamLabel}. Use them after you know the exam chapter concept.`)
+    ),
+    h("div", { className: "nvidia-service-table", role: "list" },
+      services.map((service, index) => h("button", {
+        key: service.name,
+        type: "button",
+        className: `nvidia-service-table-row ${serviceGroupClass(service)} ${service.name === selectedService?.name ? "active" : ""}`,
+        onClick: () => onSelectService(service.name),
+        role: "listitem",
+        "aria-current": service.name === selectedService?.name ? "page" : undefined
+      },
+        h("span", { className: "nvidia-service-table-number" }, String(index + 1).padStart(2, "0")),
+        h("span", { className: "nvidia-service-table-main" },
+          h("strong", null, service.name),
+          h("small", null, compactStudyText(serviceSummaryText(service), 180))
+        ),
+        h("span", { className: "nvidia-service-table-family" }, service.lifecycle || serviceGroupName(service)),
+        h("span", { className: "nvidia-service-table-cues" },
+          (service.filters || service.exams || []).slice(0, 3).map((cue) => h("em", { key: cue }, cue))
+        ),
+        h("span", { className: "nvidia-service-table-open" }, "Open")
+      ))
+    )
+  );
+}
+
+function ServiceDetail({ service, certSlug, quickQuiz, generateStudyQuiz, quizDifficulty, setQuizDifficulty, studyStatus, generationStatus, cancelGeneration, branding = { serviceLabel: "Service" }, showLifecyclePriority = false, activeServiceFilter = "All", currentExamLabel = "Agentic AI", handbook = false }) {
   const isGenericStudy = service.exams?.includes("Agentic AI General");
   const markdownState = useServiceMarkdown(service.name, !isGenericStudy);
   const capabilityState = useCapabilityMarkdown(service.name, isGenericStudy);
@@ -4333,6 +6501,34 @@ function ServiceDetail({ service, certSlug, quickQuiz, generateStudyQuiz, quizDi
   const serviceSlug = topicSlug(service.name);
 
   if (isGenericStudy) {
+    const detailIndexPrefix = `capability-${serviceSlug}`;
+    const playbookIndexPrefix = `playbook-${serviceSlug}`;
+    const topSections = [
+      {
+        title: "What it is",
+        id: studySectionId(detailIndexPrefix, "What it is", 0),
+        node: ServiceDecisionSnapshot({ markdown: capabilityState.markdown, mode: "summary", serviceSlug, fallback: { ...study, name: service.name, kind: "Capability" } })
+      },
+      {
+        title: "Code and calls",
+        id: studySectionId(detailIndexPrefix, "Code and calls", 1),
+        node: MarkdownCodePreview({ markdown: capabilityState.markdown })
+      },
+      {
+        title: "Lifecycle usage",
+        id: studySectionId(detailIndexPrefix, "Lifecycle usage", 2),
+        node: LifecycleUsagePanel({ service, activeServiceFilter, currentExamLabel })
+      }
+    ].filter((section) => section.node);
+    const playbookIndexSections = capabilityPlaybookSectionsFromMarkdown(capabilityState.markdown)
+      .map((section, index) => ({
+        title: section.title,
+        id: studySectionId(playbookIndexPrefix, section.title, index)
+      }));
+    const detailIndexSections = [
+      ...topSections.map(({ title, id }) => ({ title, id })),
+      ...playbookIndexSections
+    ];
     return h(
       "article",
       { className: "service-detail generic-capability-detail" },
@@ -4341,36 +6537,64 @@ function ServiceDetail({ service, certSlug, quickQuiz, generateStudyQuiz, quizDi
         h("h3", null, service.name),
         h("p", null, renderInline(serviceSummaryText(service, study.description)))
       ),
-      h(ServiceDecisionSnapshot, { markdown: capabilityState.markdown, mode: "summary", serviceSlug: topicSlug(service.name), fallback: { ...study, name: service.name, kind: "Capability" } }),
-      h(MarkdownCodePreview, { markdown: capabilityState.markdown }),
-      h(LifecycleUsagePanel, { service, activeServiceFilter, currentExamLabel }),
+      h(StudyPageIndex, { sections: detailIndexSections, idPrefix: detailIndexPrefix, label: "Study detail index" }),
+      topSections.map(({ title, id, node }) => h(SectionDetailsBlock, {
+        key: id,
+        id,
+        className: "generic-capability-top-section",
+        title
+      }, node)),
       h(CapabilityPlaybook, {
         state: capabilityState,
         title: service.name,
         missingPath: `certifications/agentic_ai_general_study/capabilities/${topicSlug(service.name)}.md`,
         afterSectionTitle: "Pipeline",
-        afterSection: h(RelatedVendorServiceCards, { service, compact: true })
+        afterSection: h(RelatedVendorServiceCards, { service, compact: true }),
+        idPrefix: playbookIndexPrefix,
+        showIndex: false
+      })
+    );
+  }
+
+  const serviceReferenceContent = [
+    h(ServiceDecisionSnapshot, { key: "summary", markdown: markdownState.markdown, mode: "summary", serviceSlug, fallback: { ...study, impl: implementation, kind: "Service" } }),
+    h(ImplementationCards, { key: "implementation", impl: implementation }),
+    h(ServiceDecisionSnapshot, { key: "details", markdown: markdownState.markdown, mode: "details", serviceSlug, fallback: { ...study, impl: implementation, kind: "Service" } }),
+    h(StudyFirstPanel, { key: "first", markdown: markdownState.markdown }),
+    showLifecyclePriority ? h(LifecycleUsagePanel, { key: "usage", service, activeServiceFilter, currentExamLabel }) : null,
+    h(ExamDecisionCards, { key: "decision", study }),
+    h(RelatedVendorServiceCards, { key: "vendors", service }),
+    h(StudyDeepDive, { key: "deep", item: study })
+  ].filter(Boolean);
+
+  if (handbook) {
+    return h(
+      "article",
+      { className: "service-detail nvidia-detail-article nvidia-handbook-article" },
+      h(NvidiaReferencePanel, {
+        summary: "Open quick notes, cards, and NVIDIA examples",
+        subtitle: "Optional notes"
+      }, serviceReferenceContent),
+      h(NvidiaChapterArticle, {
+        state: markdownState,
+        title: service.name,
+        fallback: { ...study, description: serviceSummaryText(service, study.description) },
+        kind: "service",
+        missingPath: `certifications/_shared/services/${topicSlug(service.name)}.md`
       })
     );
   }
 
   return h(
     "article",
-    { className: "service-detail" },
-    h("div", { className: "service-detail-title" },
+    { className: `service-detail nvidia-detail-article ${handbook ? "nvidia-handbook-article" : ""}`.trim() },
+    handbook ? null : h("div", { className: "service-detail-title" },
       h("span", null, branding.serviceLabel),
       h("h3", null, service.name),
       titleSummary ? h("p", null, renderInline(titleSummary)) : null
     ),
-    h(ServiceDecisionSnapshot, { markdown: markdownState.markdown, mode: "summary", serviceSlug, fallback: { ...study, impl: implementation, kind: "Service" } }),
-    h(ImplementationCards, { impl: implementation }),
-    h(ServiceDecisionSnapshot, { markdown: markdownState.markdown, mode: "details", serviceSlug, fallback: { ...study, impl: implementation, kind: "Service" } }),
-    h(StudyFirstPanel, { markdown: markdownState.markdown }),
-    showLifecyclePriority ? h(LifecycleUsagePanel, { service, activeServiceFilter, currentExamLabel }) : null,
-    h(ExamDecisionCards, { study }),
-    h(RelatedVendorServiceCards, { service }),
-    h(StudyDeepDive, { item: study }),
-    isGenericStudy && markdownState.status === "missing" ? null : h(StudyMarkdown, {
+    serviceReferenceContent,
+    handbook || (isGenericStudy && markdownState.status === "missing") ? null : h(StudyMarkdown, {
       state: markdownState,
       title: service.name,
       missingPath: `certifications/_shared/services/${topicSlug(service.name)}.md`,
@@ -4458,7 +6682,7 @@ function SectionNvidiaServiceGuide({ section, certSlug }) {
   if (compact) {
     return h(
       "details",
-      { className: "section-block section-service-guide section-service-guide-conditional", open: true },
+      { className: "section-block section-service-guide section-service-guide-conditional" },
       h("summary", null, "Conditional NVIDIA product examples"),
       body
     );
@@ -4470,23 +6694,52 @@ function SectionNvidiaServiceGuide({ section, certSlug }) {
   );
 }
 
-function SectionDetail({ section, certSlug, quickQuiz, generateStudyQuiz, quizDifficulty, setQuizDifficulty, studyStatus, generationStatus, cancelGeneration }) {
+function SectionDetailsBlock({ id = null, className = "", title, open = false, children }) {
+  return h("details", { id, className: `section-block ${className}`.trim(), open },
+    h("summary", null, title),
+    children
+  );
+}
+
+function studySectionId(prefix, title, index) {
+  return `${prefix}-${topicSlug(title)}-${index}`;
+}
+
+function openStudySection(sectionId) {
+  const target = document.getElementById(sectionId);
+  if (!target) return;
+  if (target.tagName.toLowerCase() === "details") target.open = true;
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function StudyPageIndex({ sections, idPrefix, label = "Page index" }) {
+  const items = (sections || []).filter((section) => section?.title);
+  if (items.length < 2) return null;
+  return h("nav", { className: "study-page-index", "aria-label": label },
+    h("span", null, label),
+    h("div", { className: "study-page-index-grid" },
+      items.map((section, index) => {
+        const sectionId = section.id || studySectionId(idPrefix, section.title, index);
+        return h("button", {
+          key: sectionId,
+          type: "button",
+          "aria-controls": sectionId,
+          onClick: () => openStudySection(sectionId)
+        }, renderInline(section.title));
+      })
+    )
+  );
+}
+
+function SectionDetail({ section, certSlug, quickQuiz, generateStudyQuiz, quizDifficulty, setQuizDifficulty, studyStatus, generationStatus, cancelGeneration, handbook = false }) {
   const markdownState = useTopicMarkdown(certSlug, section.name);
   const study = parseStudyContent(markdownState.markdown, section, "section");
   const isGenericStudy = certSlug === "agentic_ai_general_study";
-
-  return h(
-    "article",
-    { className: "service-detail" },
-    h("div", { className: "service-detail-title" },
-      h("span", null, `Exam section · ${study.weight}%`),
-      h("h3", null, study.name || section.name),
-      h("p", null, renderInline(study.description))
-    ),
-    h(StudyFirstPanel, { markdown: markdownState.markdown }),
-    h(ServiceDecisionSnapshot, { markdown: markdownState.markdown, mode: "summary", serviceSlug: topicSlug(section.name), fallback: { ...study, name: study.name || section.name, kind: "Topic" } }),
-    h(MarkdownCodePreview, { markdown: markdownState.markdown }),
-    h("div", { className: "study-map section-map" },
+  const sectionReferenceContent = [
+    h(StudyFirstPanel, { key: "first", markdown: markdownState.markdown }),
+    h(ServiceDecisionSnapshot, { key: "summary", markdown: markdownState.markdown, mode: "summary", serviceSlug: topicSlug(section.name), fallback: { ...study, name: study.name || section.name, kind: "Topic" } }),
+    h(MarkdownCodePreview, { key: "code", markdown: markdownState.markdown }),
+    h("div", { key: "map", className: "study-map section-map" },
       h("section", { className: "identity" },
         h("span", null, "Key ideas"),
         h("div", { className: "idea-chips" }, study.keyIdeas.map((idea) => h("span", { key: idea }, renderInline(idea))))
@@ -4504,21 +6757,18 @@ function SectionDetail({ section, certSlug, quickQuiz, generateStudyQuiz, quizDi
         h("p", null, renderInline(study.scenario))
       )
     ),
-    h(SectionNvidiaServiceGuide, { section, certSlug }),
-    study.studyNotes.length ? h("details", { className: "section-block section-study-notes", open: true },
-      h("summary", null, "Study notes"),
+    h(SectionNvidiaServiceGuide, { key: "service-guide", section, certSlug }),
+    study.studyNotes.length ? h(SectionDetailsBlock, { key: "notes", className: "section-study-notes", title: "Study notes" },
       h("ul", null, study.studyNotes.map((item) =>
         h("li", { key: item }, renderInline(item))
       ))
     ) : null,
-    study.mustKnow.length ? h("section", { className: "section-block section-must-know" },
-      h("h4", null, "Must know"),
+    study.mustKnow.length ? h(SectionDetailsBlock, { key: "must", className: "section-must-know", title: "Must know" },
       h("div", { className: "must-know-grid" }, study.mustKnow.map((item) =>
         h("div", { className: "must-know-card", key: item }, renderDefinitionItem(item))
       ))
     ) : null,
-    study.decisionGuide ? h("section", { className: "section-block section-table-block" },
-      h("h4", null, "Decision guide"),
+    study.decisionGuide ? h(SectionDetailsBlock, { key: "decision", className: "section-table-block", title: "Decision guide" },
       h("div", { className: "section-table-wrap" },
         h("table", null,
           h("thead", null, h("tr", null, study.decisionGuide.header.map((cell, j) => h("th", { key: j }, renderInline(cell))))),
@@ -4528,8 +6778,7 @@ function SectionDetail({ section, certSlug, quickQuiz, generateStudyQuiz, quizDi
         )
       )
     ) : null,
-    study.commonConfusions ? h("section", { className: "section-block section-table-block section-confusions" },
-      h("h4", null, "Common confusions"),
+    study.commonConfusions ? h(SectionDetailsBlock, { key: "confusions", className: "section-table-block section-confusions", title: "Common confusions" },
       h("div", { className: "section-table-wrap" },
         h("table", null,
           h("thead", null, h("tr", null, study.commonConfusions.header.map((cell, j) => h("th", { key: j }, renderInline(cell))))),
@@ -4539,8 +6788,7 @@ function SectionDetail({ section, certSlug, quickQuiz, generateStudyQuiz, quizDi
         )
       )
     ) : null,
-    study.miniScenarios.length ? h("section", { className: "section-block section-scenarios" },
-      h("h4", null, "Mini scenario drill"),
+    study.miniScenarios.length ? h(SectionDetailsBlock, { key: "scenarios", className: "section-scenarios", title: "Mini scenario drill" },
       study.miniScenarios.map((s) =>
         h("div", { className: "scenario-card", key: s.num },
           h("p", { className: "scenario-text" },
@@ -4555,25 +6803,52 @@ function SectionDetail({ section, certSlug, quickQuiz, generateStudyQuiz, quizDi
         )
       )
     ) : null,
-    study.examSignals.length ? h("section", { className: "section-block section-signals" },
-      h("h4", null, "What to recognize"),
+    study.examSignals.length ? h(SectionDetailsBlock, { key: "signals", className: "section-signals", title: "What to recognize" },
       h("div", { className: "signal-tags" }, study.examSignals.map((sig) =>
         h("span", { className: "signal-tag", key: sig }, renderInline(sig))
       ))
     ) : null,
-    study.handsOn.length ? h("section", { className: "section-block section-hands-on" },
-      h("h4", null, "Hands-on checks"),
+    study.handsOn.length ? h(SectionDetailsBlock, { key: "hands", className: "section-hands-on", title: "Hands-on checks" },
       h("ol", { className: "checklist" }, study.handsOn.map((item) =>
         h("li", { className: "checklist-item", key: item }, renderInline(item))
       ))
-    ) : null,
+    ) : null
+  ].filter(Boolean);
+
+  if (handbook) {
+    return h(
+      "article",
+      { className: "service-detail nvidia-detail-article nvidia-handbook-article" },
+      h(NvidiaReferencePanel, {
+        summary: "Open quick notes, cards, and NVIDIA examples",
+        subtitle: "Optional notes"
+      }, sectionReferenceContent),
+      h(NvidiaChapterArticle, {
+        state: markdownState,
+        title: section.name,
+        fallback: { ...study, description: study.description || section.description },
+        kind: "section",
+        missingPath: `certifications/${certSlug}/topics/${topicSlug(section.name)}.md`
+      })
+    );
+  }
+
+  return h(
+    "article",
+    { className: `service-detail nvidia-detail-article ${handbook ? "nvidia-handbook-article" : ""}`.trim() },
+    handbook ? null : h("div", { className: "service-detail-title" },
+      h("span", null, `Exam section · ${study.weight}%`),
+      h("h3", null, study.name || section.name),
+      h("p", null, renderInline(study.description))
+    ),
+    sectionReferenceContent,
     isGenericStudy && markdownState.status === "missing" ? null : h(StudyMarkdown, {
       state: markdownState,
       title: section.name,
       missingPath: `certifications/${certSlug}/topics/${topicSlug(section.name)}.md`,
       templatePath: "certifications/_TOPIC_TEMPLATE.md",
       summary: "Deep-dive notes",
-      defaultOpen: true
+      defaultOpen: false
     })
   );
 }
@@ -4794,7 +7069,8 @@ const STRUCTURED_STUDY_HEADINGS = [
   "Common confusions",
   "Mini scenario drill",
   "What to recognize",
-  "Hands-on checks"
+  "Hands-on checks",
+  "Study tips from practice questions"
 ];
 
 function removeMarkdownSections(markdown, headings) {
@@ -4909,7 +7185,7 @@ function parseStudyContent(markdown, fallback, kind) {
     use: valueFromCardData(block, isService ? "Use it when" : "Use this section when") || fallback.use || "",
     avoid: valueFromCardData(block, "Do not use it when") || fallback.avoid || "",
     traps: valueFromCardData(block, "Common trap") || fallback.traps || "",
-    scenario: valueFromCardData(block, "Recognition clues") || fallback.scenario || "",
+    scenario: valueFromCardData(block, "Scenario signal") || valueFromCardData(block, "Recognition clues") || fallback.scenario || "",
     studyNotes: listFromCardData(block, "Study notes").length ? listFromCardData(block, "Study notes") : (fallback.studyNotes || []),
     mustKnow: mustKnow.length ? mustKnow : (fallback.mustKnow || fallback.keyIdeas || []),
     keyIdeas: compactKeyIdeas.length ? compactKeyIdeas : (fallback.keyIdeas || fallback.mustKnow || []),
@@ -4920,6 +7196,75 @@ function parseStudyContent(markdown, fallback, kind) {
     commonConfusions,
     miniScenarios
   };
+}
+
+function splitMarkdownByHeading(markdown, levels = [2]) {
+  const wanted = new Set(levels);
+  const lines = String(markdown || "").split("\n");
+  const prelude = [];
+  const sections = [];
+  let current = null;
+  let inFence = false;
+
+  for (const line of lines) {
+    if (/^```/.test(line.trim())) {
+      inFence = !inFence;
+      (current ? current.lines : prelude).push(line);
+      continue;
+    }
+    const heading = !inFence ? line.match(/^(#{1,6})\s+(.+?)\s*$/) : null;
+    const level = heading ? heading[1].length : 0;
+    if (heading && wanted.has(level)) {
+      if (current) sections.push({ ...current, content: cleanMarkdownFragment(current.lines.join("\n")) });
+      current = { level, title: heading[2].trim(), lines: [] };
+      continue;
+    }
+    (current ? current.lines : prelude).push(line);
+  }
+  if (current) sections.push({ ...current, content: cleanMarkdownFragment(current.lines.join("\n")) });
+  return { prelude: cleanMarkdownFragment(prelude.join("\n")), sections };
+}
+
+function renderCollapsibleMarkdownSections(markdown, options = {}) {
+  const sectionLevels = options.sectionLevels || [2];
+  const nestedLevels = options.nestedLevels || [3];
+  const openTitles = options.openTitles || new Set();
+  const idPrefix = options.idPrefix || "study-section";
+  const { prelude, sections } = splitMarkdownByHeading(markdown, sectionLevels);
+  if (!sections.length) return renderMarkdown(markdown, options);
+
+  const nodes = [];
+  if (prelude) {
+    nodes.push(h("div", { key: "prelude", className: "md-section-prelude" }, renderMarkdown(prelude, options)));
+  }
+  sections.forEach((section, index) => {
+    const sectionId = studySectionId(idPrefix, section.title, index);
+    const nested = splitMarkdownByHeading(section.content, nestedLevels);
+    const hasNested = nested.sections.length >= 2;
+    const body = hasNested
+      ? [
+          nested.prelude ? h("div", { key: "nested-prelude", className: "md-section-prelude" }, renderMarkdown(nested.prelude, options)) : null,
+          ...nested.sections.map((nestedSection, nestedIndex) => h("details", {
+            id: studySectionId(sectionId, nestedSection.title, nestedIndex),
+            key: `${nestedSection.title}-${nestedIndex}`,
+            className: "md-section-details md-section-details-nested"
+          },
+            h("summary", null, renderInline(nestedSection.title, options)),
+            h("div", { className: "md-section-body" }, renderMarkdown(nestedSection.content, options))
+          ))
+        ].filter(Boolean)
+      : renderMarkdown(section.content, options);
+    nodes.push(h("details", {
+      id: sectionId,
+      key: `${section.title}-${index}`,
+      className: "md-section-details",
+      open: openTitles.has(section.title)
+    },
+      h("summary", null, renderInline(section.title, options)),
+      h("div", { className: "md-section-body" }, body)
+    ));
+  });
+  return nodes;
 }
 
 function StudyMarkdown({ state, title, missingPath, templatePath, summary, removeStructured = true, defaultOpen = null }) {
@@ -4945,29 +7290,48 @@ function StudyMarkdown({ state, title, missingPath, templatePath, summary, remov
     );
   }
   const body = markdownBodyForStudy(state.markdown, { removeStructured });
-  const shouldOpen = defaultOpen ?? body.length < 1800;
+  const shouldOpen = defaultOpen ?? false;
+  const idPrefix = `markdown-${topicSlug(title)}`;
   return h("details", { className: "topic-md", open: shouldOpen },
     h("summary", null, summary),
-    h(MarkdownOutline, { markdown: body }),
-    h("div", { className: "topic-md-body" }, renderMarkdown(body))
+    h(MarkdownOutline, { markdown: body, idPrefix }),
+    h("div", { className: "topic-md-body" }, renderCollapsibleMarkdownSections(body, { idPrefix }))
   );
 }
 
 const CAPABILITY_PLAYBOOK_SECTIONS = [
   "What to study first",
   "What You Are Building",
-  "Lifecycle Lane Playbooks",
   "Pipeline",
-  "Platform Examples",
   "Core Concepts",
   "Decision Guide",
+  "Lifecycle Lane Playbooks",
   "Common Traps",
   "Deep Dive",
+  "Platform Examples",
   "Exam Signals",
   "Hands-on Checks"
 ];
 
-function CapabilityPlaybook({ state, title, missingPath, afterSectionTitle, afterSection }) {
+function capabilityPlaybookSectionsFromMarkdown(markdown) {
+  const sections = markdownSections(markdown);
+  return CAPABILITY_PLAYBOOK_SECTIONS
+    .map((sectionTitle) => ({ title: sectionTitle, section: sections[normalizeHeadingName(sectionTitle)] }))
+    .filter(({ section }) => section?.content);
+}
+
+function CapabilityPlaybook({
+  state,
+  title,
+  missingPath,
+  afterSectionTitle,
+  afterSection,
+  idPrefix: idPrefixOverride = null,
+  showIndex = true,
+  indexLabel = "Playbook index",
+  defaultOpenFirst = false,
+  className = ""
+}) {
   if (state.status === "loading" || state.status === "idle") {
     return h("div", { className: "capability-playbook loading" },
       h("p", { className: "muted" }, "Loading study playbook...")
@@ -4982,45 +7346,45 @@ function CapabilityPlaybook({ state, title, missingPath, afterSectionTitle, afte
     );
   }
   const body = stripFrontmatter(state.markdown).replace(/^#\s+.+\n+/, "").trim();
-  const sections = markdownSections(state.markdown);
-  const renderedSections = CAPABILITY_PLAYBOOK_SECTIONS.flatMap((sectionTitle) => {
-    const section = sections[normalizeHeadingName(sectionTitle)];
-    if (!section?.content) return [];
-    const rendered = h("section", {
+  const availableSections = capabilityPlaybookSectionsFromMarkdown(state.markdown);
+  const idPrefix = idPrefixOverride || `playbook-${topicSlug(title)}`;
+  const renderedSections = availableSections.map(({ title: sectionTitle, section }, index) => {
+    const sectionId = studySectionId(idPrefix, sectionTitle, index);
+    const shouldInsertAfterSection = afterSection && normalizeHeadingName(sectionTitle) === normalizeHeadingName(afterSectionTitle);
+    return h("details", {
+      id: sectionId,
       key: sectionTitle,
-      className: `playbook-section playbook-${topicSlug(sectionTitle)}`
+      className: `playbook-section playbook-${topicSlug(sectionTitle)}`,
+      open: defaultOpenFirst && index === 0
     },
-      h("h4", null, sectionTitle),
-      h("div", { className: "playbook-section-body" }, renderMarkdown(section.content, { autoHighlight: true }))
+      h("summary", null, sectionTitle),
+      h("div", { className: "playbook-section-body" },
+        renderCollapsibleMarkdownSections(section.content, {
+          autoHighlight: true,
+          sectionLevels: [3],
+          nestedLevels: [4],
+          openTitles: new Set(),
+          idPrefix: `${sectionId}-sub`
+        }),
+        shouldInsertAfterSection ? h("div", { className: "playbook-inline-map" }, afterSection) : null
+      )
     );
-    if (afterSection && normalizeHeadingName(sectionTitle) === normalizeHeadingName(afterSectionTitle)) {
-      return [rendered, h("div", { key: `${sectionTitle}-insert`, className: "playbook-inline-map" }, afterSection)];
-    }
-    return [rendered];
   }).filter(Boolean);
   if (!renderedSections.length) {
-    return h("div", { className: "capability-playbook" },
+    return h("div", { className: `capability-playbook ${className}`.trim() },
       h("div", { className: "playbook-section-body" }, renderMarkdown(body, { autoHighlight: true }))
     );
   }
-  return h("div", { className: "capability-playbook" }, renderedSections);
+  return h("div", { className: `capability-playbook ${className}`.trim() },
+    showIndex ? h(StudyPageIndex, { sections: availableSections, idPrefix, label: indexLabel }) : null,
+    renderedSections
+  );
 }
 
-function MarkdownOutline({ markdown }) {
-  const headings = String(markdown || "")
-    .split("\n")
-    .map((line) => line.match(/^(##|###)\s+(.+)$/))
-    .filter(Boolean)
-    .map((match) => ({ level: match[1].length, text: match[2].trim() }))
-    .filter((heading) => !/^deep dive contents$/i.test(heading.text))
-    .slice(0, 12);
-  if (headings.length < 3) return null;
-  return h("div", { className: "md-outline" },
-    h("span", null, "Reference map"),
-    h("ul", null, headings.map((heading) =>
-      h("li", { key: `${heading.level}-${heading.text}`, className: heading.level === 3 ? "sub" : "" }, renderInline(heading.text))
-    ))
-  );
+function MarkdownOutline({ markdown, idPrefix }) {
+  const { sections } = splitMarkdownByHeading(markdown, [2]);
+  const visibleSections = sections.filter((section) => !/^deep dive contents$/i.test(section.title));
+  return h(StudyPageIndex, { sections: visibleSections, idPrefix, label: "Deep-dive index" });
 }
 
 // Tiny markdown renderer (no deps). Handles: # h1-h4, paragraphs, bullet/numbered
@@ -5119,13 +7483,23 @@ function renderMarkdown(text, options = {}) {
     // List
     if (/^\s*[-*]\s+/.test(line) || /^\s*\d+\.\s+/.test(line)) {
       const ordered = /^\s*\d+\.\s+/.test(line);
+      const listLinePattern = ordered ? /^\s*\d+\.\s+/ : /^\s*[-*]\s+/;
       const items = [];
-      while (i < lines.length && (
-        (ordered && /^\s*\d+\.\s+/.test(lines[i])) ||
-        (!ordered && /^\s*[-*]\s+/.test(lines[i]))
-      )) {
-        items.push(lines[i].replace(/^\s*(?:\d+\.|[-*])\s+/, ""));
-        i += 1;
+      while (i < lines.length) {
+        if (listLinePattern.test(lines[i])) {
+          items.push(lines[i].replace(/^\s*(?:\d+\.|[-*])\s+/, ""));
+          i += 1;
+          continue;
+        }
+        if (!lines[i].trim()) {
+          let nextListIndex = i + 1;
+          while (nextListIndex < lines.length && !lines[nextListIndex].trim()) nextListIndex += 1;
+          if (nextListIndex < lines.length && listLinePattern.test(lines[nextListIndex])) {
+            i = nextListIndex;
+            continue;
+          }
+        }
+        break;
       }
       blocks.push({ type: ordered ? "ol" : "ul", items });
       continue;
@@ -5147,13 +7521,19 @@ function renderMarkdown(text, options = {}) {
       case "p": return h("p", { key, className: "md-p" }, renderInline(b.text, renderOptions));
       case "quote": return h("blockquote", { key, className: "md-quote" }, renderInline(b.text, renderOptions));
       case "code": return h("pre", { key, className: "md-code" }, b.text);
-      case "details": return h("details", { key, className: "md-details", open: true }, h("summary", null, renderInline(b.summary, renderOptions)), h("div", { className: "md-details-body" }, renderMarkdown(b.text, renderOptions)));
-      case "ul": return h("ul", { key, className: "md-ul" }, b.items.map((it, j) => h("li", { key: j }, renderListItemInline(it, renderOptions))));
-      case "ol": return h("ol", { key, className: "md-ol" }, b.items.map((it, j) => h("li", { key: j }, renderListItemInline(it, renderOptions))));
+      case "details": return h("details", { key, className: "md-details" }, h("summary", null, renderInline(b.summary, renderOptions)), h("div", { className: "md-details-body" }, renderMarkdown(b.text, renderOptions)));
+      case "ul": return h("ul", { key, className: "md-ul" }, b.items.map((it, j) =>
+        h("li", { key: j }, h("span", { className: "md-list-copy" }, renderListItemInline(it, renderOptions)))
+      ));
+      case "ol": return h("ol", { key, className: "md-ol" }, b.items.map((it, j) =>
+        h("li", { key: j }, h("span", { className: "md-list-copy" }, renderListItemInline(it, renderOptions)))
+      ));
       case "table":
-        return h("table", { key, className: "md-table" },
-          h("thead", null, h("tr", null, b.header.map((cell, j) => h("th", { key: j }, renderInline(cell, renderOptions))))),
-          h("tbody", null, b.rows.map((row, j) => h("tr", { key: j }, row.map((cell, k) => h("td", { key: k }, renderInline(cell, renderOptions))))))
+        return h("div", { key, className: "md-table-wrap" },
+          h("table", { className: "md-table" },
+            h("thead", null, h("tr", null, b.header.map((cell, j) => h("th", { key: j }, renderInline(cell, renderOptions))))),
+            h("tbody", null, b.rows.map((row, j) => h("tr", { key: j }, row.map((cell, k) => h("td", { key: k }, renderInline(cell, renderOptions))))))
+          )
         );
       default: return null;
     }
@@ -5175,18 +7555,26 @@ const PLAYBOOK_KEY_TERMS = [
   "holdout", "lineage", "provenance", "structured outputs", "output schema",
   "instruction hierarchy", "few-shot examples", "idempotency", "permissions",
   "approval gate", "approval gates", "rollback", "canary", "routing", "batching",
-  "p95", "p99", "guardrails", "policy", "observability", "tool calls",
+  "p95", "p99", "latency", "cost", "quality", "guardrails", "policy", "observability", "tool calls",
   "hosted API", "open-weight model", "open-weight", "self-hosted endpoint",
   "NeMo Customizer", "NeMo microservice", "API-driven model customization",
   "base Model Entity", "Dataset FileSet", "customization job", "LoRA adapter",
   "fine-tuned Model Entity", "managed fine-tuning",
   "base checkpoint", "tuned adapter", "tuned adapters", "embedding model",
   "reasoning model", "multimodal model", "model artifact", "model artifacts",
-  "base model", "base models", "data residency", "deployment environment",
+  "base model", "base models", "API", "APIs", "checkpoint", "checkpoints",
+  "context length", "modality", "modalities", "serving path", "serving paths",
+  "task examples", "license constraints", "data residency", "deployment environment",
   "auditability", "failure modes", "eval report", "eval reports",
   "evals", "risk approval", "FP16", "BF16",
   "FP8", "INT8", "INT4", "quantized", "distilled", "adapter-backed",
-  "tool-specialized", "MoE", "rollback-ready"
+  "tool-specialized", "MoE", "rollback-ready", "ReAct", "execution layer",
+  "supervisor", "orchestrator", "planning gate", "state machine",
+  "graph", "workflow", "peer-to-peer", "blackboard", "BDI",
+  "plan-and-execute", "human escalation", "risk-based routing",
+  "approval gates", "centralized state", "tool boundary", "tool boundaries",
+  "working memory", "episodic memory", "semantic memory", "retrieval",
+  "reranking", "citations", "chunking", "embeddings", "schema validation"
 ];
 
 const PLAYBOOK_HIGHLIGHT_PATTERN = new RegExp(
@@ -5299,11 +7687,11 @@ function renderInline(text, options = {}) {
 
 function StudyDeepDive({ item, generic = false }) {
   const groups = [
-      [generic ? "Mental model notes" : "How to think about it", item.studyNotes],
-      ["Must know", item.mustKnow],
-      ["Recognition cues", item.examSignals],
-      [generic ? "Practice checks" : "Hands-on checks", item.handsOn],
-      [generic ? "Related capabilities" : "Adjacent services", item.relatedServices]
+      [generic ? "Mental model" : "Study path", item.studyNotes],
+      ["Core ideas", item.mustKnow],
+      ["When to use it", item.examSignals],
+      [generic ? "Practice checks" : "Practice task", item.handsOn],
+      [generic ? "Related capabilities" : "Nearby services", item.relatedServices]
   ].filter(([, values]) => Array.isArray(values) && values.length);
 
   if (!groups.length) return null;
@@ -5311,15 +7699,15 @@ function StudyDeepDive({ item, generic = false }) {
     "div",
     { className: "study-deep-dive service-section" },
     h("div", { className: "service-section-heading" },
-      h("span", null, generic ? "Deep knowledge" : "Service memory"),
-      h("h4", null, generic ? "What to internalize" : "What to remember")
+      h("span", null, generic ? "Study notes" : "Study guide"),
+      h("h4", null, generic ? "Build the mental model" : "Build a working model of the service")
     ),
     h("div", { className: "study-deep-dive-grid" },
       groups.map(([label, values]) => h(
-        "section",
+        "article",
         { key: label, className: `study-group ${topicSlug(label)}` },
-        h("h4", null, label),
-        h("ul", null, values.map((value) => h("li", { key: value }, renderInline(label === "Related capabilities" || label === "Adjacent services" ? expandNvidiaAcronyms(value) : value))))
+        h("h5", null, label),
+        h("ul", null, values.map((value) => h("li", { key: value }, renderInline(label === "Related capabilities" || label === "Nearby services" ? expandNvidiaAcronyms(value) : value))))
       ))
     )
   );
@@ -5332,9 +7720,7 @@ function practiceStudyByOptions(isGenericStudy, currentExamLabel = "Agentic AI")
     { value: "section", label: "Exam section" },
     { value: "service", label: isGenericStudy ? "Playbook" : "NVIDIA service" }
   ];
-  if (!isAgenticExam) {
-    options.push({ value: "lifecycle", label: "Lifecycle path" });
-  }
+  options.push({ value: "lifecycle", label: isAgenticExam ? "Concept map" : "Lifecycle path" });
   options.push({ value: "keyword", label: "Keyword" });
   return options;
 }
@@ -5467,6 +7853,8 @@ function PracticeDrillSetup({
   mixedLabel = "Recommended mix",
   bankMatchLabel = "certificate-concept",
   generatedMatchLabel = "NVIDIA-specific",
+  scopeTitle = "Question scope",
+  scopeHint = "General concepts vs NVIDIA-specific",
   sourceFilter = "all",
   setSourceFilter = () => {},
   sourceOptions = [],
@@ -5535,8 +7923,8 @@ function PracticeDrillSetup({
     ),
     h("div", { className: "practice-drill-actions" },
       h("div", { className: "practice-source-head" },
-        h("span", null, "Question scope"),
-        h("em", null, "General concepts vs NVIDIA-specific")
+        h("span", null, scopeTitle),
+        h("em", null, scopeHint)
       ),
       h("div", { className: "practice-source-actions" },
         h("button", { type: "button", className: "pp-btn pp-btn-source pp-btn-original", disabled: !bankCount, onClick: onStartBank },
@@ -5566,7 +7954,7 @@ function PracticeDrillSetup({
   );
 }
 
-function StudyChatPanel({ certSlug, topic, alwaysOpen = false, compact = false, inline = false }) {
+function StudyChatPanel({ certSlug, topic, examples: exampleOverride, alwaysOpen = false, compact = false, inline = false }) {
   const [open, setOpen] = useState(alwaysOpen || inline);
   const [history, setHistory] = useState([]);
   const [input, setInput] = useState('');
@@ -5628,7 +8016,7 @@ function StudyChatPanel({ certSlug, topic, alwaysOpen = false, compact = false, 
     : h('button', { className: 'helper-chat-close', onClick: () => setOpen(false), type: 'button' }, '×');
 
   const isGenericStudy = certSlug === "agentic_ai_general_study";
-  const examples = isGenericStudy
+  const examples = exampleOverride?.length ? exampleOverride : isGenericStudy
     ? ['Where does MinHash fit?', 'RAG or fine-tuning?', 'What is a tool gateway?']
     : ['What is KV cache?', 'Difference between NIM and Triton?', 'When to use LoRA vs SFT?'];
 
@@ -5636,7 +8024,7 @@ function StudyChatPanel({ certSlug, topic, alwaysOpen = false, compact = false, 
     return h('div', { className: 'study-assistant-panel' },
       h('div', { className: 'study-assistant-head' },
         h('div', null,
-          h('strong', null, 'Ask tutor'),
+          h('strong', null, 'Ask the tutor'),
           h('span', null, topic ? `Context: ${topic}` : isGenericStudy ? 'Vendor-neutral agentic AI concepts' : 'NVIDIA certification concepts')
         ),
         h('div', { className: 'helper-chat-examples' },
@@ -5682,7 +8070,7 @@ function StudyChatPanel({ certSlug, topic, alwaysOpen = false, compact = false, 
     h('div', { className: 'helper-chat-head' },
       h('div', null,
         h('strong', null, 'Quick chat'),
-        h('span', { className: 'helper-chat-desc' }, isGenericStudy ? 'Ask anything about agentic AI lifecycle concepts' : 'Ask anything about NVIDIA tools or certification topics')
+        h('span', { className: 'helper-chat-desc' }, isGenericStudy ? 'Ask anything about agentic AI builder path concepts' : 'Ask anything about NVIDIA tools or certification topics')
       ),
       closeBtn
     ),
@@ -5696,7 +8084,7 @@ function StudyChatPanel({ certSlug, topic, alwaysOpen = false, compact = false, 
           ))
         )
       : h('div', { className: 'helper-chat-welcome' },
-          compact ? null : h('p', null, topic ? 'Ask anything about ' + topic + (isGenericStudy ? ' or related lifecycle topics.' : ' or related NVIDIA topics.') : isGenericStudy ? 'Ask anything about agentic AI lifecycle, tools, RAG, serving, or governance.' : 'Ask anything about NVIDIA tools, LLMs, or certification concepts.'),
+          compact ? null : h('p', null, topic ? 'Ask anything about ' + topic + (isGenericStudy ? ' or related builder path topics.' : ' or related NVIDIA topics.') : isGenericStudy ? 'Ask anything about agentic AI builder paths, tools, RAG, serving, or governance.' : 'Ask anything about NVIDIA tools, LLMs, or certification concepts.'),
           h('div', { className: 'helper-chat-examples' },
             examples.map((ex) => h('button', {
               key: ex, className: 'chip', onClick: () => send(ex), disabled: busy, type: 'button'
@@ -5759,6 +8147,14 @@ function mockSetSummary(mocks, variant = "mock") {
   return `${mocks.length} test${mocks.length === 1 ? "" : "s"} · ${totalQuestions} total questions`;
 }
 
+function mockPickerOptionLabel(mock, variant = "mock") {
+  const parts = [mock.name, `${mock.questionCount} questions`];
+  if (variant !== "drill") {
+    parts.push(mock.durationMinutes ? `${mock.durationMinutes} min` : "untimed");
+  }
+  return parts.join(" · ");
+}
+
 function switchMockSource({ source, availableMocks, setSelectedMockSource, setSelectedMockId }) {
   const nextMock = availableMocks.find((m) => (m.source || "original") === source);
   setSelectedMockSource(source);
@@ -5800,7 +8196,7 @@ function MockPicker({ availableMocks = [], selectedMockId = "mock_1", setSelecte
         onChange: (e) => setSelectedMockId(e.target.value),
         disabled: !sourceMocks.length
       },
-        sourceMocks.map((m) => h("option", { key: `${m.source}-${m.id}`, value: m.id }, `${m.name} · ${m.questionCount} questions · ${m.durationMinutes} min`))
+        sourceMocks.map((m) => h("option", { key: `${m.source}-${m.id}`, value: m.id }, mockPickerOptionLabel(m, variant)))
       )
     ),
     selectedMock?.description ? h("p", { className: "mock-picker-desc" }, selectedMock.description) : null,
@@ -5823,6 +8219,7 @@ function PracticePanel(props) {
   const practiceBankCount = Array.isArray(exam.practicePoolIds) && exam.practicePoolIds.length ? exam.practicePoolIds.length : exam.questions.length;
   const isGenericStudy = exam.certification.code === "AAI-GEN";
   const currentExamLabel = examLabel(exam);
+  const scopeConfig = practiceScopeConfig(exam);
   const practiceServices = sortServices(nvidiaServices.filter((service) => service.exams.includes(currentExamLabel)));
   const lifecycleOptions = agenticLifecycleOptions(currentExamLabel);
   const studyByOptions = practiceStudyByOptions(isGenericStudy, currentExamLabel).filter((option) => option.value !== "recommended");
@@ -5853,22 +8250,22 @@ function PracticePanel(props) {
   }, [studyByOptions, studyBy, defaultStudyBy, sectionOptionsKey, domainName, practiceServices, serviceName, lifecycleOptions, lifecycleLane]);
   const practiceIdSet = idSet(Array.isArray(exam.practicePoolIds) && exam.practicePoolIds.length ? exam.practicePoolIds : exam.questions.map((q) => q.id));
   const practicePool = exam.questions.filter((q) => practiceIdSet.has(q.id));
-  const allConceptPool = practicePool.filter((q) => (q.questionScope || "general_concept") !== "nvidia_specific");
-  const allNvidiaSpecificPool = practicePool.filter((q) => q.questionScope === "nvidia_specific");
+  const allConceptPool = practicePool.filter((q) => !scopeConfig.isSecondary(q));
+  const allNvidiaSpecificPool = practicePool.filter((q) => scopeConfig.isSecondary(q));
   const sourceFilteredPracticePool = questionsForSource(practicePool, drillSource);
-  const conceptPool = sourceFilteredPracticePool.filter((q) => (q.questionScope || "general_concept") !== "nvidia_specific");
-  const nvidiaSpecificPool = sourceFilteredPracticePool.filter((q) => q.questionScope === "nvidia_specific");
+  const conceptPool = sourceFilteredPracticePool.filter((q) => !scopeConfig.isSecondary(q));
+  const nvidiaSpecificPool = sourceFilteredPracticePool.filter((q) => scopeConfig.isSecondary(q));
   const originalBankCount = allConceptPool.length;
   const generatedPracticeCount = allNvidiaSpecificPool.length;
-  const bankDrillLabel = isGenericStudy ? "Saved concepts" : "Certificate concepts";
-  const generatedDrillLabel = isGenericStudy ? "Generated scenarios" : "NVIDIA-specific";
-  const mixedDrillLabel = isGenericStudy ? "Mixed scenarios" : "Recommended mix";
-  const bankMatchLabel = isGenericStudy ? "saved-concept" : "certificate-concept";
-  const generatedMatchLabel = isGenericStudy ? "generated-scenario" : "NVIDIA-specific";
+  const bankDrillLabel = scopeConfig.primaryLabel;
+  const generatedDrillLabel = scopeConfig.secondaryLabel;
+  const mixedDrillLabel = scopeConfig.mixedLabel;
+  const bankMatchLabel = scopeConfig.primaryMatchLabel;
+  const generatedMatchLabel = scopeConfig.secondaryMatchLabel;
   const mixProfile = mixedSourceProfile(currentExamLabel);
   const generatedSourceLabel = approvedDraftCount
-    ? `${generatedPracticeCount} NVIDIA-specific scope · ${approvedDraftCount} approved draft${approvedDraftCount === 1 ? "" : "s"}`
-    : `${generatedPracticeCount} NVIDIA-specific scope`;
+    ? `${countPhrase(generatedPracticeCount, scopeConfig.secondaryCountLabel)} · ${approvedDraftCount} approved draft${approvedDraftCount === 1 ? "" : "s"}`
+    : countPhrase(generatedPracticeCount, scopeConfig.secondaryCountLabel);
   const target = buildPracticeTarget({ studyBy, domainName, serviceName, lifecycleLane, keyword, lifecycleLabel: currentExamLabel });
   const bankMatches = filteredPracticeQuestions(conceptPool, target, studyBy);
   const generatedMatches = filteredPracticeQuestions(nvidiaSpecificPool, target, studyBy);
@@ -5941,14 +8338,14 @@ function PracticePanel(props) {
   function startConceptGuided() {
     startTargetedGuidedPractice({
       questions: weakBankPool.length ? weakBankPool : allConceptPool,
-      label: "certificate concepts",
+      label: scopeConfig.primaryLabel.toLowerCase(),
       flowName: "practice-coach-bank"
     });
   }
   function startNvidiaGuided() {
     startTargetedGuidedPractice({
       questions: weakGeneratedPool.length ? weakGeneratedPool : allNvidiaSpecificPool,
-      label: "NVIDIA-specific questions",
+      label: scopeConfig.secondaryLabel.toLowerCase(),
       flowName: "practice-coach-generated"
     });
   }
@@ -5971,8 +8368,8 @@ function PracticePanel(props) {
         h("h3", null, "Recommended mixed practice"),
         h("p", null, `${mixProfile.description} It starts from your weak domains first, then keeps the scope mix close to the study-guide shape.`),
         h("div", { className: "guided-mix-summary" },
-          h("span", null, h("strong", null, `${mixProfile.conceptPercent}%`), " certificate concepts"),
-          h("span", null, h("strong", null, `${mixProfile.nvidiaPercent}%`), " NVIDIA-specific")
+          h("span", null, h("strong", null, `${mixProfile.conceptPercent}%`), ` ${scopeConfig.primaryPercentLabel}`),
+          h("span", null, h("strong", null, `${mixProfile.nvidiaPercent}%`), ` ${scopeConfig.secondaryPercentLabel}`)
         )
       ),
       h("div", { className: "pp-card-foot guided-plan-actions" },
@@ -5986,13 +8383,13 @@ function PracticePanel(props) {
             className: "pp-btn",
             disabled: !hasBank || !allConceptPool.length,
             onClick: startConceptGuided
-          }, "Concepts only"),
+          }, scopeConfig.primaryActionLabel),
           generatedPracticeCount
             ? h("button", {
                 className: "pp-btn",
                 onClick: startNvidiaGuided
-              }, "NVIDIA platform scope")
-            : h("span", { className: "pp-card-hint" }, "No NVIDIA-specific questions yet")
+              }, scopeConfig.secondaryActionLabel)
+            : h("span", { className: "pp-card-hint" }, scopeConfig.noSecondaryLabel)
         )
       )
     ),
@@ -6023,9 +8420,7 @@ function PracticePanel(props) {
       h("div", { className: "pp-card-body" },
         h("span", { className: "pp-badge pp-badge-drill" }, "Filter"),
         h("h3", null, `Practice ${target.label}`),
-        h("p", null, currentExamLabel === "Agentic AI"
-          ? "Choose an exam section, NVIDIA service, or keyword, then pick source and scope for the drill."
-          : "Choose an exam section, lifecycle path, NVIDIA service, or keyword, then pick source and scope for the drill."),
+        h("p", null, scopeConfig.focusDescription),
         h(PracticeScopePanel, {
           studyBy,
           setStudyBy,
@@ -6034,11 +8429,7 @@ function PracticePanel(props) {
           domainName,
           setDomainName,
           serviceLabel: isGenericStudy ? "Study playbook" : "NVIDIA service",
-          keywordPlaceholder: isGenericStudy
-            ? "RAG, policy controls, model routing..."
-            : currentExamLabel === "GenAI LLMs"
-              ? "TensorRT-LLM, NIM, Retriever, LoRA..."
-              : "NeMo Curator, fine-tune, Retriever...",
+          keywordPlaceholder: scopeConfig.keywordPlaceholder,
           agenticServices: practiceServices,
           serviceName,
           setServiceName,
@@ -6068,6 +8459,8 @@ function PracticePanel(props) {
           mixedLabel: mixedDrillLabel,
           bankMatchLabel,
           generatedMatchLabel,
+          scopeTitle: scopeConfig.sourceTitle,
+          scopeHint: scopeConfig.sourceHint,
           sourceFilter: drillSource,
           setSourceFilter: setDrillSource,
           sourceOptions: sourceFilterOptions,
@@ -6092,7 +8485,7 @@ function PracticePanel(props) {
           }),
           onStartGenerated: () => startQuestionDrill({
             questions: generatedMatches,
-            label: `${target.label} NVIDIA-specific questions`,
+            label: `${target.label} ${scopeConfig.secondaryLabel.toLowerCase()}`,
             count: drillCount,
             difficulty: drillDifficulty,
             flowName: "practice-generated"
@@ -6123,11 +8516,11 @@ function PracticePanel(props) {
             ? h("button", {
                 className: "pp-btn pp-btn-full",
                 disabled: !generatedMatches.length,
-                onClick: () => studyBy === "recommended"
-                  ? startFlow("practice-coach-generated")
-                  : startTargetedGuidedPractice({ questions: generatedMatches, label: `${target.label} NVIDIA-specific questions` })
-              }, generatedMatches.length ? `Guided NVIDIA-specific (${Math.min(ADAPTIVE_PRACTICE_TARGET, generatedMatches.length)}Q)` : "No NVIDIA-specific match")
-            : h("span", { className: "pp-card-hint" }, "No NVIDIA-specific questions yet")
+              onClick: () => studyBy === "recommended"
+                ? startFlow("practice-coach-generated")
+                : startTargetedGuidedPractice({ questions: generatedMatches, label: `${target.label} ${scopeConfig.secondaryLabel.toLowerCase()}` })
+              }, generatedMatches.length ? `Guided ${scopeConfig.secondaryLabel} (${Math.min(ADAPTIVE_PRACTICE_TARGET, generatedMatches.length)}Q)` : `No ${scopeConfig.secondaryLabel.toLowerCase()} match`)
+            : h("span", { className: "pp-card-hint" }, scopeConfig.noSecondaryLabel)
         )
       ),
 
@@ -6135,7 +8528,7 @@ function PracticePanel(props) {
         h("div", { className: "pp-card-body" },
           h("span", { className: "pp-badge pp-badge-drill" }, "Drill"),
           h("h3", null, "Question drill setup"),
-          h("p", null, "Choose count and difficulty, then start certificate concepts, NVIDIA-specific questions, or the recommended mix.")
+          h("p", null, `Choose count and difficulty, then start ${scopeConfig.primaryLabel.toLowerCase()}, ${scopeConfig.secondaryLabel.toLowerCase()}, or the recommended mix.`)
         ),
         h("div", { className: "pp-card-foot" },
           h(PracticeDrillSetup, {
@@ -6151,6 +8544,8 @@ function PracticePanel(props) {
             mixedLabel: mixedDrillLabel,
             bankMatchLabel,
             generatedMatchLabel,
+            scopeTitle: scopeConfig.sourceTitle,
+            scopeHint: scopeConfig.sourceHint,
             sourceFilter: drillSource,
             setSourceFilter: setDrillSource,
             sourceOptions: sourceFilterOptions,
@@ -6165,7 +8560,7 @@ function PracticePanel(props) {
             }),
             onStartGenerated: () => startQuestionDrill({
               questions: generatedMatches,
-              label: `${target.label} NVIDIA-specific questions`,
+              label: `${target.label} ${scopeConfig.secondaryLabel.toLowerCase()}`,
               count: drillCount,
               difficulty: drillDifficulty,
               flowName: "practice-generated"
@@ -6181,11 +8576,9 @@ function PracticePanel(props) {
     h("div", { className: "pp-head" },
       h("div", null,
         h("h2", null, "Practice"),
-        h("p", { className: "muted" }, isGenericStudy
-          ? "Pick the next best drill or generate new scenario questions."
-          : "Pick from fixed mock tests, NVIDIA-specific questions, or broader certificate concept questions.")
+        h("p", { className: "muted" }, scopeConfig.panelDescription)
       ),
-      h("span", { className: "pp-bank-count" }, `${originalBankCount} concept · ${generatedPracticeCount} NVIDIA-specific`)
+      h("span", { className: "pp-bank-count" }, `${countPhrase(originalBankCount, scopeConfig.primaryCountLabel)} · ${countPhrase(generatedPracticeCount, scopeConfig.secondaryCountLabel)}`)
     ),
 
     !hasBank
@@ -6196,7 +8589,7 @@ function PracticePanel(props) {
       h("div", { className: "practice-stat" },
         h("span", null, "Question pool"),
         h("strong", null, `${practiceBankCount}/${exam.questions.length}`),
-        h("em", null, `${originalBankCount} concept · ${generatedSourceLabel}`)
+        h("em", null, `${countPhrase(originalBankCount, scopeConfig.primaryCountLabel)} · ${generatedSourceLabel}`)
       ),
       isGenericStudy ? null : h("div", { className: "practice-stat" },
         h("span", null, "Review queue"),

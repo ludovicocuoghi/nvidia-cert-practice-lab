@@ -6,17 +6,6 @@ source_lens: general-study
 
 # Knowledge and RAG Pipeline
 
-## Actual implementation / How you use it
-
-```text
-ingest: docs -> parse/OCR -> chunk -> metadata/ACL -> embed -> index
-query: user+identity -> filters -> dense+sparse search -> rerank -> context -> answer+citation
-```
-
-| Input | Pipeline decision | Output |
-|---|---|---|
-| Query, identity, tenant, corpus, metadata | Retrieve only permitted current evidence, then rerank and pack context | Grounded answer, citations, retrieval trace, and empty-evidence behavior |
-
 ## What to study first
 
 - **Core idea:** Build the **query-time retrieval path** that finds permitted evidence, ranks it, packs it into context, and makes the model answer with support from sources.
@@ -29,7 +18,7 @@ query: user+identity -> filters -> dense+sparse search -> rerank -> context -> a
 - Build indexes: Store text + vectors + metadata in a vector/search store
 - choose ANN indexes such as **HNSW**, **IVF**, Flat, PQ, or IVF+PQ.
 - **Boundary check:** **RAG** supplies fresh or private facts at query time without changing model weights. **Fine-tuning** changes behavior/style and is painful for facts that change.
-- **Watch first:** Bad parsing, bad **chunking**, weak embeddings, missing **metadata/ACL** filters, stale indexes, noisy top-k, weak **reranking**, prompt injection in documents, or citations that do not support claims.
+- **Watch first:** Bad parsing, bad **chunking**, weak embeddings, missing **metadata/ACL** filters, stale indexes, noisy top-k, weak **reranking**, prompt injection in documents, unsupported claims or hallucinations, or citations that do not support claims.
 
 ## What You Are Building
 
@@ -79,10 +68,36 @@ query -> retrieve -> rerank -> pack context -> answer -> cite/evaluate
 | **Apply filters early** | Apply tenant, ACL, sensitivity, product, date, and source constraints before or during retrieval. | Forbidden chunks should not enter context. Output filtering is too late. |
 | **Retrieve candidates** | Run **dense** vector search and, when exact terms matter, **sparse** search such as **BM25**. | Dense handles meaning; sparse handles exact IDs, citations, codes, and names. |
 | **Fuse results** | Use **hybrid search** and often **RRF** to merge dense and sparse ranked lists. | RRF combines ranks without pretending BM25 scores and cosine scores are comparable. |
+| **Decompose when needed** | Split comparison or multi-part questions into subqueries before retrieval. | One vector search over "compare A and B" can land between both entities and return one-sided evidence. |
 | **Rerank** | Use a **cross-encoder** reranker on top candidates, usually top 50-200 -> top 3-10. | Reranking is slower but more precise because the query and document are scored together. |
 | **Pack context** | Select compatible chunks, preserve citations, deduplicate, respect token budget, and isolate retrieved text from instructions. | Too much context adds noise; mixed jurisdictions/products create hallucinations. |
 | **Generate and verify** | Answer from evidence, cite sources, refuse when evidence is insufficient, and check groundedness/faithfulness. | Citations are useful only when they actually entail the claim. |
 | **Trace quality** | Log spans for query rewrite, embedding, search, rerank, generation, and citation checks. | You cannot fix latency or relevance if the pipeline is a single black box. |
+
+### Anti-hallucination measures
+
+Use these **anti hallucination measures** when the scenario asks for hallucination mitigation, unsupported-claim reduction, grounded answers, or source-faithful RAG behavior. The fix is usually a chain of controls, not a single prompt sentence.
+
+| Measure | Where it belongs | What it prevents |
+|---|---|---|
+| Retrieve permitted evidence before generation | Query-time RAG | The model answering from memory when current/private facts are required |
+| Use hybrid search and reranking | Retrieval and ranking | Plausible but wrong chunks beating exact or answer-bearing evidence |
+| Pack only compatible current chunks | Context assembly | Mixed product, tenant, date, or jurisdiction evidence creating invented synthesis |
+| Require citation support per claim | Generation/output check | Decorative citations that do not prove the generated sentence |
+| Refuse or ask when evidence is missing | Answer policy | Forced confident answers with no supporting source |
+| Evaluate groundedness and faithfulness | Release gate and regression suite | Silent regressions after prompt, model, retriever, or index changes |
+| Monitor hallucination and unsupported-citation rate | Production observability | Live quality drift that HTTP success metrics will not catch |
+
+```python
+def answer_with_evidence(query, user):
+    chunks = retrieve_and_rerank(query, filters=user.acl)
+    if not chunks:
+        return refuse("I do not have enough permitted evidence to answer.")
+    answer = generate_from_evidence(query, chunks)
+    if not citations_entail_claims(answer, chunks):
+        return ask_clarification_or_escalate()
+    return answer
+```
 
 ## Platform Examples
 
@@ -117,6 +132,19 @@ query -> retrieve -> rerank -> pack context -> answer -> cite/evaluate
 | **Cross-encoder reranker** | Feeds query + candidate document together and produces one relevance score. | Captures negation, specificity, contradiction, and fine relevance. | Much slower; only practical on top candidates after first-stage retrieval. |
 
 Typical workflow: **bi-encoder + ANN** retrieves top 50-200 candidates, then **cross-encoder reranking** chooses the top 3-10 chunks that should reach the LLM.
+
+### Query decomposition for comparison questions
+
+For comparison or multi-part questions, retrieval should often run more than once:
+
+```text
+compare warranty for Product A vs Product B
+  -> retrieve("warranty terms Product A")
+  -> retrieve("warranty terms Product B")
+  -> synthesize differences with citations from both result sets
+```
+
+This prevents a single embedding of the combined query from landing between two entities and letting the larger or more frequent corpus dominate the result set.
 
 ### Hybrid search and RRF
 
@@ -172,6 +200,7 @@ Use it because **BM25 score** `23.4` and **cosine similarity** `0.87` are not ca
 |---|---|---|
 | **Fresh/private facts** that change often | RAG with index refresh and citations | Fine-tuning every time facts change |
 | Exact IDs, product codes, statute numbers, legal citations | **Hybrid search**: BM25 + dense + RRF | Pure vector search |
+| Compare A vs B or answer two subquestions | Query decomposition with separate retrieval per entity/subquestion | One averaged embedding query |
 | Many plausible but wrong chunks | Better chunking, metadata filters, **cross-encoder reranking**, smaller final top-N | Increasing top-k blindly |
 | User sees another tenant's data | Enforce **ACL/tenant metadata filters before retrieval** | Output guardrail after generation |
 | NVIDIA enterprise RAG stack | NeMo Retriever + embedding/reranker endpoints + guardrails/evals | NIM generator alone |
@@ -188,6 +217,7 @@ Use it because **BM25 score** `23.4` and **cosine similarity** `0.87` are not ca
 |---|---|
 | **RAG teaches the model** | RAG supplies evidence at query time; it does not change weights. |
 | **Bigger context window fixes retrieval** | More room for bad chunks can increase hallucination. Fix retrieval quality first. |
+| **Anti-hallucination is only a prompt instruction** | Hallucination mitigation is retrieval, context packing, refusal policy, groundedness checks, evals, and monitoring working together. |
 | **Larger top-k is always better** | Candidate top-k can be broad, but final context should be small, reranked, compatible, and cited. |
 | **Vector search handles exact facts** | IDs, SKUs, legal citations, and error codes often need BM25, metadata filters, SQL, or structured tools. |
 | **Hybrid search and reranking are the same** | Hybrid improves candidate recall; reranking improves candidate order and precision. |
@@ -309,6 +339,7 @@ Retrieval metrics usually include recall@k, MRR, nDCG, answer-bearing chunk rank
 | Right document never appears | Connector, parser, metadata, embedding, index freshness |
 | Right document appears but low rank | Hybrid search, reranker, query rewrite |
 | Citation does not support claim | Context packing, answer criteria, groundedness check |
+| Fluent answer invents details | Evidence requirement, no-evidence refusal, citation entailment, regression test |
 | User sees forbidden source | ACL filter before retrieval |
 | Answers are stale | Source version, refresh/delete pipeline |
 | Long slow prompts | Chunk pruning, parent-child retrieval, top-k/reranker budget |
@@ -327,6 +358,7 @@ Retrieval metrics usually include recall@k, MRR, nDCG, answer-bearing chunk rank
 - **Wrong tenant** -> metadata/ACL filters before retrieval.
 - **Outdated source** -> version metadata, refresh, recency-aware retrieval/reranking.
 - **Unsupported citations** -> groundedness/faithfulness evaluation.
+- **Anti hallucination measures** -> retrieve evidence, rerank, pack compatible context, require citation support, refuse without evidence, then evaluate and monitor groundedness.
 - **Document says ignore instructions** -> prompt injection in retrieved data; isolate content and enforce policy outside the document.
 - **No evidence** -> refuse or clarify; do not force an answer.
 
@@ -339,3 +371,4 @@ Retrieval metrics usually include recall@k, MRR, nDCG, answer-bearing chunk rank
 5. Explain why a **cross-encoder** reranker is more accurate but slower than a **bi-encoder** retriever.
 6. Pick an index type for 8K, 5M, and 1B vectors, and state the speed/accuracy/memory tradeoff.
 7. Debug a bad answer by naming which layer failed: parser, chunker, embedding model, BM25, ANN index, ACL filter, reranker, context packer, generator, or citation checker.
+8. For one hallucinated answer, list the anti-hallucination measure that should catch it first: retrieval fix, context-packing fix, no-evidence refusal, citation entailment, regression eval, or production monitor.

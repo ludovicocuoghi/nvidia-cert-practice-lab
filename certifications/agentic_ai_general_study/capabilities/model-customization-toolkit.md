@@ -6,21 +6,6 @@ source_lens: general-study
 
 # Model Customization Toolkit
 
-## Actual implementation / How you use it
-
-```yaml
-customization_job:
-  baseline: prompt_plus_rag_release
-  method: lora_or_sft_or_preference_tuning
-  data: curated_examples_or_preference_pairs
-  holdout: protected_regression_set
-  release_gate: compare_against_baseline
-```
-
-| Input | Customization decision | Output |
-|---|---|---|
-| Durable behavior gap plus curated data | Prompt/RAG fix, PEFT/LoRA, SFT, preference tuning, or no-tune | Adapter or tuned checkpoint with eval delta and rollback path |
-
 ## What to study first
 
 - **Core idea:** You are building the path for changing an existing model's durable behavior with curated examples: SFT, PEFT/LoRA, QLoRA, preference tuning, alignment, or continued pretraining. Use it when prompting and RAG are not enough.

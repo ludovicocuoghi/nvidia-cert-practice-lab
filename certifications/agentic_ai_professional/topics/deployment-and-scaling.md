@@ -68,6 +68,14 @@ Deployment and Scaling sits at the **operationalization** stage:
 - Prevents head-of-line blocking: batch jobs don't delay real-time responses
 - **Intent/complexity routing**: Simple queries → cheap deterministic/small-model path; complex → full agent workflow
 
+### Serving-side optimization cues
+
+| Stem clue | Prefer | Avoid |
+|---|---|---|
+| 70% simple queries and 30% hard queries all use the largest model | Cascade routing: small/cheap model first, escalate low-confidence or complex cases to larger model | Running both models for every request |
+| Same long system prompt/policy prefix is reprocessed for every request | Prefix caching or prompt-prefix reuse in the serving layer, plus shorter packed context | Reducing max output tokens when TTFT is dominated by prefill |
+| Latency is good at low load but balloons at high load | Queue analysis plus in-flight/continuous batching and lane isolation | Batch size of one or merely raising static batch size |
+
 ### User count, concurrency, and UX latency
 
 Exam scenarios often mention "1,000 users" or "1 million users" to test capacity reasoning. Do not treat the number by itself as the answer. First translate it into concurrent requests, requests per second, token lengths, workflow length, traffic bursts, and the user-facing SLO.
@@ -268,6 +276,9 @@ Evidence source: `mock_1` through `mock_5`, especially **latency** tracing, Kube
 | external tool API takes 30s, blocking all worker threads | per-component timeouts + bulkheads to isolate slow dependency | longer global timeouts tie up more resources |
 | every agent independently retrieves same documents | shared **retrieval** cache scoped by query, permissions, document version | disabling **retrieval** to save cost |
 | 100k daily users, only 5% need complex multi-step agents | intent/complexity routing: simple → cheap path, complex → full agent | all requests go through full agent workflow |
+| mostly simple traffic pays large-model cost | cascade routing with confidence-threshold escalation | always run small and large models, then choose one |
+| stable 4k-token system prefix dominates TTFT | prefix caching / prefix reuse and context trimming | lowering `max_tokens`; that caps output, not prefill |
+| high-load latency curve explodes while low-load latency is fine | in-flight/continuous batching, queue metrics, and separate serving lanes | static batching only or batch size of one |
 | multi-agent variable-length chains (2-15 tool calls) | plan capacity for tail **latency** (p95/p99), async I/O, and parallel independent reads | capacity planning for median **latency** only |
 | model **rollback** needed after bad deployment | blue-green deployment with zero-downtime switch, quality gates before ramp | restarting services or switching to backup without investigation |
 | embedding model saturated, LLM idle | independent scaling per model type (separate **NIM** per LLM/embedding/reranker) | uniform scaling across all components |
