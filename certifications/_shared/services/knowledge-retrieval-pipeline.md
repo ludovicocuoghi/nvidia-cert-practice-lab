@@ -84,6 +84,45 @@ RAG is a system, not one vector query:
 - "Behavior pattern" -> tuning, not retrieval.
 - "Evaluation hallucination" -> groundedness eval.
 
+## Chapter notes
+
+The knowledge retrieval pipeline is the **evidence chapter** for systems that must answer from private, changing, or source-governed knowledge. Retrieval does not make the model smarter in general; it supplies the right evidence at the moment of the query. That distinction is the center of most RAG exam traps.
+
+```text
+source docs -> parse -> chunk -> metadata/ACL -> embed/index
+                                               |
+user query + identity -> search -> rerank -> context -> answer + citations
+```
+
+### Retrieval formulas
+
+Use these lightweight formulas to reason about quality:
+
+```text
+recall@k = relevant_chunks_in_top_k / total_relevant_chunks
+precision@k = relevant_chunks_in_top_k / k
+context_budget = system_tokens + query_tokens + evidence_tokens + answer_budget
+```
+
+Higher `top_k` can improve recall but also increases rerank cost and context clutter. A larger context window does not fix bad chunks, missing metadata, weak query rewriting, or absent ACL filters.
+
+### Chunking plot
+
+```text
+too small:
+[term] [definition] [exception] [example]     -> good recall, weak meaning
+
+too large:
+[policy page with many unrelated sections]     -> noisy context
+
+good:
+[heading + paragraph + table row + source id]  -> useful evidence unit
+```
+
+### Scenario drill
+
+A tenant asks a support question. The vector search finds a perfect answer in another tenant's document. A final-output guardrail cannot make this safe because the sensitive chunk already entered context. The correct design is **pre-retrieval ACL filtering** plus metadata propagation during ingestion. In exam language: access control must happen before context assembly.
+
 ## Hands-on checks
 
 1. Trace one PDF from ingestion to answer citation.

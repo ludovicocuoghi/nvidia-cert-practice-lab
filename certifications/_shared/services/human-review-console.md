@@ -83,6 +83,41 @@ The review console must show enough context: user request, evidence, tool propos
 - "Feedback loop" -> labels become evals/fixes.
 - "Audit" -> trace plus reviewer decision.
 
+## Chapter notes
+
+The human review console is the **governance chapter**. It decides which work can run automatically, which work is sampled, which work requires approval, and which work must be blocked or escalated. Human oversight is not "add a person somewhere." It is a designed control with risk tiers, reviewer criteria, SLA, audit trail, and feedback routing.
+
+```text
+agent output/proposed action
+  -> risk score
+  -> auto allow | sample review | approval required | block
+  -> reviewer decision
+  -> audit record
+  -> eval case / policy fix / training label
+```
+
+### Risk tier matrix
+
+| Risk tier | Example | Review mode |
+|---|---|---|
+| Low | summarize public help article | auto allow with sampling |
+| Medium | answer account question from allowed docs | sample review plus drift monitoring |
+| High | refund, medical/legal/financial recommendation | approval before action |
+| Prohibited | exfiltrate secrets, bypass controls | block and log |
+
+### Reviewer-load formula
+
+```text
+review_load_per_hour =
+  total_requests_per_hour * review_rate * average_review_minutes / 60
+```
+
+If 10,000 requests/hour have a 10% review rate and each review takes 3 minutes, the team needs about 50 reviewer-hours per hour. That is impossible without risk-tiering, better automation, or narrower review criteria. **Review everything** is usually not a serious production design.
+
+### Scenario drill
+
+A bank wants every agent action reviewed. The safer design is usually not full review; it is risk-tiered review: automatic read-only answers with sampling, approval-required money movement, escalation for ambiguous cases, and a feedback pipeline that turns reviewer decisions into eval cases and policy updates.
+
 ## Hands-on checks
 
 1. Classify actions into auto-allow, sample-review, approval-required, and block.

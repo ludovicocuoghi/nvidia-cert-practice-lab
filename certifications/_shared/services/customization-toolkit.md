@@ -84,6 +84,46 @@ Customization should be measured against held-out tasks and old regression tasks
 - "Adapter" -> PEFT.
 - "Preference pairs" -> DPO/RLHF-style path.
 
+## Chapter notes
+
+The customization toolkit is the **behavior-change chapter**. It should be chosen when the model must internalize a durable pattern: domain language, answer style, criteria adherence, tool-use format, refusal style, or preference ranking. It should not be chosen just because the model missed a fact that changes every week.
+
+```text
+requirement
+  -> prompt if instructions/examples are enough
+  -> RAG if facts are external or changing
+  -> PEFT/LoRA if durable behavior must shift efficiently
+  -> SFT if many demonstrations define the task
+  -> preference tuning if ranking choices matters
+  -> full training only when existing models are insufficient
+```
+
+### Method map
+
+| Method | Input | Output | Best signal |
+|---|---|---|---|
+| Prompt/context | instructions, examples | prompt version | cheap behavior framing |
+| RAG | documents, metadata | grounded context | fresh/private facts |
+| LoRA/QLoRA | curated examples | adapter | efficient behavior adaptation |
+| SFT | demonstrations | tuned model/checkpoint | durable task behavior |
+| DPO/RLHF-style | preference pairs | preference-aligned model | ranking and style preference |
+
+### Overfitting check
+
+```text
+release_ok =
+  new_task_score improves
+AND old_regression_score does_not_drop
+AND safety_score does_not_drop
+AND heldout_score tracks training_score
+```
+
+If training score rises while heldout or regression score falls, the model may be memorizing examples or forgetting old behavior.
+
+### Scenario drill
+
+A claims assistant knows the latest policy through RAG but still applies the company's decision criteria inconsistently. That is a customization signal: use curated examples and evals to teach durable criteria. If the problem were missing the newest policy document, customization would be the wrong first move.
+
 ## Hands-on checks
 
 1. Write five requirements and classify them as prompt, RAG, PEFT, SFT, or preference tuning.

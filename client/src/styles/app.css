@@ -3150,7 +3150,7 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 }
 
 .concept-finder > summary::after {
-  content: "Open";
+  content: "Find";
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--surface);
@@ -3161,7 +3161,7 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 }
 
 .concept-finder[open] > summary::after {
-  content: "Close";
+  content: "Hide";
 }
 
 .concept-finder-body {
@@ -3902,6 +3902,42 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   margin-bottom: 0;
 }
 
+.nvidia-handbook-article .service-section-heading > span,
+.nvidia-handbook-article .study-map section > span,
+.nvidia-handbook-article .impl-grid section > span,
+.nvidia-handbook-article .impl-code > span {
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.nvidia-handbook-article .service-section-heading > h4 {
+  font-size: 1.16rem;
+  line-height: 1.18;
+}
+
+.nvidia-handbook-article .study-first-body,
+.nvidia-handbook-article .study-first-body li,
+.nvidia-handbook-article .study-first-row p,
+.nvidia-handbook-article .study-map section p,
+.nvidia-handbook-article .decision-card-body .md-p,
+.nvidia-handbook-article .decision-card-body .md-ul li,
+.nvidia-handbook-article .decision-card-body .md-ol li,
+.nvidia-handbook-article .impl-grid section p,
+.nvidia-handbook-article .flow-kicker {
+  font-size: 1.06rem;
+  line-height: 1.56;
+}
+
+.nvidia-handbook-article .study-map section {
+  grid-template-columns: minmax(190px, 0.24fr) minmax(0, 1fr);
+  padding: 16px 20px;
+}
+
+.nvidia-handbook-article .impl-code pre {
+  font-size: 0.96rem;
+  line-height: 1.55;
+}
+
 .nvidia-handbook-article .idea-chips,
 .nvidia-handbook-article .signal-tags {
   display: flex;
@@ -3995,6 +4031,78 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   display: grid;
   gap: 14px;
   max-width: none;
+}
+
+.nvidia-suite-two-pane {
+  display: grid;
+  grid-template-columns: minmax(270px, 0.34fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.nvidia-suite-topic-nav {
+  position: sticky;
+  top: 14px;
+  max-height: calc(100vh - 28px);
+  overflow: auto;
+  padding: 10px 0;
+  border-top: 0;
+  border-bottom: 0;
+}
+
+.nvidia-suite-topic-nav .general-focused-nav-head {
+  margin-bottom: 2px;
+}
+
+.nvidia-suite-topic-nav .nvidia-compact-row-list {
+  gap: 7px;
+}
+
+.nvidia-suite-topic-nav .nvidia-compact-nav-row {
+  grid-template-columns: minmax(38px, auto) minmax(0, 1fr);
+  gap: 7px 10px;
+  align-items: center;
+  min-height: 62px;
+  padding: 10px 12px;
+}
+
+.nvidia-suite-topic-nav .nvidia-row-copy strong,
+.nvidia-suite-topic-nav .service-card.nvidia-compact-nav-row .nvidia-row-copy strong {
+  font-size: 0.94rem;
+  line-height: 1.22;
+}
+
+.nvidia-suite-topic-nav .nvidia-row-copy p,
+.nvidia-suite-topic-nav .service-card.nvidia-compact-nav-row .nvidia-row-copy p {
+  display: none;
+}
+
+.nvidia-suite-topic-nav .nvidia-row-number {
+  min-width: 32px;
+  min-height: 26px;
+  padding: 3px 8px;
+}
+
+.nvidia-suite-topic-nav .nvidia-row-meta,
+.nvidia-suite-topic-nav .nvidia-row-chips {
+  grid-column: 2;
+}
+
+.nvidia-suite-topic-nav .nvidia-row-meta {
+  justify-self: start;
+  font-size: 0.68rem;
+}
+
+.nvidia-suite-topic-nav .nvidia-row-chips {
+  display: none;
+}
+
+.nvidia-handbook-article {
+  min-width: 0;
+}
+
+.nvidia-handbook-title {
+  margin-bottom: 12px;
 }
 
 .concept-finder-compact {
@@ -4435,8 +4543,9 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 }
 
 .general-card-page.highlighted .general-page-header {
-  border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(47, 127, 194, 0.14);
+  border-color: transparent;
+  background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.06), transparent 46%);
+  box-shadow: inset 5px 0 0 rgba(var(--accent-rgb), 0.48);
 }
 
 .general-focused-lesson-banner {
@@ -4445,13 +4554,10 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   gap: 16px;
   align-items: center;
   min-width: 0;
-  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--line));
-  border-left: 6px solid var(--accent);
-  border-radius: 8px;
-  background:
-    linear-gradient(90deg, rgba(var(--accent-rgb), 0.13), transparent 56%),
-    var(--surface);
-  padding: 15px 18px;
+  border-top: 1px solid color-mix(in srgb, var(--line) 74%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 74%, transparent);
+  background: transparent;
+  padding: 14px 0;
 }
 
 .general-focused-lesson-banner div {
@@ -6411,6 +6517,14 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   text-align: right;
 }
 
+.nvidia-compact-prev-next-top {
+  margin-top: -2px;
+}
+
+.general-compact-prev-next.nvidia-compact-prev-next-top .general-chapter-nav-box {
+  min-height: 64px;
+}
+
 .general-compact-prev-next .general-chapter-nav-box {
   position: relative;
   min-height: 72px;
@@ -7842,6 +7956,14 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 
 .suite-knowledge-card:first-child {
   grid-row: span 2;
+}
+
+.nvidia-handbook-article .suite-knowledge-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.nvidia-handbook-article .suite-knowledge-card:first-child {
+  grid-row: auto;
 }
 
 .suite-knowledge-card {
@@ -10528,6 +10650,7 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   .general-study-content,
   .service-filter-panel,
   .service-layout,
+  .nvidia-suite-two-pane,
   .service-actions,
   .practice-scope-grid,
   .study-map,
@@ -10538,6 +10661,12 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 
   .practice-source-checks {
     justify-content: flex-start;
+  }
+
+  .nvidia-suite-topic-nav {
+    position: static;
+    max-height: none;
+    overflow: visible;
   }
 
   .general-path-card {
@@ -10566,13 +10695,14 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 	  }
 
   .general-compact-step-link {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(72px, auto) minmax(0, 1fr);
     grid-template-areas:
-      "number"
-      "title"
-      "phrase"
-      "action";
+      "number title"
+      "number phrase"
+      "number action";
     align-items: start;
+    min-height: auto;
+    padding: 10px 12px;
   }
 
   .general-compact-step-link small {
@@ -10846,16 +10976,26 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   }
 
   .general-compact-step-link {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(64px, auto) minmax(0, 1fr);
     grid-template-areas:
-      "number"
-      "title"
-      "phrase"
-      "action";
+      "number title"
+      "number phrase"
+      "number action";
   }
 
   .general-compact-step-link .general-step-number {
     justify-self: start;
+    min-width: 56px;
+    padding-inline: 8px;
+    font-size: 0.78rem;
+  }
+
+  .general-compact-step-link strong {
+    font-size: 1.06rem;
+  }
+
+  .general-compact-step-link p {
+    font-size: 0.96rem;
   }
 
   .general-focused-step-rail .general-compact-step-link {
@@ -11975,8 +12115,8 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
 
 .nvidia-service-table-row {
   display: grid;
-  grid-template-columns: 54px minmax(260px, 1fr) minmax(150px, 0.22fr) minmax(220px, 0.34fr) 76px;
-  gap: 12px;
+  grid-template-columns: 54px minmax(300px, 1fr) minmax(170px, 0.26fr) minmax(250px, 0.38fr) 24px;
+  gap: 12px 14px;
   align-items: center;
   min-width: 0;
   border: 0;
@@ -11986,10 +12126,23 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   padding: 13px 14px;
   text-align: left;
   font: inherit;
+  cursor: pointer;
 }
 
 .nvidia-service-table-row:last-child {
   border-bottom: 0;
+}
+
+.nvidia-service-table-row::after {
+  content: "";
+  justify-self: end;
+  width: 9px;
+  height: 9px;
+  border-top: 2px solid var(--accent-dark);
+  border-right: 2px solid var(--accent-dark);
+  transform: rotate(45deg);
+  opacity: 0.62;
+  transition: opacity 140ms ease, transform 140ms ease;
 }
 
 .nvidia-service-table-row:hover,
@@ -11999,9 +12152,15 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   outline: none;
 }
 
+.nvidia-service-table-row:hover::after,
+.nvidia-service-table-row:focus-visible::after,
+.nvidia-service-table-row.active::after {
+  opacity: 1;
+  transform: translateX(2px) rotate(45deg);
+}
+
 .nvidia-service-table-number,
 .nvidia-service-table-family,
-.nvidia-service-table-open,
 .nvidia-service-table-cues em {
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -12047,22 +12206,42 @@ h6.md-h { font-size: 0.92rem; color: var(--muted); text-transform: uppercase; le
   min-width: 0;
 }
 
-.nvidia-service-table-open {
-  justify-self: end;
-  color: #fff;
-  border-color: #2f7da8;
-  background: #2f7da8;
-}
-
 @media (max-width: 980px) {
   .nvidia-chapter-code-callout,
-  .nvidia-service-filter-strip,
-  .nvidia-service-table-row {
+  .nvidia-service-filter-strip {
     grid-template-columns: 1fr;
   }
 
-  .nvidia-service-table-open {
+  .nvidia-service-table-row {
+    grid-template-columns: minmax(46px, auto) minmax(0, 1fr) 18px;
+    grid-template-areas:
+      "number main arrow"
+      ". family ."
+      ". cues .";
+    align-items: start;
+    padding: 12px;
+  }
+
+  .nvidia-service-table-row::after {
+    grid-area: arrow;
+    margin-top: 7px;
+  }
+
+  .nvidia-service-table-number {
+    grid-area: number;
+  }
+
+  .nvidia-service-table-main {
+    grid-area: main;
+  }
+
+  .nvidia-service-table-family {
+    grid-area: family;
     justify-self: start;
+  }
+
+  .nvidia-service-table-cues {
+    grid-area: cues;
   }
 }
 

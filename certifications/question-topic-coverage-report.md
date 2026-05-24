@@ -1,6 +1,6 @@
 # Question Topic Coverage Report
 
-Generated: 2026-05-06
+Generated: 2026-05-20
 
 This report counts active unique practice-bank questions, not fixed mock-test slots. The app de-duplicates question IDs in this order: downloaded/original question markdown, generated high-fidelity shards, then drafts.
 

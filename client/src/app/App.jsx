@@ -3256,6 +3256,7 @@ function CompactPrevNextNav({ path, card = null, onShowPath, onSelectCard }) {
       previous ? h("button", {
         type: "button",
         className: "general-chapter-nav-box previous",
+        "aria-label": `Previous step: ${previous.title}`,
         onClick: () => onSelectCard(previous.id)
       },
         h("span", null, "Previous step"),
@@ -3264,6 +3265,7 @@ function CompactPrevNextNav({ path, card = null, onShowPath, onSelectCard }) {
       next ? h("button", {
         type: "button",
         className: "general-chapter-nav-box next",
+        "aria-label": `Next step: ${next.title}`,
         onClick: () => onSelectCard(next.id)
       },
         h("span", null, "Next step"),
@@ -3280,6 +3282,7 @@ function CompactPrevNextNav({ path, card = null, onShowPath, onSelectCard }) {
     previous ? h("button", {
       type: "button",
       className: "general-chapter-nav-box previous",
+      "aria-label": `Previous chapter: ${previous.title}`,
       onClick: () => onShowPath(previous.id)
     },
       h("span", null, "Previous chapter"),
@@ -3288,6 +3291,7 @@ function CompactPrevNextNav({ path, card = null, onShowPath, onSelectCard }) {
     next ? h("button", {
       type: "button",
       className: "general-chapter-nav-box next",
+      "aria-label": `Next chapter: ${next.title}`,
       onClick: () => onShowPath(next.id)
     },
       h("span", null, "Next chapter"),
@@ -3335,6 +3339,7 @@ function GeneralPathChooserPage({ onSelectPath, supportNode = null }) {
       h("h3", null, "Choose Builder Path"),
       h("p", null, "Start with what you are trying to build. Each path opens a sequential build page, then each step opens a full study card.")
     ),
+    supportNode,
     h("div", { className: "general-path-grid" },
       generalBuilderPaths.map((path) => {
         const meta = generalPathCardMeta[path.id] || {};
@@ -3357,8 +3362,7 @@ function GeneralPathChooserPage({ onSelectPath, supportNode = null }) {
         )
       );
       })
-    ),
-    supportNode
+    )
   );
 }
 
@@ -4630,13 +4634,13 @@ function NvidiaStageConceptNav({ stages, selectedStage, onSelectStage, onSelectS
   );
 }
 
-function NvidiaPrevNextNav({ items, selectedId, getId, getTitle, onSelect, previousLabel = "Previous", nextLabel = "Next" }) {
+function NvidiaPrevNextNav({ items, selectedId, getId, getTitle, onSelect, previousLabel = "Previous", nextLabel = "Next", placement = "" }) {
   const currentIndex = (items || []).findIndex((item) => getId(item) === selectedId);
   if (currentIndex < 0) return null;
   const previous = currentIndex > 0 ? items[currentIndex - 1] : null;
   const next = currentIndex < items.length - 1 ? items[currentIndex + 1] : null;
   if (!previous && !next) return null;
-  return h("nav", { className: "general-compact-prev-next nvidia-compact-prev-next", "aria-label": "NVIDIA chapter navigation" },
+  return h("nav", { className: `general-compact-prev-next nvidia-compact-prev-next${placement ? ` nvidia-compact-prev-next-${placement}` : ""}`, "aria-label": "NVIDIA chapter navigation" },
     previous ? h("button", {
       type: "button",
       className: "general-chapter-nav-box previous",
@@ -5259,6 +5263,8 @@ function selectGeneralBuilderCard(cardId) {
   });
 
   function renderNvidiaPage({ viewKey, viewLabel, itemLabel = "", header, beforeNav = null, navNode = null, bodyNode, prevNextNode = null, relatedNode = null, onHome = null, onView = null }) {
+    const topPrevNextNode = prevNextNode ? React.cloneElement(prevNextNode, { key: "top-prev-next", placement: "top" }) : null;
+    const bottomPrevNextNode = prevNextNode ? React.cloneElement(prevNextNode, { key: "bottom-prev-next", placement: "bottom" }) : null;
     return h("div", { className: `nvidia-handbook-page nvidia-handbook-${viewKey}` },
       h(NvidiaStudyBreadcrumbs, {
         examLabel: currentExamLabel,
@@ -5272,8 +5278,9 @@ function selectGeneralBuilderCard(cardId) {
       nvidiaTabsNode,
       beforeNav,
       navNode,
+      topPrevNextNode,
       bodyNode,
-      prevNextNode,
+      bottomPrevNextNode,
       relatedNode,
       studyStatus ? h("p", { className: "study-status" }, studyStatus) : null
     );
@@ -5556,32 +5563,34 @@ function SuiteStudyView({ topics, selectedTopic, setSelectedTopicId, studyStatus
 
   if (handbook) {
     return h("div", { className: "nvidia-suite-handbook" },
-      h("nav", { className: "general-compact-chapter-nav nvidia-compact-chapter-nav", "aria-label": suiteLabel },
-        h("div", { className: "general-focused-nav-head" },
-          h("span", null, suiteLabel),
-          h("h2", null, "Compact related links")
+      h("div", { className: "nvidia-suite-two-pane" },
+        h("nav", { className: "general-compact-chapter-nav nvidia-compact-chapter-nav nvidia-suite-topic-nav", "aria-label": suiteLabel },
+          h("div", { className: "general-focused-nav-head" },
+            h("span", null, suiteLabel),
+            h("h2", null, "Compact related links")
+          ),
+          h("div", { className: "nvidia-compact-row-list" },
+            topics.map((topic, index) => h("button", {
+              key: topic.id,
+              type: "button",
+              className: `service-card suite-topic-card nvidia-compact-nav-row ${topic.id === selectedTopic.id ? "active" : ""}`,
+              onClick: () => setSelectedTopicId(topic.id),
+              "aria-current": topic.id === selectedTopic.id ? "page" : undefined
+            },
+              h("span", { className: "nvidia-row-number" }, String(index + 1).padStart(2, "0")),
+              h("span", { className: "nvidia-row-copy" },
+                h("strong", null, topic.title),
+                h("p", null, compactStudyText(topic.summary, 96))
+              ),
+              h("span", { className: "nvidia-row-meta" }, topic.category),
+              h("span", { className: "nvidia-row-chips" },
+                topic.related.slice(0, 3).map((item) => h("span", { key: item }, item))
+              )
+            ))
+          )
         ),
-        h("div", { className: "nvidia-compact-row-list" },
-          topics.map((topic, index) => h("button", {
-            key: topic.id,
-            type: "button",
-            className: `service-card suite-topic-card nvidia-compact-nav-row ${topic.id === selectedTopic.id ? "active" : ""}`,
-            onClick: () => setSelectedTopicId(topic.id),
-            "aria-current": topic.id === selectedTopic.id ? "page" : undefined
-          },
-            h("span", { className: "nvidia-row-number" }, String(index + 1).padStart(2, "0")),
-            h("span", { className: "nvidia-row-copy" },
-              h("strong", null, topic.title),
-              h("p", null, compactStudyText(topic.summary, 145))
-            ),
-            h("span", { className: "nvidia-row-meta" }, topic.category),
-            h("span", { className: "nvidia-row-chips" },
-              topic.related.slice(0, 3).map((item) => h("span", { key: item }, item))
-            )
-          ))
-        )
-      ),
-      h(SuiteTopicDetail, { topic: selectedTopic, studyStatus, suiteLabel, handbook: true })
+        h(SuiteTopicDetail, { topic: selectedTopic, studyStatus, suiteLabel, handbook: true })
+      )
     );
   }
 
@@ -5620,7 +5629,7 @@ function SuiteTopicDetail({ topic, studyStatus, suiteLabel, handbook = false }) 
   return h(
     "article",
     { className: `service-detail suite-detail nvidia-detail-article ${handbook ? "nvidia-handbook-article" : ""}`.trim() },
-    handbook ? null : h("div", { className: "service-detail-title" },
+    h("div", { className: `service-detail-title ${handbook ? "nvidia-handbook-title" : ""}`.trim() },
       h("span", null, suiteLabel),
       h("h3", null, topic.title),
       h("p", null, topic.summary)
@@ -6269,12 +6278,53 @@ function NvidiaChapterCodeCallout({ title, kind, markdown }) {
   );
 }
 
+function promoteDeepDiveChapterBody(markdown) {
+  const lines = String(markdown || "").split("\n");
+  const out = [];
+  let skippingDeepDiveContents = false;
+  let inFence = false;
+
+  for (const line of lines) {
+    if (/^```/.test(line.trim())) {
+      inFence = !inFence;
+      if (!skippingDeepDiveContents) out.push(line);
+      continue;
+    }
+
+    const heading = !inFence ? line.match(/^(#{2,6})\s+(.+?)\s*$/) : null;
+    if (heading) {
+      const title = heading[2].trim();
+      const deepDiveTitle = title.match(/^deep dives?$/i);
+      const deepDiveContents = title.match(/^deep dive contents$/i);
+      const promotedTitle = title.match(/^deep dive:\s*(.+)$/i);
+
+      if (deepDiveTitle) {
+        skippingDeepDiveContents = false;
+        continue;
+      }
+      if (deepDiveContents) {
+        skippingDeepDiveContents = true;
+        continue;
+      }
+      skippingDeepDiveContents = false;
+      if (promotedTitle) {
+        const cleanTitle = promotedTitle[1].trim().replace(/\s+deep dive$/i, "");
+        out.push(`## ${cleanTitle}`);
+        continue;
+      }
+    }
+
+    if (skippingDeepDiveContents) continue;
+    out.push(line);
+  }
+
+  return out.join("\n");
+}
+
 function nvidiaChapterBodyFromMarkdown(markdown) {
   let body = stripFrontmatter(markdown).replace(/^#\s+.+\n+/, "");
   [
     "What to study first",
-    "Actual implementation / How you use it",
-    "At a glance",
     "Certification boundary",
     "General Study first",
     "Must-know exam bullets",
@@ -6287,6 +6337,7 @@ function nvidiaChapterBodyFromMarkdown(markdown) {
   body = removeMarkdownSection(body, "Study card data");
   body = body.replace(/<!-- STUDY_ENRICHMENT_START -->\s*/g, "");
   body = body.replace(/<!-- STUDY_ENRICHMENT_END -->/g, "");
+  body = promoteDeepDiveChapterBody(body);
   return cleanMarkdownFragment(body);
 }
 
@@ -6474,6 +6525,7 @@ function NvidiaServiceIndex({ services, selectedService, onSelectService, curren
         className: `nvidia-service-table-row ${serviceGroupClass(service)} ${service.name === selectedService?.name ? "active" : ""}`,
         onClick: () => onSelectService(service.name),
         role: "listitem",
+        "aria-label": `Open service chapter: ${service.name}`,
         "aria-current": service.name === selectedService?.name ? "page" : undefined
       },
         h("span", { className: "nvidia-service-table-number" }, String(index + 1).padStart(2, "0")),
@@ -6484,8 +6536,7 @@ function NvidiaServiceIndex({ services, selectedService, onSelectService, curren
         h("span", { className: "nvidia-service-table-family" }, service.lifecycle || serviceGroupName(service)),
         h("span", { className: "nvidia-service-table-cues" },
           (service.filters || service.exams || []).slice(0, 3).map((cue) => h("em", { key: cue }, cue))
-        ),
-        h("span", { className: "nvidia-service-table-open" }, "Open")
+        )
       ))
     )
   );

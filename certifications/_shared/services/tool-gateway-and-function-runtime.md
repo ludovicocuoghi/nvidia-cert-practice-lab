@@ -83,6 +83,44 @@ Important controls:
 - "User confirmation" -> high-risk action boundary.
 - "Idempotency" -> safe retries.
 
+## Chapter notes
+
+The tool gateway is the **execution-boundary chapter**. A model can propose a tool call, but the gateway decides whether that proposal is valid, authorized, safe, idempotent, and auditable. The central sentence to remember is: **the model proposes; the runtime enforces.**
+
+```text
+model proposal
+  -> schema validation
+  -> identity and permission check
+  -> risk tier
+  -> approval if needed
+  -> idempotent execution
+  -> structured result or refusal
+  -> audit log
+```
+
+### Safety rules
+
+Use different controls by tool type:
+
+| Tool type | Example | Required controls |
+|---|---|---|
+| Read-only | `search_customer(id)` | schema, auth, tenant filter, logging |
+| Low-risk write | `create_ticket(summary)` | schema, auth, idempotency, retry policy |
+| High-risk mutation | `issue_refund(amount)` | schema, auth, risk score, human approval, audit |
+| External side effect | `send_email(body)` | confirmation, rate limit, preview, rollback plan |
+
+### Idempotency formula
+
+```text
+same_idempotency_key + same_tool + same_parameters -> same outcome
+```
+
+This prevents retry storms from creating duplicate orders, refunds, tickets, or emails. A tool that mutates state without idempotency is a production incident waiting to happen.
+
+### Scenario drill
+
+An agent issues two refunds because the first tool call timed out and the orchestrator retried it. The prompt was not the root problem. The gateway needed an idempotency key, timeout class, and replay-safe audit record. **Retries are only safe when the tool boundary makes them safe.**
+
 ## Hands-on checks
 
 1. Define one read-only tool and one mutating tool. List validation, permission, logging, and retry controls for each.

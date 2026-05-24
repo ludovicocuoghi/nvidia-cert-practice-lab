@@ -67,3 +67,5 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ## Project-Specific Study Content
 
 When adding or revising certification study cards, NVIDIA service pages, General Study capability pages, or new certificate sections, read `skills/capability-card-authoring/SKILL.md` first. It defines the expected structure for complete capability/service cards: concrete implementation surface, actual code/calls/model names, adjacent-service decision boundaries, useful traps, and UI verification.
+
+When revising study-page layouts, visual hierarchy, platform maps, service indexes, dashboards, compact navigation, or CSS for learning screens, read `skills/study-layout-designer/SKILL.md` first. It captures the app's design rules: golden-ratio balance, compact scannability, restrained impact color, no long full-width shallow text, no wasted whitespace, and memorable visual patterns.

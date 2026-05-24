@@ -87,6 +87,55 @@ The gateway decides where requests go:
 - "Endpoint health" -> gateway/ops.
 - "Bad answer quality" -> evaluation/customization, not just gateway.
 
+## Chapter notes
+
+The model serving gateway is the **traffic chapter**. It decides which endpoint receives each request, how overload is handled, whether a new model gets 5% or 100% of traffic, and when the system falls back. The exam trap is to treat all serving problems as "add replicas." A gateway is useful because it can shape traffic before capacity is wasted.
+
+```text
+request
+  -> classify task/risk/tenant
+  -> apply rate limit/admission
+  -> choose model route
+  -> batch or stream
+  -> fallback if unhealthy
+  -> record quality/latency/cost
+```
+
+### Routing math
+
+Use simple formulas to reason about capacity:
+
+```text
+arrival_rate = requests_per_second
+service_time = average_seconds_per_request
+concurrency_needed ~= arrival_rate * service_time
+
+effective_cost =
+  simple_route_share * small_model_cost
++ complex_route_share * strong_model_cost
++ fallback_rate * retry_or_backup_cost
+```
+
+**Route mix matters.** A system with 90% simple tasks should not send every request to the strongest reasoning model. Route simple, low-risk work to the cheap path and reserve strong models for high-risk or complex cases.
+
+### Canary plot
+
+```text
+traffic split during rollout
+v1 stable  |#############################################| 95%
+v2 canary  |###                                          |  5%
+
+promote only if:
+task_success_delta >= 0
+p99_latency_delta <= budget
+cost_per_success <= budget
+safety_regressions == 0
+```
+
+### Scenario drill
+
+A new model improves answer quality but doubles p99 latency for premium users. The right answer is not "ship because quality improved" or "rollback because latency worsened." The gateway should hold the canary, inspect route-specific latency and cost, and promote only if the release gates pass. **Rollout is a multi-metric decision, not a vibe check.**
+
 ## Hands-on checks
 
 1. Build a route table for cheap, normal, and high-risk requests.

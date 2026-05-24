@@ -86,6 +86,46 @@ Every memory needs purpose, retention, consent, and freshness checks.
 - "Private source docs" -> RAG, not memory.
 - "Explain decision later" -> audit log.
 
+## Chapter notes
+
+The memory store is the **state and recall chapter**. It answers what the agent may remember, where it stores that memory, how long it lasts, whether the user consented, and whether the memory is still safe to use. The common mistake is to call every stored thing "memory." In real systems, working state, profile preferences, semantic memory, retrieval knowledge, and audit logs have different jobs.
+
+```text
+current turn prompt
+  -> working state for this task
+  -> session summary
+  -> long-term profile memory
+  -> semantic memory
+  -> audit log
+```
+
+### Memory selection table
+
+| Need | Store | Recall rule |
+|---|---|---|
+| Continue a multi-step workflow | working memory/checkpoint | current task only |
+| Remember user preference | profile memory | consent + purpose match |
+| Reuse learned fact by meaning | semantic memory | similarity + freshness |
+| Answer from enterprise documents | retrieval index | ACL + citation required |
+| Explain what happened later | audit log | not automatically prompt context |
+
+### Freshness rule
+
+```text
+usable_memory =
+  relevant
+AND permitted
+AND not_expired
+AND purpose_matches
+AND not_contradicted_by_newer_source
+```
+
+**Memory should be useful and allowed, not just available.** A stale preference can be worse than no preference because it feels confident while being wrong.
+
+### Scenario drill
+
+A travel assistant remembers "aisle seat" for a year but forgets "trip to Berlin next Tuesday" after the trip ends. That is correct: the seat preference is durable profile memory, while the trip detail is temporary session/task state. If the assistant needs airline policy text, that is RAG, not memory.
+
 ## Hands-on checks
 
 1. Classify ten facts into working, session, long-term, semantic, retrieval, or audit storage.

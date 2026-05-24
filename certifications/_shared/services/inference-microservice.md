@@ -88,6 +88,61 @@ It does not automatically own orchestration, retrieval, tool execution, or guard
 - "Fine-tune model" -> customization, not serving.
 - "Tool workflow" -> orchestration, not serving.
 
+## Chapter notes
+
+Think of the inference microservice as the **book chapter where model capability becomes an operational contract**. The model may be excellent in a notebook, but the microservice is where it becomes callable, measured, limited, rolled back, and trusted by other systems. The exam-friendly question is not "is there a model?" but **"what owns the API, health, auth, streaming behavior, concurrency, and endpoint version?"**
+
+The useful mental split is:
+
+- **Model artifact:** weights, tokenizer, adapter, model card, and eval report.
+- **Runtime:** engine, scheduler, batching policy, cache, precision, and GPU allocation.
+- **Endpoint:** URL, API schema, auth, health checks, version, metrics, and deployment policy.
+- **Client:** application code that passes messages, generation parameters, stream flags, and request metadata.
+
+```text
+Model artifact -> runtime container -> endpoint API -> client workflow
+                      |                  |
+                      |                  +-- health, auth, metrics, rollout
+                      +-- tokenizer, scheduler, batching, cache, GPU memory
+```
+
+### Latency formula
+
+Use this decomposition when a scenario says "the endpoint is slow":
+
+```text
+total_latency =
+  queue_time
++ request_validation
++ tokenizer_time
++ prefill_time
++ decode_time
++ network_time
+
+TTFT = queue_time + validation + tokenization + prefill + first_decode_step
+decode_time ~= output_tokens / tokens_per_second
+```
+
+**TTFT is not the same as total latency.** A short answer can still feel slow if queueing or prefill dominates, and a long answer can have good TTFT but poor total completion time because decode is slow.
+
+```text
+Good interactive profile
+queue |--|
+prefill |----|
+decode |====================|
+        ^ first token appears early
+
+Bad interactive profile
+queue |----------|
+prefill |----------------|
+decode |======|
+                         ^ first token appears late
+```
+
+### Scenario drill
+
+A team says: "We already approved `support-lora-v7`; now we need a protected API for production traffic, readiness checks, token streaming, p99 metrics, and rollback to `support-lora-v6`." The correct layer is **Inference Microservice** plus its serving gateway. Do not answer with model registry, because the registry records the artifact; it does not run the artifact. Do not answer with customization, because the behavior change already happened.
+
 ## Hands-on checks
 
 1. Define model, runtime, endpoint, gateway, and client API as separate boxes.

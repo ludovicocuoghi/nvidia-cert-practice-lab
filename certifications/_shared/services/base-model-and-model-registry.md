@@ -88,6 +88,56 @@ The registry exists so these decisions are durable. Without it, teams lose track
 - "Endpoint latency" -> serving/deployment, not registry.
 - "Tool policy" -> guardrails/tool gateway, not registry.
 
+## Chapter notes
+
+The base model and model registry page is the **artifact-governance chapter**. It records which model family, checkpoint, adapter, tokenizer, prompt version, eval report, and approval state belong to a release. A registry does not answer user requests. It makes the answerable question auditable: **what exactly did we deploy, why was it approved, and how do we roll it back?**
+
+```text
+base model
+  + tokenizer
+  + adapter
+  + prompt version
+  + dataset lineage
+  + eval report
+  + risk approval
+  -> registered release
+  -> serving endpoint
+```
+
+### Selection scorecard
+
+Do not pick the largest model by habit. A useful model-selection scorecard looks like:
+
+```text
+fit_score =
+  task_quality
++ tool_calling_fit
++ context_fit
++ safety_fit
++ latency_fit
++ cost_fit
++ license_fit
++ deployment_fit
+```
+
+The weights depend on the product. A realtime assistant may weight latency and cost heavily. A regulated advisory assistant may weight safety, groundedness, license, and audit evidence more heavily.
+
+### Registry metadata that matters
+
+| Field | Why it matters |
+|---|---|
+| Base model | explains inherited capability and limits |
+| Adapter/checkpoint | identifies changed behavior |
+| Tokenizer | prevents incompatible serving/customization |
+| Dataset lineage | supports reproducibility and contamination checks |
+| Eval report | justifies approval |
+| Risk approval | ties release to governance |
+| Rollback target | makes incidents recoverable |
+
+### Scenario drill
+
+A production agent regressed after a "small model update," but no one knows whether the base model, LoRA adapter, prompt, tokenizer, or retriever changed. The missing layer is registry discipline. The fix is not only better monitoring; it is release metadata that binds each endpoint version to model artifacts, prompts, evals, approvals, and rollback targets.
+
 ## Hands-on checks
 
 1. For one model release, list base model, adapter, tokenizer, prompt version, dataset, eval report, approval owner, endpoint, and rollback version.

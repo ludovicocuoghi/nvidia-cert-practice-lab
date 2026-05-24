@@ -11,39 +11,56 @@ status: populated
 - **Core idea:** Model family — pre-trained neural network weights (checkpoints) released by NVIDIA
 - **Use it when:** The system needs NVIDIA model weights or model families for reasoning, instruction following, reward modeling, or agent workflows.
 - **Choose another path when:** Use NIM/Triton for serving, TensorRT-LLM for optimization, NeMo Evaluator for scoring, or NeMo Framework/Customizer for changing weights; Nemotron is the model artifact those tools operate on.
-- **Concrete surface:** Access: NGC model registry, Hugging Face (`nvidia/Nemotron-*`), or as NIM containers from NGC I/O: Text prompt / chat messages / preference pair (for reward model) -> Generated text (autoregressive sampling) / reward score 0-5 (Nemotron Reward)
-- **Study first:** Nemotron family and model sizes: Nemotron-3 8B, Nemotron-4 15B, Nemotron-4-340B, Nemotron-Mini 4B
-- models at multiple sizes for different hardware budgets (single GPU to multi-GPU)
-- Model selection criteria: quality vs latency vs cost tradeoff
+- **Concrete surface:** Access: Hugging Face/NGC model artifacts, NVIDIA API catalog, or NIM containers; call through OpenAI-compatible `/v1/chat/completions`, Retriever `/v1/embeddings`, or Retriever `/v1/ranking` when the model is packaged as NIM.
+- **Study first:** Llama Nemotron reasoning models: Nano for smaller/edge or cost-sensitive inference, Super for high-volume agent reasoning, Ultra for maximum reasoning quality; older Nemotron-4 340B Instruct/Reward and Nemotron 3 Nano/Super/Ultra are model-family context, not the serving layer.
+- Model selection criteria: reasoning quality vs latency vs cost vs available GPU memory.
 - dense (all params active per token) vs MoE (subset active per token)
-- context length (4k-128k+)
-- license compatibility
+- context length and token limits are per model/profile, not a permanent family guarantee.
+- license and deployment terms matter: open weights/self-hosted NIM for data control; hosted API for fast experimentation.
 - Integrated NVIDIA toolchain: NeMo Framework trains, NeMo Evaluator evaluates, NeMo Customizer fine-tunes, NIM serves, TensorRT-LLM optimizes, NeMo Agent Toolkit orchestrates — all centered on Nemotron
-- Specialized model types: code generation models (Code Llama, Nemotron-4-340B-Code), embedding models (NV-Embed-QA, NeMo Retriever), re-ranker models (cross-encoder for retrieval precision), multimodal models (Nemotron-Vision)
+- Specialized model types: reasoning/instruction LLMs, reward models, embedding models such as `nvidia/llama-nemotron-embed-1b-v2`, rerankers such as `nvidia/llama-nemotron-rerank-1b-v2`, and vision-language variants for multimodal retrieval.
 - Open model vs API trade-offs: open weights for customization/data privacy/predictable cost
-- NIM API for rAPId prototyping/elastic scaling/no GPU infra
+- NIM API for rapid prototyping/elastic scaling/no GPU infra
 - self-hosted NIM as middle ground
 - **Common mix-up:** Confusing the model family itself with NIM serving, TensorRT-LLM optimization, or NeMo training tools.
 
-## At a glance
+## Actual implementation / How you use it
 
 | | |
 |---|---|
-| **What it is** | Model family — pre-trained neural network weights (checkpoints) released by NVIDIA |
-| **How you access it** | NGC model registry, Hugging Face (`nvidia/Nemotron-*`), or as NIM containers from NGC |
-| **Input** | Text prompt / chat messages / preference pair (for reward model) |
-| **Output** | Generated text (autoregressive sampling) / reward score 0-5 (Nemotron Reward) |
-| **Variants** | Nemotron-3 8B, Nemotron-4 15B, Nemotron-4-340B, Nemotron-Mini 4B |
+| **What it is technically** | NVIDIA model-family artifacts: reasoning/instruction LLMs, reward models, embedding models, rerankers, and multimodal variants. |
+| **How you access it** | Hugging Face model IDs, NGC model artifacts, NVIDIA API catalog, NIM containers, or NeMo Framework/Customizer model recipes. |
+| **Input** | Chat messages or prompts for generation; prompt/chosen/rejected pairs for preference and reward workflows; text chunks or queries for embeddings; query plus candidate passages for reranking. |
+| **Output** | Generated text, reasoning/tool-use responses, reward/preference scores, embedding vectors, ranked passages, or model checkpoints/adapters. |
+| **Inside** | Llama Nemotron Nano/Super/Ultra reasoning models; Nemotron-4 340B Instruct/Reward lineage; Nemotron 3 Nano/Super/Ultra line; Retriever embed/rerank/VL models; NIM profiles for serving. |
 
 ```python
-# Via NIM (production)
+# Chat/reasoning model through a self-hosted or hosted NIM endpoint.
 from openai import OpenAI
-client = OpenAI(base_url="http://localhost:8000/v1")
-client.chat.completions.create(model="nvidia/nemotron-4-15b-instruct",
-    messages=[{"role":"user","content":"Explain GPU computing."}])
-# Or via HuggingFace (experimentation)
-from transformers import AutoModelForCausaLLM
-model = AutoModelForCausaLLM.from_pretrained("nvidia/Nemotron-4-15B-Instruct")
+
+client = OpenAI(base_url="http://localhost:8000/v1", api_key="not-needed")
+response = client.chat.completions.create(
+    model="nvidia/llama-3.3-nemotron-super-49b-v1.5",
+    messages=[{"role": "user", "content": "Plan a grounded support-agent workflow."}],
+)
+
+# Open-weight experimentation path.
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+model_id = "nvidia/Llama-3_3-Nemotron-Super-49B-v1_5"
+tokenizer = AutoTokenizer.from_pretrained(model_id)
+model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto")
+```
+
+```bash
+# Nemotron retrieval-family models are still models; NIM is how you call them.
+curl -X POST http://embedding-nim:8000/v1/embeddings \
+  -H "Content-Type: application/json" \
+  -d '{"model":"nvidia/llama-nemotron-embed-1b-v2","input":["What is NIM?"],"input_type":"query","modality":"text"}'
+
+curl -X POST http://rerank-nim:8000/v1/ranking \
+  -H "Content-Type: application/json" \
+  -d '{"model":"nvidia/llama-nemotron-rerank-1b-v2","query":{"text":"What is NIM?"},"passages":[{"text":"NIM packages models as optimized inference microservices."}]}'
 ```
 
 **Mental model**: NVIDIA's pre-trained model weights — download from Hugging Face/NGC, serve via NIM (production) or load via transformers (experimentation).
@@ -52,7 +69,7 @@ model = AutoModelForCausaLLM.from_pretrained("nvidia/Nemotron-4-15B-Instruct")
 
 ## What it is, in one paragraph
 
-NVIDIA's family of large language models, trained using the NeMo Framework. Nemotron models are available through NVIDIA NIM microservices, NGC catalog, or direct deployment. They serve as the **model backbone** for agentic AI applications on the NVIDIA platform — the models that NIM serves, Triton hosts, and TensorRT-LLM optimizes.
+NVIDIA's family of foundation and task models for agentic AI, reasoning, instruction following, preference/reward scoring, retrieval, and multimodal workflows. Nemotron models are available as open model artifacts, NeMo-compatible checkpoints, hosted API choices, and NIM-packaged microservices. They are the **model artifacts** that the rest of the NVIDIA stack operates on: NIM serves them, TensorRT-LLM optimizes LLM inference, NeMo Framework and Customizer change weights/adapters, NeMo Evaluator scores behavior, and NeMo Agent Toolkit orchestrates them inside agent workflows.
 
 ## Where it sits in the lifecycle
 
@@ -64,9 +81,10 @@ NVIDIA's family of large language models, trained using the NeMo Framework. Nemo
 
 ## When it fits
 
-- Workloads specifically naming Nemotron as the model family choice
-- "Which NVIDIA model family is purpose-built for agentic AI workloads?"
-- When the system needs NVIDIA's own LLM offering rather than Llama, Mistral, or another model family.
+- Workloads specifically naming Nemotron, Llama Nemotron, Nemotron Reward, or Nemotron embed/rerank models as the model family choice.
+- "Which NVIDIA model family is purpose-built for agentic AI reasoning or enterprise agent workflows?"
+- When the system needs NVIDIA-aligned model artifacts rather than the serving stack, optimizer, retriever, evaluator, or orchestration layer.
+- When the scenario is asking for a model role: a generator/reasoner, a reward model, an embedding model, a reranker, or a multimodal/VL model.
 
 ## Adjacent-service decision boundary
 
@@ -84,9 +102,10 @@ NVIDIA's family of large language models, trained using the NeMo Framework. Nemo
 
 ## Numbers, defaults, knobs you should recognize
 
-- Trained with NeMo Framework
-- Available via NIM, NGC, or direct deployment
-- Designed for agentic AI workloads (instruction following, tool use, reasoning)
+- Llama Nemotron reasoning line: Nano, Super, and Ultra tiers; in NeMo docs, recognizable examples include Llama 3.1 Nemotron Nano 8B, Llama 3.3 Nemotron Super 49B, Llama 3.1 Nemotron Ultra 253B, and Llama 3.1 Nemotron Instruct/Reward 70B recipes.
+- Nemotron 3 line: Nano, Super, Ultra; NVIDIA describes it as an agentic/reasoning family with hybrid Mamba-Transformer MoE architecture, with Super/Ultra using LatentMoE, multi-token prediction, and NVFP4 in the published family description.
+- Retrieval-family model IDs to recognize: `nvidia/llama-nemotron-embed-1b-v2`, `nvidia/llama-nemotron-rerank-1b-v2`, and VL variants for multimodal retrieval/reranking.
+- NIM profile/token/GPU support is per model and container version. Do not treat a model-family name as a guarantee of a fixed context length, precision, or GPU count.
 
 ## Study scenario
 
@@ -103,7 +122,7 @@ NVIDIA's family of large language models, trained using the NeMo Framework. Nemo
 
 This deep dive covers the key concepts behind Nemotron models that matter for the service boundary:
 
-- **[NVIDIA's Model Family]**: Nemotron vs Llama/Mistral/Qwen comparison, model sizes (4B to 340B), and integrated NVIDIA toolchain
+- **[NVIDIA's Model Family]**: Llama Nemotron, Nemotron 3, reward/instruct, embedding/rerank, multimodal variants, and the integrated NVIDIA toolchain
 - **[Model Selection Criteria]**: size-quality-latency tradeoffs, dense vs MoE architecture, context length requirements, and license considerations
 - **[Specialized Models]**: code generation, embedding, re-ranker, and multimodal models; trend from one giant model toward task-specific models
 - **[Open Model vs API Model Trade-offs]**: self-hosted open weights vs NIM-hosted API endpoints; choosing based on data residency, workload pattern, customization needs, and latency requirements
@@ -116,11 +135,11 @@ NVIDIA's Nemotron model family is distinct from other major LLM families in seve
 
 | Dimension | Nemotron | Llama (Meta) | Mistral | Qwen (Alibaba) |
 |-----------|----------|--------------|---------|----------------|
-| **Primary differentiator** | NVIDIA stack integration, agentic optimization | Open weights, community ecosystem | Efficiency, small model performance | Multilingual, long context |
+| **Primary differentiator** | NVIDIA stack integration, agentic reasoning, reward/retrieval variants | Open weights, community ecosystem | Efficiency, small model performance | Multilingual, long context |
 | **Serving path** | NIM-native, TensorRT-LLM optimized | Broad ecosystem (vLLM, TGI, Ollama) | Broad ecosystem (vLLM, etc.) | Broad ecosystem |
 | **Fine-tuning** | NeMo Customizer (optimized for NVIDIA stack) | Various (PEFT, Axolotl, etc.) | Various | Various |
-| **Training data** | Curated with NeMo Curator, emphasis on code + reasoning | Web corpus, refined filtering | Web corpus + curated data | Multilingual web corpus |
-| **Instruction tuning** | RLHF, with Nemotron-4-340B-Reward as reward model | RLHF, DPO, various versions | Instruction-tuned variants | RLHF, DPO |
+| **Training/customization path** | NeMo Framework and Customizer recipes; NIM deployment profiles | Broad open-source recipes | Broad open-source recipes | Broad open-source recipes |
+| **Specialized roles** | Reasoning LLMs, reward models, embedding/rerank models, VL variants | Mostly general/instruction and multimodal variants | General/instruction, code, MoE variants | General/instruction, code, multimodal variants |
 
 Nemotron models are designed to be **served via NIM**, **fine-tuned via NeMo Customizer**, and **evaluated via NeMo Evaluator**. This integrated toolchain is NVIDIA's competitive advantage — every component is optimized for the others:
 
@@ -133,14 +152,15 @@ Nemotron models are designed to be **served via NIM**, **fine-tuned via NeMo Cus
 
 If a study prompt mentions "NVIDIA's end-to-end model development and deployment stack," this integration is the boundary to learn: train with NeMo Framework, evaluate with NeMo Evaluator, customize with NeMo Customizer, serve with NIM, optimize with TensorRT-LLM, orchestrate with NeMo Agent Toolkit — all centered on the Nemotron model family.
 
-**Model sizes and architectures:**
-Nemotron has shipped in several configurations:
-- **Nemotron-3 8B:** Dense transformer, 8B parameters, for efficient inference.
-- **Nemotron-4 15B:** Dense transformer, 15B parameters, balanced quality/efficiency.
-- **Nemotron-4-340B (and variants):** Dense transformer, 340B parameters, high-capability family member used in NVIDIA examples such as reward/instruct workflows; requires multi-GPU deployment.
-- **Nemotron-Mini 4B:** Small dense model optimized for on-device and latency-sensitive use cases.
+**Model families and roles to recognize:**
+- **Llama Nemotron Nano/Super/Ultra:** NVIDIA-post-trained reasoning models built for agentic AI. Nano is the smaller/cost-sensitive tier, Super is the high-volume reasoning tier, and Ultra is the maximum-quality tier.
+- **Llama 3.1/3.3 Nemotron examples:** NeMo docs list Llama 3.1 Nemotron Nano 8B, Llama 3.3 Nemotron Super 49B, Llama 3.1 Nemotron Ultra 253B, and Llama 3.1 Nemotron Instruct/Reward 70B as supported recipe/model families.
+- **Nemotron 3 Nano/Super/Ultra:** a newer NVIDIA agentic/reasoning line. Its key architecture cue is hybrid Mamba-Transformer MoE; Super/Ultra add LatentMoE, multi-token prediction, and NVFP4-oriented efficiency.
+- **Nemotron Reward lineage:** reward/preference model role. Use it in alignment/evaluation/preference pipelines, not as the final chat endpoint unless the scenario says reward scoring.
+- **Nemotron Retriever models:** embedding and reranking model IDs such as `llama-nemotron-embed-1b-v2` and `llama-nemotron-rerank-1b-v2`. These are model choices inside the Retriever/NIM layer, not a separate RAG product.
+- **Vision-language Nemotron variants:** multimodal models for document/image understanding, multimodal retrieval, or VL reranking.
 
-The trend: NVIDIA offers models at multiple sizes so customers can match the model to the hardware budget. A 4B model runs on a single GPU; a 340B model requires multiple GPUs with model parallelism.
+The trend: NVIDIA offers model roles and sizes so customers can match the model to the task and hardware budget. A small routing model, a large reasoning model, an embedding model, a reranker, and a reward model can all appear in one agent system; they are different model artifacts, even if NIM gives each one a similar API shape.
 
 ### DEEP DIVE: Model Selection Criteria
 
@@ -150,18 +170,18 @@ Choosing the right model for a given task is a core study skill. The key criteri
 
 | Size | Typical Config | Latency | Quality | GPU Requirements |
 |------|---------------|---------|---------|-----------------|
-| 4B | 4-8B parameters | Very low | Good for simple tasks | Single consumer GPU |
-| 8-15B | 8-15B parameters | Low | Good for most tasks | Single datacenter GPU |
-| 34-70B | 30-70B parameters | Medium | High quality | 1-2 GPUs |
-| 200B+ | 200-500B parameters | High | Highest-capability tier for complex reasoning, subject to benchmark/date/version | 4+ GPUs |
+| Nano / small | Compact models such as 8B-class or active-parameter-efficient MoE tiers | Very low to low | Good for routing, simple reasoning, local/edge, and cost-sensitive flows | Single GPU or small GPU footprint, depending on profile |
+| Super / mid-large | 49B-class or high-throughput reasoning tier | Medium | Strong agent reasoning and high-volume enterprise workloads | Multi-GPU or larger single-node deployments, depending on precision/profile |
+| Ultra / frontier tier | 200B+ class or maximum-quality reasoning tier | High | Highest-quality reasoning tier, subject to model/version benchmarks | Data-center multi-GPU deployment |
+| Specialized small models | Embedding, reranker, reward, or VL helper models | Low to medium | Task-specific quality, not general chat capability | Often separate, independently scaled NIM endpoints |
 
 The tradeoff: **quality vs latency vs cost.** Larger models produce better reasoning, instruction following, and factual accuracy, but they are slower (more FLOPs per token) and more expensive (more GPU hours). Smaller models are faster and cheaper but may fail at complex reasoning.
 
 For agentic AI, the tradeoff is often a **two-model strategy**: a small, fast model for routing and simple responses, and a large, capable model for complex reasoning steps. This is the router pattern mentioned in the NeMo Agent Toolkit section.
 
 **Architecture: Dense vs Mixture of Experts (MoE):**
-- **Dense:** All parameters are active for every token. Simpler, more predictable memory usage, better for batch serving. Examples: most Nemotron models, Llama 2/3.
-- **MoE:** Only a subset of parameters are active per token (via learned routing). Achieves higher effective capacity without proportional compute cost. Examples: Mixtral 8x7B, Qwen2.5-MoE, Nemotron-MoE variants.
+- **Dense:** All parameters are active for every token. Simpler, more predictable memory usage, and common in classic transformer model lines.
+- **MoE / hybrid MoE:** Only a subset of parameters or experts are active per token. This can improve effective capacity and throughput, but serving still depends on the full profile, expert routing, memory footprint, and hardware support.
 
 MoE is attractive when you want the quality of a larger model with the inference cost of a smaller one. But MoE requires more GPU memory (all experts must be loaded) and has less predictable latency (routing overhead, expert load imbalance).
 
@@ -187,8 +207,14 @@ When a project involves "deploying in a regulated industry" or "proprietary data
 
 The industry trend is moving from "one giant model for everything" toward **specialized models for specific tasks.** NVIDIA's ecosystem reflects this:
 
+**Reasoning / instruction models:**
+These are the chat or agent brain models. In the NVIDIA stack, Llama Nemotron Nano/Super/Ultra and Nemotron 3 Nano/Super/Ultra are the names to recognize. They take chat messages, tool-use prompts, or planning instructions and emit generated text, tool-call arguments, plans, or structured answers. Use them when the scenario is about model-family choice for an agent, not about the service that hosts the model.
+
+**Reward / preference models:**
+Reward models score outputs rather than generate the final user response. They take a prompt and one or more candidate responses, or preference-style examples, and emit reward/preference scores used for RLHF-style workflows, rejection sampling, LLM-as-judge-like comparisons, or regression analysis. The common trap is choosing a reward model as the runtime assistant; it is normally an evaluator/alignment component.
+
 **Code generation models:**
-Models fine-tuned specifically for code synthesis, completion, and reasoning. Examples: Code Llama, StarCoder, Nemotron-4-340B-Code. These models are trained on code-heavy corpora (GitHub, Stack Overflow, documentation) and excel at:
+Models fine-tuned specifically for code synthesis, completion, and reasoning. Examples: Code Llama, StarCoder, and NVIDIA code-specialized Nemotron variants. These models are trained on code-heavy corpora and excel at:
 - Code completion (fill-in-the-middle)
 - Code generation from natural language
 - Code explanation and documentation
@@ -197,7 +223,7 @@ Models fine-tuned specifically for code synthesis, completion, and reasoning. Ex
 For agentic AI, code agents often use code-specialized models rather than general-purpose LLMs because they produce more accurate and syntactically valid code output.
 
 **Embedding models:**
-Models that convert text into dense vector representations for retrieval and similarity search. Examples: NVIDIA NeMo Retriever embedding models, NV-Embed-QA, E5, BGE. These are smaller models (typically 100M-7B parameters) optimized for:
+Models that convert text into dense vector representations for retrieval and similarity search. Examples: NVIDIA NeMo Retriever embedding models such as `nvidia/llama-nemotron-embed-1b-v2`, NV-Embed-QA, E5, and BGE. These are smaller models optimized for:
 - Semantic search: "Find documents similar to this query."
 - RAG retrieval: Encode chunks, retrieve top-k by cosine similarity.
 - Classification: Use embeddings as features for downstream classifiers.
@@ -206,14 +232,14 @@ Models that convert text into dense vector representations for retrieval and sim
 For agentic AI, embedding models are the backbone of long-term memory retrieval and RAG tools. A separate embedding model is often used in parallel with the main generation model — one for retrieval, one for generation.
 
 **Re-ranker models:**
-Models that take a query and a set of candidate documents and output relevance scores. They are more accurate than embedding similarity alone because they use cross-encoder attention between query and document. Examples: BGE-Reranker, Cohere Rerank, NVIDIA re-ranker models. In a RAG pipeline:
+Models that take a query and a set of candidate documents and output relevance scores. They are more accurate than embedding similarity alone because they use cross-encoder attention between query and document. Examples include `nvidia/llama-nemotron-rerank-1b-v2`, BGE-Reranker, and Cohere Rerank-style services. In a RAG pipeline:
 ```
 [Query] → [Embedding model: retrieve top-100] → [Re-ranker: score top-100 → select top-5] → [LLM generation]
 ```
 Re-rankers add latency (they process query + each document pair) but significantly improve retrieval precision. For enterprise RAG where retrieval quality matters, re-rankers are standard.
 
 **Multimodal models:**
-Models that process multiple modalities (text + images + audio + video). Examples include NVIDIA vision-language offerings, LLaVA-style open models, and hosted multimodal chat models. These models extend language model capabilities to visual understanding. Use cases:
+Models that process multiple modalities (text + images + audio + video). Examples include NVIDIA vision-language and Nemotron VL offerings, LLaVA-style open models, and hosted multimodal chat models. These models extend language model capabilities to visual understanding. Use cases:
 - Document analysis: Extract text and layout from PDFs, charts, and forms.
 - Image captioning and description for accessibility.
 - Visual question answering: "What does this chart show?"
@@ -221,7 +247,7 @@ Models that process multiple modalities (text + images + audio + video). Example
 
 **The trend toward specialization:**
 The architectural insight: a single 340B model is suboptimal for all tasks. It wastes compute on simple queries (use a small model instead) and lacks specialized training for code/retrieval/vision (use a fine-tuned model instead). NVIDIA's ecosystem supports this specialization through:
-- **NIM for multiple model types:** Deploy generation, embedding, re-ranker, and multimodal models as standardized API endpoints.
+- **NIM for multiple model types:** Deploy generation, embedding, reranker, and multimodal models as standardized API endpoints.
 - **NeMo Customizer for domain adaptation:** Fine-tune base models for specific tasks.
 - **Agent Toolkit for model routing:** Route queries to the appropriate specialized model.
 
@@ -286,17 +312,17 @@ The key design insight: the choice is rarely "open vs API" in isolation. It is a
 - Place **Nemotron models** at **Model / foundation**: NVIDIA's pre-trained model weights — download from Hugging Face/NGC, serve via NIM (production) or load via transformers (experimentation).
 - Boundary cue: use it when the system needs NVIDIA model weights or model families for reasoning, instruction following, reward modeling, or agent workflows. Neighboring-service cue: not as the serving stack, optimizer, evaluator, or training framework; models are the artifact those tools operate on.
 ### Must know
-- **Nemotron family and model sizes**: Nemotron-3 8B, Nemotron-4 15B, Nemotron-4-340B, Nemotron-Mini 4B; models at multiple sizes for different hardware budgets (single GPU to multi-GPU)
-- **Model selection criteria**: quality vs latency vs cost tradeoff; dense (all params active per token) vs MoE (subset active per token); per-model context length; license compatibility
+- **Nemotron family and model roles**: Llama Nemotron Nano/Super/Ultra for reasoning; Nemotron 3 Nano/Super/Ultra as the newer agentic/reasoning line; Nemotron Reward for preference scoring; Nemotron embed/rerank/VL models for retrieval and multimodal workflows
+- **Model selection criteria**: reasoning quality vs latency vs cost tradeoff; dense vs MoE/hybrid architectures; per-model context/token/profile limits; available GPU memory; license and deployment terms
 - **Integrated NVIDIA toolchain**: NeMo Framework trains, NeMo Evaluator evaluates, NeMo Customizer fine-tunes, NIM serves, TensorRT-LLM optimizes, NeMo Agent Toolkit orchestrates — all centered on Nemotron
-- **Specialized model types**: code generation models (Code Llama, Nemotron-4-340B-Code), embedding models (NV-Embed-QA, NeMo Retriever), re-ranker models (cross-encoder for retrieval precision), multimodal models (Nemotron-Vision)
+- **Specialized model types**: reasoning/instruction generators, reward models, code models, embedding models (`llama-nemotron-embed-*`), rerank models (`llama-nemotron-rerank-*`), and multimodal/VL models
 - **Open model vs API trade-offs**: open weights for customization/data privacy/predictable cost; NIM API for rapid prototyping/elastic scaling/no GPU infra; self-hosted NIM as middle ground
 ### What to recognize
-- **NVIDIA-native model selection** → scenario asks which model family is purpose-built for the NVIDIA stack with NIM-native serving and TensorRT-LLM optimization; Nemotron is NVIDIA's integrated LLM family
-- **Model size selection based on constraints** → scenario describes hardware budget (single GPU vs multi-GPU) and quality requirements; match model size (4B for single consumer GPU, 340B for 4+ GPUs) to the constraint
-- **Specialized model for task** → scenario involves code generation, retrieval quality, or vision understanding; the trend is task-specific models (code models, embedding + re-ranker, multimodal) rather than one general model
+- **NVIDIA-native model selection** → scenario asks which model family is purpose-built for the NVIDIA stack with NIM-native serving and TensorRT-LLM optimization; Nemotron is NVIDIA's integrated model family
+- **Model size/tier selection based on constraints** → scenario describes edge/cost, high-volume reasoning, or maximum-quality data-center inference; map to Nano, Super, or Ultra style tiers rather than blindly choosing the largest model
+- **Specialized model for task** → scenario involves reward scoring, retrieval quality, code generation, or vision understanding; pick reward, embedding, reranker, code, or VL model roles rather than one general chat model
 - **Open weights vs API decision** → scenario describes data residency requirements, workload predictability, or customization needs; open weights for regulated/offline/customization use cases, NIM API for prototyping/unpredictable/no-GPU scenarios
-- **Dense vs MoE architecture trap** → scenario mentions model capacity without proportional compute cost but also notes memory constraints; MoE requires loading all experts into GPU memory despite lower per-token FLOPs
+- **Dense vs MoE/hybrid architecture trap** → scenario mentions capacity without proportional compute cost but also notes memory constraints; MoE-style systems may activate fewer parameters per token, but deployment still depends on all loaded experts/profile support
 ### Hands-on checks
 - Draw one build situation where Nemotron is the model-family choice, then change one constraint so NIM, TensorRT-LLM, NeMo Evaluator, or NeMo Customizer becomes the better fit.
 ## Study tips from practice questions

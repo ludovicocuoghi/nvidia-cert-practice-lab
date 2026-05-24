@@ -86,6 +86,50 @@ Without traces, incidents become guesswork.
 - "Empty tool result" -> tool-call health.
 - "Incident" -> logs + replay + regression.
 
+## Chapter notes
+
+Observability is the **live-story chapter**. It records what the system actually did under real traffic: which route it chose, which chunks it retrieved, which tool calls happened, which guardrail fired, how long each step took, what it cost, and whether the user task really succeeded. Without that story, every incident turns into guessing.
+
+The minimum useful trace shape is:
+
+```text
+agent.request
+  route.select
+  retrieval.search
+  retrieval.rerank
+  model.prefill_decode
+  tool.execute
+  guardrail.check
+  answer.finalize
+  feedback.record
+```
+
+Each span should carry **version and outcome**: prompt version, model route, retriever index, tool name, policy name, latency, token count, cost, and task status. Infrastructure metrics tell you whether the service is up; agent traces tell you whether the work was useful.
+
+### Tail latency plot
+
+Average latency hides outliers. A p99 incident often looks like this:
+
+```text
+requests sorted by latency
+p50  |####  1.2s
+p95  |###############  4.8s
+p99  |########################################  18.6s
+max  |##################################################  27.0s
+```
+
+The investigation should follow the slow spans:
+
+```text
+total p99 = queue + retrieval + rerank + prefill + decode + tool + guardrail
+```
+
+If retrieval is slow, tune search/index/rerank. If prefill is slow, inspect prompt length, prefix reuse, and queueing. If decode is slow, inspect model profile, batching, KV cache, and runtime. If tools are slow, add timeouts, retries, circuit breakers, or cached safe reads.
+
+### Scenario drill
+
+Users report "wrong answers" while dashboards show HTTP 200 and healthy GPUs. The trace reveals the CRM tool returned an empty result, the agent treated it as evidence, and the answer generator never saw a failure state. The fix begins in **Observability and Trace Monitor**: add tool-result health, task-success events, and replay cases, then feed the incident into the evaluation harness.
+
 ## Hands-on checks
 
 1. Draw one trace with spans for routing, retrieval, model, tool, guardrail, and final response.

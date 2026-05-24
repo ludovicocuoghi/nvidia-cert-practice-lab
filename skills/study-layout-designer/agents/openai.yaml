@@ -1,0 +1,4 @@
+interface:
+  display_name: "Study Layout Designer"
+  short_description: "Compact golden-ratio study UI guidance"
+  default_prompt: "Use $study-layout-designer to reshape this study page so it is compact, scannable, and memorable."

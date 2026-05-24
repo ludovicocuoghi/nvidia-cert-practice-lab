@@ -1,66 +1,168 @@
-# NVIDIA Certification Practice
+# NVIDIA Certification Practice Lab
 
-Local, research-backed React practice/test simulator for NVIDIA certifications. This revamp uses a separated Vite frontend and TypeScript backend while preserving the original local markdown/JSON data model.
+Local study, practice, and mock-test app for NVIDIA-style AI certification prep.
 
-This is a simulator, not an NVIDIA product. It uses original scenario-based practice questions calibrated to the public exam blueprint — no real exam content.
+This is not an NVIDIA product and it does not contain real exam content. It is a local learning tool built from public blueprint structure, original study notes, scenario-style practice questions, and generated review material.
+
+## Scope Note
+
+This project is deep study material for the **Generative AI / Agentic AI lane**:
+
+- Agentic AI General Study
+- NVIDIA Certified Professional - Agentic AI (NCP-AAI)
+- NVIDIA Certified Professional - Generative AI LLMs (NCP-GENL)
+
+It is not yet a full book for every NVIDIA certification in the 2026 portfolio. Infrastructure, AI operations, AI networking, accelerated data science, associate multimodal, and OpenUSD certifications would need their own blueprints, chapters, service maps, and mock banks.
+
+## What It Does
+
+- Provides full-width study pages for:
+  - Agentic AI General Study
+  - NVIDIA Certified Professional - Agentic AI
+  - NVIDIA Certified Professional - Generative AI LLMs
+- Turns study content into readable single-page chapters, builder paths, and focused study cards.
+- Keeps NVIDIA service pages separate from general concepts so product boundaries are easier to learn.
+- Runs practice drills, guided weak-domain review, and timed mock tests from local question banks.
+- Supports optional tutor chat and question generation when an LLM API key is configured.
+
+## Screenshots
+
+### Agentic AI Exam Chapters
+
+![Agentic AI study chapters](screenshots/study-agentic-chapters-light.jpg)
+
+The Agentic AI study page now opens as a full-width chapter index with color-coded domains, readable exam weights, and no side navigation rail.
+
+### Agentic AI Dark Mode
+
+![Agentic AI dark mode](screenshots/study-agentic-chapters-dark.jpg)
+
+Dark mode uses the same visual language with contrast-checked tab, badge, and chip colors.
+
+### Generative AI LLMs
+
+![Generative AI LLM study chapters](screenshots/study-genai-handbook.jpg)
+
+The GenAI LLM certification uses the same full-page chapter treatment for architecture, prompting, data preparation, optimization, tuning, evaluation, acceleration, deployment, safety, and operations.
+
+### General Study Builder Paths
+
+![General Study builder paths](screenshots/study-general-builder-paths.jpg)
+
+General Study is organized by what you are trying to build: direct model/API apps, RAG apps, tool-using workflows, model adaptation, foundation training, production serving, and evaluation loops.
 
 ## Quick Start
 
 ```bash
-cp .env.example .env       # then paste your LLM_API_KEY
 npm install
 npm run dev
 ```
 
-Open http://localhost:5173 for Vite dev. The API runs at http://localhost:4273.
+Open the Vite app at:
 
-The practice bank and generated mock questions load without an LLM key. Coach chat, per-question hints, adaptive coach selection, and AI question generation show a setup message until `LLM_API_KEY` is configured in `.env` and the dev server is restarted.
+```text
+http://127.0.0.1:5173/
+```
 
-## Screenshots
+The API runs at:
 
-User-captured local app views.
+```text
+http://127.0.0.1:4273/
+```
 
-![General Study dark-mode overview](<screenshots/スクリーンショット 2026-05-10 18.21.51.png>)
+If port `5173` is already busy, Vite will print the alternate client URL.
 
-General Study gives the shared vendor-neutral layer for lifecycle concepts, practice, and quick tutoring.
+## Optional LLM Features
 
-![General Study lifecycle concept map](<screenshots/スクリーンショット 2026-05-10 18.22.00.png>)
+The study pages, question banks, practice mode, and mock tests work without an API key.
 
-The lifecycle map organizes architecture, retrieval, ReAct loops, safety, evaluation, and operations by build path.
+Tutor chat, per-question coaching, adaptive coach selection, and AI question generation require an LLM-compatible endpoint:
 
-![General Study playbook detail](<screenshots/スクリーンショット 2026-05-10 18.22.20.png>)
+```bash
+cp .env.example .env
+# edit .env and set LLM_API_KEY
+npm run dev
+```
 
-Study playbooks explain the implementation surface, inputs, outputs, platform mapping, and checks for each capability.
+The default request shape is OpenAI-compatible chat completions. You can override `LLM_API_URL` and `LLM_MODEL` in `.env`.
 
-![General Study implementation examples](<screenshots/スクリーンショット 2026-05-10 18.22.25.png>)
+## Study Flow
 
-Deeper playbook sections show pipelines, platform examples, and the core concepts learners should recognize.
+Use the app in this order:
+
+1. Start with **Agentic AI General Study** for reusable system-building decisions: RAG vs tools, fixed workflow vs ReAct, model choice, serving, evaluation, guardrails, and operations.
+2. Move to **NCP-AAI** or **NCP-GENL** and read the official-style chapter pages in order.
+3. Open NVIDIA services only when the question or study note depends on product boundaries.
+4. Use Practice for short drills with immediate feedback.
+5. Use Mock Tests for timed, repeatable score checks.
 
 ## Modes
 
-- **Practice** — no timer, immediate feedback after each answer (right/wrong + explanation + why-wrong notes).
-- **Test** — timed, deferred grading like the real Certiverse-proctored exam.
+- **Study** - full-page study material, chapter indexes, builder paths, service boundaries, and tutor prompts.
+- **Practice** - short drills with immediate feedback, weak-domain targeting, and guided focus sets.
+- **Mock Tests** - fixed original or generated mock sets with timed, deferred grading.
 
-Both modes have **Adaptive** (weak-domain biased) and **Full-Bank** variants.
+## Content Layout
 
-## Study Strategy
+```text
+certifications/
+|-- agentic_ai_general_study/
+|   |-- blueprint.json
+|   |-- capabilities/
+|   |-- topics/
+|   `-- mocks/
+|-- agentic_ai_professional/
+|   |-- blueprint.json
+|   |-- topics/
+|   |-- reference/
+|   |-- mocks/
+|   `-- generated/
+|-- genai_llms_professional/
+|   |-- blueprint.json
+|   |-- topics/
+|   |-- reference/
+|   |-- mocks/
+|   `-- generated/
+`-- _shared/
+    `-- services/
+```
 
-Use the app in this order when preparing for NCP-AAI or NCP-GENL:
+Important app files:
 
-1. Read **General Study** first for reusable concepts such as ReAct, RAG, KV cache, p95/p99 latency, LoRA/QLoRA, routing, monitoring, and guardrails.
-2. Read the selected certificate's **Exam Concept Map** and **Exam Sections** to map those concepts to the official NVIDIA blueprint.
-3. Open NVIDIA service pages only when the exam wording names a product, platform, hardware family, or deployment stack.
-4. Use downloaded/original mocks as warmup and pattern exposure. They are useful, but the local audit marks them as easier, shorter, and less scenario-heavy than the generated readiness mocks.
-5. Use generated balanced mocks as the stronger readiness check: they are 60-question sets aligned to official domain weights and capped by general-concept vs NVIDIA-specific scope.
+```text
+client/src/app/App.jsx              # React app and study/practice UI
+client/src/data/study-services.js   # study routes, services, builder paths
+client/src/styles/app.css           # visual system and responsive layouts
+server/src/index.ts                 # API server
+server/src/domain/simulator.ts      # markdown parsing, grading, mocks
+server/src/domain/questionGenerator.ts
+test/general-study.test.ts
+test/simulator.test.ts
+```
 
-Passing only third-party/original mocks is not treated as enough evidence here. A better readiness signal is high scores on both original mocks and generated balanced mocks, plus the ability to explain why the wrong answers solve the wrong layer.
+## Authoring Study Content
 
-## Question Bank
+When adding or revising certification study cards, NVIDIA service pages, General Study capability pages, or new certificate sections, read:
 
-Edit active question-bank shards under `certifications/<cert_slug>/mocks/original/*.questions.md` or `certifications/<cert_slug>/generated/high_fidelity_###.md`. Each question:
+```text
+skills/capability-card-authoring/SKILL.md
+```
+
+The study cards should include concrete implementation surfaces, actual calls or model names when useful, adjacent-service decision boundaries, common traps, and practice checks.
+
+## Question Banks
+
+Original and generated questions live under each certification:
+
+```text
+certifications/<cert_slug>/mocks/original/
+certifications/<cert_slug>/generated/
+```
+
+Question markdown is parsed by `server/src/domain/simulator.ts`. A normalized question looks like:
 
 ```markdown
-### Q21: A 70B chat model must serve ≥3,000 concurrent requests on H100s while staying within 1 ROUGE-L point of FP16. Best quantization recipe?
+### Q21: A production LLM service has high p99 latency during decode. What should you inspect first?
 - ID: opt-021
 - Domain: Model Optimization
 - A. ...
@@ -72,72 +174,47 @@ Edit active question-bank shards under `certifications/<cert_slug>/mocks/origina
 - Why A is wrong: ...
 ```
 
-Parsed at runtime by `server/src/domain/simulator.ts`.
-
-To reshuffle a bank file safely, including question order, answer-choice order, `Answer:` labels, and `Why X is wrong` labels:
+To reshuffle question order and answer choices safely:
 
 ```bash
 npm run shuffle:bank -- certifications/<cert_slug>/generated/high_fidelity_001.md --in-place
 ```
 
-The same script can shuffle mock JSON `questionIds`:
+Mock JSON playlists can be shuffled the same way:
 
 ```bash
 npm run shuffle:bank -- certifications/<cert_slug>/mocks/original/mock_1.json --in-place
 ```
 
-Runtime practice/test sessions also shuffle loaded questions and choices in the UI while preserving the original answer mapping for grading.
-
-## Generate New Questions
-
-After adding `LLM_API_KEY` to `.env` and restarting:
-- Click **Generate 10 (weak domains)** on the dashboard, or
-- `POST /api/generate-questions` with `{count, weakOnly, focusDomains}`
-
-Output is appended to `certifications/<slug>/generated/drafts.md` for manual review. Approval state is stored in `certifications/<slug>/generated/approvals.json`.
-
-By default, the server sends an OpenAI-style chat-completions request to the Kimi endpoint configured in `.env.example`. Override `LLM_API_URL` and `LLM_MODEL` for another compatible provider.
-
-## Layout
-
-```
-certifications/<slug>/
-├── blueprint.json          # official weights + format
-├── mocks/
-│   ├── original/           # original mock JSON + normalized question text
-│   └── generated/          # generated mock JSON playlists
-├── generated/
-│   ├── high_fidelity_001.md
-│   ├── high_fidelity_002.md
-│   ├── drafts.md           # AI-generated review queue
-│   └── approvals.json      # approved/rejected draft IDs
-├── mistakes.md             # auto-appended on wrong answers
-├── learner_profile.md      # auto-updated per session
-├── reference/              # PDF, research report, notes
-└── archive/                # superseded banks
-```
-
-## Run
+## Commands
 
 ```bash
-npm run dev        # Vite client + API server
-npm run build      # build client into client/dist
-npm start          # build + serve built app from http://localhost:4273
-npm test           # Vitest domain tests against the active TypeScript backend
-npm run typecheck  # TypeScript verification
+npm run dev         # Vite client + API server
+npm run build       # production client build
+npm start           # build and serve from the API server
+npm test            # Vitest test suite
+npm run typecheck   # TypeScript check
 ```
 
-## Multi-Cert
+## Current Test Coverage
 
-Add a new cert by creating `certifications/<new-slug>/` with a `blueprint.json`, `mocks/original/*.questions.md`, and/or `generated/high_fidelity_###.md`. Set `CERT_SLUG` in `.env` or pass `?cert=<slug>` to API endpoints.
+- Simulator parsing and scoring tests
+- General Study route/content integrity tests
 
-## Files of Note
+Run them with:
 
-- `client/src/app/App.jsx` — React UI migrated to Vite
-- `client/src/styles/app.css` — preserved visual baseline
-- `server/src/index.ts` — API server and static built-client server
-- `server/src/domain/simulator.ts` — markdown parsing + grading
-- `server/src/domain/learnerProfile.ts` — profile merge logic
-- `server/src/domain/questionGenerator.ts` — LLM question generation and tutor flows
-- `shared/src/types.ts` — shared payload/domain types
-- `ARCHITECTURE.md` — full system reference
+```bash
+npm test
+```
+
+## Adding Another Certification
+
+Create:
+
+```text
+certifications/<new_slug>/blueprint.json
+certifications/<new_slug>/topics/
+certifications/<new_slug>/mocks/original/
+```
+
+Then wire any shared services or study routes in `client/src/data/study-services.js`.

@@ -97,6 +97,63 @@ Break cost into:
 - "Route drift" -> model router.
 - "Cost per completed task" -> full workflow cost.
 
+## Chapter notes
+
+The cost/latency optimizer is the **tradeoff chapter**. Its job is to reduce time and money while protecting answer quality, safety, and user experience. The exam pattern is usually a false shortcut: add GPUs, shrink the model, increase batch size, or tune prompts without first identifying the slow or expensive span.
+
+### First split the request
+
+```text
+total_time =
+  route_time
++ retrieval_time
++ rerank_time
++ prefill_time
++ decode_time
++ tool_time
++ guardrail_time
++ network_time
++ queue_time
+
+total_cost =
+  input_tokens * input_price
++ output_tokens * output_price
++ gpu_seconds * gpu_price
++ retrieval_cost
++ tool_cost
++ human_review_cost
+```
+
+### Optimization map
+
+| Symptom | Likely metric | First useful lever |
+|---|---|---|
+| Slow first token | TTFT, queue time, prefill time | trim context, prefix reuse, warm endpoint, queue policy |
+| Slow long response | tokens/sec, output tokens | decode/runtime profile, max tokens, streaming |
+| Good average, bad p99 | p95/p99 by span | isolate slow dependency, backpressure, bulkheads |
+| High cost on easy tasks | route mix, cost per success | small-model route, cache, cheaper tool |
+| GPU OOM under concurrency | KV-cache memory | shorter context, lower concurrency, paged KV, quantization |
+
+### Cost curve
+
+```text
+quality
+  ^
+  |                          strong model + RAG + eval
+  |                    *
+  |              *
+  |        *
+  |  *
+  +------------------------------------> cost/latency
+     cheap prompt     routed system       premium path
+```
+
+The goal is not always the cheapest path. The goal is **the cheapest path that still meets the quality and risk bar**.
+
+### Scenario drill
+
+A chat system has good total tokens/sec but poor TTFT. Lowering `max_tokens` does not solve prefill, because `max_tokens` limits output length after the first token. Inspect queue time, prompt length, retrieval payload, prefix caching, endpoint warmup, and prefill metrics first.
+
 ## Hands-on checks
 
 1. For a slow request, label time as retrieval, prefill, decode, tool, guardrail, queue, or network.

@@ -87,6 +87,49 @@ LLM-as-judge helps scale review, but it needs criteria, calibration, and human-l
 - "Release gate" -> regression harness.
 - "Human preference" -> human eval / preference labels.
 
+## Chapter notes
+
+The evaluation harness is the **evidence chapter**. It turns "the demo looked good" into measurable claims about correctness, groundedness, safety, tool behavior, cost, and latency. A strong harness does not ask one vague question like "did the model answer well?" It asks **which part of the system succeeded, which part failed, and whether the release is safer than the previous version.**
+
+For agentic systems, evaluate the trajectory as a sequence:
+
+```text
+input -> route -> retrieve -> tool proposal -> tool result -> guardrail -> answer
+          |         |           |               |             |          |
+          v         v           v               v             v          v
+       route ok  recall ok   schema ok      state ok      policy ok  grounded
+```
+
+### Metrics that matter
+
+Use a scorecard instead of a single number:
+
+```text
+release_score =
+  0.30 * task_success
++ 0.20 * groundedness
++ 0.15 * tool_accuracy
++ 0.15 * safety_compliance
++ 0.10 * latency_slo_pass
++ 0.10 * cost_budget_pass
+```
+
+The weights are not universal; the durable idea is that **the metric mix must match the risk**. A legal assistant may weight groundedness and safety higher. A routing agent may weight tool accuracy and latency higher.
+
+### Judge calibration
+
+LLM-as-judge is useful when it is treated like a measurement instrument, not an oracle. Good calibration uses:
+
+- **Criteria:** exact rubric with pass/fail anchors.
+- **Human labels:** a small trusted set for checking judge drift.
+- **Blind comparison:** hide model names and previous scores.
+- **Adversarial cases:** unsupported claims, partial citations, unsafe tool paths.
+- **Regression history:** old failures must stay fixed.
+
+### Scenario drill
+
+A support agent gives the correct refund answer, but the trace shows it queried a private HR database first. Final-answer scoring would pass it. A trajectory evaluation catches the unsafe intermediate step. **That is why agent evaluation must inspect tool calls, retrieval, policy checks, and state transitions, not only the final text.**
+
 ## Hands-on checks
 
 1. Define metrics for a support agent: final correctness, tool accuracy, groundedness, safety, latency, cost.

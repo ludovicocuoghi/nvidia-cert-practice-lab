@@ -1,6 +1,6 @@
 # Final Study Readiness Recheck
 
-Date: 2026-05-06
+Date: 2026-05-20
 
 ## Verdict
 
@@ -13,6 +13,40 @@ The study path is now coherent enough to use as the main preparation flow for NC
 5. Generated balanced mocks as readiness checks.
 
 This does not guarantee passing the real exam, but the material now maps the latest local Preporato research, NVIDIA OCR study guides, live NVIDIA certification pages, and NVIDIA service documentation to concrete study pages.
+
+## 2026 NVIDIA Certification Portfolio Boundary
+
+Current official NVIDIA certification pages show a broader 2026 portfolio than this app currently implements. This project is **deep for the Generative AI lane**, not complete for every NVIDIA certification family.
+
+| Portfolio area | Official examples visible in 2026 NVIDIA certification catalog | Local project status |
+|---|---|---|
+| Generative AI professional | **NCP-GENL** and **NCP-AAI** | **Covered deeply** with topic chapters, service maps, General Study prerequisites, and generated readiness mocks. |
+| Generative AI associate | **NCA-GENL** and **NCA-GENM** | **Not implemented as separate certificates**. Some foundations overlap through General Study, multimodal/RAG notes, Riva, Retriever, and model architecture pages. |
+| AI infrastructure / operations / networking | **NCP-AII**, **NCP-AIO**, **NCP-AIN**, **NCA-AIIO** | **Not implemented**. Some GPU, NCCL, Nsight, NIM Operator, Kubernetes, and serving knowledge overlaps, but the project is not an infrastructure certification book. |
+| Accelerated data science | **NCP-ADS**, **NCA-ADS** | **Not implemented**. RAPIDS and data-prep pages provide overlap only where GenAI/agent study needs it. |
+| Simulation and physical AI | **NCP-OUSD** and related physical-AI learning lanes | **Not implemented**. Cosmos, Riva, BioNeMo, TAO, and multimodal notes provide background, not full OpenUSD or physical-AI exam prep. |
+
+Practical conclusion: for the user goal of **NCP-AAI + NCP-GENL + vendor-neutral Agentic AI General Study**, the material is substantial and book-like. For the phrase **entire NVIDIA certification suite**, the honest answer is **not yet**. Adding the rest should be treated as new certificate work, with new blueprints, chapters, mocks, and service pages instead of stretching the current AI-agent/LLM study path beyond its evidence.
+
+## Book-Style Content Recheck
+
+The strongest pages already read as chapters: the NCP-GENL domains, NCP-AAI domains, core NVIDIA service pages, and General Study capabilities include long-form explanations, tables, implementation surfaces, formulas, traps, and drills. The weakest pages were the generic shared service aliases for Agentic AI General Study. On 2026-05-20 those thin alias pages were expanded with chapter notes, formulas, ASCII plots, and scenario drills for:
+
+- **Inference Microservice**
+- **Evaluation Harness**
+- **Observability and Trace Monitor**
+- **Model Serving Gateway**
+- **Knowledge Retrieval Pipeline**
+- **Cost/Latency Optimizer**
+- **Tool Gateway and Function Runtime**
+- **Policy and Guardrails Layer**
+- **Human Review Console**
+- **Memory Store**
+- **Agent Orchestration Toolkit**
+- **Customization Toolkit**
+- **Base Model and Model Registry**
+
+These pages now better support the intended reading style: concise first-view study cards plus deeper chapter material with concrete formulas, plots, and "what would I do in production?" decision drills.
 
 ## Sources Rechecked
 
@@ -28,6 +62,7 @@ This does not guarantee passing the real exam, but the material now maps the lat
 - `certifications/nvidia-exam-coverage-and-question-generation-guide.md`
 - `certifications/question-topic-coverage-report.md`
 - NVIDIA certification pages for NCP-AAI and NCP-GENL.
+- NVIDIA certification catalog page for the broader 2026 portfolio boundary.
 - NVIDIA docs for NIM, NeMo Agent Toolkit, NeMo Retriever, NeMo Framework, TensorRT-LLM, Triton, Nsight Systems, Nsight Compute, and NCCL-adjacent distributed training concepts.
 
 ## Baseline Check

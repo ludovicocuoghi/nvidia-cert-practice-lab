@@ -88,6 +88,46 @@ Good orchestration has stop conditions, budgets, retries, idempotency, logging, 
 - "p99 latency" -> observability/serving.
 - "Policy refusal" -> guardrails.
 
+## Chapter notes
+
+The agent orchestration toolkit is the **control-flow chapter**. It decides whether a request should be answered directly, routed to RAG, handled by a deterministic workflow, run through a ReAct loop, split across specialists, or escalated to a human. The point is not to add as many agents as possible. The point is to make state, tools, budgets, errors, and stop conditions explicit.
+
+```text
+user task
+  -> router
+  -> deterministic graph OR bounded agent loop
+  -> tool gateway / retrieval / model endpoint
+  -> verifier
+  -> final answer OR human escalation
+```
+
+### Pattern choice
+
+| Pattern | Use it when | Watch out for |
+|---|---|---|
+| Deterministic graph | process is known, regulated, approval-heavy | too little flexibility |
+| Router | mixed request types need different paths | bad intent classification |
+| ReAct loop | next action depends on tool observations | missing step budget |
+| Plan-and-execute | subgoals are predictable | stale plan after new evidence |
+| Supervisor/multi-agent | roles have distinct expertise or permissions | no shared state owner |
+
+### Budget formula
+
+```text
+max_work =
+  max_model_calls
++ max_tool_calls
++ max_retries
++ max_wall_clock_seconds
++ max_cost
+```
+
+Every autonomous loop needs a budget. Without one, failures become runaway cost, duplicate actions, or confusing user experiences.
+
+### Scenario drill
+
+A claims workflow always follows intake -> evidence retrieval -> policy check -> decision draft -> human approval. A free-form multi-agent system is the wrong default. Use a deterministic graph with LLM nodes where judgment is useful, explicit state fields, and an approval gate before any irreversible action.
+
 ## Hands-on checks
 
 1. Draw a deterministic graph and an autonomous loop for the same task.
